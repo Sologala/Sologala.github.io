@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFPose: Direct Human Pose Estimation with Transformers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="TFPose: Direct Human Pose Estimation with Transformers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="TFPose: Direct Human Pose Estimation with Transformers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/05/09/tfpose.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>TFPose: Direct Human Pose Estimation with Transformers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-05-09"><i class="iconfont icon-date"></i>09 May 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6278da57094754312928a6fc.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>TFPose: 基于Transformer的2D人体关节点回归.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2103.15320">TFPose: Direct Human Pose Estimation with Transformers</a></li>
+</ul>
+
+<h1 id="1-人体姿态估计">1. 人体姿态估计</h1>
+
+<p>人体姿态估计要求计算机在输入图像中获取人体感兴趣的关键点，在行为理解等许多计算机视觉任务中起着重要作用。现有解决该任务的主流方法大致可以分为基于热图的方法和基于回归的方法。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629df792094754312978386b.jpg" alt="" /></p>
+
+<p>基于热图的方法通常首先使用卷积神经网络（通常是全卷积网络）预测人体关节点的热力图谱，然后根据热图中的峰值位置定位人体关节。大多数姿态估计方法都是基于热图的，因为热图具有较高的精度。然而，基于热图的方法可能会遇到以下问题。</p>
+<ol>
+  <li>需要进行后处理步骤(如取最大值操作)。由于后处理操作可能是不可微的，这使得框架无法端到端的训练。</li>
+  <li>卷积神经网络预测的热图分辨率通常低于输入图像的分辨率。降低分辨率会引入量化误差，限制了关键点的定位精度。这种量化误差可以通过根据峰值附近像素的值动态移动输出坐标来解决，但这会使框架更加复杂，并引入更多的超参数。</li>
+  <li>用作<strong>ground-truth</strong>的热图需要人工设计和启发性调整，这可能会导致<strong>ground-truth</strong>热图中包含许多噪声和模糊。</li>
+</ol>
+
+<p>而基于回归的方法通常引入全连接层直接将输入图像映射为人体关节的坐标，从而避免生成热图这一中间步骤。因此基于回归的方法比基于热图的方法更直接，且可以绕过上述基于热图的方法的缺点，具有更大的应用前景。</p>
+
+<p>然而基于回归方法的性能往往不如基于热图的方法，原因可能以下几点。首先，为了减少全连接层的网络参数，在大多数基于回归的方法中应用一个全局平均池化层来减少全连接层之前的特征分辨率，从而破坏了卷积特征映射的空间结构，显著降低了性能。并且在基于回归的方法中卷积特征和预测是不对齐的，导致关键点定位精度低。此外，基于回归的方法只回归关节的坐标，没有考虑这些关键点之间的结构化依赖。</p>
+
+<p><strong>Transformer</strong>除了在自然语言处理方面取得了重大进展，近期也引起了计算机视觉界的广泛关注。<strong>Transformer</strong>最初是为序列到序列任务而设计的，应用到图像时是通过序列化的<strong>image patches</strong>实现的。如果将人体姿态估计任务看作为预测长度为$K$的序列坐标的问题($K$是一个人的身体关节数)，则能够通过<strong>Transformer</strong>实现人体姿态估计。</p>
+
+<h1 id="2-使用transformer进行姿态估计">2. 使用Transformer进行姿态估计</h1>
+
+<p>本文提出了一个基于回归的姿态估计框架<strong>TFPose</strong>，将姿态估计任务转化为一个序列预测问题，并通过<strong>Transformer</strong>有效地解决。由于<strong>Transformer</strong>中的注意机制，所提框架能够自适应地注意到与目标关键点最相关的特征，并内在地利用关键点之间的结构化关系。在<strong>MS COCO</strong>和<strong>MPII</strong>数据集上的实验表明，所提方法可以显著提高基于回归的姿态估计的表现，并实现与基于热图的姿态估计方法相当的水平。</p>
+
+<p>所提框架如图所示，以卷积神经网络的特征映射为输入，通过<strong>Transformer</strong>依次预测$K$个坐标。<strong>TFPose</strong>可以绕过基于回归的方法遇到的困难，它不依赖于全局平均池化，能够避免卷积特征与预测之间的特征错位，并且可以自然地捕获关键点之间的结构化依赖关系，从而提高性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629df817094754312978e61a.jpg" alt="" /></p>
+
+<p><strong>TFPose</strong>通过将卷积神经网络与<strong>Transformer</strong>结构相结合，直接并行地预测所有关键点坐标序列。<strong>Transformer</strong>解码器将一定数量的关键点查询向量和编码器输出特征作为输入，并通过一个多层前馈网络预测最终的关键点坐标。</p>
+
+<p><strong>TFPose</strong>是第一个基于<strong>Transformer</strong>的姿态估计框架。该框架适应简单直观的基于回归的方法，具有端到端的可训练性，克服了基于热图的方法的诸多缺点。此外，<strong>TFPose</strong>可以自然地学会利用关键点之间的结构化依赖关系，而无需启发式设计，这将提高性能和模型的可解释性。<strong>TFPose</strong>极大地提升了回归方法的表现，可以与目前最先进的基于热图的方法相媲美。</p>
+
+<h1 id="3-tfpose">3. TFPose</h1>
+
+<p><strong>TFPose</strong>首先应用一个基于卷积神经网络的人体检测器获取每个目标的边界框，然后根据检测框从输入图像中裁剪出每个目标。用$I \in \mathbb{R}^{h\times h\times 3}$表示裁剪后的图像，其中$h$、$w$分别是图像的高度和宽度。对于基于热图的方法，通常是应用卷积神经网络$F$去预测关键点热图$H \in \mathbb{R}^{h\times h\times k}$，其中$k$为预测关键点的个数。形式上有</p>
+
+\[H = F(I)\]
+
+<p>$H$的每个像素代表身体关节出现的概率。为了进一步获得关节坐标$J\in \mathbb{R}^{3\times k}$，这些方法通常使用取最大值操作来获得具有峰值激活的位置。形式上，设$p$是$H$上的空间位置，可以写成</p>
+
+\[J_k=\arg \max_{p}(H_k(p))\]
+
+<p>需要注意的是，在基于热图的方法中，$p$的定位精度受限于$H$的分辨率，而这往往远远低于输入图像的分辨率，从而导致量化误差。此外<strong>argmax</strong>操作是不可微操作，使得整个过程无法端到端训练。</p>
+
+<p>在<strong>TFPose</strong>中，将$J$作为长度为$k$的序列，直接将输入图像$I$映射到身体关节的坐标$J$:</p>
+
+\[J=F(I)\]
+
+<p>首先使用卷积神经网络提取输入图像的多层次特征。多级特征映射分别用C2、C3、C4和C5表示，其尺寸缩小系数分别为4、8、16和32。分别对这些特征图应用1 × 1卷积，使得它们的输出通道数量相同。这些特征映射被展平并连接在一起，将$F_0\in \mathbb{R}^{n\times c}$输入到<strong>Transformer</strong>中的编码器中，其中n是$F_0$中的像素数。和原始<strong>Transformer</strong>相同，$F_0$加上位置嵌入编码，用$F_0^E$表示带有位置嵌入的$F_0$。然后$F_0$和$F_0^E$被送到<strong>Transformer</strong>中计算注意力特征$M\in \mathbb{R}^{n\times c}$。在<strong>Transformer</strong>解码器中使用查询矩阵$Q\in \mathbb{R}^{K\times c}$得到K个关节点的坐标$J\in \mathbb{R}^{K\times 2}$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629df8f809475431297a0ef8.jpg" alt="" /></p>
+
+<p><strong>Transformer</strong>输入F0的位置嵌入中$E^l_i \in \mathbb{R}^{1\times c}$表示层次嵌入，编码特征向量所在的层级。$E^P \in \mathbb{R}^{n\times c}$表示一个特征向量在特征图上的空间位置的像素嵌入。使用$F_0^E$表示带有位置嵌入的$F_0$，$F_0$和$F_0^E$都是<strong>Transformer</strong>的输入。</p>
+
+<p>在<strong>TFPose</strong>中，使用$N_E = 6$个编码器层。对于$E^{th}$编码器层，将前一个编码器层的输出作为该层的输入，计算每个编码器层的输出向量之间的像素对像素注意力。应用$N_E$个<strong>Transformer</strong>编码器层后，可得到编码器特征M。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629df94209475431297a6f5a.jpg" alt="" />
+在解码器中，目标是从编码器特征M中解码所需的关键点坐标，使用查询矩阵$Q\in \mathbb{R}^{K \times c}$实现，K是关节点个数，Q是一个额外的可学习矩阵，它在训练过程中与模型参数联合更新，其中每一行对应一个关键点。</p>
+
+<p>在<strong>TFPose</strong>中有$N_D$个<strong>Transformer</strong>解码器层。每一解码器层以编码器特征M和前一解码器层$Q_{d-1} \in \mathbb{R}^{K \times c}$的输出作为输入（第一层以M和矩阵Q作为输入），$Q_{d-1}$加入位置嵌入, 结果用$Q^E_{d-1}$表示。$Q_{d=1}$和$Q^E_{d-1}$将被发送到查询到查询注意力模块，该模块旨在模拟人体关节之间的依赖关系。该注意模块使用$Q_{d-1}$、$Q_{d-1}^E$和$Q^E_{D-1}$作为值向量、查询向量和键向量。之后，该注意力模块和编码器特征M被用于计算像素到查询注意力，并应用全连接层预测K个关节点的坐标$J\in \mathbb{R}^{K\times 2}$。</p>
+
+<p>受之前基于回归的姿态识别网络的启发，不是简单地预测最终解码器层中的关键点坐标，而是要求所有解码器层预测关键点坐标。即先让第一个解码器层直接预测目标坐标。然后每一个解码器层对前解码器层进行预测细化\(\Delta \hat{y}_d \in \mathbb{R}^{k\times 2}\)。通过这种方式，关键点坐标可以逐步细化。形式上，设$\hat{y}_{d- 1}$为第(d-1)层解码器层预测的关键点坐标，则第d层解码器层的预测为</p>
+
+\[\hat{y}_d=\sigma(\sigma_{-1}(\hat{y}_{d-1}+\Delta \hat{y}_d))\]
+
+<p>其中$\sigma$和$\sigma_{−1}$分别表示<strong>sigmoid</strong>函数和<strong>inverse sigmoid</strong>函数。$\hat{y}_0$是一个随机初始化的矩阵，在训练过程中与模型参数联合更新。</p>
+
+<p><strong>TFPose</strong>的损失函数由两部分组成。第一部分是<strong>L1</strong>回归损失。设$y\in \mathbb{R}^{K\times 2}$为<strong>ground-truth</strong>坐标,回归损失公式为:</p>
+
+\[L_{reg}=\sum^{N_D}_{d=1}\parallel y-\hat{y}_d \parallel\]
+
+<p>其中$N_D$为解码器的个数，每个解码器层都由目标关键点坐标监督。第二部分是辅助损失$L_{aux}$，即在训练中使用了辅助热图学习，这样可以获得更好的性能。为了使用热图学习，从编码器特征M中收集特征向量C5，并将其重构为原始的空间形状。结果用$M_{C5} \mathbb{R}^{(h/32) \times (w/32) \times c}$表示。对$M_{C5}$应用3次反卷积对特征图上采样8倍，生成热图$\hat{h} \in \mathbb{R}^{(h/4) \times (w/4) \times k}$，然后计算预测热图和<strong>ground-truth</strong>热图之间的均方误差损失。形式上，辅助损失函数为</p>
+
+\[L_{aux}=\parallel H-\hat{H} \parallel ^2\]
+
+<p>将两个损失函数相加，得到最终的总损失如下，λ是一个常数，用来平衡这两个损失。</p>
+
+\[L_{overall}=L_{reg}+\lambda L_{aux}\]
+
+<h1 id="4-实验分析">4. 实验分析</h1>
+
+<p>数据集使用<strong>COCO</strong>和<strong>MPII</strong>数据集。卷积神经网络默认使用在<strong>ImageNet</strong>上预训练的<strong>ResNet-18</strong>，输入图像的大小为256×192或384×288。对于<strong>Transformer</strong>，采用<strong>Deformable DETR</strong>中提出的<strong>Deformable Attention Module</strong>，并使用了相同的超参数。所有模型均采用<strong>AdamW</strong>优化，β1和β2被设置为0.9和0.999，权重衰减设置为$10^{-4}$。λ默认设置为50，以平衡回归损失和辅助损失。所有的实验都使用初始学习率为$4\times 10^{-3}$的余弦退火学习率。训练时应用了随机旋转、随机缩放、翻转等数据扩增。</p>
+
+<p>为了研究自注意力机制如何定位人体关节点，将该模块在特征图C3的采样位置进行可视化。在自注意力模块中有8个自注意力<strong>head</strong>，每个<strong>head</strong>会在每个特征图上采样4个点。所以对于C3特征图有32个采样点。如图所示，采样点(红点)都密集分布在<strong>ground truth</strong>(黄圈)附近。该可视化说明<strong>TFPose</strong>在一定程度上解决了特征对齐问题。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629df9e009475431297b4b4b.jpg" alt="" /></p>
+
+<p>为了进一步研究自注意力机制是如何工作的，将注意力权重可视化。如图所示有两个明显的关注模式: 第一个关注模式是对称的关节(如左肩与右肩)更有可能相互影响；第二个注意模式是相邻关节(如眼睛、鼻子、嘴巴)更有可能相互影响。这种注意模式表明<strong>TFPose</strong>可以利用身体关节之间的上下文和结构关系来定位和分类身体关节的类型。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629df9c709475431297b2a5e.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/05/10/cut.html" class="read-next-link"></a>
+        <section>
+          <span>Contrastive Learning for Unpaired Image-to-Image Translation</span>
+          <p>  无配对数据图像到图像翻译中的对比学习.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63e354804757feff33126c1f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/05/08/maf.html" class="read-next-link"></a>
+          <section>
+            <span>Masked Autoregressive Flow for Density Estimation</span>
+            <p>  MAF：使用掩码自回归流进行密度估计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/629c7ce50947543129da47cd.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

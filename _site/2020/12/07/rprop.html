@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Direct Adaptive Method for Faster Backpropagation Learning: The RPROP Algorithm - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="A Direct Adaptive Method for Faster Backpropagation Learning: The RPROP Algorithm">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="A Direct Adaptive Method for Faster Backpropagation Learning: The RPROP Algorithm - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/07/rprop.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>A Direct Adaptive Method for Faster Backpropagation Learning: The RPROP Algorithm</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-07"><i class="iconfont icon-date"></i>07 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61f4cd3f2ab3f51d91ffa89a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>RProp：一种快速反向传播学习的直接自适应方法.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.21.1417">A Direct Adaptive Method for Faster Backpropagation Learning: The RPROP Algorithm</a></li>
+</ul>
+
+<p>作者提出了一种快速实现反向传播的梯度更新算法<strong>RProp(resilient propagation)</strong>，它根据参数的每个维度的偏导数符号来更新参数，与标准的梯度下降算法相比，学习过程易于实现且计算量小。对于一些简单的任务，不需要选择超参数便可以快速获得接近最优的收敛值。</p>
+
+<p>在<strong>RProp</strong>中，参数$w_{ij}$在第$t$次更新时的更新量$\Delta_{ij}^{t}$计算为：</p>
+
+\[\Delta_{ij}^{t} = \begin{cases} \eta_{+} * \Delta_{ij}^{t-1}, &amp; \text{if } \frac{\partial E}{\partial w_{ij}}^{t-1} * \frac{\partial E}{\partial w_{ij}}^{t} &gt;0 \\ \eta_{\_} * \Delta_{ij}^{t-1}, &amp; \text{if } \frac{\partial E}{\partial w_{ij}}^{t-1} * \frac{\partial E}{\partial w_{ij}}^{t} &lt;0 \\ \Delta_{ij}^{t-1}, &amp; \text{else} \end{cases}\]
+
+<p>上式表示，如果误差函数$E$对参数$w_{ij}$的偏导数改变符号，则表明上一次更新的步长太大，使得算法跳过了局部最小值，因此需要减小更新的步长(\(0&lt;\eta_{\_}&lt;1\))。另一方面，如果偏导数的符号没有改变，则表明还没有到达局部最小值，因此增加更新值($\eta_+&gt;1$)，以加速收敛。更新量的初始值通常设置为初始学习率$\Delta_{ij}^0$。</p>
+
+<p>参数更新的规则是沿着梯度的反方向改变参数值：</p>
+
+\[w_{ij}^{t+1} = w_{ij}^{t} + \begin{cases} - \Delta_{ij}^{t}, &amp; \text{if } \frac{\partial E}{\partial w_{ij}}^{t} &gt;0 \\ \Delta_{ij}^{t}, &amp; \text{if } \frac{\partial E}{\partial w_{ij}}^{t} &lt;0 \\ 0, &amp; \text{else} \end{cases} \\ =  w_{ij}^{t} - \text{sign}(\frac{\partial E}{\partial w_{ij}}^{t})*\Delta_{ij}^{t}\]
+
+<p>在实际中，如果偏导数的符号改变，表明上一次更新步长太大，错过了局部最小值，因此也可以恢复之前的参数数值：</p>
+
+\[w_{ij}^{t+1} = w_{ij}^{t}, \text{  if } \frac{\partial E}{\partial w_{ij}}^{t-1} * \frac{\partial E}{\partial w_{ij}}^{t} &lt;0\]
+
+<p><strong>RProp</strong>算法的流程图为：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61f504c82ab3f51d913845ef.jpg" alt="" /></p>
+
+<p>下图表明<strong>RProp</strong>在不同的任务中对参数初始化不敏感，且能够快速收敛到最优值附近。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61f4fc372ab3f51d912f68ee.jpg" alt="" /></p>
+
+<p>下图对比了几种不同的梯度算法在各种任务中收敛所需要的更新轮数，结果表明<strong>RProp</strong>需要最少的轮数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61f4fc752ab3f51d912fa604.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/08/nesterov.html" class="read-next-link"></a>
+        <section>
+          <span>On the importance of initialization and momentum in deep learning</span>
+          <p>  Nesterov Momentum：一种动量梯度更新方法.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/61f50c0e2ab3f51d913fcb3b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/06/adadelta.html" class="read-next-link"></a>
+          <section>
+            <span>ADADELTA: An Adaptive Learning Rate Method</span>
+            <p>  Adadelta：一种自适应学习率方法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/61f3e9ff2ab3f51d912b41f2.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

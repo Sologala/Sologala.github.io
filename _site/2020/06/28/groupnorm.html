@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Normalization - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Group Normalization">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Group Normalization - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/06/28/groupnorm.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Group Normalization</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-06-28"><i class="iconfont icon-date"></i>28 Jun 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f02876214195aa594bff838.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>深度学习中的组归一化方法.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Group Normalization</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1803.08494">link</a></li>
+</ul>
+
+<p><strong>Batch Norm</strong>已经证明对深度网络中的特征进行归一化能够加速训练。作者研究<strong>VGG</strong>网络的<strong>Conv5_3</strong>卷积层特征，将其特征数值按从小到大进行排列，在训练中绘制第1、20、80和99个特征值的变化：</p>
+
+<p><img src="https://pic.downk.cc/item/5f02888314195aa594c08d20.jpg" alt="" /></p>
+
+<p>由上图发现，当不引入归一化方法时，特征的变化很大；引入归一化方法能够控制特征的分布，使其更接近正态化。</p>
+
+<p><strong>Batch Norm</strong>最大的问题在于依赖于<strong>batch size</strong>，当<strong>batch size</strong>较小的时候计算统计量会有比较大的偏差，从而影响结果。作者提出了<strong>Group Norm</strong>，对每一个样本的一组特征通道计算统计量，其几乎不会受到<strong>batch size</strong>的影响：</p>
+
+<p><img src="https://pic.downk.cc/item/5f0289e414195aa594c1565b.jpg" alt="" /></p>
+
+<p>几种不同的<strong>Norm</strong>方法实现如下，其中$N$是<strong>批量轴 batch axis</strong>, $C$是<strong>通道轴 channel axis</strong>, $(H, W)$是<strong>空间轴 spatial axes</strong>。</p>
+
+<p><img src="https://pic.downk.cc/item/5f02894714195aa594c0ff90.jpg" alt="" /></p>
+
+<p>tensorflow形式的<strong>Group Norm</strong>实现如下，实现过程非常简单：</p>
+
+<p><img src="https://pic.downk.cc/item/5f028a7714195aa594c1abac.jpg" alt="" /></p>
+
+<p><strong>Group Norm</strong>的一个弊端是额外引入了超参数$G$：</p>
+
+<p><img src="https://pic.downk.cc/item/5f028aa714195aa594c1c66e.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/06/29/generalize.html" class="read-next-link"></a>
+        <section>
+          <span>Do ImageNet Classifiers Generalize to ImageNet?</span>
+          <p>  一篇讨论图像分类模型泛化能力的文章.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ef959ea14195aa59406cdd0.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/06/27/ws.html" class="read-next-link"></a>
+          <section>
+            <span>Weight Standardization</span>
+            <p>  深度学习中的权重标准化方法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f03d29314195aa59458569c.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

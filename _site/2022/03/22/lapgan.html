@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Generative Image Models using a Laplacian Pyramid of Adversarial Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Deep Generative Image Models using a Laplacian Pyramid of Adversarial Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Deep Generative Image Models using a Laplacian Pyramid of Adversarial Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/03/22/lapgan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Deep Generative Image Models using a Laplacian Pyramid of Adversarial Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-03-22"><i class="iconfont icon-date"></i>22 Mar 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic1.imgdb.cn/item/636e064416f2c2beb1ce8201.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>LAPGAN：使用拉普拉斯金字塔对抗网络生成高分辨率图像.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1506.05751">Deep Generative Image Models using a Laplacian Pyramid of Adversarial Networks</a></li>
+</ul>
+
+<p>在原始<strong>GAN</strong>中，只能生成$16×16$,$32×32$这种低像素小尺寸的图片。而<strong>LAPGAN</strong>首次实现$64×64$的图像生成。</p>
+
+<p><strong>LAPGAN</strong>采用<strong>coarse-to-fine</strong>的生成思路，与其一下子生成这么大的（包含信息量这么多），不如一步步由小到大，这样每一步生成的时候，可以基于上一步的结果，而且还只需要“填充”和“补全”新图片所需要的那些信息。</p>
+
+<h1 id="1-拉普拉斯金字塔">1. 拉普拉斯金字塔</h1>
+
+<p>拉普拉斯金字塔是一种图像存储方式，它存储不同尺寸的插值图像$L_i=G_i-rescale(G_{i+1})$；即先通过高斯模糊、下采样操作等构造低分辨率图像$G_{i+1}$，然后进行上采样后与上一层的图像$G_i$作差。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6397e1e3b1fccdcd369c0bfe.jpg" alt="" /></p>
+
+<p>相比于存储原始图像$G_0$，存储插值图像$L_0,L_1,…$和顶部的高斯图像$G_N$需要更少的内存。这是因为插值图像的数值范围小，因此可以通过更少的比特数来存储像素；而且顶层高斯图像尺寸小。</p>
+
+<p>拉普拉斯金字塔是可逆的，因此可以通过顶层高斯图像和每一层的插值图像无损地恢复原始图像。因此拉普拉斯金字塔是一种无损的图像压缩方法。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6397e2afb1fccdcd369cfa59.jpg" alt="" /></p>
+
+<h1 id="2-lapgan">2. LAPGAN</h1>
+
+<p><strong>LAPGAN</strong>的工作过程如下图所示。图中给出了一个三级的图像生成过程，使用了4个生成模型对图像进行三次上采样。从一个噪声样本$z_3$开始，使用生成模型$G_3$生成尺寸为$\frac{H}{8}\times \frac{W}{8}$的图像$\tilde{I}_3$，将其经过插值上采样变为尺寸为$\frac{H}{4}\times \frac{W}{4}$的$I_2$；将输入噪声$z_2$和图像$I_2$输入生成模型$G_2$，生成图像$I_2$中缺失的细节$\tilde{h}_2$ (通常对应图像的高频部分)；通过将图像$I_2$和细节$\tilde{h}_2$相加获得更清晰的图像。以此类推，最终获得完整分辨率的图像。其中首个生成模型$G_3$建模为普通<strong>GAN</strong>的生成器，其余生成模型$G_2,…,G_0$建模为条件<strong>GAN</strong>的生成器。</p>
+
+<p><img src="https://pic1.imgdb.cn/item/636e066816f2c2beb1ceb01d.jpg" alt="" /></p>
+
+<p><strong>LAPGAN</strong>的损失函数构造过程如下图所示。由于生成模型生成细节图像，因此需要构造真实的细节图像，才能建立对抗函数。对于生成尺寸为$H\times W$的的图像$I_0$，将其通过下采样产生图像$I_1$，然后再通过插值上采样生成图像$l_0$。图像$l_0$相比于图像$I_0$缺失了图像的细节。从原始图像$I_0$中减去图像$l_0$可以得到真实的细节图像$h_0$。另一方面，将随机噪声$z_0$和图像$l_0$通过生成模型$G_0$得到生成的细节图像$\tilde{h}_0$。判别器$D_0$接收图像$l_0$和细节图像，用于区分细节图像$h_0$和$\tilde{h}_0$。</p>
+
+<p><img src="https://pic1.imgdb.cn/item/636e068516f2c2beb1ced78f.jpg" alt="" /></p>
+
+<p>作者通过人类判别是否是自然图像来评估不同方法的性能。结果表明<strong>LAPGAN</strong>平均有$40\%$的概率生成使人类认为真实的图像。</p>
+
+<p><img src="https://pic1.imgdb.cn/item/636e06a616f2c2beb1cefd45.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/03/23/diracgan.html" class="read-next-link"></a>
+        <section>
+          <span>Which Training Methods for GANs do actually Converge?</span>
+          <p>  使用Dirac GAN分析GAN的收敛性态.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/638d5ba2b1fccdcd36d9d667.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/03/21/unit.html" class="read-next-link"></a>
+          <section>
+            <span>Unsupervised Image-to-Image Translation Networks</span>
+            <p>  UNIT：无监督图像到图像翻译网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/635639db16f2c2beb1924eb0.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

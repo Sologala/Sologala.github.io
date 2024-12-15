@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parameter-Efficient Transfer Learning for NLP - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Parameter-Efficient Transfer Learning for NLP">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Parameter-Efficient Transfer Learning for NLP - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/02/01/adapter.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Parameter-Efficient Transfer Learning for NLP</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-02-01"><i class="iconfont icon-date"></i>01 Feb 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648d64d21ddac507ccaabefd.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>自然语言处理中的参数高效的迁移学习.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1902.00751">Parameter-Efficient Transfer Learning for NLP</a></li>
+</ul>
+
+<p>目前在大规模预训练模型上进行微调是<strong>NLP</strong>中一种高效的迁移学习方法，但是对于众多的下游任务而言，微调是一种低效的参数更新方式：对于每一个下游任务，都需要去更新语言模型的全部参数，这需要庞大的训练资源。进而，人们会尝试固定预训练模型的大部分参数，针对下游任务只更新一部分参数（大部分情况下都是只更新模型最后几层的参数），但是由于语言模型的不同位置的网络聚焦于不同的特征，针对具体任务中只更新高层网络参数的方式在不少情形遭遇到精度的急剧下降。</p>
+
+<p>本文提出了<strong>Adapter</strong>，会针对每个下游任务在语言模型的每层<strong>Transformer</strong>中新增$2$个带有少量参数的<strong>adapter</strong>模块，针对下游任务训练时只更新<strong>adapter</strong>模块参数，而冻结原有语言模型的参数，从而实现将强大的大规模语言模型的能力高效迁移到诸多下游任务中去，同时保证模型在下游任务的性能。<strong>Adapter</strong>通过引入$0.5\%～5\%$的模型参数可以达到不落后全量微调模型$1\%$的性能。</p>
+
+<p><strong>Transformer</strong>的每层网络包含两个主要的子模块，一个<strong>attention</strong>多头注意力层跟一个<strong>feedforward</strong>层，这两个子模块后续都紧随一个<strong>projection</strong>操作，将特征大小映射回原本的输入的维度，然后连同<strong>skip connection</strong>的结果一同输入<strong>layer normalization</strong>层。而<strong>adapter</strong>直接应用到这两个子模块的输出经过<strong>projection</strong>操作后，并在<strong>skip-connection</strong>操作之前，进而可以将<strong>adapter</strong>的输入跟输出保持同样的维度，所以输出结果直接传递到后续的网络层，不需要做更多的修改。每层<strong>Transformer</strong>都会被插入两个<strong>adapter</strong>模块。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d68991ddac507ccb24dbb.jpg" alt="" /></p>
+
+<p><strong>adapter</strong>的具体结构如图所示。每个 <strong>Adapter</strong> 模块主要由两个前馈（<strong>Feedforward</strong>）子层组成，第一个前馈子层（<strong>down-project</strong>）将<strong>Transformer</strong>块的输出作为输入，将原始输入维度$d$（高维特征）投影到$m$（低维特征），通过控制$m$的大小来限制<strong>Adapter</strong>模块的参数量，通常情况下，$m&lt; &lt;d$。然后，中间通过一个非线形层。在输出阶段，通过第二个前馈子层（<strong>up-project</strong>）还原输入维度，将$m$（低维特征）重新映射回$d$（原来的高维特征），作为<strong>Adapter</strong>模块的输出。同时，通过一个<strong>skip connection</strong>来将<strong>Adapter</strong>的输入重新加到最终的输出中去，这样可以保证即便 <strong>Adapter</strong> 一开始的参数初始化接近<strong>0</strong>，也由于<strong>skip connection</strong>的设置而接近于一个恒等映射，从而确保训练的有效性。</p>
+
+\[h \leftarrow h + f(hW_{down})W_{up}\]
+
+<p>通过实验发现，只训练少量参数的<strong>Adapter</strong>方法的效果可以媲美全量微调，这也验证了<strong>Adapter</strong>是一种高效的参数训练方法，可以快速将语言模型的能力迁移到下游任务中去。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e5e0d1ddac507cc0aece3.jpg" alt="" /></p>
+
+<p><strong>Adapter</strong> 最佳的中间层特征维度$m$视数据集的大小而异，如：<strong>MINI</strong>数据集为<strong>256</strong>，最小的<strong>RTE</strong>数据集为<strong>8</strong>。如果始终将维度限制在<strong>64</strong>，将导致平均准确率略微下降。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/02/02/peft.html" class="read-next-link"></a>
+        <section>
+          <span>大模型的参数高效微调(Parameter-Efficient Fine-Tuning)</span>
+          <p>  Parameter-Efficient Fine-Tuning for Large Pretrained Mo...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/648d6a3c1ddac507ccb6536c.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/31/yolov8.html" class="read-next-link"></a>
+          <section>
+            <span>Ultralytics YOLOv8</span>
+            <p>  Ultralytics YOLOv8：实时目标检测和图像分割模型的最新版本.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/65332ac8c458853aef693b48.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

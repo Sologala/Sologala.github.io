@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>曲线的平滑处理方法 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="曲线的平滑处理方法">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="曲线的平滑处理方法 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/05/05/smooth.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>曲线的平滑处理方法</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-05-05"><i class="iconfont icon-date"></i>05 May 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6274755809475431296f3854.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Smooth curves.</p>
+</blockquote>
+
+<p>在生成损失函数等曲线时，由于噪声等高频点的波动导致曲线振荡明显。为了使曲线过渡更平滑，可以对曲线进行平滑处理。本文介绍一些常用的曲线平滑处理方法：</p>
+<ol>
+  <li>窗口移动平滑</li>
+  <li><strong>Savitzky-Golay</strong>平滑</li>
+  <li>指数移动平滑</li>
+</ol>
+
+<h1 id="1-窗口移动平滑">1. 窗口移动平滑</h1>
+
+<p>窗口移动平滑是指预设一个长度为$n$的窗口，在曲线上进行移动。对于每个窗口位置处的中心点数值，使用该窗口内所有位置的算术平均值代替。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6274755809475431296f3854.jpg" alt="" /></p>
+
+<p>可以用一维卷积实现窗口移动平滑，其中步长为$1$，卷积核为$\frac{1}{n}$：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n</span><span class="p">,))</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'same'</span><span class="p">)</span>
+<span class="c1"># mode指定填充格式，可选full, same, valid
+</span></code></pre></div></div>
+
+<h1 id="2-savitzky-golay平滑">2. Savitzky-Golay平滑</h1>
+
+<p><strong>Savitzky-Golay</strong>滤波也是一种基于移动窗口的加权平均滤波算法，但其加权系数不是常数，而是通过在滑动窗口内对指定高阶多项式的最小二乘拟合得到的。</p>
+
+<p><strong>SG</strong>滤波预设窗口的宽度为$2m+1$（宽度为<strong>奇数</strong>），对于其中的测量点$[-m,-m+1,…,0,…,m]$构造$k-1$次多项式进行拟合：</p>
+
+\[y=w_0+w_1x+w_2x^2+ \cdots w_{k-1}x^{k-1}\]
+
+<p>因此在每个窗口构造$2m+1$个$k$元方程组，为使方程组有解应有$2m+1\geq k$。通过<a href="https://0809zheng.github.io/2020/03/12/regression.html#2-%E6%AD%A3%E8%A7%84%E6%96%B9%E7%A8%8B%E6%B3%95">最小二乘法</a>可拟合方程组的系数，并进一步获得$x=0$处的滤波结果$w_0$。</p>
+
+<p><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.savgol_filter.html">scipy</a>中提供了<strong>Savitzky-Golay</strong>滤波方法：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">scipy.signal</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">scipy</span><span class="p">.</span><span class="n">signal</span><span class="p">.</span><span class="n">savgol_filter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">window_length</span><span class="p">,</span> <span class="n">polyorder</span><span class="p">)</span>
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">window_length</code>：窗口长度，应取正奇数。窗口长度越小，曲线越还原真实曲线；窗口长度越大，平滑效果越明显。</li>
+  <li><code class="language-plaintext highlighter-rouge">polyorder</code>：多项式阶数，应小于窗口长度。多项式阶数越大，曲线越还原真实曲线；多项式阶数越小，平滑效果越明显。当多项式阶数过大时，拟合结果会变成直线。</li>
+</ul>
+
+<h1 id="3-指数移动平滑">3. 指数移动平滑</h1>
+
+<p>指数移动平滑是<strong>tensorboard</strong>中使用的曲线平滑方法，即使用指数移动平均的形式更新初始点到当前点的加权累计值：</p>
+
+\[\hat{y}_i = \beta \hat{y}_{i-1} + (1-\beta) y_{i}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">smooth</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">res</span><span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">smoothed_val</span> <span class="o">=</span> <span class="n">last</span> <span class="o">*</span> <span class="n">weight</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">weight</span><span class="p">)</span> <span class="o">*</span> <span class="n">point</span>
+        <span class="n">res</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">smoothed_val</span><span class="p">)</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">smoothed_val</span>
+    <span class="k">return</span> <span class="n">res</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/05/06/unsupervisedrf.html" class="read-next-link"></a>
+        <section>
+          <span>Unsupervised Learning for Human Sensing Using Radio Signals</span>
+          <p>  使用射频信号进行人体感知的无监督学习.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62748872094754312993b409.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/05/04/glow.html" class="read-next-link"></a>
+          <section>
+            <span>Glow: Generative Flow with Invertible 1x1 Convolutions</span>
+            <p>  Glow：使用1x1可逆卷积构造生成流.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62d51148f54cd3f937ee124e.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

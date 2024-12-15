@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diffusion Models Beat GANs on Image Synthesis - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Diffusion Models Beat GANs on Image Synthesis">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Diffusion Models Beat GANs on Image Synthesis - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/06/08/cond_diffusion.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Diffusion Models Beat GANs on Image Synthesis</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-06-08"><i class="iconfont icon-date"></i>08 Jun 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/643651800d2dde577700c957.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>在图像合成任务上扩散模型超越了生成对抗网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2105.05233">Diffusion Models Beat GANs on Image Synthesis</a></li>
+</ul>
+
+<p>本文提出了一种实现条件扩散模型的<strong>事后修改（Classifier-Guidance）</strong>方法。<strong>事后修改</strong>是指在已经训练好的无条件扩散模型的基础上引入一个可训练的分类器（<strong>Classifier</strong>），用分类器来调整生成过程以实现控制生成。这类模型的训练成本比较低，但是采样成本会高一些，而且难以控制生成图像的细节。</p>
+
+<p>实现扩散模型的一般思路：</p>
+<ol>
+  <li>定义前向扩散过程：\(q\left(\mathbf{x}_t \mid \mathbf{x}_{t-1}\right)\)</li>
+  <li>解析地推导：\(q\left(\mathbf{x}_t \mid \mathbf{x}_{0}\right)\)</li>
+  <li>解析地推导：\(q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{x}_{0}\right)\)</li>
+  <li>近似反向扩散过程：\(p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)\)</li>
+</ol>
+
+<p>条件扩散模型是指在采样过程\(p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)\)中引入输入条件\(\mathbf{y}\)，则采样过程变为\(p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{y}\right)\)。为了重用训练好的模型\(p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)\)，根据贝叶斯定理：</p>
+
+\[\begin{aligned}
+p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{y}\right) &amp;= \frac{p_{\theta}\left(\mathbf{x}_{t-1} , \mathbf{x}_t,\mathbf{y}\right)}{p_{\theta}\left(\mathbf{x}_t,\mathbf{y}\right)} \\
+&amp;= \frac{p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_{t-1} , \mathbf{x}_t\right)p_{\theta}\left(\mathbf{x}_{t-1} , \mathbf{x}_t\right)}{p_{\theta}\left(\mathbf{y}\mid \mathbf{x}_t\right)p_{\theta}\left(\mathbf{x}_t\right)} \\
+&amp;= \frac{p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_{t-1} , \mathbf{x}_t\right)p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)}{p_{\theta}\left(\mathbf{y}\mid \mathbf{x}_t\right)} \\
+&amp;= \frac{p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_{t-1}\right)p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)}{p_{\theta}\left(\mathbf{y}\mid \mathbf{x}_t\right)} \\
+&amp;= p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right) e^{\log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_{t-1}\right) - \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)}
+\end{aligned}\]
+
+<p>为了进一步得到可采样的近似结果，在\(\mathbf{x}_{t-1}=\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)\)处考虑泰勒展开：</p>
+
+\[\begin{aligned}
+\log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_{t-1}\right) \approx \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right) + (\mathbf{x}_{t-1}-\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)) \cdot \nabla_{\mathbf{x}_t} \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)|_{\mathbf{x}_t=\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)} + \mathcal{O}(\mathbf{x}_t) 
+\end{aligned}\]
+
+<p>并注意到反向扩散过程的建模：</p>
+
+\[\begin{aligned}
+p_\theta\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)&amp;=\mathcal{N}\left(\mathbf{x}_{t-1} ; \boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right), \sigma_t^2 \mathbf{I}\right) \\
+\end{aligned}\]
+
+<p>因此有：</p>
+
+\[\begin{aligned}
+p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{y}\right) &amp;=p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right) e^{\log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_{t-1}\right) - \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)} \\
+&amp;\propto \exp\left(-\frac{\left\| \mathbf{x}_{t-1} -\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right) \right\|^2}{2\sigma_t^2}+(\mathbf{x}_{t-1}-\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)) \cdot \nabla_{\mathbf{x}_t} \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)|_{\mathbf{x}_t=\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)} + \mathcal{O}(\mathbf{x}_t) \right) \\ 
+&amp;\propto \exp\left(-\frac{\left\| \mathbf{x}_{t-1} -\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)-\sigma_t^2 \nabla_{\mathbf{x}_t} \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)|_{\mathbf{x}_t=\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)}\right\|^2}{2\sigma_t^2} + \mathcal{O}(\mathbf{x}_t) \right) \\ 
+\end{aligned}\]
+
+<p>则\(p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{y}\right)\)近似服从正态分布：</p>
+
+\[\begin{aligned}
+p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{y}\right)=\mathcal{N}\left(\mathbf{x}_{t-1} ; \boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)+\sigma_t^2 \nabla_{\mathbf{x}_t} \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)|_{\mathbf{x}_t=\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)}, \sigma_t^2 \mathbf{I}\right) \\
+\end{aligned}\]
+
+<p>因此条件扩散模型\(p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{y}\right)\)的采样过程为：</p>
+
+\[\mathbf{x}_{t-1} = \boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)+\underbrace{\sigma_t^2 \nabla_{\mathbf{x}_t} \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)|_{\mathbf{x}_t=\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)}}_{\text{新增项}}+ \sigma_t \mathbf{z},\mathbf{z} \sim \mathcal{N}\left(\mathbf{0}, \mathbf{I}\right)\]
+
+<p>向分类器的梯度中引入一个缩放参数$γ$，可以更好地调节生成效果：</p>
+
+\[\mathbf{x}_{t-1} = \boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)+\sigma_t^2 \gamma \nabla_{\mathbf{x}_t} \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)|_{\mathbf{x}_t=\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)}+ \sigma_t \mathbf{z},\mathbf{z} \sim \mathcal{N}\left(\mathbf{0}, \mathbf{I}\right)\]
+
+<p>当$γ&gt;1$时，生成过程将使用更多的分类器信号，结果将会提高生成结果与输入信号$y$的相关性，但是会相应地降低生成结果的多样性；反之，则会降低生成结果与输入信号之间的相关性，但增加了多样性。</p>
+
+<p>缩放参数$γ$相当于通过幂操作来提高分布的聚焦程度，即定义：</p>
+
+\[\tilde{p}_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right) = \frac{p_{\theta}^{\gamma}\left(\mathbf{y} \mid \mathbf{x}_t\right)}{\sum_{\mathbf{y}} p_{\theta}^{\gamma}\left(\mathbf{y} \mid \mathbf{x}_t\right)}\]
+
+<p>随着$γ$的增大，\(\tilde{p}_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)\)的预测会越来越接近<strong>one hot</strong>分布，生成过程会倾向于挑出分类置信度很高的样本。</p>
+
+<h2 id="-实现条件扩散模型">⚪ 实现条件扩散模型</h2>
+
+<p>实现事后修改的条件扩散模型的关键在于计算\(\nabla_{\mathbf{x}_t} \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)\)，把\(p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)\)定义为一个（预训练的）分类器，则该梯度项的计算实现为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Classifier</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+   <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">t_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+      <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+      <span class="bp">self</span><span class="p">.</span><span class="n">linear_t</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">t_dim</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+      <span class="bp">self</span><span class="p">.</span><span class="n">linear_img</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">image_size</span> <span class="o">*</span> <span class="n">image_size</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+      <span class="s">"""
+      Args:
+          x (_type_): [B, 3, N, N]
+          t (_type_): [B,]
+      Returns:
+              logits [B, num_classes]
+      """</span>
+      <span class="n">B</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+      <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+      <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">linear_t</span><span class="p">(</span><span class="n">t</span><span class="p">.</span><span class="nb">float</span><span class="p">())</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">linear_img</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+      <span class="k">return</span> <span class="n">logits</span>
+
+<span class="k">def</span> <span class="nf">classifier_cond_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">classifier</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">classifier_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+  <span class="s">"""
+  return the graident of the classifier outputing y wrt x.
+  formally expressed as d_log(classifier(x, t)) / dx
+  """</span>
+  <span class="k">assert</span> <span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>
+  <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="n">enable_grad</span><span class="p">():</span>
+      <span class="n">x_in</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">detach</span><span class="p">().</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+      <span class="n">logits</span> <span class="o">=</span> <span class="n">classifier</span><span class="p">(</span><span class="n">x_in</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+      <span class="n">log_probs</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+      <span class="n">selected</span> <span class="o">=</span> <span class="n">log_probs</span><span class="p">[</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">logits</span><span class="p">)),</span> <span class="n">y</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+      <span class="n">grad</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">autograd</span><span class="p">.</span><span class="n">grad</span><span class="p">(</span><span class="n">selected</span><span class="p">.</span><span class="nb">sum</span><span class="p">(),</span> <span class="n">x_in</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">classifier_scale</span>
+      <span class="k">return</span> <span class="n">grad</span>
+</code></pre></div></div>
+
+<p>对于<a href="https://0809zheng.github.io/2022/06/02/ddpm.html"><font color="Blue">DDPM</font></a>，实现条件采样只需在采样时增加估计均值的修正项：</p>
+
+\[\mathbf{x}_{t-1} = \boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)+\underbrace{\sigma_t^2 \nabla_{\mathbf{x}_t} \log p_{\theta}\left(\mathbf{y} \mid \mathbf{x}_t\right)|_{\mathbf{x}_t=\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)}}_{\text{新增项}}+ \sigma_t \mathbf{z},\mathbf{z} \sim \mathcal{N}\left(\mathbf{0}, \mathbf{I}\right)\]
+
+<p><img src="https://pic.imgdb.cn/item/6437b69f0d2dde57773f6c9f.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">condition_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span><span class="n">variance</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">guidance_kwargs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+  <span class="s">"""
+  Compute the mean for the previous step, given a function cond_fn that
+  computes the gradient of a conditional log probability with respect to
+  x. In particular, cond_fn computes grad(log(p(y|x))), and we want to
+  condition on y.
+  """</span>
+  <span class="n">gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">classifier_cond_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">**</span><span class="n">guidance_kwargs</span><span class="p">)</span>
+  <span class="n">new_mean</span> <span class="o">=</span> <span class="p">(</span>
+      <span class="n">mean</span><span class="p">.</span><span class="nb">float</span><span class="p">()</span> <span class="o">+</span> <span class="n">variance</span> <span class="o">*</span> <span class="n">gradient</span><span class="p">.</span><span class="nb">float</span><span class="p">()</span>
+  <span class="p">)</span>
+  <span class="c1"># print("gradient: ",(variance * gradient.float()).mean())
+</span>  <span class="k">return</span> <span class="n">new_mean</span>
+
+</code></pre></div></div>
+
+<p>对于<a href="https://0809zheng.github.io/2022/06/04/ddim.html"><font color="Blue">DDIM</font></a>，实现条件采样只需在采样时增加估计噪声的修正项：</p>
+
+\[\begin{aligned}
+\tilde{\boldsymbol{\epsilon}}_\theta\left(\mathbf{x}_t, t\right) = \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)-\sqrt{1-\bar{\alpha}_t}\nabla_{\mathbf{x}} \log p_t(\mathbf{y}\mid \mathbf{x})
+\end{aligned}\]
+
+<p>对应的采样过程为：</p>
+
+\[\begin{aligned} \mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}\mathbf{x}_{t}+\left( \sqrt{1-\bar{\alpha}_{t-1}-\sigma_t^2}-\frac{\sqrt{1-\bar{\alpha}_t}}{\sqrt{\alpha_t}} \right)  \tilde{\boldsymbol{\epsilon}}_\theta\left(\mathbf{x}_t, t\right)+ \sigma_t \mathbf{z} \end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/6437b6dd0d2dde57773fef27.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">ddim_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">return_all_timesteps</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">guidance_kwargs</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+  <span class="n">batch</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">total_timesteps</span><span class="p">,</span> <span class="n">sampling_timesteps</span><span class="p">,</span> <span class="n">eta</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">.</span><span class="n">betas</span><span class="p">.</span><span class="n">device</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_timesteps</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">sampling_timesteps</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">ddim_sampling_eta</span>
+  
+  <span class="n">times</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">total_timesteps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">steps</span> <span class="o">=</span> <span class="n">sampling_timesteps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>   <span class="c1"># [-1, 0, 1, 2, ..., T-1] when sampling_timesteps == total_timesteps
+</span>  <span class="n">times</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">times</span><span class="p">.</span><span class="nb">int</span><span class="p">().</span><span class="n">tolist</span><span class="p">()))</span>
+  <span class="n">time_pairs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span> <span class="c1"># [(T-1, T-2), (T-2, T-3), ..., (1, 0), (0, -1)]
+</span>
+  <span class="n">img</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">)</span>
+  <span class="n">imgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">img</span><span class="p">]</span>
+
+  <span class="n">x_start</span> <span class="o">=</span> <span class="bp">None</span>
+
+  <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">time_next</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">time_pairs</span><span class="p">,</span> <span class="n">desc</span> <span class="o">=</span> <span class="s">'sampling loop time step'</span><span class="p">):</span>
+      <span class="n">time_cond</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">full</span><span class="p">((</span><span class="n">batch</span><span class="p">,),</span> <span class="n">time</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">long</span><span class="p">)</span>
+      <span class="n">pred_noise</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">time_cond</span><span class="p">)</span> <span class="c1"># 计算 \epsilon(x_t, t)
+</span>      <span class="n">x_start</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">predict_start_from_noise</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">time_cond</span><span class="p">,</span> <span class="n">pred_noise</span><span class="p">)</span> <span class="c1"># x_0
+</span>      
+      <span class="k">if</span> <span class="n">time_next</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+          <span class="n">img</span> <span class="o">=</span> <span class="n">x_start</span>
+          <span class="n">imgs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+          <span class="k">continue</span>
+
+      <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">alphas_cumprod</span><span class="p">[</span><span class="n">time</span><span class="p">]</span>
+      <span class="n">alpha_next</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">alphas_cumprod</span><span class="p">[</span><span class="n">time_next</span><span class="p">]</span>
+      <span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">betas_cumprod</span><span class="p">[</span><span class="n">time</span><span class="p">]</span>
+
+      <span class="n">sigma</span> <span class="o">=</span> <span class="n">eta</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="n">alpha_next</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha_next</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)).</span><span class="n">sqrt</span><span class="p">()</span>
+      <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha_next</span> <span class="o">-</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">).</span><span class="n">sqrt</span><span class="p">()</span>
+      
+      <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">guidance_kwargs</span><span class="p">):</span>
+          <span class="n">gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">classifier_cond_fn</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="o">**</span><span class="n">guidance_kwargs</span><span class="p">)</span>
+
+      <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+      <span class="n">img</span> <span class="o">=</span> <span class="n">x_start</span> <span class="o">*</span> <span class="n">alpha_next</span><span class="p">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">+</span> \
+            <span class="n">c</span> <span class="o">*</span> <span class="n">pred_noise</span> <span class="o">+</span> \
+            <span class="n">sigma</span> <span class="o">*</span> <span class="n">noise</span>
+      
+      <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">guidance_kwargs</span><span class="p">):</span>
+          <span class="n">img</span> <span class="o">=</span> <span class="n">img</span> <span class="o">+</span> <span class="p">((</span><span class="n">beta</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="n">alpha_next</span><span class="p">)).</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">-</span> <span class="n">beta</span><span class="p">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">*</span> <span class="n">c</span><span class="p">)</span><span class="o">*</span> <span class="n">gradient</span><span class="p">.</span><span class="nb">float</span><span class="p">()</span>
+      
+      <span class="n">imgs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+  <span class="n">ret</span> <span class="o">=</span> <span class="n">img</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">return_all_timesteps</span> <span class="k">else</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="n">ret</span> <span class="o">=</span> <span class="p">(</span><span class="n">ret</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+  <span class="k">return</span> <span class="n">ret</span>
+</code></pre></div></div>
+
+<p>基于事后修改的条件扩散模型的完整实现可参考<a href="https://github.com/lucidrains/denoising-diffusion-pytorch/blob/main/denoising_diffusion_pytorch/guided_diffusion.py">denoising-diffusion-pytorch</a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/06/09/sim_diffusion.html" class="read-next-link"></a>
+        <section>
+          <span>More Control for Free! Image Synthesis with Semantic Diffusion Guidance</span>
+          <p>  基于语义扩散引导的图像合成.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6436624f0d2dde5777239cfd.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/06/07/extended_analytic.html" class="read-next-link"></a>
+          <section>
+            <span>Estimating the Optimal Covariance with Imperfect Mean in Diffusion Probabilistic Models</span>
+            <p>  扩散概率模型中具有不准确均值的最优协方差估计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6435207a0d2dde57777a7f09.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

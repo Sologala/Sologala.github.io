@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxNet: A 3D Convolutional Neural Network for Real-Time Object Recognition - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="VoxNet: A 3D Convolutional Neural Network for Real-Time Object Recognition">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="VoxNet: A 3D Convolutional Neural Network for Real-Time Object Recognition - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/04/03/voxnet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>VoxNet: A 3D Convolutional Neural Network for Real-Time Object Recognition</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-04-03"><i class="iconfont icon-date"></i>03 Apr 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/649cf8201ddac507ccd19d5e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>VoxNet：用于实时目标识别的3D卷积神经网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://ieeexplore.ieee.org/document/7353481">VoxNet: A 3D Convolutional Neural Network for Real-Time Object Recognition</a></li>
+</ul>
+
+<p>本文提出了一种用于快速且精确的<strong>3D</strong>点云数据目标识别框架<strong>VoxNet</strong>。<strong>VoxNet</strong>把点云转换为体积占用网格表示（<strong>Volumetric Occupancy Grid representation</strong>），并通过三维卷积神经网络进行分类。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649cf8b11ddac507ccd27e3c.jpg" alt="" /></p>
+
+<h1 id="1-volumetric-occupancy-grid">1. Volumetric Occupancy Grid</h1>
+
+<p><strong>Occupancy grids</strong>将当前的环境表示为随机变量的<strong>3D</strong>网格（<strong>voxel</strong>），并且将它们占据的空间概率估计视为数据输入和先验知识的函数。在<strong>volumetric</strong>表示中，每个点$(x, y, z)$都要被映射到离散的<strong>voxel</strong>坐标$(i, j, k)$中，该映射过程会考虑<strong>voxel</strong>网格的原点、方向和分辨率：</p>
+<ul>
+  <li>原点(<strong>origin</strong>)：通过分割算法或是检测框得到的点云输入。</li>
+  <li>方向(<strong>orientation</strong>)：网格方向的$z$轴就是重力的方向，可以使用<strong>IUM</strong>或是使传感器垂直实现。</li>
+  <li>分辨率(<strong>resolution</strong>)：对于<strong>LiDAR</strong>数据采用$0.1×0.1×0.1m^3$的分辨率，保证了各个目标间尺度信息的一致性；对于其他数据集采用\(32×32×32 \text{ voxel}^3\)的分辨率，但是目标所占用的空间应该在\(24×24×24 \text{ voxel}^3\)内。</li>
+</ul>
+
+<p>令\(\left\{z^{t}\right\}_{t=1}^{T}\)表示所有体素的状态。本文尝试了三种体素表示：</p>
+
+<h3 id="-binary-occupancy-grid">⚪ Binary Occupancy Grid</h3>
+
+<p>对于一个体素$(i, j, k)$，假设有两个状态，分别为<strong>occupied</strong>（$z^{t}=1$） 或是 <strong>unoccupied</strong>（$z^{t}=0$）。</p>
+
+<p>对于每一个体素，<strong>occupancy</strong>的概率估计是通过<strong>log odds</strong>来更新的：</p>
+
+\[l_{i j k}^{t}=l_{i j k}^{t-1}+z^{t} l_{\mathrm{occ}}+\left(1-z^{t}\right) l_{\text {free }}\]
+
+<p>$l_{\mathrm{occ}}$和$l_{\text {free }}$是这个单元的<strong>log odds</strong>，本文设置这些参数为$l_{\mathrm{occ}}=1.38, l_{\text {free }}=−1.38$，并且将<strong>log odds</strong>截断为$(-4,4)$以避免数值不稳定问题。<strong>occupancy</strong>最初被设置为$0.5$，$l_{i j k}^{0}=0$。</p>
+
+<h3 id="-density-grid">⚪ Density Grid</h3>
+
+<p>在该模型中，每个体素都被假设有一个连续的强度，对应着传感器采集而来的概率。对于所有的体素$(i, j, k)$，设置参数$\alpha_{i j k}^{t},\beta_{i j k}^{t}$，初始时$\alpha_{i j k}^{0}=\beta_{i j k}^{0}=1$。每个体素更新时都会受到$z_{t}$的影响：</p>
+
+\[\begin{aligned}
+α^t_{ijk}&amp;=α^{t−1}_{ijk}+z^t \\
+β^t_{ijk}&amp;=β^{t−1}_{ijk}+(1−z^t)
+\end{aligned}\]
+
+<p>最后平均值表示为：</p>
+
+<p>\(\mu_{i j k}^{t}=\frac{\alpha_{i j k}^{t}}{\alpha_{i j k}^{t}+\beta_{i j k}^{t}}\)
+​
+$\mu_{i j k}$被作为输入。</p>
+
+<h3 id="-hit-grid">⚪ Hit Grid</h3>
+
+<p>在此模型中仅考虑<strong>hit</strong>，初始状态下$l_{i j k}^{0}=0$，更新过程如下：</p>
+
+\[h_{i j k}^{t}=\min \left(h_{i j k}^{t-1}+z^{t}, 1\right)\]
+
+<p>尽管该模型丢掉了一些潜在的变量信息，但是实验证明其性能很好。</p>
+
+<h1 id="2-voxnet">2. VoxNet</h1>
+
+<p><strong>VoxNet</strong>的结构很简单：</p>
+
+\[C(32, 5, 2)−C(32, 3, 1)−P(2)−FC(128)−FC(K)\]
+
+<p>其中$K$表示类别的数量。<strong>VoxNet</strong>对于数据进行归一化范围为$(-1,1)$，该模型有<strong>921736</strong>个参数，其中大多数都集中在第一层。</p>
+
+<p>为了解决旋转不变性问题，在训练时使用数据增强：把每个模型旋转$360°/n$度，多增加了$n$倍的数据。在测试的时候，每个目标的输入的角度也不同，输出层的维度也要增加$n$倍，最后采取投票的方式确定到底属于哪一类。可以避免过拟合现象。</p>
+
+<p>分辨率较高的<strong>Volumetric Occupancy Grid</strong>会得到更精细的特征，分辨率较低的<strong>Volumetric Occupancy Grid</strong>能够获得全局特征。本文中使用两个相同的框架处理两个分辨率不一样的<strong>Volumetric Occupancy Grid</strong>，为了让这两个模型进行融合，直接将两个$FC(128)$拼接，连接到<strong>softmax</strong>输出层。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/04/04/octnet.html" class="read-next-link"></a>
+        <section>
+          <span>OctNet: Learning Deep 3D Representations at High Resolutions</span>
+          <p>  OctNet：在高分辨率下学习深度3D表示.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/649d1bea1ddac507cc0af178.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/04/02/mvcnn.html" class="read-next-link"></a>
+          <section>
+            <span>Multi-view Convolutional Neural Networks for 3D Shape Recognition</span>
+            <p>  用于3D形状识别的多视角卷积神经网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/649ce5511ddac507ccaf7f72.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

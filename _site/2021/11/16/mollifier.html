@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>函数的光滑化(Smoothing) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="函数的光滑化(Smoothing)">
+    <meta name="keywords"  content="数学">
+    <!-- Open Graph -->
+    <meta property="og:title" content="函数的光滑化(Smoothing) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/11/16/mollifier.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%95%B0%E5%AD%A6" class="post-tag">数学</a>
+          
+        
+      </div>
+      <h1>函数的光滑化(Smoothing)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-11-16"><i class="iconfont icon-date"></i>16 Nov 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6194c14e2ab3f51d9157ea72.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Smooth function and smoothing technique.</p>
+</blockquote>
+
+<ul>
+  <li>机器学习中的优化方法是基于梯度的，因此光滑的模型更利于优化(其梯度是连续的)。然而机器学习模型中经常存在非光滑函数(如激活函数)，比如常用的<strong>ReLU</strong>激活函数$\max(0,x)$就是非光滑的。</li>
+  <li>在最优化问题中，求函数极值需要求导，有时目标函数是不可导的，比如函数中存在最大值函数$\max(x,y)$，可以将这些不可导函数用可导函数近似。</li>
+  <li>许多任务的评价指标是离散的，如分类任务的评价指标是准确率；而常见的损失函数是连续的，如分类任务使用交叉熵损失。损失函数的降低和评价指标的提升并不是完全的单调关系，但不能直接使用评价指标作为损失函数，因为评价指标是不可导的。</li>
+</ul>
+
+<p>综上所述，需要对非光滑函数进行光滑近似的方法。</p>
+
+<p>本文首先对函数的光滑化进行定义，并介绍几种对函数进行光滑化的方法。</p>
+
+<h1 id="1-函数光滑化的定义">1. 函数光滑化的定义</h1>
+
+<p><strong>光滑函数</strong>(<strong>smooth function</strong>)是指在其定义域内无穷阶数连续可导的函数。</p>
+
+<p>函数的光滑化是指对于一个非光滑函数$f$，寻找一个光滑函数$f_{\mu}$，使得$f_{\mu}$是$f$的光滑逼近。一个非光滑函数是否<strong>可光滑化</strong>(<strong>smoothable</strong>)定义如下：</p>
+
+<p>给定一个凸函数$f$，我们称其为$(\alpha,\beta)$-<strong>smoothable</strong>的，如果存在一个凸函数$f_{\mu}$，使得满足：</p>
+<ol>
+  <li>$f_{\mu}$是$\frac{\alpha}{\mu}$光滑的</li>
+  <li>$f_{\mu}(x)\leq f(x)\leq f_{\mu}+\beta \mu$</li>
+</ol>
+
+<p>并且称$f_{\mu}$为$f$在参数$(\alpha,\beta)$下的$\frac{1}{\mu}$光滑逼近。</p>
+
+<p>条件1要求$f_{\mu}$是光滑的，并指定光滑系数$\frac{\alpha}{\mu}$(越小越光滑)。条件2要求$f_{\mu}$从下方逼近$f$，并指定逼近的最大差异$\beta \mu$。参数$\mu$越大，则函数$f_{\mu}$越光滑，但与$f$的差异也就越大。</p>
+
+<h1 id="2-函数光滑化的方法">2. 函数光滑化的方法</h1>
+
+<p>本节介绍几种函数光滑化的方法，包括：</p>
+<ul>
+  <li>人工选取光滑近似</li>
+  <li>使用<strong>Dirac</strong>函数近似</li>
+</ul>
+
+<h2 id="1-人工选取光滑近似">(1) 人工选取光滑近似</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>原函数</th>
+      <th style="text-align: center">光滑近似函数</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>$\max(x,y)$</td>
+      <td style="text-align: center">$\mathop{\lim}_{k \to ∞}\frac{1}{k}\ln(e^{kx}+e^{ky})$</td>
+    </tr>
+    <tr>
+      <td>$\max(x_1,x_2,…,x_n)$</td>
+      <td style="text-align: center">$\text{logsumexp}(x_1,x_2,…,x_n)$</td>
+    </tr>
+    <tr>
+      <td>$\text{onehot}(\arg\max(x))$</td>
+      <td style="text-align: center">$\text{softmax}(x_1,x_2,…,x_n)$</td>
+    </tr>
+    <tr>
+      <td>$\arg\max(x)$</td>
+      <td style="text-align: center">$\sum_{i=1}^{n}i\times \text{softmax}(x)_i$</td>
+    </tr>
+    <tr>
+      <td>$\text{accuracy}$</td>
+      <td style="text-align: center">$\frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} &lt;1_y(x),p(x)&gt;$</td>
+    </tr>
+    <tr>
+      <td>$\text{F1-score}$</td>
+      <td style="text-align: center">$\frac{2\sum_{x \in \mathcal{B}}^{} p(x)y(x)}{\sum_{x \in \mathcal{B}}^{}p(x)+y(x)}$</td>
+    </tr>
+    <tr>
+      <td>$\max(x_1,x_2)$</td>
+      <td style="text-align: center">$\frac{x_1+x_2+(x_1-x_2) \text{erf}(\mu (x_1-x_2))}{2}$</td>
+    </tr>
+    <tr>
+      <td>$\max(x_1,x_2)$</td>
+      <td style="text-align: center">$(x_1-x_2)\sigma(\beta(x_1-x_2))+x_2$</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>下面介绍这些近似的推导过程：</p>
+
+<h3 id="-maxxymathoplim_k-to-frac1klnekxeky">⚪ $\max(x,y)=\mathop{\lim}_{k \to ∞}\frac{1}{k}\ln(e^{kx}+e^{ky})$</h3>
+
+<p>当$x\geq 0,y\geq 0$时，有最大值函数的近似公式：</p>
+
+\[\max(x,y) = \frac{1}{2}(|x+y|+|x-y|)\]
+
+<p>因此问题转化为寻找绝对值函数$f(x)=|x|$的光滑近似。注意到$f(x)$在$x≠0$时可以求导，其导数为：</p>
+
+\[f'(x)= \begin{cases} 1,&amp;x&gt;0 \\ -1,&amp;x&lt;0 \end{cases}\]
+
+<p>上式可用单位阶跃函数\(\theta(x)=\begin{cases} 1,&amp;x&gt;0 \\ 0,&amp;x&lt;0 \end{cases}\)表示，即：</p>
+
+\[f'(x)=2\theta(x)-1\]
+
+<p>单位阶跃函数$\theta(x)$具有近似函数$\theta(x)=\mathop{\lim}_{k \to ∞}\frac{1}{1+e^{-kx}}$，因此：</p>
+
+\[f(x) = \int_{}^{} [2\theta(x)-1] dx≈ \int_{}^{} [2\frac{1}{1+e^{-kx}}-1] dx \\ = \frac{2}{k}\ln(1+e^{kx})-x= \frac{2}{k}\ln(1+e^{kx})-\frac{2}{k}\ln(e^\frac{kx}{2}) \\ = \frac{2}{k}\ln(\frac{1+e^{kx}}{e^\frac{kx}{2}}) = \frac{2}{k}\ln(e^\frac{kx}{2}+e^\frac{-kx}{2}) \\ = \frac{1}{k}\ln(e^{kx}+e^{-kx}+2)\]
+
+<p>当$k$足够大时，常数$2$可以省略。因此绝对值函数的一个光滑近似为$|x|=\mathop{\lim}_{k \to ∞} \frac{1}{k}\ln(e^{kx}+e^{-kx})$。则最大值函数的一个光滑近似为：</p>
+
+\[\max(x,y) = \frac{1}{2}(|x+y|+|x-y|) \\ = \frac{1}{2}(\mathop{\lim}_{k \to ∞} \frac{1}{k}\ln(e^{k(x+y))}+e^{-k(x+y)})+\mathop{\lim}_{k \to ∞} \frac{1}{k}\ln(e^{k(x-y)}+e^{-k(x-y)})) \\ = \mathop{\lim}_{k \to ∞}\frac{1}{2k}\ln(e^{2kx}+e^{2ky}+e^{-2kx}+e^{-2ky}) \\ = \mathop{\lim}_{k \to ∞}\frac{1}{k}\ln(e^{kx}+e^{ky}+e^{-kx}+e^{-ky})\]
+
+<p>注意到上式基于$x\geq 0,y\geq 0$推导，因此可丢弃$e^{-kx},e^{-ky}$。最终得到最大值函数的光滑近似为：</p>
+
+\[\max(x,y)=\mathop{\lim}_{k \to ∞}\frac{1}{k}\ln(e^{kx}+e^{ky})\]
+
+<p>注意到$x,y$取负数时上式仍成立。该近似也可推广到多个变量的最大值函数：</p>
+
+\[\max(x,y,z,...)=\mathop{\lim}_{k \to ∞}\frac{1}{k}\ln(e^{kx}+e^{ky}+e^{kz}+...)\]
+
+<p>上式实际上是在进行如下操作：寻找一个在实数域上单调递增的函数，要求该函数的增长速度超过线性函数，对该函数求和后取逆函数。因此可以构造类似函数，如取$y=x^{k+1}$，则有近似：</p>
+
+\[\max(x,y)=\mathop{\lim}_{k \to ∞}\sqrt[k+1]{x^{k+1}+y^{k+1}}\]
+
+<h3 id="-maxx_1x_2x_ntextlogsumexpx_1x_2x_n">⚪ $\max(x_1,x_2,…,x_n)≈\text{logsumexp}(x_1,x_2,…,x_n)$</h3>
+
+<p>根据上面的结论有：</p>
+
+\[\max(x_1,x_2,...,x_n) = \mathop{\lim}_{k \to ∞}\frac{1}{k}\ln(\sum_{i=1}^{n}e^{kx_i})\]
+
+<p>通常设置$k=1$，则有：</p>
+
+\[\max(x_1,x_2,...,x_n) ≈ \ln(\sum_{i=1}^{n}e^{x_i}) \\ = \text{logsumexp}(x_1,x_2,...,x_n)\]
+
+<p>其中<strong>logsumexp</strong>是一种常用的算子。</p>
+
+<h3 id="-textonehotargmaxxtextsoftmaxx_1x_2x_n">⚪ $\text{onehot}(\arg\max(x))≈\text{softmax}(x_1,x_2,…,x_n)$</h3>
+
+<p>$\text{onehot}(\arg\max(x))$表示先求序列$x=[x_1,x_2,…,x_n]$中最大值所在的位置，并用一个<strong>onehot</strong>编码表示。考虑向量：</p>
+
+\[x'=[x_1,x_2,...,x_n]-\max(x_1,x_2,...,x_n)\]
+
+<p>其最大值对应的位置值为$0$，其余位置值为负。既而考虑</p>
+
+<p>\(e^{x'}=[e^{x_1-\max(x_1,x_2,...,x_n)},e^{x_2-\max(x_1,x_2,...,x_n)},...,e^{x_n-\max(x_1,x_2,...,x_n)}]\)
+作为$\text{onehot}(\arg\max(x))$的近似。上式最大值为$e^0=1$，其余位置值接近$0$。根据之前的结论$\max(x_1,x_2,…,x_n) ≈ \ln(\sum_{i=1}^{n}e^{x_i})$，有：</p>
+
+\[\text{onehot}(\arg\max(x))≈e^{x'} \\ = [e^{x_1-\ln(\sum_{i=1}^{n}e^{x_i})},e^{x_2-\ln(\sum_{i=1}^{n}e^{x_i})},...,e^{x_n-\ln(\sum_{i=1}^{n}e^{x_i})}] \\ = [\frac{e^{x_1}}{\sum_{i=1}^{n}e^{x_i}},\frac{e^{x_2}}{\sum_{i=1}^{n}e^{x_i}},...,\frac{e^{x_n}}{\sum_{i=1}^{n}e^{x_i}}] \\ = \text{softmax}(x_1,x_2,...,x_n)\]
+
+<h3 id="--argmaxxsum_i1nitimes-textsoftmaxx_i">⚪  $\arg\max(x)≈\sum_{i=1}^{n}i\times \text{softmax}(x)_i$</h3>
+
+<p>$\arg\max(x)$表示求序列$x=[x_1,x_2,…,x_n]$中最大值所在的位置，注意到$\arg\max(x)$实际上等于：</p>
+
+\[\text{sum}(\text{序向量}[1,2,...,n] \otimes \text{onehot}(\arg\max(x)))\]
+
+<p>根据上述结论$\text{onehot}(\arg\max(x))≈\text{softmax}(x_1,x_2,…,x_n)$，$\arg\max(x)$可以表示为：</p>
+
+\[\arg\max(x)≈\sum_{i=1}^{n}i\times \text{softmax}(x)_i\]
+
+<p>上式也称为<strong>SoftArgmax</strong>，编程实现见<a href="https://0809zheng.github.io/2021/03/22/softargmax.html">博客</a>。</p>
+
+<h3 id="--textaccuracyfrac1mathcalbsum_x-in-mathcalb-1_yxpx">⚪  $\text{accuracy}=\frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} &lt;1_y(x),p(x)&gt;$</h3>
+<p>本节讨论分类任务中正确率的光滑近似。给定一个批量$\mathcal{B}$的样本，用\(1_{y}(x)\)表示样本的真实类别对应的<strong>onehot</strong>编码，\(1_{\hat{y}}(x)\)表示样本的预测类别对应的<strong>onehot</strong>编码。统计两个编码对应的内积之和(预测相同内积为$1$否则为$0$)，即可得到正确率的表达式(预测正确的数量占总数量的比值)：</p>
+
+\[\text{accuracy}=\frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} &lt;1_y(x),1_{\hat{y}}(x)&gt;\]
+
+<p>网络的预测结果是经过<strong>softmax</strong>的概率分布$p(x)$，则正确率的光滑近似为：</p>
+
+\[\text{accuracy}=\frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} &lt;1_y(x),p(x)&gt;\]
+
+<p>其中<strong>onehot</strong>编码可由<strong>softmax</strong>光滑近似。</p>
+
+<h3 id="--textf1-score--frac2sum_x-in-mathcalb-pxyxsum_x-in-mathcalbpxyx">⚪  $\text{F1-score} = \frac{2\sum_{x \in \mathcal{B}}^{} p(x)y(x)}{\sum_{x \in \mathcal{B}}^{}p(x)+y(x)}$</h3>
+
+<p><strong>F1-score</strong>是分类问题常用的评估指标，计算为查准率和查全率的调和平均。对于二分类问题，若记$p(x)$是预测正类的概率，$y(x)$是样本的标签，则对应的混淆矩阵如下：</p>
+
+\[\begin{array}{l|cc} \text{标签\预测} &amp; \text{正例} &amp; \text{反例} \\ \hline  \text{正例} &amp; TP=p(x)y(x) &amp; FN=(1-p(x))y(x) \\  \text{反例} &amp; FP=p(x)(1-y(x)) &amp; TN=(1-p(x))(1-y(x)) \\ \end{array}\]
+
+<p>则<strong>F1-score</strong>计算为</p>
+
+\[\text{F1-score} = \frac{2TP}{2TP+FP+FN} = \frac{2\sum_{x \in \mathcal{B}}^{} p(x)y(x)}{\sum_{x \in \mathcal{B}}^{}p(x)+y(x)}\]
+
+<p>上述推导的<strong>F1-score</strong>的光滑近似是可导的，可以将其相反数作为损失函数。但是在采样过程中，上式是<strong>F1-score</strong>的有偏估计。通常应先用交叉熵训练一段时间，再用上式进行微调。</p>
+
+<h3 id="--maxx_1x_2--fracx_1x_2x_1-x_2-texterfmu-x_1-x_22">⚪  $\max(x_1,x_2) = \frac{x_1+x_2+(x_1-x_2) \text{erf}(\mu (x_1-x_2))}{2}$</h3>
+
+<p>最大值函数也可以表示为：</p>
+
+\[\max(x_1,x_2) = \frac{x_1+x_2+|x_1-x_2|}{2}\]
+
+<p>其中绝对值函数$|x|$常用的光滑近似可以使用$x \text{erf}(\mu x)$和$\sqrt{x^2+\mu^2}$。前者从下面逼近$|x|$($\mu$越大越逼近)，后者从上面逼近$|x|$($\mu$越小越逼近)。</p>
+
+<p>使用上述近似替换最大值函数的表达式，可以得到最大值函数的两种近似：</p>
+
+\[\max(x_1,x_2) = \frac{x_1+x_2+(x_1-x_2) \text{erf}(\mu (x_1-x_2))}{2}\]
+
+\[\max(x_1,x_2) = \frac{x_1+x_2+\sqrt{(x_1-x_2)^2+\mu^2}}{2}\]
+
+<p>关于该近似的讨论可参考<a href="https://0809zheng.github.io/2021/11/17/smu.html">SMU激活函数</a>。</p>
+
+<h3 id="--maxx_1x_2--x_1-x_2sigmabetax_1-x_2x_2">⚪  $\max(x_1,x_2) = (x_1-x_2)\sigma(\beta(x_1-x_2))+x_2$</h3>
+
+<p>最大值函数$\max(x_1,x_2,…,x_n)$的一个可微近似为：</p>
+
+\[\max(x_1,x_2,...,x_n) = \frac{\sum_{i=1}^{n}x_ie^{\beta x_i}}{\sum_{i=1}^{n}e^{\beta x_i}}\]
+
+<p>$\beta$是开关因子，当$\beta \to ∞$上式趋近于最大值函数；当$\beta =0$上式为简单的算术平均。</p>
+
+<p>当$n=2$时，记$\sigma(x) = 1/(1+e^{-x})$，则最大值函数为：</p>
+
+\[\max(x_1,x_2) = \frac{x_1e^{\beta x_1}+x_2e^{\beta x_2}}{e^{\beta x_1}+e^{\beta x_2}}  \\ = x_1\frac{1}{1+e^{-\beta(x_1-x_2)}}+x_2\frac{1}{1+e^{-\beta(x_2-x_1)}}  \\ =x_1 \sigma(\beta(x_1-x_2))+x_2[1-\sigma(\beta(x_1-x_2))] \\ = (x_1-x_2)\sigma(\beta(x_1-x_2))+x_2\]
+
+<p>关于该近似的讨论可参考<a href="https://0809zheng.github.io/2021/11/18/acon.html">ACON激活函数</a>。</p>
+
+<h2 id="2-使用dirac函数近似">(2) 使用Dirac函数近似</h2>
+<p><strong>Dirac</strong>函数又称<strong>Dirac</strong>-$\delta$函数、单位冲激函数，是一种广义函数(泛函)，表达式如下：</p>
+
+\[\delta(x) = \begin{cases} +∞, &amp; x =0 \\ 0, &amp; x≠0 \end{cases}, \quad \int_{-∞}^{+∞}\delta(x)dx = 1\]
+
+<p>根据<strong>Dirac</strong>函数的性质：</p>
+
+\[f(x) = \int_{-∞}^{+∞}f(y)\delta(x-y)dy\]
+
+<p>如果能找到<strong>Dirac</strong>函数的光滑近似$\phi(x)≈\delta(x)$，当$f(x)$是一个具有可数个间断点的连续函数时，可以构造$f(x)$的光滑近似：</p>
+
+\[f(x)≈ \int_{-∞}^{+∞}f(y)\phi(x-y)dy = (f* \phi)(x)\]
+
+<p>注意到上式表示为两个函数的卷积，其中$f$为近似的原函数，$\phi$为<strong>Dirac</strong>函数的光滑近似。</p>
+
+<p><strong>Dirac</strong>函数没有显式表达式，因此常采用一些连续函数作为<strong>Dirac</strong>函数的光滑近似。</p>
+
+<p>一种寻找<strong>Dirac</strong>函数的光滑近似的方法是首先构造类似于正态分布的“钟形曲线”，之后设法让钟形曲线的宽度趋近于$0$，并保持积分为$1$。此时常用的近似包括：</p>
+
+\[\delta(x) = \mathop{\lim}_{\sigma \to 0} \frac{e^{-x^2/2\sigma^2}}{\sqrt{2\pi}\sigma} \quad ①\]
+
+\[\delta(x) = \frac{1}{\pi}\mathop{\lim}_{a \to 0} \frac{a}{x^2+a^2} \quad ②\]
+
+<p>另一种光滑近似思路是注意到<strong>Dirac</strong>函数的积分是单位阶跃函数$\theta(x)$：</p>
+
+\[\int_{-∞}^{x}\delta(x)dx = \theta(x) = \begin{cases} 1, &amp; x &gt;0 \\ 0, &amp; x&lt;0 \end{cases}\]
+
+<p>若能找到$\theta(x)$的光滑近似，其导数即为<strong>Dirac</strong>函数的光滑近似。$\theta(x)$的光滑近似通常是一些“S”型曲线，如<strong>sigmoid</strong>函数$\sigma(x)$，则<strong>Dirac</strong>函数的一个光滑近似为：</p>
+
+\[\delta(x) =  \mathop{\lim}_{t \to ∞} \frac{d}{dx}\sigma(tx) \\= \mathop{\lim}_{t \to ∞}t\sigma(x)(1-\sigma(x))\\ = \mathop{\lim}_{t \to ∞} \frac{te^{tx}}{(1+e^{tx})^2} \quad ③\]
+
+<h3 id="构造取整函数的光滑近似">⚪构造取整函数的光滑近似</h3>
+<p>本文以向下取整函数为例，记为：</p>
+
+\[\lfloor x \rfloor = n, \quad x\in [n,n+1)\]
+
+<p>若记$\phi(x)$为<strong>Dirac</strong>函数的光滑近似，则有：</p>
+
+\[\lfloor x \rfloor ≈ \int_{-∞}^{+∞}\lfloor y \rfloor \phi(x-y)dy = \sum_{n=-∞}^{+∞}\int_{n}^{n+1}n\phi(x-y)dy\]
+
+<p>若$\Phi(y)$为$\phi(y)$的原函数，则$\phi(x-y)$的原函数为$-\Phi(x-y)$，则有：</p>
+
+\[\lfloor x \rfloor ≈ \sum_{n=-∞}^{+∞}-n \Phi(x-y)|_{n}^{n+1} \\ = \sum_{n=-∞}^{+∞} n[\Phi(x-n)-\Phi(x-n+1)] \\ = \mathop{\lim}_{M,N\to ∞} \sum_{n=-M}^{N} [(n-1)\Phi(x-n)-n\Phi(x-n+1)+\Phi(x-n)] \\ = \mathop{\lim}_{M,N\to ∞}  -(M+1)\Phi(x+M)-N\Phi(x-N+1)+\sum_{n=-M}^{N}\Phi(x-n)\]
+
+<p>注意到\(\Phi(x+M)_{M\to ∞}≈\Phi(∞)=1,\Phi(x-N+1)_{N\to ∞} ≈\Phi(-∞)=0\)，因此上式进一步化简为：</p>
+
+\[\lfloor x \rfloor ≈  \mathop{\lim}_{M,N\to ∞}  -(M+1)+\sum_{n=-M}^{N}\Phi(x-n) \\ = \mathop{\lim}_{M,N\to ∞} \sum_{n=-M}^{0}[\Phi(x-n)-1]+\sum_{n=0}^{N}\Phi(x-n)\]
+
+<p>单位阶跃函数$\theta(x)$是<strong>Dirac</strong>函数的一个原函数，其可由<strong>Sigmoid</strong>函数光滑近似，即$\Phi(y)=\sigma(ty)$。</p>
+
+<p>下图展示了一个$t=10,M=5,N=10$时对取整函数的近似情况：</p>
+
+<p><img src="https://pic.imgdb.cn/item/6186339f2ab3f51d91c9d9e8.jpg" alt="" /></p>
+
+<p>更多使用<strong>Dirac</strong>函数构造光滑近似的例子可参考<a href="https://0809zheng.github.io/2021/11/05/sau.html">SAU激活函数</a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/11/17/smu.html" class="read-next-link"></a>
+        <section>
+          <span>SMU: smooth activation function for deep networks using smoothing maximum technique</span>
+          <p>  SMU：基于光滑最大值技术的光滑激活函数.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6194da882ab3f51d91608eef.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/11/09/micronet.html" class="read-next-link"></a>
+          <section>
+            <span>MicroNet: Towards Image Recognition with Extremely Low FLOPs</span>
+            <p>  MicroNet：极低FLOPs的图像识别网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6189dfd32ab3f51d91e3e2cb.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

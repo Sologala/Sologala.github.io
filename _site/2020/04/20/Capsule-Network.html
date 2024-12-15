@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>胶囊网络 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="胶囊网络">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="胶囊网络 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/20/Capsule-Network.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>胶囊网络</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-20"><i class="iconfont icon-date"></i>20 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e9d6c40c2a9a83be58a1455.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Capsule Networks.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Dynamic Routing Between Capsules</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1710.09829">https://arxiv.org/abs/1710.09829</a></li>
+</ul>
+
+<p>传统的神经网络的基本单元是<strong>神经元(neuron)</strong>，每一个神经元接收上一层神经元输出标量的线性组合，经过激活函数输出一个<strong>标量(scalar)</strong>。</p>
+
+<p><strong>胶囊网络(Capsule Network)</strong>用<strong>胶囊(capsule)</strong>代替了神经元，每一个胶囊接收上一层胶囊的输出$v^1,v^2,…$并输出一个<strong>向量(vector)</strong>$v$:</p>
+
+<p><img src="https://pic.downk.cc/item/5e9d6631c2a9a83be583701c.jpg" alt="" /></p>
+
+<p>向量$v$代表了输入数据内的一种pattern类型，$v$的每一个维度代表了这个pattern的一种<strong>特征属性</strong>，$v$的范数norm代表了这个pattern出现的<strong>概率</strong>(归一化后)。</p>
+
+<p>如对于卷积神经网络，一个胶囊的输出$v$可能代表某一种图案（如眼睛、嘴巴），$v$的每一个维度代表了这个图案的方向、大小等特征属性。</p>
+
+<h3 id="1-胶囊的实现过程">1. 胶囊的实现过程</h3>
+
+<p><img src="https://pic.downk.cc/item/5e9d67b6c2a9a83be584fa9d.jpg" alt="" /></p>
+
+<p>上图是一个胶囊内部的计算过程。</p>
+
+<p>$v^1,v^2$表示上一个胶囊层的输出，经过仿射变换为$u^1,u^2$，变换参数$W^1$、$W^2$由反向传播学习得到：</p>
+
+\[u^1 = W^1v^1, \quad u^2 = W^2v^2\]
+
+<p>$u^1,u^2$经过加权的线性组合得到$s$，<strong>耦合系数coupling coefficient</strong>$c_1$、$c_2$是由<strong>动态路由</strong>算法得到的：</p>
+
+\[s = c_1u^1 + c_2u^2\]
+
+<p>对$s$进行<strong>非线性压缩(Squash)操作</strong>得到胶囊的输出$v$，这一操作只改变向量的大小，不改变向量的方向，可以看作一种激活函数：</p>
+
+\[v = Squash(s) = \frac{\mid\mid s \mid\mid ^2}{1+\mid\mid s \mid\mid ^2} \frac{s}{\mid\mid s \mid\mid}\]
+
+<p>注意到\(\mid\mid s \mid\mid = 0\)时\(\mid\mid v \mid\mid = 0\)，\(\mid\mid s \mid\mid → ∞\)时\(\mid\mid v \mid\mid = 1\)，这一操作对$v$的范数实现了归一化，表示存在的概率。</p>
+
+<p>胶囊与神经元的对比如下：</p>
+
+<p><img src="https://pic.downk.cc/item/5e9d6d74c2a9a83be58b5302.jpg" alt="" /></p>
+
+<h3 id="2-动态路由">2. 动态路由</h3>
+<p>胶囊间的<strong>动态路由(dynamic routing)</strong>机制可以确保每一层胶囊输出的特征向量被正确地发送到下一层中对应的胶囊。</p>
+
+<p>对某一个胶囊，需要计算<strong>耦合系数</strong>$c_1,c_2,…$，设算法执行$T$次。</p>
+
+<p>引入上一层的胶囊应该耦合到本胶囊的<strong>对数先验概率</strong>$b_1,b_2,…$，并初始化为0：</p>
+
+\[b_i^0 = 0, \quad i=1,2,...\]
+
+<p>对于某一次迭代$t$，耦合系数总和为1，计算如下：</p>
+
+\[c_1^t, c_2^t, ... = softmax(b_1^{t-1},b_2^{t-1},...)\]
+
+<p>并对先验概率进行修正：</p>
+
+\[s^t = c_1^tu^1 + c_2^tu^2\]
+
+\[a^t = Squash(s^t)\]
+
+\[b_i^t = b_i^{t-1} + a^t·u^i, \quad i=1,2,...\]
+
+<p>由上式可以看出，如果本次循环得到的向量与上一层某个胶囊的输出向量<strong>一致性</strong>较高，则对应的先验概率被修正增大。</p>
+
+<p>经过$T$次循环得到最终的耦合系数：</p>
+
+\[c_i = b_i^T, \quad i=1,2,...\]
+
+<p>整个路由过程不仅仅是存在于胶囊网络的<strong>训练</strong>过程中，也存在于<strong>验证</strong>和<strong>测试</strong>过程，而且需要迭代多次。</p>
+
+<p>动态路由的更新过程如下图所示，与RNN非常类似：</p>
+
+<p><img src="https://pic.downk.cc/item/5e9d733fc2a9a83be5915981.jpg" alt="" /></p>
+
+<h3 id="3-网络特点">3. 网络特点</h3>
+<ul>
+  <li><strong>不变性invariance</strong>：输入发生微小变化时输出不变；</li>
+  <li><strong>等变性equivariance</strong>：输入发生微小变化时输出随输入的变化规律而改变；</li>
+</ul>
+
+<p>最大池化(max pool)具有不变性，但不具有等变性；即输入变换时输出是不变的，从而丢失了位置等信息：</p>
+
+<p><img src="https://pic.downk.cc/item/5e9d726dc2a9a83be5907eae.jpg" alt="" /></p>
+
+<p>胶囊网络既具有不变性又具有等变性；即输入变化时输出能够捕捉到这种微小的变化($v^1$)，但选择性忽略，最终结果不变(\(\mid\mid v^1 \mid\mid\))：</p>
+
+<p><img src="https://pic.downk.cc/item/5e9d72b5c2a9a83be590d9cb.jpg" alt="" /></p>
+
+<h3 id="4-capsnet">4. CapsNet</h3>
+<p>胶囊网络也可以引入卷积神经网络，即将卷积核换成胶囊。</p>
+
+<p><img src="https://pic.downk.cc/item/5e9d7429c2a9a83be5924fc3.jpg" alt="" /></p>
+
+<p>对于<strong>胶囊网络(CapsNet)</strong>，用于图像分类时每一个胶囊输出是对一类的预测结果，如上图所示。</p>
+
+<p>为了实现同时对多个对象的识别，每类目标对象对应的胶囊应分别使用<strong>边际损失(margin loss)</strong>函数得到类损失$L_c$，则总边际损失是所有类损失之和。</p>
+
+<p><img src="https://pic.downk.cc/item/5e9d80f5c2a9a83be59fc61e.jpg" alt="" /></p>
+
+<ul>
+  <li>$T_c$是表示$c$类目标对象是否存在，当$c$类目标对象存在时为1，不存在时为0；</li>
+  <li>$m^+$是上界，惩罚假阳性，即预测$c$类存在但真实不存在，一般取0.9；</li>
+  <li>$m^-$是下界，惩罚假阴性，即预测$c$类不存在但真实存在，一般取0.1；</li>
+  <li>$λ$为不存在的对象类别的损失的下调权重，避免最开始从不存在分类对应的胶囊输出的特征向量中学习，一般取0.5。</li>
+</ul>
+
+<p>在论文还引入了重构网络减少分类误差。</p>
+
+<h3 id="5-实验结果">5. 实验结果</h3>
+
+<p><strong>(1).MNIST</strong></p>
+
+<p><img src="https://pic.downk.cc/item/5e9d74f3c2a9a83be593072e.jpg" alt="" /></p>
+
+<p>在MNIST数据集上，测试集加了一些仿射变换，使得训练与测试<strong>不匹配(mismatch)</strong>。CapsNet仍然具有很好的鲁棒性。</p>
+
+<p><strong>(2).向量的维度</strong></p>
+
+<p><img src="https://pic.downk.cc/item/5e9d752ac2a9a83be5933bf6.jpg" alt="" /></p>
+
+<p>向量的每一个维度代表不同的特征信息。</p>
+
+<p><strong>(3).MultiMNIST</strong></p>
+
+<p><img src="https://pic.downk.cc/item/5e9d7572c2a9a83be593843d.jpg" alt="" /></p>
+
+<ul>
+  <li>图像的上半部分代表输入图像</li>
+  <li>图像的下半部分代表重构图像</li>
+  <li>R代表重构数字</li>
+  <li>L代表真实标签</li>
+</ul>
+
+<p>在MultiMNIST数据集上，对于输入标签中存在的数字可以很好的重构，但是对于输入中不存在的数字则几乎没有重构结果。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/21/sequence-2-sequence.html" class="read-next-link"></a>
+        <section>
+          <span>序列到序列模型(Sequence to sequence)</span>
+          <p>  Sequence to sequence.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63b431a6be43e0d30e714f30.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/19/Text-CNN.html" class="read-next-link"></a>
+          <section>
+            <span>Convolutional Neural Networks for Sentence Classification</span>
+            <p>  Text-CNN：一种将CNN应用于NLP的方法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e9be4e4c2a9a83be5c9fa17.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

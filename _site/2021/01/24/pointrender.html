@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PointRend: Image Segmentation as Rendering - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="PointRend: Image Segmentation as Rendering">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="PointRend: Image Segmentation as Rendering - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/01/24/pointrender.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>PointRend: Image Segmentation as Rendering</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-01-24"><i class="iconfont icon-date"></i>24 Jan 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/640ec455f144a01007338e02.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>PointRend: 把图像分割建模为渲染.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1912.08193">PointRend: Image Segmentation as Rendering</a></li>
+</ul>
+
+<p><strong>PointRend</strong>将渲染领域的操作引入到分割领域，本身可以理解为一个新颖的<strong>上采样</strong>操作。</p>
+
+<p>在图像分割问题中，边缘的恢复、精确分割是比较麻烦的问题。在比较经典的一些语义分割模型中，在模型后都是接一个<strong>8</strong>倍或<strong>4</strong>倍的上采样操作来恢复图像，这对于物体边缘的预测自然是不利的，上采样会损失一些边缘信息。因此<strong>PointRend</strong>就是为上采样过程中精确恢复物体边缘的任务而生。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640ec590f144a01007377475.jpg" alt="" /></p>
+
+<p><strong>PointRend</strong>包含了两个阶段的特征处理，分别是<strong>fine-grained features</strong>和<strong>coarse prediction</strong>部分，如果主干网络是<strong>ResNet</strong>，那么<strong>fine-grained features</strong>就是<strong>ResNet</strong>的<strong>stage2</strong>输出，也就是<strong>4</strong>倍下采样时的精细分割结果，而<strong>coarse prediction</strong>就是检测头的预测结果（还未上采样还原成原图的结果）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640ec603f144a01007388399.jpg" alt="" /></p>
+
+<p>从<strong>coarse prediction</strong>中挑选<strong>N</strong>个“难点”，也就是结果很有可能和周围点不一样的点（比如物体边缘的点）。对于每一个难点，获取他的“特征向量”，对于点特征向量（<strong>point features</strong>），主要由两部分组成，分别是<strong>fine-grained features</strong>的对应点和<strong>coarse prediction</strong>的对应点的特征向量，将这两个特征向量拼接成一个向量。接着通过一个<strong>MLP</strong>网络对这个“特征向量”进行预测，更新<strong>coarse prediction</strong>。也就相当于对这个难点进行新的预测，对像素进行分类。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640ecacef144a010074121e0.jpg" alt="" /></p>
+
+<p>如上图所示，对于一个<strong>coarse prediction</strong>(<strong>4x4</strong>大小)，将其上采样两倍(<strong>8x8</strong>大小，这里可以理解为检测头的输出)后，取了一些难分割的点（大多是边缘部分），取这些点的特征向量输入到<strong>MLP</strong>网络中，进行<strong>point prediction</strong>，得到每一个点的新类别，最后结果输出(<strong>8x8</strong>大小，边缘更加精确的结果)。</p>
+
+<p><strong>PointRend</strong>是基于点的预测，那么这些点该如何采样？如果对全局点进行采样，那么计算量就过大。如果只想对预测困难点（物体边界）进行采样，则点采样过程需要对模型的<strong>Train</strong>过程和<strong>Inference</strong>过程做区分。</p>
+
+<p>在<strong>Inference</strong>过程中，每个区域都通过迭代<strong>coarse-to-fine</strong>的方式来渲染。在每一次迭代过程中，<strong>PointRend</strong>都使用双线性差值将上一次的<strong>segmentation result</strong>进行上采样，然后在这个结果中选择<strong>N</strong>个不确定的点（分类概率接近<strong>0.5</strong>的点，也就是模型认为模棱两可的点）提取特征向量，经过<strong>MLP</strong>进行分类，得到新的<strong>segmentation result</strong>。</p>
+
+<p>对于<strong>Train</strong>过程的点采样操作，遵循<strong>Inference</strong>中的子采样对于梯度的传播不太友好，于是选择随机采样的方式来进行采样。首先依据均匀分布随机取$kN$个点($k&gt;1$)；然后上采样后，预测估计这些点的结果，再从$kN$个点中选取$βN$个点($0&lt;β&lt;1$)。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640eccf3f144a01007446e44.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">point_sample</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">point_coords</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">add_dim</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">point_coords</span><span class="p">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">add_dim</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">point_coords</span> <span class="o">=</span> <span class="n">point_coords</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># F.grid_sample(a, grid)按照grid采样，grid归一化为[-1,1]
+</span>    <span class="n">output</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">grid_sample</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">point_coords</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">add_dim</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="p">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">sampling_points</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">mask</span><span class="p">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">4</span><span class="p">,</span> <span class="s">"Dim must be N(Batch)CHW"</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">mask</span><span class="p">.</span><span class="n">device</span>
+    <span class="n">B</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">mask</span><span class="p">.</span><span class="n">shape</span>
+    <span class="c1"># C维度存储每个类别的分类概率
+</span>    <span class="n">mask</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mask</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">training</span><span class="p">:</span>
+        <span class="n">H_step</span><span class="p">,</span> <span class="n">W_step</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">H</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">W</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">H</span> <span class="o">*</span> <span class="n">W</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+        <span class="c1"># 用前两个分类最大概率之差的负值衡量分类不确定度
+</span>        <span class="n">uncertainty_map</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">mask</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">mask</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">uncertainty_map</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">topk</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">points</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nb">float</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">points</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">W_step</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">idx</span>  <span class="o">%</span> <span class="n">W</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">float</span><span class="p">)</span> <span class="o">*</span> <span class="n">W_step</span>
+        <span class="n">points</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">H_step</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">idx</span> <span class="o">//</span> <span class="n">W</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">float</span><span class="p">)</span> <span class="o">*</span> <span class="n">H_step</span>
+        <span class="k">return</span> <span class="n">idx</span><span class="p">,</span> <span class="n">points</span>
+
+    <span class="n">over_generation</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">k</span> <span class="o">*</span> <span class="n">N</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">over_generation_map</span> <span class="o">=</span> <span class="n">point_sample</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">over_generation</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">uncertainty_map</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="p">(</span><span class="n">over_generation_map</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">over_generation_map</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">uncertainty_map</span><span class="p">.</span><span class="n">topk</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">beta</span> <span class="o">*</span> <span class="n">N</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">shift</span> <span class="o">=</span> <span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="n">N</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nb">long</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">+=</span> <span class="n">shift</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">]</span>
+
+    <span class="n">importance</span> <span class="o">=</span> <span class="n">over_generation</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[</span><span class="n">idx</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">:].</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">beta</span> <span class="o">*</span> <span class="n">N</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">coverage</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">beta</span> <span class="o">*</span> <span class="n">N</span><span class="p">),</span> <span class="mi">2</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">importance</span><span class="p">,</span> <span class="n">coverage</span><span class="p">],</span> <span class="mi">1</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>PointRend</strong>对于物体的边缘恢复效果是很不错的，而且很灵活，可以作为上采样操作放置在很多分割网络后面。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PointHead</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">in_c</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.75</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="n">in_c</span><span class="o">+</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+        <span class="s">"""
+        1. Fine-grained features are interpolated from res2 for DeeplabV3
+        2. During training we sample as many points as there are on a stride 16 feature map of the input
+        3. To measure prediction uncertainty
+           we use the same strategy during training and inference: the difference between the most
+           confident and second most confident class probabilities.
+        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="p">.</span><span class="n">training</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">inference</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+
+        <span class="n">points</span> <span class="o">=</span> <span class="n">sampling_points</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">16</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">beta</span><span class="p">)</span>
+
+        <span class="n">coarse</span> <span class="o">=</span> <span class="n">point_sample</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">fine</span> <span class="o">=</span> <span class="n">point_sample</span><span class="p">(</span><span class="n">res2</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">feature_representation</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">coarse</span><span class="p">,</span> <span class="n">fine</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">rend</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">feature_representation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">"rend"</span><span class="p">:</span> <span class="n">rend</span><span class="p">,</span> <span class="s">"points"</span><span class="p">:</span> <span class="n">points</span><span class="p">}</span>
+
+    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">inference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+        <span class="s">"""
+        During inference, subdivision uses N=8096
+        (i.e., the number of points in the stride 16 map of a 1024×2048 image)
+        """</span>
+        <span class="n">num_points</span> <span class="o">=</span> <span class="mi">8096</span>
+
+        <span class="k">while</span> <span class="n">out</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">"bilinear"</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+            <span class="n">points_idx</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">sampling_points</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">num_points</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">training</span><span class="p">)</span>
+
+            <span class="n">coarse</span> <span class="o">=</span> <span class="n">point_sample</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">fine</span> <span class="o">=</span> <span class="n">point_sample</span><span class="p">(</span><span class="n">res2</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+            <span class="n">feature_representation</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">coarse</span><span class="p">,</span> <span class="n">fine</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">rend</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">mlp</span><span class="p">(</span><span class="n">feature_representation</span><span class="p">)</span>
+
+            <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">out</span><span class="p">.</span><span class="n">shape</span>
+            <span class="n">points_idx</span> <span class="o">=</span> <span class="n">points_idx</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">expand</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">out</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">points_idx</span><span class="p">,</span> <span class="n">rend</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s">"fine"</span><span class="p">:</span> <span class="n">out</span><span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">PointRend</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">head</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">backbone</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">head</span> <span class="o">=</span> <span class="n">head</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s">"res2"</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s">"coarse"</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">PointRend</span><span class="p">(</span><span class="n">deeplabv3</span><span class="p">(</span><span class="bp">False</span><span class="p">,</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">33</span><span class="p">),</span> <span class="n">PointHead</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">33</span><span class="p">))</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">out</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="c1"># {"coarse":, "rend":, "points"}
+</span></code></pre></div></div>
+
+<p>在<strong>inference</strong>阶段，<strong>PointRend</strong>直接输出<strong>render</strong>之后的精细分割结果；在<strong>training</strong>阶段，<strong>PointRend</strong>提供粗略的分割结果和<strong>render</strong>点集的预测结果，并以此构造两个损失：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">...</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">"coarse"</span><span class="p">],</span> <span class="n">X</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:],</span> <span class="n">mode</span><span class="o">=</span><span class="s">"bilinear"</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">seg_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">gt</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>
+<span class="n">gt_points</span> <span class="o">=</span> <span class="n">point_sample</span><span class="p">(</span>
+    <span class="n">gt</span><span class="p">.</span><span class="nb">float</span><span class="p">().</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">result</span><span class="p">[</span><span class="s">"points"</span><span class="p">],</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s">"nearest"</span><span class="p">,</span>
+    <span class="n">align_corners</span><span class="o">=</span><span class="bp">False</span>
+<span class="p">).</span><span class="n">squeeze_</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nb">long</span><span class="p">()</span>
+<span class="n">points_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">"rend"</span><span class="p">],</span> <span class="n">gt_points</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>  
+
+<span class="n">loss_sum</span> <span class="o">=</span> <span class="n">seg_loss</span> <span class="o">+</span> <span class="n">points_loss</span>
+
+<span class="p">...</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/01/25/gruunet.html" class="read-next-link"></a>
+        <section>
+          <span>GRUU-Net: Integrated convolutional and gated recurrent neural network for cell segmentation</span>
+          <p>  GRUU-Net: 细胞分割的融合卷积门控循环神经网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/640ae492f144a01007aaf4ba.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/01/23/knet.html" class="read-next-link"></a>
+          <section>
+            <span>K-Net: Towards Unified Image Segmentation</span>
+            <p>  K-Net: 面向统一的图像分割.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64104e62ebf10e5d5333ff27.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

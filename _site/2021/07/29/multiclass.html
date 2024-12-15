@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多类别(Multiclass)与多标签(Multilabel)分类 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="多类别(Multiclass)与多标签(Multilabel)分类">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="多类别(Multiclass)与多标签(Multilabel)分类 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/07/29/multiclass.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>多类别(Multiclass)与多标签(Multilabel)分类</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-07-29"><i class="iconfont icon-date"></i>29 Jul 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63d095b4588a5d166cd6a692.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Multiclass and Multilabel Classification.</p>
+</blockquote>
+
+<h1 id="1-多类别分类">1. 多类别分类</h1>
+
+<p><strong>多类别分类(multiclass classification)</strong>也称单标签分类，是指从$n$个候选类别中选出$1$个目标类别。</p>
+
+<h3 id="-one-versus-all">⚪ One-versus-All</h3>
+<p><strong>One-versus-All（OVA）</strong>是指把多类别分类问题拆分成若干二分类问题，在每一次分类中使用所有类别的样本，选择其中某一类样本为正样本，其余类的样本为负样本。</p>
+
+<p><img src="https://pic.downk.cc/item/5ed11069c2a9a83be50c76d3.jpg" alt="" /></p>
+
+<ul>
+  <li>优点：实现简单；</li>
+  <li>缺点：对于二分类器来说正负样本不平衡。</li>
+</ul>
+
+<h3 id="-one-versus-one">⚪ One-versus-One</h3>
+<p><strong>One-versus-One（OVO）</strong>是指把多类别分类问题拆分成若干二分类问题，在每一次分类中使用其中两类样本，选择一类为正样本，另一类为负样本。</p>
+
+<p><img src="https://pic.downk.cc/item/5ed10fbdc2a9a83be50b55da.jpg" alt="" /></p>
+
+<ul>
+  <li>优点：每一次二分类的样本基本上是平衡的；</li>
+  <li>缺点：需要训练的二分类器数量为组合数$C_n^2$，增加训练复杂度。</li>
+</ul>
+
+<h3 id="-softmax分类">⚪ Softmax分类</h3>
+
+<p>在处理常规的多分类问题时，通过神经网络输出每个类的分数$s_1,s_2,…,s_n$，然后选取最大分数对应的类别作为目标类别，该过程可以被光滑化为<a href="https://0809zheng.github.io/2021/11/16/mollifier.html#-textonehotargmaxxtextsoftmaxx_1x_2x_n"><strong>softmax</strong>函数</a>：</p>
+
+\[p_i = \frac{e^{s_i}}{\sum_j e^{s_j}}\]
+
+<p>从而可以把多类别分类问题建模为一个多项(<strong>multinomial</strong>)分布，类别标签$y$用<strong>one-hot</strong>向量$(y_1,…,y_n)=(0,…,1,…,0)$表示，则概率表达式为：</p>
+
+\[\Pi(p_1,p_2,...,p_n) = \prod_{i=1}^n p_i^{y_i}\]
+
+<p>损失函数构造为最小化概率的负对数似然：</p>
+
+\[\begin{aligned} \mathcal{L}(x,y=y_t)&amp;=-\log \prod_{i=1}^n p_i^{y_i} = -\sum_{i=1}^n y_i\log p_i \\ &amp;= -\log p_t =  -\log \frac{e^{s_t}}{\sum_j e^{s_j}}  \end{aligned}\]
+
+<p>上式被称为<strong>交叉熵(cross-entropy)</strong>损失函数，根据<a href="https://0809zheng.github.io/2021/11/16/mollifier.html#-maxx_1x_2x_ntextlogsumexpx_1x_2x_n"><strong>max</strong>函数的光滑化</a>，该函数的目标是使得目标类的得分$s_t$变为$s_1,s_2,…,s_n$中的最大值，即目标类得分大于每个非目标类的得分：</p>
+
+\[-\log \frac{e^{s_t}}{\sum_j e^{s_j}} = \log \sum_j e^{s_j-s_t} = \log (1+ \sum_{j \neq t} e^{s_j-s_t}) ≈ \max \begin{pmatrix} s_0-s_t \\ s_1-s_t \\ \cdots \\ s_{t-1}-s_t \\ 0 \\ s_{t+1} - s_t \\ \cdots \\ s_n-s_t \end{pmatrix}\]
+
+<h1 id="2-多标签分类">2. 多标签分类</h1>
+
+<p><strong>多标签分类(multilabel classification)</strong>是指从$n$个候选类别中选出$k&gt;1$个目标类别。</p>
+
+<h3 id="-sigmoid分类">⚪ Sigmoid分类</h3>
+
+<p>可以把多标签分类问题拆分成$n$个二分类问题，对每个类别使用<strong>Sigmoid</strong>激活，然后构造二元交叉熵损失；则多标签分类的总损失为$n$个二分类的交叉熵之和：</p>
+
+\[\sum_{i=1}^n -y_i \log p_i - (1-y_i) \log (1-p_i)\]
+
+<p>这种做法会面临着严重的类别不均衡问题，需要使用一些平衡策略，比如手动调整正负样本的权重等。训练完成之后，还需要根据验证集来进一步确定最优的分类阈值。</p>
+
+<h3 id="-softmax分类-1">⚪ Softmax分类</h3>
+
+<p>多类别分类任务中的<strong>Softmax</strong>分类旨在使得目标类得分大于每个非目标类的得分，可以将其扩展到多标签分类任务中，即使得<strong>每个目标类得分都不小于每个非目标类的得分</strong>。</p>
+
+<p>记\(\Omega_p,\Omega_n\)分别是样本的正负类别集合，则希望任意目标类的分数$s_i$都大于任意非目标类的分数$s_j$，并且目标类的分数$s_i$大于$s_0$，非目标类的分数$s_j$小于$s_0$，则仿照交叉熵损失构造一个损失函数：</p>
+
+\[\begin{aligned} &amp;\log(1+\sum_{i \in \Omega_p,j \in \Omega_n}e^{s_i-s_j}+\sum_{i \in \Omega_p}e^{s_i-s_0}+\sum_{j \in \Omega_n}e^{s_0-s_j}) \\ = &amp;\log(e^{s_0}+\sum_{i \in \Omega_p}e^{s_i}) + \log(e^{-s_0}+\sum_{j \in \Omega_n}e^{-s_j}) \end{aligned}\]
+
+<p>不失一般性地假设$s_0=0$，则多标签分类的“<strong>Softmax</strong>+交叉熵”形式为：</p>
+
+\[\log(1+\sum_{i \in \Omega_p}e^{s_i}) + \log(1+\sum_{j \in \Omega_n}e^{-s_j})\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">multilabel_categorical_crossentropy</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">):</span>
+    <span class="s">"""
+    y_true为整型，y_pred为网络输出logits（无激活函数）
+    """</span>
+    <span class="c1"># 生成one-hot标签
+</span>    <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">y_true</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_classes</span><span class="p">).</span><span class="n">zero_</span><span class="p">()</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">labels</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">y_true</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">y_true</span><span class="p">)</span> <span class="o">*</span> <span class="n">y_pred</span>
+    <span class="n">y_pred_neg</span> <span class="o">=</span> <span class="n">y_pred</span> <span class="o">-</span> <span class="n">y_true</span> <span class="o">*</span> <span class="mf">1e12</span>
+    <span class="n">y_pred_pos</span> <span class="o">=</span> <span class="n">y_pred</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_true</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e12</span>
+    <span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">y_pred</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">y_pred_neg</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">([</span><span class="n">y_pred_neg</span><span class="p">,</span> <span class="n">zeros</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">y_pred_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">([</span><span class="n">y_pred_pos</span><span class="p">,</span> <span class="n">zeros</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">neg_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">y_pred_neg</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pos_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">y_pred_pos</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">neg_loss</span> <span class="o">+</span> <span class="n">pos_loss</span>  
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/07/30/isomap.html" class="read-next-link"></a>
+        <section>
+          <span>等度量映射(Isometric Mapping, ISOMAP)</span>
+          <p>  Isometric Mapping.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/61dd3f942ab3f51d91867de0.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/07/28/mds.html" class="read-next-link"></a>
+          <section>
+            <span>多维缩放(Multiple Dimensional Scaling, MDS)</span>
+            <p>  Multiple Dimensional Scaling.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/610107145132923bf86e6723.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deformable DETR: Deformable Transformers for End-to-End Object Detection - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Deformable DETR: Deformable Transformers for End-to-End Object Detection">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Deformable DETR: Deformable Transformers for End-to-End Object Detection - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/31/ddetr.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Deformable DETR: Deformable Transformers for End-to-End Object Detection</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-31"><i class="iconfont icon-date"></i>31 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5fed30993ffa7d37b3a4350c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Deformable DETR：使用多尺度可变形的注意力模块进行目标检测.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Deformable DETR: Deformable Transformers for End-to-End Object Detection</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2010.04159">link</a></li>
+  <li>code：<a href="https://github.com/facebookresearch/deit">github</a></li>
+</ul>
+
+<p><strong>DETR</strong>将目标检测问题建模为边界框的集合预测问题，从而避免了<strong>anchor</strong>、<strong>label assignment</strong>、<strong>NMS</strong>等操作，实现了<strong>end-to-end</strong>的检测流程。但仍存在一些问题，如：</p>
+<ul>
+  <li>相比于现存的检测器，<strong>DETR</strong>需要更长的<strong>训练时间</strong>。如在<strong>COCO</strong>数据集上需要$500$轮才能收敛，是<strong>Faster RCNN</strong>的$10$~$20$倍。</li>
+  <li><strong>DETR</strong>在<strong>小目标</strong>上检测性能较差。现存的检测器通常使用多尺度特征融合，其中小目标物体在高分辨率特征图上进行检测。而高分辨率的特征图会对<strong>DETR</strong>增加不可接受的计算复杂度。</li>
+</ul>
+
+<p>作者认为，上述问题主要是因为在初始化的自注意力计算中，<strong>query</strong>与所有<strong>key</strong>计算得到的权重几乎都是一样的（均匀分布），导致需要用较长的时间才能学习到关注稀疏且有意义的位置。作者提出应该让<strong>query</strong>不再与所有<strong>key</strong>计算相似度，而是只与有意义的<strong>key</strong>计算相似度，即在建模相关性的同时保持采样的稀疏性。为此，作者提出<strong>Deformable DETR</strong>。</p>
+
+<p>具体地，作者提出了<strong>可变形注意力模块(deformable attention module)</strong>，对每个<strong>query</strong>分配固定数量的<strong>key</strong>。假设输入特征图$x \in \Bbb{R}^{C \times H \times W}$，查询向量$z_q$的参考点坐标为$p_q$，则其可变形注意力计算为：</p>
+
+\[DeformAttn(z_q,p_q,x) = \sum_{m=1}^{M} W_m [ \sum_{k=1}^{K} A_{mqk} \cdot W_m'x(p_q+\Delta p_{mqk}) ]\]
+
+<p>其中$M$表示注意力<strong>head</strong>的数量；表示固定的<strong>key</strong>采样数量（$k«HW$）；$\Delta p_{mqk}$和$A_{mqk}$表示第$m$个注意力<strong>head</strong>的第$q$个查询向量的第$k$个采样点的<strong>采样偏置(sampling offset)</strong>和注意力权重，都是通过$z_q$的线性映射得到的。</p>
+
+<p>具体实现时，查询向量$z_q$通过线性映射得到通道数为$3MK$的张量。前$2MK$编码采样偏置$\Delta p_{mqk}$，剩下的$MK$通过<strong>softmax</strong>函数获得注意力权重$A_{mqk}$。</p>
+
+<p>作者进一步引入了<strong>多尺度(multi-scale)</strong>特征融合的方法。同时使用$L$层卷积特征图，对其尺寸进行归一化后在每一层都采集$K$个<strong>key</strong>，即每个<strong>query</strong>都采样了$LK$个<strong>key</strong>。其可变形注意力计算为：</p>
+
+\[MSDeformAttn(z_q,\hat{p}_q, \{ x^l \}_{l=1}^{L} ) = \sum_{m=1}^{M} W_m [ \sum_{l=1}^{L} \sum_{k=1}^{K} A_{mlqk} \cdot W_m'x^l(\phi_l(\hat{p}_q)+\Delta p_{mlqk}) ]\]
+
+<p>模型实现如下图所示。在输入编码器时使用固定的位置编码，为区分不同尺度的特征，额外引入可学习的<strong>scale-level</strong>编码\(\{ e_l \}_{l=1}^{L}\)。</p>
+
+<p><img src="https://pic.downk.cc/item/5fed33d13ffa7d37b3a9c7ee.jpg" alt="" /></p>
+
+<p>与<strong>DETR</strong>相比，<strong>Deformable DETR</strong>能够在更少的训练轮数下获得更好的性能：</p>
+
+<p><img src="https://pic.downk.cc/item/5fed72973ffa7d37b31897c6.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/01/01/elmo.html" class="read-next-link"></a>
+        <section>
+          <span>Deep contextualized word representations</span>
+          <p>  ELMo：使用语言模型进行词嵌入.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60ebffec5132923bf8af83fa.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/30/vit.html" class="read-next-link"></a>
+          <section>
+            <span>An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale</span>
+            <p>  ViT：使用图像块序列的Transformer进行图像分类.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5feadb743ffa7d37b343e4ee.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

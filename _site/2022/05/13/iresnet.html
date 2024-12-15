@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invertible Residual Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Invertible Residual Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Invertible Residual Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/05/13/iresnet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Invertible Residual Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-05-13"><i class="iconfont icon-date"></i>13 May 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/62d4b978f54cd3f93779e457.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>i-ResNet：通过变分解量化和结构设计改进流模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1811.00995">Invertible Residual Networks</a></li>
+</ul>
+
+<h1 id="1-流模型">1. 流模型</h1>
+<p><strong>流模型</strong>(<strong>flow-based model</strong>)是一种从观测变量$x$到简单隐变量$z$的可逆变换$z=f(x)$，该变换可以通过叠加多个简单的可逆变换构造$f(x) = f_1 ◦ \cdots ◦ f_L(x)$，由于每个变换$f_i$可逆且容易求<strong>Jacobian</strong>行列式，因此采样过程也容易实现$f^{-1}(z) = f^{-1}_L ◦ \cdots ◦ f^{-1}_1(z)$。</p>
+
+<p>根据<a href="https://0809zheng.github.io/2022/04/30/variable.html">概率密度的变量替换公式</a>和链式法则，观测变量$x$的分布为：</p>
+
+\[p(x) = p(z)\cdot |\det \prod_{i=1}^{L} \frac{\partial f_i}{\partial f_{i-1}}|\]
+
+<p>其对数似然函数为：</p>
+
+\[\log p(x) = \log  p(z) + \sum_{i=1}^{L} \log |\det  \frac{\partial f_i}{\partial f_{i-1}}|\]
+
+<p>此时不需要显式地计算分布$p(x)$的概率密度函数，而是通过初始分布$p(z)$的概率密度(常取标准正态分布)以及映射过程产生的<strong>Jacobian</strong>行列式计算即可。</p>
+
+<p>由于必须保证逆变换简单和<strong>Jacobian</strong>行列式容易计算，则每次变换$f_i$的非线性变换能力都很弱。为了保证充分的拟合能力，模型必须堆得非常深，此时参数量和计算量非常大。</p>
+
+<h1 id="2-invertible-resnet">2. Invertible ResNet</h1>
+
+<p>本文作者在<strong>ResNet</strong>结构基础上增加了一些约束，使得模型可逆，同时保留了<strong>ResNet</strong>的基本结构和拟合能力。</p>
+
+<p>下图为标准<strong>ResNet</strong>与可逆<strong>ResNet</strong>的对比图。可逆<strong>ResNet</strong>允许信息无损可逆流动，而标准<strong>ResNet</strong>在某处则存在信息瓶颈的“坍缩”现象。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62d51990f54cd3f937faf161.jpg" alt="" /></p>
+
+<p><strong>ResNet</strong>的设计思路是用神经网络$g(\cdot)$拟合输出与输入的残差：</p>
+
+\[y = x + g(x)\]
+
+<h2 id="1什么时候可逆">（1）什么时候可逆？</h2>
+
+<p>上式可逆的一个充分条件是：</p>
+
+\[\text{Lip} (g) = \mathop{\max}_{x_1 \ne x_2} \frac{||g(x_1)-g(x_2)||_2}{||x_1-x_2||_2} \lt 1\]
+
+<p>即函数$g(\cdot)$的<strong>Lipschitz</strong>范数小于1。通常函数$g(\cdot)$是由神经网络实现的，而神经网络是由矩阵运算和激活函数组合而成的：</p>
+
+\[g(x) = \sigma(Wx+b)\]
+
+<p>若希望函数$g(\cdot)$的<strong>Lipschitz</strong>范数小于1，则应有激活函数$\sigma$的<strong>Lipschitz</strong>范数不超过1且$Wx+b$的<strong>Lipschitz</strong>范数小于1。</p>
+
+<p>激活函数$\sigma$是标量函数，其<strong>Lipschitz</strong>范数为导数值，常用的激活函数均满足导数不超过1。</p>
+
+<p>$Wx+b$的<strong>Lipschitz</strong>范数小于1即矩阵$W$的谱范数小于1。可以对其做谱归一化然后乘以0~1之间的一个常数$W \leftarrow cW/ ||W||_2$。</p>
+
+<h2 id="2逆函数是什么">（2）逆函数是什么？</h2>
+
+<p>若$y=x+g(x)$可逆，其逆函数为$x=h(y)$。则问题转变为求解非线性方程组。考虑如下迭代：</p>
+
+\[x_{n+1} = y -g(x_n)\]
+
+<p>则迭代序列\(\{x_n\}\)是$y$的函数，如果\(\{x_n\}\)收敛到固定函数：</p>
+
+\[\mathop{\lim}_{n \to \infty} x_{n}(y) = \hat{h}(y)\]
+
+<p>此时有$\hat{h}(y) = y - g(\hat{h}(y))$，$\hat{h}(y)$即为所求逆函数。因此如果上述迭代过程收敛，则收敛结果即为所求逆函数。</p>
+
+<p>根据可逆的<strong>Lipschitz</strong>条件：</p>
+
+\[\forall x_1,x_2 \quad ||g(x_1)-g(x_2)||_2 \leq \text{Lip} (g) ||x_1-x_2||_2\]
+
+<p>有如下关系：</p>
+
+\[\begin{aligned} ||x_{n+1}-x_n||_2 &amp;= ||g(x_n)-g(x_{n-1})||_2 \leq \text{Lip} (g) ||x_n-x_{n-1}||_2 \\ &amp;= \text{Lip} (g) ||g(x_{n-1})-g(x_{n-2})||_2 \leq \text{Lip} (g)^2 ||x_{n-1}-x_{n-2}||_2 \\ &amp; \cdots \\ &amp;  \leq \text{Lip} (g)^n ||x_{1}-x_{0}||_2 \end{aligned}\]
+
+<p>因此序列\(\{x_n\}\)收敛的一个充分条件是$\text{Lip} (g) &lt; 1$，这与可逆条件是吻合的。且逆函数为$x_{n+1} = y -g(x_n)$的不动点。数值计算时，只需要迭代一定步数，使得满足精度要求即可。</p>
+
+<h2 id="3如何计算jacobian行列式">（3）如何计算Jacobian行列式</h2>
+
+<p>变换$y=x+g(x)$的<strong>Jacobian</strong>矩阵计算为：</p>
+
+\[J_y = \frac{\partial }{\partial x} (x+g(x)) = I+ \frac{\partial g}{\partial x} = I+J_g\]
+
+<p>优化目标需要计算<strong>Jacobian</strong>行列式的对数值：</p>
+
+\[\log |\det(J_y)| = \log |\det(I+J_g)| = \log \det(I+J_g)\]
+
+<p>根据恒等式$\log \det (A) = \text{Trace}(\log (A))$，上式可以展开为级数：</p>
+
+\[\log \det(I+J_g) = \text{Trace}(\log (I+J_g))= \text{Trace}(\sum_{n=1}^{\infty} (-1)^{n-1}\frac{J_g^n}{n})\]
+
+<p>该级数收敛的条件是$||J_g||_2 &lt; 1$，即$\text{Lip} (g) &lt; 1$，这与可逆条件也是吻合的。对该无穷级数截断$N$项，则有：</p>
+
+\[\text{Trace}(\log (I+J_g))= \sum_{n=1}^{N} (-1)^{n-1}\frac{\text{Trace}(J_g^n)}{n} + \mathcal{O}(\text{Lip} (g)^N)\]
+
+<p>上式把矩阵$\log (I+J_g)$的迹的计算转换为矩阵$J_g^n$的迹的计算，需要计算矩阵的$n$次方。考虑$p(u)$是一个多元概率分布，其均值为$0$、协方差为单位矩阵，则对于任意矩阵$A$，有</p>
+
+\[\text{Trace}(A) = \Bbb{E}_{u \text{~} p(u)}[u^TAu]\]
+
+<p>作者提出，对于每次迭代，从$p(u)$中只随机选择一个向量$u$，用$u^TAu$作为$\text{Trace}(A)$的近似值：</p>
+
+\[\text{Trace}(\log (I+J_g)) ≈ \sum_{n=1}^{N} (-1)^{n-1}\frac{u^TJ_g^nu}{n} , \quad u \text{~} p(u)\]
+
+<p>矩阵$u^TJ_g^nu$的计算可以拆解成多次矩阵与向量的乘法$u^TJ_g(\cdots (J_g(J_g u)))$，从而避开直接计算$J_g^n$。</p>
+
+<h1 id="3-实验分析">3. 实验分析</h1>
+
+<p>作者首先设计了一个<strong>toy</strong>数据集，人为构造一些有规律的随机点，然后用生成模型去拟合它的分布。结果表明可逆<strong>ResNet</strong>产生了对称的、没有偏置的结果，而<strong>Glow</strong>的结果则是有偏。这可能是因为<strong>Glow</strong>需要以某种方式打乱输入并对半切分，对半之后两部分的运算是不一样的，这就带来了不对称。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62d51a0bf54cd3f937fb9d12.jpg" alt="" /></p>
+
+<p>作者测试了使用可逆<strong>ResNet</strong>的分类结果。在不同的$c=\text{Lip} (g)$数值下分类结果如下表：</p>
+
+<p><img src="https://pic.imgdb.cn/item/62d51c47f54cd3f937017662.jpg" alt="" /></p>
+
+<p>作者也给出了一些图像生成结果：</p>
+
+<p><img src="https://pic.imgdb.cn/item/62d51c83f54cd3f93701fe57.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/05/14/dragan.html" class="read-next-link"></a>
+        <section>
+          <span>On Convergence and Stability of GANs</span>
+          <p>  DRAGAN：调整梯度惩罚的插值空间.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/639935efb1fccdcd36aa7ebb.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/05/12/flowpp.html" class="read-next-link"></a>
+          <section>
+            <span>Flow++: Improving Flow-Based Generative Models with Variational Dequantization and Architecture Design</span>
+            <p>  Flow++：通过变分解量化和结构设计改进流模型.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62a9b66d094754312936bb6f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

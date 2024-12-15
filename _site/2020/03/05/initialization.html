@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度学习中的初始化方法(Initialization) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="深度学习中的初始化方法(Initialization)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="深度学习中的初始化方法(Initialization) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/05/initialization.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>深度学习中的初始化方法(Initialization)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-05"><i class="iconfont icon-date"></i>05 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e8ed4c7504f4bcb0429f47f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Initialization in Deep Learning.</p>
+</blockquote>
+
+<p>对神经网络进行训练时，需要对神经网络的参数进行初始化。对于深度网络来说，参数的初始化显得尤为重要。糟糕的初始化不仅会使模型效果变差，还有可能使得模型根本训练不动或者不收敛。</p>
+
+<p>在网络中，如果参数的初始化数值过小，则随着网络层数加深，输出激活值$h^l = Wh^{l-1}$趋近于$0$，反向传播的梯度（$\propto h^l$）也趋近于$0$，使得网络无法学习。如果参数的初始化数值过大，经过一些带有饱和区的激活函数（如<strong>sigmoid</strong>、<strong>tanh</strong>）后，会使网络激活值趋近于饱和（$\Delta h \to 0$），从而产生<strong>vanishing gradient</strong>。</p>
+
+<p><img src="https://pic.downk.cc/item/5e8ed4c7504f4bcb0429f47f.jpg" alt="" /></p>
+
+<p>在<strong>PyTorch</strong>中，可以在定义网络时为其每个模块（如卷积层、<strong>BatchNorm</strong>）指定初始化类型：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="c1"># 定义模型
+</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">):</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">m</span><span class="p">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span><span class="p">.</span><span class="n">kernel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span><span class="p">.</span><span class="n">out_channels</span>
+                <span class="n">m</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">normal_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">math</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">/</span> <span class="n">n</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">):</span>
+                <span class="n">m</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">m</span><span class="p">.</span><span class="n">bias</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">zero_</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># 前向传播
+</span></code></pre></div></div>
+
+<p>也可以在实例化网络后，对其中的模块进行初始化：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">weights_init</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">init_type</span><span class="o">=</span><span class="s">'normal'</span><span class="p">,</span> <span class="n">init_gain</span> <span class="o">=</span> <span class="mf">0.02</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">init_func</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="n">classname</span> <span class="o">=</span> <span class="n">m</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">'weight'</span><span class="p">)</span> <span class="ow">and</span> <span class="n">classname</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">'Conv'</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">init_type</span> <span class="o">==</span> <span class="s">'normal'</span><span class="p">:</span>
+                <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">init_gain</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">init_type</span> <span class="o">==</span> <span class="s">'xavier'</span><span class="p">:</span>
+                <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">xavier_normal_</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="n">init_gain</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">init_type</span> <span class="o">==</span> <span class="s">'kaiming'</span><span class="p">:</span>
+                <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">kaiming_normal_</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'fan_in'</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">init_type</span> <span class="o">==</span> <span class="s">'orthogonal'</span><span class="p">:</span>
+                <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">orthogonal_</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="n">init_gain</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="nb">NotImplementedError</span><span class="p">(</span><span class="s">'initialization method [%s] is not implemented'</span> <span class="o">%</span> <span class="n">init_type</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">classname</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">'BatchNorm2d'</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">)</span>
+            <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">bias</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'initialize network with %s type'</span> <span class="o">%</span> <span class="n">init_type</span><span class="p">)</span>
+    <span class="n">net</span><span class="p">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">init_func</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<span class="n">weights_init</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>本文介绍一些常见的初始化方法，包括零初始化、随机初始化、稀疏初始化、<strong>Xavier</strong>初始化、<strong>Kaiming</strong>初始化、正交初始化、恒等初始化、<strong>ZerO</strong>初始化、模仿初始化。</p>
+
+<h1 id="-零初始化-zero-initialization">⚪ 零初始化 Zero Initialization</h1>
+<p>在传统的机器学习算法（比如感知机和<strong>Logistic</strong>回归）中，一般将参数全部初始化为$0$。但是这在神经网络的训练中会存在一些问题。</p>
+
+<p>如果参数都为$0$，在第一遍前向计算时，所有的隐藏层神经元的激活值都相同（不一定为$0$，取决于激活函数在$0$处的值）；在反向传播时，所有权重的更新也都相同，这样会导致隐藏层神经元没有区分性。这种现象称为<strong>对称权重</strong>。</p>
+
+<p>对于网络中的一些特殊参数，我们可以根据经验用一个特殊的固定值来进行初始化：</p>
+<ul>
+  <li>偏置（<strong>Bias</strong>）通常用$0$来初始化；</li>
+  <li>在<strong>LSTM</strong>网络的遗忘门中，偏置通常初始化为$1$或$2$，使得时序上的梯度变大；</li>
+  <li>对于使用<strong>ReLU</strong>的神经元，也可以将偏置设为$0.01$，使得<strong>ReLU</strong>神经元在训练初期更容易激活。</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">zeros_</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>         <span class="c1"># 初始化为0
+</span><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">ones_</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>          <span class="c1"># 初始化为1
+</span><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">constant_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="c1"># 初始化为常数val
+</span></code></pre></div></div>
+
+<p>对于神经网络的权重（<strong>Weight</strong>）矩阵，选用一些随机的初始化方法<strong>打破对称性(Symmetry breaking)</strong>。</p>
+
+<h1 id="-随机初始化-random-initialization">⚪ 随机初始化 Random Initialization</h1>
+<p><strong>随机初始化</strong>是指从一个固定均值$\mu$（通常为$0$）和方差$σ^2$的分布中随机采样来生成参数的初始值。</p>
+
+<p>随机初始化的关键是设置方差$σ^2$的大小。</p>
+<ul>
+  <li>如果方差过小，会导致神经元的输出过小，经过多层之后信号慢慢消失了；还会使<strong>Sigmoid</strong>型激活函数丢失非线性能力；</li>
+  <li>如果方差过大，会导致神经元的输出过大，还会使<strong>Sigmoid</strong>型激活函数进入饱和区，产生<strong>vanishing gradient</strong>。</li>
+</ul>
+
+<h3 id="1-正态分布初始化">(1) 正态分布初始化</h3>
+
+<p>使用正态分布$N(0,σ^2)$对参数进行随机初始化。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="2-均匀分布初始化">(2) 均匀分布初始化</h3>
+
+<p>使用均匀分布$U(a,b)$对参数进行随机初始化，其中均值$\mu$和方差$σ^2$满足：</p>
+
+\[\begin{aligned}
+\mu &amp;= \frac{a+b}{2}\\
+σ^2 &amp;= \frac{(b-a)^2}{12}
+\end{aligned}\]
+
+<p>因此指定均值$\mu$和方差$σ^2$，对应均匀分布$U(\mu-\sqrt{3}\sigma,\mu+\sqrt{3}\sigma)$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">uniform_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="3-截尾正态分布初始化">(3) 截尾正态分布初始化</h3>
+
+<p>一般来说，正态分布的随机采样结果更加多样化，但它理论上是无界的，如果采样到绝对值过大的结果可能不利于优化；相反均匀分布是有界的，但采样结果通常更单一。</p>
+
+<p><strong>截尾正态分布 (Truncated Normal)</strong>结合两者优点，使用正态分布$N(\mu,σ^2)$对参数进行随机初始化，并将数值截断在$[a,b]之间$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">trunc_normal_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">a</span><span class="o">=-</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-讨论随机初始化与正交变换">⭐ 讨论：随机初始化与正交变换</h3>
+
+<p>从一个固定均值$\mu$和方差$σ^2$的分布$p(x)$中随机采样$x=(x_1,…,x_n), y=(y_1,…,y_n)$，则有：</p>
+
+\[\begin{aligned}
+&lt;x,y&gt; &amp;= \sum_{i=1}^nx_iy_i = n\times \frac{1}{n}\sum_{i=1}^nx_iy_i\\
+&amp;\approx n\times\mathbb{E}_{x\sim p(x),y\sim p(x)} \left[ xy \right] \\
+&amp;= n\times\mathbb{E}_{x\sim p(x)} \left[ x \right]\mathbb{E}_{y\sim p(x)} \left[ y \right]\\
+&amp;= n\mu^2 \\
+||x||^2 &amp;= \sum_{i=1}^nx_i^2 = n\times \frac{1}{n}\sum_{i=1}^nx_i^2 \\
+&amp;\approx n\times\mathbb{E}_{x\sim p(x)} \left[ x^2 \right] \\
+&amp; = n\times (\mu^2+\sigma^2)
+\end{aligned}\]
+
+<p>当设置$\mu=0,\sigma^2=1/n$时，从分布$p(x)$中随机采样的任意两个向量都是接近正交且归一化的，此时采样构造的矩阵接近正交矩阵，相当于把参数矩阵初始化为正交变换，在变换过程中保持输入向量的模长不变。该结论事实上也导出了后续的<strong>Xavier</strong>初始化策略。</p>
+
+<h1 id="-稀疏初始化-sparse-initialization">⚪ 稀疏初始化 Sparse Initialization</h1>
+
+<p>稀疏初始化是指将权重矩阵中的大部分元素设置为零，从而实现稀疏性。稀疏初始化的公式为：</p>
+
+\[W_{ij} \sim \mathcal{N}(0, \sigma^2) * \textbf{B}\]
+
+<p>其中$W_{ij}$是连接第$i$个输入神经元和第$j$个输出神经元的权重，\(\mathcal{N}(0, \sigma^2)\)表示均值为$0$, 方差为$\sigma^2$的高斯分布，\(\textbf{B}\)是大小为$m \times n$的二元矩阵，其中$m$是输入神经元的数量，$n$是输出神经元的数量。\(\textbf{B}\)中的每个元素都是$0$或$1$，其中$1$的数量为$\rho mn$，$\rho$是一个控制稀疏度的参数。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">sparse_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">sparsity</span><span class="p">,</span> <span class="n">std</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>在实践中，通常将$\rho$设置为$0.1$或$0.01$，从而将权重矩阵中的大部分元素设置为零。这种稀疏性可以减少神经网络中的冗余性和过拟合，提高网络的泛化能力和性能。</p>
+
+<h1 id="-xavier初始化-xavier-initialization">⚪ Xavier初始化 Xavier Initialization</h1>
+
+<ul>
+  <li>paper：<a href="https://www.researchgate.net/publication/215616968_Understanding_the_difficulty_of_training_deep_feedforward_neural_networks">Understanding the difficulty of training deep feedforward neural networks</a></li>
+</ul>
+
+<p>初始化一个神经网络时，为了缓解梯度消失或爆炸问题，应尽可能保持每个神经元输入和输出的方差一致。标准的初始化策略是基于<strong>概率统计</strong>的，即假设输入数据分布的均值为$0$、方差为$1$，期望输出数据分布也保持均值为$0$、方差为$1$，然后推导初始变换应满足的均值与方差条件。</p>
+
+<p><strong>Xavier初始化</strong>是由<strong>Xavier Glorot</strong>提出的，因此也称为<strong>Glorot</strong>初始化。该初始化方法假设参数的初始化均值为$0$，根据每层的神经元数量来自动计算初始化参数的方差。</p>
+
+<p>假设第$l$层的一个神经元$z^{(l)}$，接收前一层的$d_{l-1}$个神经元的输出$z^{(l-1)}$，</p>
+
+\[z^{(l)} = \sum_{i=1}^{d_{l-1}} {w_i^{(l)}a_i^{(l-1)} } = \sum_{i=1}^{d_{l-1}} {w_i^{(l)}f\left(z_i^{(l-1)}\right) }\]
+
+<p>此处假设偏置$b$初始化为$0$，$f(\cdot)$为激活函数。</p>
+
+<h2 id="1无激活函数">（1）无激活函数</h2>
+
+<p>假设$f(\cdot)$为恒等函数(即无激活函数)，且各$w_i^{(l)}$和$z_i^{(l-1)}$均值为$0$、互相独立，则$z^{(l)}$的均值为：</p>
+
+\[\mathbb{E}[z^{(l)}] = \mathbb{E}[\sum_{i=1}^{d_{l-1}} {w_i^{(l)}z_i^{(l-1)}}] = \sum_{i=1}^{d_{l-1}} {\mathbb{E}[w_i^{(l)}]\mathbb{E}[z_i^{(l-1)}]} = 0\]
+
+<p>$z^{(l)}$的方差为：</p>
+
+\[\begin{aligned}
+Var[z^{(l)}] &amp;= Var[\sum_{i=1}^{d_{l-1}} {w_i^{(l)}z_i^{(l-1)}}] = \sum_{i=1}^{d_{l-1}} Var[{w_i^{(l)}z_i^{(l-1)}}]\\
+&amp;= \sum_{i=1}^{d_{l-1}} \mathbb{E}[({w_i^{(l)}z_i^{(l-1)}})^2]-(\mathbb{E}[{w_i^{(l)}z_i^{(l-1)}}])^2 \\
+&amp;= \sum_{i=1}^{d_{l-1}} \mathbb{E}[(w_i^{(l)})^2]\mathbb{E}[(z_i^{(l-1)})^2]-(\mathbb{E}[{w_i^{(l)}z_i^{(l-1)}}])^2 \\
+&amp;= \sum_{i=1}^{d_{l-1}} \left(Var[w_i^{(l)}] +(\mathbb{E}[w_i^{(l)}])^2\right)\left(Var[z_i^{(l-1)}] +(\mathbb{E}[z_i^{(l-1)}])^2\right)-(\mathbb{E}[{w_i^{(l)}z_i^{(l-1)}}])^2 \\
+&amp;= \sum_{i=1}^{d_{l-1}} {Var[w_i^{(l)}]Var[z_i^{(l-1)}]} + Var[w_i^{(l)}](\mathbb{E}[z_i^{(l-1)}])^2+Var[z_i^{(l-1)}] (\mathbb{E}[w_i^{(l)}])^2\\
+&amp;= d_{l-1}Var[w_i^{(l)}]Var[z_i^{(l-1)}]
+\end{aligned}\]
+
+<p>即输入信号的方差在经过该神经元后被缩放了$d_{l-1}Var[w_i^{(l)}]$倍。</p>
+
+<p>为了使得在前向传播经过多层网络后，信号不被过分放大或过分减弱，尽可能保持每个神经元的输入和输出的方差一致，则有：</p>
+
+\[Var[w_i^{(l)}] = \frac{1}{d_{l-1}}\]
+
+<p>同理，为了使得在<a href="https://0809zheng.github.io/2020/04/17/feedforward-neural-network.html#3-%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD">反向传播</a>中，误差信号\(\delta^{(l-1)} \propto \sum_{j=1}^{d_l}w_j^{(l)} \cdot \delta_j^{(l)}\)也不被放大或缩小，需要将$w_i^{(l)}$的方差保持为：</p>
+
+\[Var[w_i^{(l)}] = \frac{1}{d_{l}}\]
+
+<p>作为折中，同时考虑信号在前向和反向传播中都不被放大或缩小，可以设置：</p>
+
+\[Var[w_i^{(l)}] = \frac{2}{d_{l-1}+d_{l}}\]
+
+<p>因此把参数初始化为均值为$0$、方差为$\frac{2}{d_{l-1}+d_{l}}$，其中$d_{l-1}$和$d_l$分别为前一层和当前层神经元的数量。</p>
+
+<h2 id="2有激活函数">（2）有激活函数</h2>
+
+<p>在上述推导中假设激活函数为恒等函数。对于一般的激活函数$f(\cdot)$，会改变输入数据$z^{(l-1)}$的分布形式。当激活函数能够近似线性化时，不会改变输入分布的均值(仍然为$0$)；此时只需考虑方差的变化。</p>
+
+\[\begin{aligned}
+Var[z^{(l)}] &amp;= Var[\sum_{i=1}^{d_{l-1}} {w_i^{(l)}f\left(z_i^{(l-1)}\right)}] = \sum_{i=1}^{d_{l-1}} Var[{w_i^{(l)}f\left(z_i^{(l-1)}\right)}]\\
+&amp;= \sum_{i=1}^{d_{l-1}} {Var[w_i^{(l)}]Var[f\left(z_i^{(l-1)}\right)]} + Var[w_i^{(l)}](\mathbb{E}[f\left(z_i^{(l-1)}\right)])^2 \\
+&amp;\approx d_{l-1}Var[w_i^{(l)}]Var[f\left(z_i^{(l-1)}\right)]
+\end{aligned}\]
+
+<p>参考<a href="https://0809zheng.github.io/2021/09/02/selu.html"><strong>SELU</strong></a>提出的自标准化方法，假设输入数据$x$方差为$1$，经过激活函数$f(x)$后仍然希望方差为$1$，则可以为激活函数$f(\cdot)$引入一个增益值(<strong>gain value</strong>) $\lambda$，使得输出满足二阶统计量(方差$=1$)对应的积分方程：</p>
+
+\[\int_{-∞}^{+∞} \frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}} \cdot (\lambda f(x))^2dx = 1\]
+
+<p>使用<a href="https://0809zheng.github.io/2021/09/01/solve.html">sympy</a>库可以快速求解上述方程：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">sympy</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">Symbol</span><span class="p">,</span> <span class="n">nsolve</span><span class="p">,</span> <span class="n">integrate</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="s">'x'</span><span class="p">)</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="s">'l'</span><span class="p">)</span>
+<span class="n">integal</span> <span class="o">=</span> <span class="n">integrate</span><span class="p">(</span><span class="n">sympy</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="o">-</span><span class="n">sympy</span><span class="p">.</span><span class="n">oo</span><span class="p">,</span><span class="n">sympy</span><span class="p">.</span><span class="n">oo</span><span class="p">))</span>
+<span class="n">fn</span> <span class="o">=</span> <span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">sympy</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sympy</span><span class="p">.</span><span class="n">pi</span><span class="p">)</span><span class="o">*</span><span class="n">integal</span> <span class="o">-</span> <span class="mi">0</span>
+<span class="n">ans</span> <span class="o">=</span> <span class="n">nsolve</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>为激活函数引入增益值$\lambda$等价于为权重引入增益值$1/\lambda$：</p>
+
+\[\begin{aligned}
+Var[z^{(l)}] 
+&amp;\approx d_{l-1}Var[\frac{1}{\lambda}w_i^{(l)}]Var[\lambda f\left(z_i^{(l-1)}\right)]
+\end{aligned}\]
+
+<p>因此对于一般的激活函数$f(\cdot)$，网络权重初始化时会额外引入一个增益值，对于常见的激活函数，可以查询该增益值：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gain</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">calculate_gain</span><span class="p">(</span><span class="s">'leaky_relu'</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>  <span class="c1"># leaky_relu with negative_slope=0.2
+</span></code></pre></div></div>
+
+<h2 id="3xavier初始化的例子">（3）Xavier初始化的例子</h2>
+
+<p><strong>Xavier</strong>初始化通常用于无激活函数的场合，此时把参数初始化为均值为$0$、方差为$\frac{2}{d_{l-1}+d_{l}}$的常见分布形式，其中$d_{l-1}$和$d_l$分别为前一层和当前层神经元的数量。</p>
+
+<p><strong>Xavier</strong>初始化也适用于激活函数为<strong>Sigmoid</strong>函数或<strong>Tanh</strong>函数的场合，这是因为神经元的参数和输入的绝对值通常比较小，处于激活函数的线性区间。例如<strong>Sigmoid</strong>函数在线性区的斜率约为$\frac{1}{4}$，因此其参数初始化的方差应调整为：</p>
+
+\[Var[w_i^{(l)}] =  16 \times \frac{2}{d_{l-1}+d_{l}}\]
+
+<h3 id="-高斯分布的xavier初始化">⭐ 高斯分布的Xavier初始化</h3>
+
+<p>若采用高斯分布$N(0,σ^2)$对参数进行<strong>Xavier</strong>初始化，则有：</p>
+
+\[\sigma = gain \cdot \sqrt{\frac{2}{d_{l-1}+d_{l}}}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">xavier_normal_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-均匀分布的xavier初始化">⭐ 均匀分布的Xavier初始化</h3>
+
+<p>若采用均匀分布$U(-a,a)$对参数进行<strong>Xavier</strong>初始化，则有：</p>
+
+\[\sigma = \sqrt{\frac{(a-(-a))^2}{12}} = gain \cdot \sqrt{\frac{2}{d_{l-1}+d_{l}}} \\
+\downarrow \\
+a = gain \cdot \sqrt{\frac{6}{d_{l-1}+d_{l}}}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">xavier_uniform_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h1 id="-kaiming初始化-kaiming-initialization">⚪ Kaiming初始化 Kaiming Initialization</h1>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1502.01852">Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification</a></li>
+</ul>
+
+<p><strong>Xavier</strong>初始化仅适用于线性激活函数或在零值附近具有线性区域的激活函数。对于更常用的<strong>ReLU</strong>族等激活函数，会使输入数据分布的均值不再为$0$，因此不再满足<strong>Xavier</strong>初始化的条件。此时可使用<strong>Kaiming初始化</strong>。</p>
+
+<p><strong>Kaiming</strong>初始化是由<strong>Kaiming He</strong>提出的，因此也称为<strong>He</strong>初始化。假设第$l$层的一个神经元$z^{(l)}$，接收前一层的$d_{l-1}$个神经元的输出$z^{(l-1)}$，</p>
+
+\[z^{(l)} = \sum_{i=1}^{d_{l-1}} {w_i^{(l)}a_i^{(l-1)} } = \sum_{i=1}^{d_{l-1}} {w_i^{(l)}f\left(z_i^{(l-1)}\right) }\]
+
+<p>此处假设偏置$b$初始化为$0$，$f(\cdot)$为任意激活函数。$z^{(l)}$的方差为：</p>
+
+\[\begin{aligned}
+Var[z^{(l)}] &amp;= Var[\sum_{i=1}^{d_{l-1}} {w_i^{(l)}f\left(z_i^{(l-1)}\right)}] = \sum_{i=1}^{d_{l-1}} Var[{w_i^{(l)}f\left(z_i^{(l-1)}\right)}]\\
+&amp;= \sum_{i=1}^{d_{l-1}} {Var[w_i^{(l)}]Var[f\left(z_i^{(l-1)}\right)]} + Var[w_i^{(l)}](\mathbb{E}[f\left(z_i^{(l-1)}\right)])^2 \\
+&amp;= \sum_{i=1}^{d_{l-1}} Var[w_i^{(l)}]\left(Var[f\left(z_i^{(l-1)}\right)] + (\mathbb{E}[f\left(z_i^{(l-1)}\right)])^2\right) \\
+&amp;= \sum_{i=1}^{d_{l-1}} Var[w_i^{(l)}]\mathbb{E}[f^2\left(z_i^{(l-1)}\right)] \\
+\end{aligned}\]
+
+<h2 id="1relu激活函数">（1）ReLU激活函数</h2>
+
+<p>以<strong>ReLU</strong>激活函数$f(x)=\max(0,x)$为例，则有：</p>
+
+\[\begin{aligned}
+\mathbb{E}[f^2\left(x\right)] &amp;= \int_{-\infty}^{+\infty} (\max(0,x))^2p(x)dx \\
+&amp;= \int_{0}^{+\infty} x^2p(x)dx = \frac{1}{2}\int_{-\infty}^{+\infty} x^2p(x)dx \\
+&amp;= \frac{1}{2}\mathbb{E}[x^2] = \frac{1}{2}\left(Var[x]+(\mathbb{E}[x])^2\right) \\
+\end{aligned}\]
+
+<p>代回$z^{(l)}$的方差表达式：</p>
+
+\[\begin{aligned}
+Var[z^{(l)}] &amp;=  \sum_{i=1}^{d_{l-1}} Var[w_i^{(l)}]\mathbb{E}[f^2\left(z_i^{(l-1)}\right)] \\
+&amp;=  \sum_{i=1}^{d_{l-1}}  \frac{1}{2}Var[w_i^{(l)}]\left(Var[z_i^{(l-1)}]+(\mathbb{E}[z_i^{(l-1)}])^2\right) \\
+&amp;=  \sum_{i=1}^{d_{l-1}}  \frac{1}{2}Var[w_i^{(l)}]Var[z_i^{(l-1)}] \\
+&amp;=   \frac{d_{l-1}}{2}Var[w_i^{(l)}]Var[z_i^{(l-1)}] \\
+\end{aligned}\]
+
+<p>即输入信号的方差在经过该神经元后被缩放了$\frac{d_{l-1}}{2}Var[w_i^{(l)}]$倍。为了使得在经过多层网络后，信号不被过分放大或过分减弱，尽可能保持每个神经元的输入和输出的方差一致，则有：</p>
+
+\[Var[w_i^{(l)}] = \frac{2}{d_{l-1}}\]
+
+<p><strong>Kaiming</strong>初始化默认使用输入神经元的个数$d_{l-1}$。若采用高斯分布$N(0,σ^2)$对参数进行<strong>Kaiming</strong>初始化，则有：</p>
+
+\[\sigma = gain \cdot \sqrt{\frac{2}{d_{l-1}}}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">kaiming_normal_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'fan_in'</span><span class="p">,</span> <span class="n">nonlinearity</span><span class="o">=</span><span class="s">'leaky_relu'</span><span class="p">)</span>
+<span class="c1"># a：leaky ReLU的负斜率
+# mode：fan_in考虑前向传播，fan_out考虑反向传播
+# nonlinearity：relu或leaky_relu
+</span></code></pre></div></div>
+
+<p>若采用均匀分布$U(-a,a)$对参数进行<strong>Kaiming</strong>初始化，则有：</p>
+
+\[\sigma = \sqrt{\frac{(a-(-a))^2}{12}} = gain \cdot \sqrt{\frac{2}{d_{l-1}}} \\
+\downarrow \\
+a = gain \cdot \sqrt{\frac{6}{d_{l-1}}}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">kaiming_uniform_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'fan_in'</span><span class="p">,</span> <span class="n">nonlinearity</span><span class="o">=</span><span class="s">'leaky_relu'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="2leaky-relu激活函数">（2）Leaky ReLU激活函数</h2>
+
+<p>若激活函数选用<strong>Leaky ReLU</strong> $f(x)=\max(\alpha x,x)$为例，则有：</p>
+
+\[\begin{aligned}
+\mathbb{E}[f^2\left(x\right)] &amp;= \int_{-\infty}^{+\infty} (\max(\alpha x,x))^2p(x)dx \\
+&amp;= \int_{-\infty}^{0} \alpha^2x^2p(x)dx+ \int_{0}^{+\infty} x^2p(x)dx \\
+&amp;= \frac{\alpha^2+1}{2}\int_{-\infty}^{+\infty} x^2p(x)dx \\
+&amp;= \frac{\alpha^2+1}{2}\mathbb{E}[x^2] = \frac{\alpha^2+1}{2}\left(Var[x]+(\mathbb{E}[x])^2\right) \\
+\end{aligned}\]
+
+<p>代回$z^{(l)}$的方差表达式：</p>
+
+\[\begin{aligned}
+Var[z^{(l)}] &amp;=  \sum_{i=1}^{d_{l-1}} Var[w_i^{(l)}]\mathbb{E}[f^2\left(z_i^{(l-1)}\right)] \\
+&amp;=  \sum_{i=1}^{d_{l-1}}  \frac{\alpha^2+1}{2}Var[w_i^{(l)}]\left(Var[z_i^{(l-1)}]+(\mathbb{E}[z_i^{(l-1)}])^2\right) \\
+&amp;=  \sum_{i=1}^{d_{l-1}}  \frac{\alpha^2+1}{2}Var[w_i^{(l)}]Var[z_i^{(l-1)}] \\
+&amp;=   \frac{(\alpha^2+1)d_{l-1}}{2}Var[w_i^{(l)}]Var[z_i^{(l-1)}] \\
+\end{aligned}\]
+
+<p>即输入信号的方差在经过该神经元后被缩放了$\frac{(\alpha^2+1)d_{l-1}}{2}Var[w_i^{(l)}]$倍。为了使得在经过多层网络后，信号不被过分放大或过分减弱，尽可能保持每个神经元的输入和输出的方差一致，则有：</p>
+
+\[Var[w_i^{(l)}] = \frac{2}{(\alpha^2+1)d_{l-1}}\]
+
+<h1 id="-正交初始化-orthogonal-initialization">⚪ 正交初始化 Orthogonal Initialization</h1>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1312.6120">Exact solutions to the nonlinear dynamics of learning in deep linear neural networks</a></li>
+</ul>
+
+<p><strong>正交初始化（Orthogonal Initialization）</strong>是指将参数矩阵$W^{(l)}$初始化为正交矩阵，即：</p>
+
+\[W^{(l)}{W^{(l)}}^T = I\]
+
+<p>实现过程：</p>
+<ol>
+  <li>用标准高斯分布$N(0,1)$初始化一个矩阵;</li>
+  <li>将这个矩阵用奇异值分解得到两个正交矩阵，并使用其中之一作为权重矩阵。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">orthogonal_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">gain</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>正交初始化使误差项在反向传播中具有<strong>范数保持性(Norm-Preserving)</strong>。对于误差项$δ^{(l-1)} = {W^{(l)}}^T δ^{(l)}$，满足：</p>
+
+\[\mid\mid δ^{(l-1)} \mid\mid^2 = \mid\mid {W^{(l)}}^T δ^{(l)} \mid\mid^2 = \mid\mid δ^{(l)} \mid\mid^2\]
+
+<p>当在非线性神经网络中应用正交初始化时，通常需要将正交矩阵乘以一个缩放系数$ρ$。比如当激活函数为<strong>ReLU</strong>时，激活函数在$0$附近的平均梯度可以近似为$0.5$。为了保持范数不变，缩放系数$ρ$可以设置为$\sqrt{2}$。</p>
+
+<p>正交初始化通常用在循环神经网络中循环边上的权重矩阵上。</p>
+
+<h1 id="-恒等初始化-identity-initialization">⚪ 恒等初始化 Identity Initialization</h1>
+
+<p>在参数初始化时，如果让各层之间的权重完全相等，并且使得上一层的输入“完整”的传入下一层，则神经网络各层参数之间的方差不会发生变化。<strong>恒等初始化</strong>是指通过把神经网络的权重层初始化为一个单位矩阵（恒等变换），使得网络层的输出值与输出值相等。</p>
+
+<p>对于二维参数（如全连接层的权重参数），通过单位矩阵进行恒等初始化：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">eye_</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>对于高维参数（如卷积层的权重矩阵），通过<strong>Dirac-delta</strong>函数进行恒等初始化：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">dirac_</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>恒等初始化具有<strong>动力等距(Dynamical Isometry)</strong>性质，使得神经网络具有稳定的信号传播以及梯度下降的行为。然而恒等初始化建立在各层的维度是相等的假设之上，在实际中这种假设有些过强。</p>
+
+<p>当各层的输入输出维度不相等时，可以把参数矩阵（非方阵）初始化为<strong>部分单位矩阵 (Partial Identity Matrix)</strong>，对于行列中“超出”的部分补零即可：</p>
+
+\[\mathbf{I}^* = \begin{cases}
+[\mathbf{I}, \mathbf{0}], &amp; \mathbf{I} \in \mathbb{R}^{m\times m},\mathbf{0} \in \mathbb{R}^{m\times n-m},m &lt; n \\
+[\mathbf{I}, \mathbf{0}]^T, &amp; \mathbf{I} \in \mathbb{R}^{n\times n},\mathbf{0} \in \mathbb{R}^{m-n\times n},m &gt; n \\
+\mathbf{I}, &amp; \text{otherwise}
+\end{cases}\]
+
+<p>然而当使用部分单位矩阵在训练神经网络时，会出现<strong>训练衰减 (Training Degeneracy)</strong>现象，即无论隐藏层维度$N_h$有多高，$N_h&gt;N_x$部分的输入在激活函数阶段无法生效，导致神经网络的维度仅仅依赖于输入数据的维度$N_x$，从而极大的限制了神经网络的表达能力。</p>
+
+<h1 id="-zero初始化">⚪ ZerO初始化</h1>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/10/28/zero.html"><font color="blue">ZerO Initialization: Initializing Neural Networks with only Zeros and Ones</font></a></li>
+</ul>
+
+<p>为了避免直接使用部分单位矩阵作为初始权重参数进行训练而出现的训练衰减问题，<strong>ZerO</strong>初始化针对部分单位矩阵应用哈达玛变换（即使用哈达玛矩阵$H$进行的线性变换）。哈达玛矩阵是均由$+1$与$-1$的元素构成，且满足$H_nH_n^T=nI_n$，哈达玛矩阵可以递归地构造：</p>
+
+\[H_m = \begin{pmatrix}
+H_{m-1} &amp; H_{m-1}\\
+H_{m-1} &amp; -H_{m-1}\\
+\end{pmatrix}\]
+
+<p>哈达玛变换通过将部分单位矩阵的基向量“旋转”，打破了在传递过程中零元素的对称性，从而解决了训练衰减的问题。此外由于部分单位矩阵与哈达玛矩阵都是确定性的，因此也使得使用<strong>ZerO</strong>方式训练出的模型更具可复现性。</p>
+
+<h1 id="-模仿初始化-mimetic-initialization">⚪ 模仿初始化 Mimetic Initialization</h1>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2023/05/16/miminit.html"><font color="blue">Mimetic Initialization of Self-Attention Layers</font></a></li>
+</ul>
+
+<p>作者观察到在预训练的视觉<strong>Transformer</strong>中，自注意力层中的权重近似满足$W_QW_K^T\propto I+\epsilon,W_VW_{proj}\propto \epsilon-I$。根据上述观察的结论，可以在初始化时把$W_QW_K^T$以及$W_VW_{proj}$模仿为：</p>
+
+\[\begin{aligned}
+W_QW_K^T \approx &amp; \alpha_1Z_1+\beta_1 I, Z_1 \sim N(0, I/k)\\
+W_VW_{proj} \approx &amp; \alpha_2Z_2-\beta_2 I, Z_2 \sim N(0, I/d)
+\end{aligned}\]
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/06/CNN.html" class="read-next-link"></a>
+        <section>
+          <span>卷积神经网络(Convolutional Neural Network)</span>
+          <p>  Convolutional Neural Networks.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63ac493e08b6830163362152.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/04/normalization.html" class="read-next-link"></a>
+          <section>
+            <span>深度学习中的归一化方法(Normalization)</span>
+            <p>  Normalization in Deep Learning.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e79ca179dbe9d88c5e2e0b0.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

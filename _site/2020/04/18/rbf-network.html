@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radial Basis Function(RBF)：径向基函数网络 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Radial Basis Function(RBF)：径向基函数网络">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Radial Basis Function(RBF)：径向基函数网络 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/18/rbf-network.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>Radial Basis Function(RBF)：径向基函数网络</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-18"><i class="iconfont icon-date"></i>18 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5edf57bfc2a9a83be5dd5cc4.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Radial Basis Function Networks.</p>
+</blockquote>
+
+<h1 id="1-rbf-network">1. RBF Network</h1>
+<p><strong>径向基函数网络（Radial Basis Function Networks，RBF Network）</strong>是一种特殊的神经网络，它用<strong>径向基函数</strong>替代神经元，输出是这些径向基函数的(加权)投票结果：</p>
+
+<p><img src="https://pic.downk.cc/item/5edf44d1c2a9a83be5bf41b2.jpg" alt="" /></p>
+
+<p>假设选定$M$个中心$μ_1,…,μ_M$，给定一个样本$x$，径向基函数$rbf$用来度量这个样本与给定中心的<strong>相似度</strong>；径向基函数网络模型可以表示为：</p>
+
+\[h(x) = Output(\sum_{m=1}^{M} {w_m·rbf(x,μ_m)})\]
+
+<p>径向基函数网络也可以看作一种特殊的<strong>特征变换</strong>，即给定中心$μ_1,…,μ_M$和一个新的样本点$x$，先对样本点$x$进行特征变换：</p>
+
+\[z = φ(x) = (rbf(x,μ_1),rbf(x,μ_2),...,rbf(x,μ_m))\]
+
+<p>网络模型可表示为：</p>
+
+\[h(x) = Output(\sum_{m=1}^{M} {w_m·rbf(x,μ_m)}) = Output(w^Tz)\]
+
+<h3 id="径向基函数">径向基函数</h3>
+<p><strong>径向基函数（radial basis function，rbf）</strong>用来衡量两个向量的相似性。常用的径向基函数包括：</p>
+<ul>
+  <li><strong>高斯(Gaussian)径向基函数</strong>：$exp(-γ\mid\mid x-x’ \mid\mid^2)$</li>
+  <li><strong>截断(Truncated)径向基函数</strong>：$[\mid\mid x-x’ \mid\mid ≤ 1](1-\mid\mid x-x’ \mid\mid)^2$</li>
+  <li>$[x=x’]$</li>
+</ul>
+
+<h1 id="2-full-rbf-network">2. Full RBF Network</h1>
+<p><strong>Full RBF Network</strong>把每一个样本点$x_1,…,x_N$都看做中心，即$M=N$;</p>
+
+<h3 id="手工选择权重">手工选择权重</h3>
+<p>若选定$w_m = y_m$，径向基函数为高斯径向基函数，模型表示为：</p>
+
+\[h(x) = Output(\sum_{m=1}^{N} {y_m·rbf(x,x_m)}) = Output(\sum_{m=1}^{N} {y_mexp(-γ\mid\mid x-x_m \mid\mid^2)})\]
+
+<p>对于分类问题使用符号函数，对于回归问题使用平均值作为输出。</p>
+
+<p>其几何解释为样本距离越近的中心点对应的输出对结果影响越大（$rbf(0)=1$）;样本距离越y远的中心点对应的输出对结果影响越小（$rbf(∞)=0$）。</p>
+
+<p>当径向基函数采用输出与给定样本最接近的1个或k个样本输出决定时，算法变为<a href="https://0809zheng.github.io/2020/03/23/knn.html">最近邻或k近邻算法</a>。</p>
+
+<h3 id="使用样本集选择权重">使用样本集选择权重</h3>
+<p>若给定样本集$x_1,…,x_N$及其标签$y_1,…,y_N$，求解最优的$w$；</p>
+
+<p>此时径向基函数网络的特征变换可表示为：</p>
+
+\[z = φ(x) = (rbf(x,x_1),rbf(x,x_2),...,rbf(x,x_N))\]
+
+<p>输出采用线性模型：</p>
+
+\[h(x) = \sum_{m=1}^{N} {w_m·rbf(x,μ_m)} = w^Tz\]
+
+<p>这是一个线性回归问题，若记特征变换后的输入样本为$Z \in \Bbb{R}^{N×N}$，其解为：</p>
+
+\[w = (Z^TZ)^{-1}Z^Ty\]
+
+<p>如果所有的$x_n$不同，且使用高斯径向基函数，则$Z$是<strong>可逆</strong>的。</p>
+
+<p>为了避免发生过拟合，可以引入正则项$λ$，得到$w$的最优解为：</p>
+
+\[w = (Z^TZ+λI)^{-1}Z^Ty\]
+
+<h1 id="3-rbf-network-using-k-means">3. RBF Network using k-Means</h1>
+<p>把每一个样本点$x_1,…,x_N$都看做中心的计算代价大，实际操作中选择合适的$M$个样本点作为中心。</p>
+
+<p>中心点的选择可参考<a href="https://0809zheng.github.io/2020/05/02/kmeans.html">K-Means</a>等聚类算法。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/19/Text-CNN.html" class="read-next-link"></a>
+        <section>
+          <span>Convolutional Neural Networks for Sentence Classification</span>
+          <p>  Text-CNN：一种将CNN应用于NLP的方法.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5e9be4e4c2a9a83be5c9fa17.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/17/feedforward-neural-network.html" class="read-next-link"></a>
+          <section>
+            <span>前馈神经网络</span>
+            <p>  Feedforward Neural Networks，亦称多层感知机（Multi-Layer Percept...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e95b7cac2a9a83be5deb0bd.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

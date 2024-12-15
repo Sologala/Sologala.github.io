@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep High-Resolution Representation Learning for Human Pose Estimation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Deep High-Resolution Representation Learning for Human Pose Estimation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Deep High-Resolution Representation Learning for Human Pose Estimation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/04/14/hrnet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Deep High-Resolution Representation Learning for Human Pose Estimation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-04-14"><i class="iconfont icon-date"></i>14 Apr 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/64a50eeb1ddac507cc1dbc9d.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>人体姿态估计的深度高分辨率表示学习.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1902.09212">Deep High-Resolution Representation Learning for Human Pose Estimation</a></li>
+</ul>
+
+<p><strong>HRNet</strong>是一种基于热图的<strong>2D</strong>单人姿态估计模型，其核心思想是不断地去融合不同尺度上的信息。相比传统的下采样的网络结构，<strong>HRNet</strong>分成多个层级，但是始终保留着最精细的空间层级信息，通过融合下采样然后做上采样的层，来获得更多的上下文以及语义层面的信息（比如更大的感受野）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a510fb1ddac507cc221282.jpg" alt="" /></p>
+
+<h1 id="1-hrnet的网络结构">1. HRNet的网络结构</h1>
+
+<p><strong>HRNet</strong>的整体结构如图所示。网络整体由四个阶段构成。对于第$i=1,2,3,4$个阶段，网络并行地构造$2^2$-$2^{i+1}$倍下采样的特征图，并融合这些特征图以获得不同语义的信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a512ea1ddac507cc261d1b.jpg" alt="" /></p>
+
+<p><strong>HRNet</strong>首先通过两个卷积核大小为<strong>3x3</strong>、步长为<strong>2</strong>的卷积层共下采样了<strong>4</strong>倍。然后通过<strong>Layer1</strong>模块。<strong>Layer1</strong>是由重复堆叠的<strong>ResNet Bottleneck</strong>组成，只会调整通道个数，并不会改变特征层大小。</p>
+
+<p>接着通过一系列<strong>Transition</strong>结构以及<strong>Stage</strong>结构，每通过一个<strong>Transition</strong>结构都会新增一个尺度分支。比如<strong>Transition1</strong>在<strong>layer1</strong>的输出基础上通过并行两个卷积核大小为<strong>3x3</strong>的卷积层得到两个不同的尺度分支，即下采样<strong>4</strong>倍的尺度以及下采样<strong>8</strong>倍的尺度。在<strong>Transition2</strong>中在原来的两个尺度分支基础上再新加一个下采样<strong>16</strong>倍的尺度。值得一提的是，每一个新的尺度分支都是通过一个卷积核大小为<strong>3x3</strong>、步长为<strong>2</strong>的卷积层构造的。</p>
+
+<p><strong>Stage</strong>结构用于融合不同尺度的特征。以<strong>Stage3</strong>为例，对于每个尺度分支，首先通过<strong>4</strong>个<strong>Basic Block</strong>，然后融合不同尺度上的信息。对于每个尺度分支上的输出都是由所有分支上的输出进行融合得到的。比如说对于下采样<strong>4</strong>倍分支的输出，它是分别将下采样<strong>4</strong>倍分支的输出（不做任何处理）、 下采样<strong>8</strong>倍分支的输出通过<strong>Up x2</strong>上采样<strong>2</strong>倍以及下采样<strong>16</strong>倍分支的输出通过<strong>Up x4</strong>上采样<strong>4</strong>倍进行相加，最后通过<strong>ReLU</strong>得到下采样<strong>4</strong>倍分支的融合输出。</p>
+
+<p>对于所有的<strong>Up</strong>模块是通过一个卷积核大小为<strong>1x1</strong>的卷积层<strong>+Upsample</strong>直接放大<strong>n</strong>倍得到上采样后的结果（上采样默认采用最邻近插值）。<strong>Down</strong>模块每下采样<strong>2</strong>倍都要增加一个卷积核大小为<strong>3x3</strong>、步长为<strong>2</strong>的卷积层。</p>
+
+<p>在<strong>Stage4</strong>中的最后一个<strong>Exchange Block</strong>只输出下采样<strong>4</strong>倍分支的输出（即只保留分辨率最高的特征层），然后接上一个卷积核大小为<strong>1x1</strong>卷卷积层。最终得到的特征层（<strong>64x48x17</strong>）就是针对每个关键点的热图。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicBlock</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="n">expansion</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplanes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BasicBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inplanes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">downsample</span> <span class="o">=</span> <span class="n">downsample</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="n">residual</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<span class="k">class</span> <span class="nc">Bottleneck</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="n">expansion</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplanes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Bottleneck</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inplanes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+                               <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">planes</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">expansion</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                               <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">planes</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">expansion</span><span class="p">,</span>
+                                  <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">downsample</span> <span class="o">=</span> <span class="n">downsample</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv3</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn3</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="n">residual</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<span class="k">class</span> <span class="nc">StageModule</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_branches</span><span class="p">,</span> <span class="n">output_branches</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+        <span class="s">"""
+        构建对应stage，即用来融合不同尺度的实现
+        :param input_branches: 输入的分支数，每个分支对应一种尺度
+        :param output_branches: 输出的分支数
+        :param c: 输入的第一个分支通道数
+        """</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">input_branches</span> <span class="o">=</span> <span class="n">input_branches</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">output_branches</span> <span class="o">=</span> <span class="n">output_branches</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">branches</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">input_branches</span><span class="p">):</span>  <span class="c1"># 每个分支上都先通过4个BasicBlock
+</span>            <span class="n">w</span> <span class="o">=</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">i</span><span class="p">)</span>  <span class="c1"># 对应第i个分支的通道数
+</span>            <span class="n">branch</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">BasicBlock</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span>
+                <span class="n">BasicBlock</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span>
+                <span class="n">BasicBlock</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span>
+                <span class="n">BasicBlock</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">branches</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">fuse_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">()</span>  <span class="c1"># 用于融合每个分支上的输出
+</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">output_branches</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">fuse_layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">input_branches</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
+                    <span class="c1"># 当输入、输出为同一个分支时不做任何处理
+</span>                    <span class="bp">self</span><span class="p">.</span><span class="n">fuse_layers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">())</span>
+                <span class="k">elif</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">j</span><span class="p">:</span>
+                    <span class="c1"># 当输入分支j大于输出分支i时(即输入分支下采样率大于输出分支下采样率)，
+</span>                    <span class="c1"># 此时需要对输入分支j进行通道调整以及上采样，方便后续相加
+</span>                    <span class="bp">self</span><span class="p">.</span><span class="n">fuse_layers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">j</span><span class="p">),</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">i</span><span class="p">),</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">i</span><span class="p">),</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+                            <span class="n">nn</span><span class="p">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mf">2.0</span> <span class="o">**</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">i</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s">'nearest'</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># i &gt; j
+</span>                    <span class="c1"># 当输入分支j小于输出分支i时(即输入分支下采样率小于输出分支下采样率)，
+</span>                    <span class="c1"># 此时需要对输入分支j进行通道调整以及下采样，方便后续相加
+</span>                    <span class="c1"># 注意，这里每次下采样2x都是通过一个3x3卷积层实现的，4x就是两个，8x就是三个，总共i-j个
+</span>                    <span class="n">ops</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="c1"># 前i-j-1个卷积层不用变通道，只进行下采样
+</span>                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="n">ops</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                                <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">j</span><span class="p">),</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">j</span><span class="p">),</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">j</span><span class="p">),</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+                                <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="c1"># 最后一个卷积层不仅要调整通道，还要进行下采样
+</span>                    <span class="n">ops</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">j</span><span class="p">),</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">i</span><span class="p">),</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">i</span><span class="p">),</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="p">.</span><span class="n">fuse_layers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">ops</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># 每个分支通过对应的block
+</span>        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">branch</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="k">for</span> <span class="n">branch</span><span class="p">,</span> <span class="n">xi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">branches</span><span class="p">,</span> <span class="n">x</span><span class="p">)]</span>
+        <span class="c1"># 接着融合不同尺寸信息
+</span>        <span class="n">x_fused</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">fuse_layers</span><span class="p">)):</span>
+            <span class="n">x_fused</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span>
+                    <span class="nb">sum</span><span class="p">([</span><span class="bp">self</span><span class="p">.</span><span class="n">fuse_layers</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">branches</span><span class="p">))])</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">x_fused</span>
+
+<span class="k">class</span> <span class="nc">HighResolutionNet</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_channel</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span> <span class="n">num_joints</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">17</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="c1"># Stem
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+        <span class="c1"># Stage1
+</span>        <span class="n">downsample</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">layer1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">Bottleneck</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="n">downsample</span><span class="p">),</span>
+            <span class="n">Bottleneck</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+            <span class="n">Bottleneck</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+            <span class="n">Bottleneck</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">transition1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">base_channel</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">base_channel</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">base_channel</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">base_channel</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">])</span>
+
+        <span class="c1"># Stage2
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">stage2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">StageModule</span><span class="p">(</span><span class="n">input_branches</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">output_branches</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">base_channel</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># transition2
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">transition2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">(),</span>  <span class="c1"># None,  - Used in place of "None" because it is callable
+</span>            <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">(),</span>  <span class="c1"># None,  - Used in place of "None" because it is callable
+</span>            <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">base_channel</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">base_channel</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">base_channel</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">])</span>
+
+        <span class="c1"># Stage3
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">stage3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">StageModule</span><span class="p">(</span><span class="n">input_branches</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">output_branches</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">base_channel</span><span class="p">),</span>
+            <span class="n">StageModule</span><span class="p">(</span><span class="n">input_branches</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">output_branches</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">base_channel</span><span class="p">),</span>
+            <span class="n">StageModule</span><span class="p">(</span><span class="n">input_branches</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">output_branches</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">base_channel</span><span class="p">),</span>
+            <span class="n">StageModule</span><span class="p">(</span><span class="n">input_branches</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">output_branches</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">base_channel</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># transition3
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">transition3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">(),</span>  <span class="c1"># None,  - Used in place of "None" because it is callable
+</span>            <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">(),</span>  <span class="c1"># None,  - Used in place of "None" because it is callable
+</span>            <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">(),</span>  <span class="c1"># None,  - Used in place of "None" because it is callable
+</span>            <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">base_channel</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">base_channel</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">base_channel</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">])</span>
+
+        <span class="c1"># Stage4
+</span>        <span class="c1"># 注意，最后一个StageModule只输出分辨率最高的特征层
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">stage4</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">StageModule</span><span class="p">(</span><span class="n">input_branches</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">output_branches</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">base_channel</span><span class="p">),</span>
+            <span class="n">StageModule</span><span class="p">(</span><span class="n">input_branches</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">output_branches</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">base_channel</span><span class="p">),</span>
+            <span class="n">StageModule</span><span class="p">(</span><span class="n">input_branches</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">output_branches</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">base_channel</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Final layer
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">final_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">base_channel</span><span class="p">,</span> <span class="n">num_joints</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">layer1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">trans</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">trans</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">transition1</span><span class="p">]</span>  <span class="c1"># Since now, x is a list
+</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">stage2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">transition2</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">transition2</span><span class="p">[</span><span class="mi">1</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">transition2</span><span class="p">[</span><span class="mi">2</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">]</span>  <span class="c1"># New branch derives from the "upper" branch only
+</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">stage3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">transition3</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">transition3</span><span class="p">[</span><span class="mi">1</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">transition3</span><span class="p">[</span><span class="mi">2</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">transition3</span><span class="p">[</span><span class="mi">3</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="p">]</span>  <span class="c1"># New branch derives from the "upper" branch only
+</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">stage4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">final_layer</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<h1 id="2-hrnet的实现细节">2. HRNet的实现细节</h1>
+
+<p>网络最终输出的热图分辨率是原图的$\frac{1}{4}$，对每个关键点对应的预测信息求最大值的位置，即预测得分最大的位置，作为预测关键点的位置，映射回原图就能得到原图上关键点的坐标。</p>
+
+<p>在实践时对于每个关键点并不是直接取得分最大的位置，而是分别对比该点左右两侧（<strong>x</strong>方向）、上下两侧（<strong>y</strong>方向）的得分，并对坐标进行偏移修正。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">coords</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">coords</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="n">hm</span> <span class="o">=</span> <span class="n">batch_heatmaps</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">p</span><span class="p">]</span>
+        <span class="n">px</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="p">.</span><span class="n">floor</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">p</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">))</span>
+        <span class="n">py</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="p">.</span><span class="n">floor</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">p</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">))</span>
+        <span class="k">if</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">px</span> <span class="o">&lt;</span> <span class="n">heatmap_width</span><span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">py</span> <span class="o">&lt;</span> <span class="n">heatmap_height</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">hm</span><span class="p">[</span><span class="n">py</span><span class="p">][</span><span class="n">px</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">hm</span><span class="p">[</span><span class="n">py</span><span class="p">][</span><span class="n">px</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="n">hm</span><span class="p">[</span><span class="n">py</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">px</span><span class="p">]</span> <span class="o">-</span> <span class="n">hm</span><span class="p">[</span><span class="n">py</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">px</span><span class="p">]</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">coords</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">p</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="p">.</span><span class="n">sign</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span> <span class="o">*</span> <span class="p">.</span><span class="mi">25</span>
+</code></pre></div></div>
+
+<p>计算每个关键点对应的均方误差损失后，在计算总损失时并不是直接把每个关键点的损失进行相加，而是在相加前对于每个点的损失分别乘上不同的权重。下面给出了每个关键点的名称以及所对应的权重。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"kps"</span><span class="p">:</span> <span class="p">[</span><span class="s">"nose"</span><span class="p">,</span><span class="s">"left_eye"</span><span class="p">,</span><span class="s">"right_eye"</span><span class="p">,</span><span class="s">"left_ear"</span><span class="p">,</span><span class="s">"right_ear"</span><span class="p">,</span><span class="s">"left_shoulder"</span><span class="p">,</span><span class="s">"right_shoulder"</span><span class="p">,</span><span class="s">"left_elbow"</span><span class="p">,</span><span class="s">"right_elbow"</span><span class="p">,</span><span class="s">"left_wrist"</span><span class="p">,</span><span class="s">"right_wrist"</span><span class="p">,</span><span class="s">"left_hip"</span><span class="p">,</span><span class="s">"right_hip"</span><span class="p">,</span><span class="s">"left_knee"</span><span class="p">,</span><span class="s">"right_knee"</span><span class="p">,</span><span class="s">"left_ankle"</span><span class="p">,</span><span class="s">"right_ankle"</span><span class="p">]</span>
+<span class="s">"kps_weights"</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">]</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/04/15/dconvmp.html" class="read-next-link"></a>
+        <section>
+          <span>3D Human Pose Estimation from Monocular Images with Deep Convolutional Neural Network</span>
+          <p>  使用深度卷积神经网络从单目图像中进行3D人体姿态估计.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64a52d481ddac507cc62e95d.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/04/13/mspn.html" class="read-next-link"></a>
+          <section>
+            <span>Rethinking on Multi-Stage Networks for Human Pose Estimation</span>
+            <p>  重新思考人体姿态估计的多阶段网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64a4e49b1ddac507cccd144b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>谱聚类(Spectral Clustering) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="谱聚类(Spectral Clustering)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="谱聚类(Spectral Clustering) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/05/04/spectral-clustering.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>谱聚类(Spectral Clustering)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-05-04"><i class="iconfont icon-date"></i>04 May 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/64a296311ddac507ccf3ba21.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Spectral Clustering.</p>
+</blockquote>
+
+<p><strong>谱聚类（spectral clustering）</strong>是一种基于图的聚类方法，其主要思想是把所有的数据看做空间中的点，这些点之间用带权重的边连接起来；距离较远的两个点之间的边权重值较低，而距离较近的两个点之间的边权重值较高；通过对所有数据点组成的图进行切图，让切图后不同的子图间边权重之和尽可能低，而子图内的边权重之和尽可能高，从而达到聚类的目的。</p>
+
+<p>谱聚类的优点：</p>
+<ol>
+  <li>谱聚类只需要数据之间的相似度矩阵，因此对于处理稀疏数据的聚类很有效；</li>
+  <li>由于使用了降维，因此在处理高维数据聚类时的复杂度比传统聚类算法好。</li>
+</ol>
+
+<p>谱聚类的缺点：</p>
+<ol>
+  <li>如果最终聚类的维度非常高，则由于降维的幅度不够，谱聚类的运行速度和最后的聚类效果均不好。</li>
+  <li>聚类效果依赖于相似矩阵，不同的相似矩阵得到的最终聚类效果可能很不同。</li>
+</ol>
+
+<p>实现谱聚类的关键点是图邻接矩阵的生成方式与切图的方式。</p>
+
+<h2 id="1-构建邻接矩阵">1. 构建邻接矩阵</h2>
+
+<p>对于一个图$G(V,E)$，一般用点的集合$V$和边的集合$E$来描述。其中$V$是数据集里面所有的点$(v_1,v_2,…,v_n)$。对于$V$中的任意两个点，可以有边连接，也可以没有边连接。定义权重$w_{ij}$为点$x_i$和点$x_j$之间的权重。对于无向图$w_{ij}=w_{ji}$。</p>
+
+<p>利用所有点之间的权重值，可以得到图的邻接矩阵$W$。$W$是一个$n\times n$的矩阵，第$i$行的第$j$个值对应权重$w_{ij}$。</p>
+
+<p>在谱聚类中，距离较远的两个点之间的边权重值较低，而距离较近的两个点之间的边权重值较高。构建邻接矩阵$W$的方法有三类。</p>
+
+<h3 id="-epsilon-邻近法">⚪ $\epsilon$-邻近法</h3>
+
+<p>设置一个距离阈值$\epsilon$，然后用欧式距离$s_{ij}$度量任意两点$x_i$和点$x_j$的距离\(s_{ij}=\|x_i-x_j\|_2^2\)，根据$s_{ij}$和$\epsilon$的大小关系定义邻接矩阵：</p>
+
+\[w_{ij} = \begin{cases}
+0, &amp; s_{ij} &gt; \epsilon \\
+\epsilon, &amp; s_{ij} \leq \epsilon
+\end{cases}\]
+
+<p>两点间的权重要不就是$\epsilon$，要不就是$0$，没有其他的信息。距离远近度量很不精确，因此在实际应用中很少使用$\epsilon$-邻近法。</p>
+
+<h3 id="-k邻近法">⚪ K邻近法</h3>
+
+<p>利用<a href="https://0809zheng.github.io/2020/03/23/knn.html"><strong>KNN</strong>算法</a>遍历所有的样本点，取每个样本最近的$k$个点作为近邻，只有和样本距离最近的$k$个点之间的$w_{ij}&gt;0$。但是这种方法会造成重构之后的邻接矩阵非对称。如果后面的算法需要对称邻接矩阵，可以采取以下措施。</p>
+
+<p>​第一种<strong>K</strong>邻近法是只要一个点在另一个点的<strong>K</strong>近邻中，则保留：</p>
+
+\[w_{i j}=w_{j i}=\begin{cases}
+0, &amp; x_i \notin K N N\left(x_j\right) \operatorname{and} x_j \notin K N N\left(x_i\right) \\
+\exp \left(-\frac{\left\|x_i-x_j\right\|_2^2}{2 \sigma^2}\right), &amp; x_i \in K N N\left(x_j\right) \text{ or } x_j \in K N N\left(x_i\right)
+\end{cases}\]
+
+<p>第二种<strong>K</strong>邻近法是必须两个点互为<strong>K</strong>近邻中，才能保留：</p>
+
+\[w_{i j}=w_{j i}=\begin{cases}
+0, &amp; x_i \notin K N N\left(x_j\right) \operatorname{or} x_j \notin K N N\left(x_i\right) \\
+\exp \left(-\frac{\left\|x_i-x_j\right\|_2^2}{2 \sigma^2}\right), &amp; x_i \in K N N\left(x_j\right) \text{ and } x_j \in K N N\left(x_i\right)
+\end{cases}\]
+
+<h3 id="-全连接法">⚪ 全连接法</h3>
+
+<p>全连接法设置所有的点之间的权重值都大于<strong>0</strong>，可以选择不同的核函数来定义边权重，常用的有多项式核函数、高斯核函数和<strong>Sigmoid</strong>核函数。最常用的是高斯径向核<strong>RBF</strong>函数：
+​ 
+\(w_{ij} = w_{ji} = \exp \left(-\frac{\left\|x_i-x_j\right\|_2^2}{2 \sigma^2}\right)\)</p>
+
+<h2 id="2-无向图切图">2. 无向图切图</h2>
+
+<p>无向图$G(V,E)$的切图是指把图切成互相没有连接的$K$个子图，每个子图的集合为$A_1,…,A_K$，它们满足$A_i ∩ A_j = \Phi,A_1∪…∪A_K = V$。</p>
+
+<p>对于任意两个子图点的集合$A,B \subset V, A \cap B = \Phi$，定义$A$和$B$之间的切图权重为：</p>
+
+\[W(A,B) = \sum_{i\in A,j\in B}w_{ij}\]
+
+<p>则对于$K$个子图点的集合$A_1,…,A_K$，定义切图<strong>cut</strong>：</p>
+
+\[cut(A_1,...,A_K) = \frac{1}{2}\sum_{k=1}^K W(A_k,\overline{A}_k)\]
+
+<p>其中\(\overline{A}_k\)为$A_k$的补集，即除$A_k$子集外其他$V$的子集的并集。</p>
+
+<p>直接最小化切图<strong>cut</strong>会造成分割出很多单个离散的样本点作为一类，分割的类别不均匀。在谱聚类中，为了避免最小切图导致的切图效果不佳，需要对每个子图的规模做出限定，进而有两种切图方式，一种是<strong>RatioCut</strong>，另一种是<strong>Ncut</strong>。</p>
+
+<h3 id="-ratiocut">⚪ RatioCut</h3>
+
+<p>在<strong>RatioCut</strong>中，对每个切图，不光考虑最小化$cut(A_1,…,A_K)$，还同时考虑最大化每个子图点的个数，即：</p>
+
+\[RatioCut(A_1,...,A_K) = \frac{1}{2}\sum_{k=1}^K \frac{W(A_k,\overline{A}_k)}{|A_k|}\]
+
+<p>为最小化<strong>RatioCut</strong>，引入图的度矩阵与拉普拉斯矩阵。</p>
+
+<p>对于图中的任意一个点$x_i$，它的度定义为和它相连的所有边的权重之和，即$d_i=\sum_{j}w_{ij}$。利用每个点度的定义，可以得到一个度矩阵$D$，它是一个对角矩阵，只有主对角线有值，第$i$行对应第$i$个点的度数。拉普拉斯矩阵$L$定义为度矩阵$D$与邻接矩阵$W$的差$L=D-W$。</p>
+
+<p>引入指示向量$h_{i}=(h_{i1},…,h_{ik})$指示任意点$x_i$是否被划分到点集$A_k$：</p>
+
+\[h_{ik} = \begin{cases}
+0, &amp; x_i \not\in A_k \\ 
+\frac{1}{\sqrt{|A_k|}}, &amp; x_i \in A_k
+\end{cases}\]
+
+<p>则<strong>RatioCut</strong>可以被化简为：</p>
+
+\[\begin{aligned}
+RC(A_1,...,A_K) &amp;= \frac{1}{2}\sum_{k=1}^K \frac{W(A_k,\overline{A}_k)}{|A_k|} \\
+&amp;\propto \frac{1}{2}\sum_{k=1}^K \left[ \sum_{i \in A_k,j \not\in A_k}w_{ij}\frac{1}{|A_k|}+\sum_{i \not\in A_k,j \in A_k}w_{ij}\frac{1}{|A_k|} \right] \\
+&amp;= \frac{1}{2}\sum_{k=1}^K \left[ \sum_{i \in A_k,j \not\in A_k}w_{ij}\left(\frac{1}{\sqrt{|A_k|}}-0\right)^2+\sum_{i \not\in A_k,j \in A_k}w_{ij}\left(0-\frac{1}{\sqrt{|A_k|}}\right)^2 \right] \\
+&amp;= \frac{1}{2}\sum_{k=1}^K \sum_{i,j}w_{ij}\left(h_{ik}-h_{jk}\right)^2 \\
+&amp;= \frac{1}{2}\sum_{k=1}^K \left(\sum_{i,j}w_{ij}h_{ik}^2-\sum_{i,j}2w_{ij}h_{ik}h_{jk}+\sum_{i,j}w_{ij}h_{jk}^2\right) \\
+&amp;= \frac{1}{2}\sum_{k=1}^K \left(2\sum_{i,j}w_{ij}h_{ik}^2-\sum_{i,j}2w_{ij}h_{ik}h_{jk}\right) \\
+&amp;= \sum_{k=1}^K \left(\sum_{i,j}w_{ij}h_{ik}^2-\sum_{i,j}w_{ij}h_{ik}h_{jk}\right) \\
+&amp;= \sum_{k=1}^K \left(\sum_{i}(\sum_{j}w_{ij})h_{ik}^2-\sum_{i,j}w_{ij}h_{ik}h_{jk}\right) \\
+&amp;= \sum_{k=1}^K \left(h_k^TDh_k - h_k^TWh_k\right) = \sum_{k=1}^K h_k^TLh_k \\
+&amp; = H^TLH
+\end{aligned}\]
+
+<p>最小化<strong>RatioCut</strong>等价于最小化$H^TLH$。根据<a href="https://0809zheng.github.io/2021/06/22/rayleigh.html">瑞利商</a>的定义，使得上式最小化的$H \in R^{N\times K}$是由$L$最小的$K$个特征值对应的特征向量构成的。一般需要对$H$矩阵按行做标准化，即：</p>
+
+\[h_{ij} \leftarrow \frac{h_{ij}}{(\sum_j h_{ij}^2)^{1/2}}\]
+
+<p>由于在使用维度规约的时候损失了少量信息，导致得到的优化后的指示向量$h$对应的$H$现在不能完全指示各样本的归属，因此一般在得到$N\times K$维度的矩阵$H$（看作$N$个$K$维样本）后还需要进行一次传统的聚类，比如使用<strong>K-Means</strong>聚类。</p>
+
+<h3 id="-ncut">⚪ NCut</h3>
+
+<p>在<strong>NCut</strong>中，对每个切图，不光考虑最小化$cut(A_1,…,A_K)$，还同时考虑最大化每个子图内所有点的度之和$vol(A)=\sum_{i \in A}d_i$，即：</p>
+
+\[NCut(A_1,...,A_K) = \frac{1}{2}\sum_{k=1}^K \frac{W(A_k,\overline{A}_k)}{vol(A_k)}\]
+
+<p>引入指示向量$h_{i}=(h_{i1},…,h_{ik})$指示任意点$x_i$是否被划分到点集$A_k$：</p>
+
+\[h_{ik} = \begin{cases}
+0, &amp; x_i \not\in A_k \\ 
+\frac{1}{\sqrt{vol(A_k)}}, &amp; x_i \in A_k
+\end{cases}\]
+
+<p>与<strong>RatioCut</strong>的推导过程类似，可以得到：</p>
+
+\[\begin{aligned}
+NCut(A_1,...,A_K) &amp;= \sum_{k=1}^K h_k^TLh_k  = H^TLH
+\end{aligned}\]
+
+<p>由于此时$H^TH \neq I$，因此上式并不满足瑞利商的形式。注意到：</p>
+
+\[h_i^TDh_i = \sum_{j=1}^nh_{ij}^2d_j = \frac{1}{vol(A_i)}\sum_{j \in A_i} d_j = \frac{1}{vol(A_i)}vol(A_i) =1\]
+
+<p>因此有$H^TDH=I$。不妨令$H=D^{-1/2}F$，则有：</p>
+
+\[\begin{aligned}
+NCut(A_1,...,A_K) &amp; = H^TLH = F^TD^{-1/2}LD^{-1/2}F
+\end{aligned}\]
+
+<p>上式满足瑞利商的形式（$F^TF=I$）。使得上式最小化的$F$是由$D^{-1/2}LD^{-1/2}$最小的$K$个特征值对应的特征向量构成的。注意到$D^{-1/2}LD^{-1/2}$相当于对拉普拉斯矩阵做了一次标准化：</p>
+
+\[L_{ij} \leftarrow \frac{L_{ij}}{\sqrt{d_id_j}}\]
+
+<h2 id="3-实现谱聚类">3. 实现谱聚类</h2>
+
+<p>谱聚类主要的注意点为相似矩阵的生成方式、切图的方式以及最后的聚类方法。最常用的相似矩阵的生成方式是基于高斯核距离的全连接方式，最常用的切图方式是<strong>Ncut</strong>，最常用的聚类方法为<strong>K-Means</strong>。</p>
+
+<ol>
+  <li>根据相似矩阵的生成方式构建样本的相似矩阵$S$。</li>
+  <li>根据相似矩阵$S$构建邻接矩阵$W$，构建度矩阵$D$。</li>
+  <li>计算出拉普拉斯矩阵$L=D-W$。</li>
+  <li>构建标准化后的拉普拉斯矩阵$D^{-1/2}LD^{-1/2}$。</li>
+  <li>计算$D^{-1/2}LD^{-1/2}$最小的$k_1$个特征值所各自对应的特征向量$f$。</li>
+  <li>将各自对应的特征向量$f$组成的矩阵按行标准化，最终组成$n\times k_1$维的特征矩阵$F$。</li>
+  <li>对$F$中的每一行作为一个$k_1$维样本，共$n$个样本，用指定聚类方法进行聚类，聚类维数为$k_2$。</li>
+  <li>得到簇划分$C(c_1,…,c_{k_2})$。</li>
+</ol>
+
+<h3 id="-from-scratch">⚪ from scratch</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">calculate_w_ij</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">sigma</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">w_ab</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">((</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">w_ab</span>
+
+<span class="c1"># 计算邻接矩阵
+</span><span class="k">def</span> <span class="nf">Construct_Matrix_W</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="c1"># 取出数据行数
+</span>    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">rows</span><span class="p">,</span><span class="n">rows</span><span class="p">))</span> <span class="c1"># 对矩阵进行初始化：初始化W为rows*rows的方阵
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span> <span class="c1"># 遍历行
+</span>        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span> <span class="c1"># 遍历列
+</span>            <span class="k">if</span><span class="p">(</span><span class="n">i</span><span class="o">!=</span><span class="n">j</span><span class="p">):</span> <span class="c1"># 计算不重复点的距离
+</span>                <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculate_w_ij</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="c1"># 调用函数计算距离
+</span>        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span> <span class="c1"># 对W中进行行排序，并提取对应索引
+</span>        <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="o">-</span><span class="n">k</span><span class="p">):</span> <span class="c1"># 只保留W每行前k大的元素
+</span>            <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">t</span><span class="p">[</span><span class="n">x</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="p">(</span><span class="n">W</span><span class="o">+</span><span class="n">W</span><span class="p">.</span><span class="n">T</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="c1"># 处理可能存在的复数的虚部，都变为实数
+</span>    <span class="k">return</span> <span class="n">W</span>
+
+<span class="c1"># 计算标准化的拉普拉斯矩阵
+</span><span class="k">def</span> <span class="nf">Calculate_Matrix_L_sym</span><span class="p">(</span><span class="n">W</span><span class="p">):</span>
+    <span class="n">degreeMatrix</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># 按照行对W矩阵进行求和
+</span>    <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">degreeMatrix</span><span class="p">)</span> <span class="o">-</span> <span class="n">W</span> <span class="c1"># 计算对应的对角矩阵减去w
+</span>    <span class="c1"># 拉普拉斯矩阵标准化，就是选择Ncut切图
+</span>    <span class="n">sqrtDegreeMatrix</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">degreeMatrix</span> <span class="o">**</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">)))</span> <span class="c1"># D^(-1/2)
+</span>    <span class="n">L_sym</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">sqrtDegreeMatrix</span><span class="p">,</span> <span class="n">L</span><span class="p">),</span> <span class="n">sqrtDegreeMatrix</span><span class="p">)</span> <span class="c1"># D^(-1/2)LD^(-1/2)
+</span>    <span class="k">return</span> <span class="n">L_sym</span>
+
+<span class="c1"># 归一化
+</span><span class="k">def</span> <span class="nf">normalization</span><span class="p">(</span><span class="n">matrix</span><span class="p">):</span>
+    <span class="nb">sum</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">matrix</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span> <span class="c1"># 求数组的正平方根
+</span>    <span class="n">nor_matrix</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">/</span><span class="nb">sum</span> <span class="c1"># 求平均
+</span>    <span class="k">return</span> <span class="n">nor_matrix</span>
+
+<span class="n">W</span> <span class="o">=</span> <span class="n">Construct_Matrix_W</span><span class="p">(</span><span class="n">your_data</span><span class="p">)</span> <span class="c1"># 计算邻接矩阵
+</span><span class="n">L_sym</span> <span class="o">=</span> <span class="n">Calculate_Matrix_L_sym</span><span class="p">(</span><span class="n">W</span><span class="p">)</span> <span class="c1"># 依据W计算标准化拉普拉斯矩阵
+</span><span class="n">lam</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">eig</span><span class="p">(</span><span class="n">L_sym</span><span class="p">)</span> <span class="c1"># 特征值分解
+</span>    
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">lam</span><span class="p">)</span> <span class="c1"># 将lam中的元素进行排序，返回排序后的下标
+</span><span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">c_</span><span class="p">[</span><span class="n">H</span><span class="p">[:,</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">H</span><span class="p">[:,</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]]]</span> <span class="c1"># 0和1类的两个矩阵按行连接，就是把两矩阵左右相加，要求行数相等。
+</span><span class="n">H</span> <span class="o">=</span> <span class="n">normalization</span><span class="p">(</span><span class="n">H</span><span class="p">)</span> <span class="c1"># 归一化处理
+</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span> <span class="c1"># 新建20簇的Kmeans模型
+</span><span class="n">model</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">H</span><span class="p">)</span> <span class="c1"># 训练
+</span><span class="n">labels</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">labels_</span> <span class="c1"># 得到聚类后的每组数据对应的标签类型
+</span><span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">c_</span><span class="p">[</span><span class="n">your_data</span><span class="p">,</span><span class="n">labels</span><span class="p">]</span> <span class="c1"># 按照行数连接data和labels
+</span></code></pre></div></div>
+
+<h3 id="-via-sklearn">⚪ via sklearn</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">SpectralClustering</span>
+
+<span class="n">sc</span> <span class="o">=</span> <span class="n">SpectralClustering</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">sc</span><span class="p">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">y_pred</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/05/05/mean-shift.html" class="read-next-link"></a>
+        <section>
+          <span>Mean-Shift</span>
+          <p>  Mean-Shift Clustering.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5eb3bf40c2a9a83be5282b0b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/05/03/hierarchical-clustering.html" class="read-next-link"></a>
+          <section>
+            <span>层次聚类</span>
+            <p>  Hierarchical Clustering.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5eb376e3c2a9a83be5dfbdb8.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

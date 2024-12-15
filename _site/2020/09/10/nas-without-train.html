@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Architecture Search without Training - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Neural Architecture Search without Training">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Neural Architecture Search without Training - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/10/nas-without-train.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Neural Architecture Search without Training</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-10"><i class="iconfont icon-date"></i>10 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f5a0b56160a154a67c3e647.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>不需要训练网络的神经结构搜索.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Neural Architecture Search without Training</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2006.04647">link</a></li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5f5a0e50160a154a67c50e46.jpg" alt="" /></p>
+
+<p>现有的神经结构搜索方法针对每一种搜索得到的结构都需要使用训练集训练得到准确率，这一过程速度慢而且代价高。作者提出了一种不需要模型训练便可以进行结构搜索的方法。</p>
+
+<p>作者使用<strong>NAS-Bench-201</strong>数据集进行结构搜索。该数据集提出的网络结构框架如下图所示。每一个单元共有六条边，每个边可以选择五种操作（$1×1$卷积、$3×3$卷积、$3×3$平均池化、跳跃连接、置零），网络共有$5^6=15625$种可能的结构。</p>
+
+<p><img src="https://pic.downk.cc/item/5f5a0fbf160a154a67c58919.jpg" alt="" /></p>
+
+<p>作者通过测试数据点的线性映射（<strong>linear map</strong>）之间的相关性来计算结构得分。具体地，将网络建模成一个线性模型，即对于输入数据点$x_i$，输出为$f_i=w_ix_i$。进一步构建输入数据集\(X=\{x_n\}_{n=1}^{N}\)的<strong>Jacobian</strong>矩阵：$J=(\frac{\partial f_1}{\partial x_1},\frac{\partial f_2}{\partial x_2},…,\frac{\partial f_N}{\partial x_N})^T$。之后计算协方差矩阵$C_J=(J-M_J)(J-M_J)^T$。最后计算相关矩阵\(\Sigma_J = (\frac{(C_J)_{i,j}}{\sqrt{(C_J)_{i,i}(C_J)_{j,j}}})\)。</p>
+
+<p>作者对已经在<strong>CIFAR-10</strong>上面训练过的结构进行实验。实验发现，对于验证准确率越高的训练模型，数据线性映射之间的相关性越低（可以理解为对于不同的数据点，训练模型表现得像不同的线性模型）：</p>
+
+<p><img src="https://pic.downk.cc/item/5f5a12c4160a154a67c6d869.jpg" alt="" /></p>
+
+<p>作者提出了一个筛选收缩结构的评价得分。记$σ_{J,N}$是相关矩阵\(\Sigma_J\)的$N$个特征值，则得分表示为（其中$k=10^{-5}$为数值稳定性的常数）：</p>
+
+\[S = -\sum_{i=1}^{N} {[log(σ_{J,i}+k)+(σ_{J,i}+k)^{-1}]}\]
+
+<p>经验证，准确率越高的模型结构上述定义的得分越高：</p>
+
+<p><img src="https://pic.downk.cc/item/5f5a13d7160a154a67c755d8.jpg" alt="" /></p>
+
+<p>作者提出的<strong>training-free</strong>方法，尽管比参数不共享的方法得到的验证准确率低，但是大大压缩了搜索时间：</p>
+
+<p><img src="https://pic.downk.cc/item/5f5a140f160a154a67c76cdc.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/11/bincount.html" class="read-next-link"></a>
+        <section>
+          <span>使用numpy.bincount计算混淆矩阵</span>
+          <p>  Confusion matrix using numpy.bincount.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/09/resnest.html" class="read-next-link"></a>
+          <section>
+            <span>ResNeSt: Split-Attention Networks</span>
+            <p>  ResNeSt：拆分注意力网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fec3b333ffa7d37b3606820.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

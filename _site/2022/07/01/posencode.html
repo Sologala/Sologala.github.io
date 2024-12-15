@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformer中的位置编码(Position Encoding) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Transformer中的位置编码(Position Encoding)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Transformer中的位置编码(Position Encoding) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/07/01/posencode.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>Transformer中的位置编码(Position Encoding)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-07-01"><i class="iconfont icon-date"></i>01 Jul 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/62c6a361f54cd3f937923083.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Position Encoding in Transformer.</p>
+</blockquote>
+
+<p><strong>Transformer</strong>中的<a href="https://0809zheng.github.io/2020/04/24/self-attention.html">自注意力机制</a>无法捕捉位置信息，这是因为其计算过程具有<strong>置换不变性</strong>(<strong>permutation invariant</strong>)，导致打乱输入序列的顺序对输出结果不会产生任何影响。</p>
+
+<p>对于<strong>Transformer</strong>模型$f(\cdot)$，标记输入序列的两个向量$x_m,x_n$，则<strong>Transformer</strong>具有<strong>全对称性</strong>：</p>
+
+\[f(\cdots, x_m, \cdots, x_n, \cdots) = f(\cdots, x_n, \cdots, x_m, \cdots)\]
+
+<p><strong>位置编码(Position Encoding)</strong>通过把位置信息引入输入序列中，以打破模型的全对称性。为简化问题，考虑在$m,n$位置处加上不同位置编码$p_m,p_n$：</p>
+
+\[\tilde{f}(\cdots, x_m, \cdots, x_n, \cdots)  = f(\cdots, x_m+p_m, \cdots, x_n+p_n, \cdots)\]
+
+<p>对上式进行二阶<strong>Taylor</strong>展开：</p>
+
+\[\tilde{f} ≈ f + \underbrace{p_m^T \frac{\partial f}{\partial x_m} + p_n^T \frac{\partial f}{\partial x_n} + p_m^T \frac{\partial^2 f}{\partial x_m^2}p_m + p_n^T \frac{\partial^2 f}{\partial x_n}p_n}_{\text{绝对位置信息}} +\underbrace{p_m^T \frac{\partial^2 f}{\partial x_m\partial x_n}p_n}_{\text{相对位置信息}}\]
+
+<p>在上式中，第<strong>2</strong>至<strong>5</strong>项只依赖于单一位置，表示绝对位置信息。第<strong>6</strong>项包含$m,n$位置的交互项，表示相对位置信息。因此位置编码主要有两种实现形式：</p>
+<ul>
+  <li><strong>绝对位置编码 (absolute PE)</strong>：将位置信息加入到输入序列中，相当于引入索引的嵌入。比如<strong>Sinusoidal</strong>, <strong>Learnable</strong>, <strong>FLOATER</strong>, <strong>Complex-order</strong>, <strong>RoPE</strong></li>
+  <li><strong>相对位置编码 (relative PE)</strong>：通过微调自注意力运算过程使其能分辨不同<strong>token</strong>之间的相对位置。比如<strong>XLNet</strong>, <strong>T5</strong>, <strong>DeBERTa</strong>, <strong>URPE</strong></li>
+</ul>
+
+<h1 id="1-绝对位置编码-absolute-position-encoding">1. 绝对位置编码 Absolute Position Encoding</h1>
+
+<p><strong>绝对位置编码</strong>是指在输入序列经过词嵌入后的第$k$个<strong>token</strong>向量\(x_k \in \Bbb{R}^{d}\)中加入(<strong>add</strong>)位置向量\(p_k  \in \Bbb{R}^{d}\)；其过程等价于首先向输入引入(<strong>concatenate</strong>)位置索引$k$的<strong>one hot</strong>向量$p_k: x_k+p_k$，再进行词嵌入；因此绝对位置编码也被称为<strong>位置嵌入(position embedding)</strong>。</p>
+
+<p><img src="https://pic.downk.cc/item/5ea29a5ac2a9a83be55e6d0f.jpg" alt="" /></p>
+
+<h2 id="1-三角函数式sinusoidal位置编码">(1) 三角函数式(Sinusoidal)位置编码</h2>
+
+<p>三角函数式(<strong>Sinusoidal</strong>)位置编码是在原<strong>Transformer</strong>模型中使用的一种显式编码。以一维三角函数编码为例：</p>
+
+\[\begin{aligned} p_{k,2i} &amp;= \sin(\frac{k}{10000^{2i/d}})  \\ p_{k,2i+1} &amp;= \cos(\frac{k}{10000^{2i/d}}) \end{aligned}\]
+
+<p>其中$p_{k,2i},p_{k,2i+1}$分别是位置索引$k$处的编码向量的第$2i,2i+1$个分量。一个长度为$32$的输入序列（每个输入向量的特征维度是$128$）的<strong>Sinusoidal</strong>编码的可视化如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/62c2adb75be16ec74a39e29e.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">SinusoidalEncoding1d</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">d_model</span><span class="p">):</span>
+    <span class="n">pos_table</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="p">[</span><span class="n">pos</span> <span class="o">/</span> <span class="n">np</span><span class="p">.</span><span class="n">power</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">/</span> <span class="n">d_model</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d_model</span><span class="p">)]</span> 
+        <span class="k">for</span> <span class="n">pos</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seq_len</span><span class="p">)])</span>
+    <span class="n">pos_table</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pos_table</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">])</span>  <span class="c1"># pos_table[0]作用于[CLS]，不需要位置编码
+</span>    <span class="n">pos_table</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pos_table</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">])</span>                
+    <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">pos_table</span><span class="p">)</span>  
+</code></pre></div></div>
+
+<p>根据三角函数的性质，位置$\alpha+\beta$处的编码向量可以表示成位置$\alpha$和位置$\beta$的向量的组合，因此可以<strong>外推</strong>到任意位置：</p>
+
+\[\begin{aligned} \sin(\alpha+\beta) &amp;= \sin \alpha \cos \beta +  \cos \alpha \sin \beta \\ \cos(\alpha+\beta) &amp;= \cos \alpha \cos \beta -  \sin \alpha \sin \beta \end{aligned}\]
+
+<p>在图像领域，常用到二维形式的位置编码。以二维三角函数编码为例，需要分别对高度方向和宽度方向进行编码$p=[p_h,p_w]$：</p>
+
+\[\begin{aligned} p_{h,2i} &amp;= \sin(\frac{h}{10000^{2i/d}}), \quad  p_{h,2i+1} = \cos(\frac{h}{10000^{2i/d}}) \\ p_{w,2i} &amp;= \sin(\frac{w}{10000^{2i/d}}), \quad  p_{w,2i+1} = \cos(\frac{w}{10000^{2i/d}}) \end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">positionalencoding2d</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+    <span class="s">"""
+    :param d_model: dimension of the model
+    :param height: height of the positions
+    :param width: width of the positions
+    :return: d_model*height*width position matrix
+    """</span>
+    <span class="k">if</span> <span class="n">d_model</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="s">"Cannot use sin/cos positional encoding with "</span>
+                         <span class="s">"odd dimension (got dim={:d})"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">d_model</span><span class="p">))</span>
+    <span class="n">pe</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d_model</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+    <span class="c1"># Each dimension use half of d_model
+</span>    <span class="n">d_model</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">d_model</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">div_term</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">d_model</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span>
+                         <span class="o">-</span><span class="p">(</span><span class="n">math</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10000.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">d_model</span><span class="p">))</span>
+    <span class="n">pos_w</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">width</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pos_h</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">height</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pe</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">d_model</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pos_w</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">pe</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">d_model</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pos_w</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">pe</span><span class="p">[</span><span class="n">d_model</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pos_h</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+    <span class="n">pe</span><span class="p">[</span><span class="n">d_model</span><span class="o">+</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pos_h</span> <span class="o">*</span> <span class="n">div_term</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pe</span>
+</code></pre></div></div>
+
+<h2 id="2-可学习learnable位置编码">(2) 可学习(Learnable)位置编码</h2>
+
+<p>可学习(<strong>Learnable</strong>)位置编码是指将位置编码当作可训练参数，比如输入序列(经过嵌入层后)的大小为$n \times d$，则随机初始化一个\(p  \in \Bbb{R}^{n \times d}\)的矩阵作为位置编码，随训练过程更新。</p>
+
+<p>可学习位置编码的缺点是没有<strong>外推性</strong>，即如果预训练序列的最大长度为$n$，则无法处理长度超过$n$的序列。此时可以将超过$n$部分的位置编码随机初始化并微调。</p>
+
+<h2 id="3-floater递归式位置编码">(3) <a href="https://0809zheng.github.io/2022/07/02/floater.html"><font color="Blue">FLOATER</font></a>：递归式位置编码</h2>
+
+<p>如果位置编码能够递归地生成$p_{k+1}=f(p_k)$，则其生成结构自带学习到位置信息的可能性。</p>
+
+<p><strong>FLOATER</strong>使用神经常微分方程(<strong>Neural ODE</strong>)构建的连续动力系统对位置编码进行递归建模：</p>
+
+\[p(t) = p(s) + \int_{s}^{t} h(\tau,p(\tau);\theta_h) d\tau\]
+
+<p>递归式的<strong>FLOATER</strong>编码具有更好的灵活性和外推性。但是递归形式的位置编码牺牲了并行性，带来速度瓶颈。</p>
+
+<h2 id="4-complex-order复数式位置编码">(4) <a href="https://0809zheng.github.io/2022/07/04/complex.html"><font color="Blue">Complex-order</font></a>：复数式位置编码</h2>
+
+<p>绝对位置编码等价于词表索引$j$的词嵌入$x^{(j)}$与位置索引$k$的嵌入$p_k$的求和函数$f(j,k)=x^{(j)}_k+p_k$。<strong>Complex-order</strong>方法则直接把该函数建模为一个复值函数：</p>
+
+\[f(j, k) = r_je^{i(\theta_j+\omega_j k)}\]
+
+<p>其中振幅$r_j$、角频率$\omega_j$和初相位$\theta_j$是要学习的参数（为同一个词设置三组词嵌入）。振幅$r_j$只和词表索引$j$有关，相当于该词的词嵌入；角频率$\omega_j$表示该词对位置的敏感程度；相位$\theta_j+\omega_j pos$引入该词在文本中的位置信息。</p>
+
+<h2 id="5-rope旋转式位置编码">(5) <a href="https://0809zheng.github.io/2022/07/06/roformer.html"><font color="Blue">RoPE</font></a>：旋转式位置编码</h2>
+
+<p>旋转式位置编码是指在构造查询矩阵$q$和键矩阵$k$时，根据其绝对位置引入旋转矩阵$\mathcal{R}$：</p>
+
+\[q_i = \mathcal{R}_ix_i W^Q , k_j = \mathcal{R}_jx_j W^K\]
+
+<p>旋转矩阵$\mathcal{R}$设计为正交矩阵，且应满足\(\mathcal{R}_i^T\mathcal{R}_j=\mathcal{R}_{j-i}\)，使得后续注意力矩阵的计算中隐式地包含相对位置信息：</p>
+
+\[(\mathcal{R}_ix_i W^Q)^T(\mathcal{R}_jx_j W^K) = (x_i W^Q)^T\mathcal{R}_i^T\mathcal{R}_jx_j W^K = (x_i W^Q)^T\mathcal{R}_{j-i}x_j W^K\]
+
+<h2 id="6-层次化位置编码">(6) <a href="https://spaces.ac.cn/archives/7947">层次化位置编码</a></h2>
+
+<p>在可学习的位置编码中，假设学习到序列长度为$n$的编码，则很难外推到序列长度$&gt;n$的场合。层次化位置编码通过对现有编码进行层次分解，从而利用$n$个编码构造长度为$n^2$的一系列编码。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62c69d57f54cd3f9378939e7.jpg" alt="" /></p>
+
+<p>假设学习到位置编码$p_1,p_2,\cdots,p_n$；现构造位置编码$q_1,q_2,\cdots,q_{n^2}$，其是由基编码$u_1,u_2,\cdots,u_n$分层构造的：</p>
+
+\[q_{(i-1)\times n + j} = \alpha u_i + (1-\alpha) u_j\]
+
+<p>其中$\alpha \ne 0.5$是为了区分$(i,j)$和$(j,i)$两种不同的情况。假设前$n$个构造的编码与学习到的编码一致：</p>
+
+\[q_i=p_i, \quad i=1,2,\cdots,n\]
+
+<p>则可以解出基编码：</p>
+
+\[u_i = \frac{p_i-\alpha p_1}{1-\alpha} , \quad i=1,2,\cdots,n\]
+
+<h1 id="2-相对位置编码-relative-position-encoding">2. 相对位置编码 Relative Position Encoding</h1>
+
+<p>相对位置编码并不是直接建模每个输入<strong>token</strong>的位置信息，而是在计算注意力矩阵时考虑当前向量与待交互向量的位置的相对距离。</p>
+
+<p>从绝对位置编码出发，其形式相当于在输入中添加入绝对位置的表示。对应的完整自注意力机制运算如下</p>
+
+\[\begin{aligned} q_i &amp;= (x_i+p_i) W^Q , k_j = (x_j+p_j) W^K ,v_j = (x_j+p_j) W^V  \\ \alpha_{ij} &amp;= \text{softmax}\{(x_i+p_i)W^Q ( (x_j+p_j)W^K)^T \} \\ &amp;=  \text{softmax}\{ x_iW^Q (W^K)^T x_j^T+x_iW^Q (W^K)^T p_j^T+p_iW^Q (W^K)^T x_j^T+p_iW^Q (W^K)^T p_j^T \} \\ z_i &amp;= \sum_{j=1}^{n} \alpha_{ij}(x_jW^V+p_jW^V)  \end{aligned}\]
+
+<p>注意到绝对位置编码相当于在自注意力运算中引入了一系列$p_iW^Q,(p_jW^K)^T,p_jW^V$项。而相对位置编码的出发点便是将这些项调整为与相对位置$(i,j)$有关的向量$R_{i,j}$。</p>
+
+<h2 id="1-经典相对位置编码">(1) <a href="https://0809zheng.github.io/2022/07/03/rpe.html"><font color="Blue">经典相对位置编码</font></a></h2>
+
+<p>在经典的相对位置编码设置中，移除了与$x_i$的位置编码项$p_iW^Q$相关的项，并将$x_j$的位置编码项$p_jW^V,p_jW^K$替换为相对位置向量$R_{i,j}^V,R_{i,j}^K$：</p>
+
+\[\begin{aligned} \alpha_{ij} &amp;= \text{softmax}\{x_iW^Q (W^K)^T x_j^T+x_iW^Q (R_{i,j}^K)^T \}  \\ z_i &amp;= \sum_{j=1}^{n} \alpha_{ij}(x_jW^V+R_{i,j}^V)  \end{aligned}\]
+
+<p>相对位置向量$R_{i,j}^V,R_{i,j}^K$可以设置为三角函数式或可学习参数，并且通常只考虑相对位置$p_{\min} \leq i-j \leq p_{\max}$的情况：</p>
+
+\[\begin{aligned} R_{i,j}^K &amp;= w^K_{\text{clip}(j-i,p_{\min},p_{\max})} \in (w_{p_{\min}}^K,\cdots w_{p_{\max}}^K) \\ R_{i,j}^V &amp;= w^V_{\text{clip}(j-i,p_{\min},p_{\max})} \in (w_{p_{\min}}^V,\cdots w_{p_{\max}}^V)  \end{aligned}\]
+
+<h2 id="2-xlnet式">(2) <a href="https://0809zheng.github.io/2021/08/19/xlnet.html"><font color="Blue">XLNet式</font></a></h2>
+
+<p>在<strong>XLNet</strong>模型中，移除了值向量的位置编码$p_j$，并将注意力计算中$x_j$的位置编码$p_j$替换为相对位置向量$R_{i-j}$(设置为三角函数式编码)，$x_i$的位置编码$p_i$设置为可学习向量$u,v$：</p>
+
+\[\begin{aligned}  \alpha_{ij} &amp;=  \text{softmax}\{ x_iW^Q (W^K)^T x_j^T+x_iW^Q (W^K)^T R_{i-j}^T+uW^Q (W^K)^T x_j^T+vW^Q (W^K)^T R_{i-j}^T \} \\ z_i &amp;= \sum_{j=1}^{n} \alpha_{ij}x_jW^V  \end{aligned}\]
+
+<h2 id="3-t5式">(3) <a href="https://0809zheng.github.io/2021/01/08/t5.html"><font color="Blue">T5式</font></a></h2>
+
+<p>在<strong>T5</strong>模型中，移除了值向量的位置编码$p_j$以及注意力计算中的输入-位置注意力项($x_i,p_j$和$p_i,x_j$)，并将位置-位置注意力项($p_i,p_j$)设置为可学习标量$r_{i,j}$：</p>
+
+\[\begin{aligned}  \alpha_{ij} &amp;=  \text{softmax}\{ x_iW^Q (W^K)^T x_j^T+r_{i,j} \} \\ z_i &amp;= \sum_{j=1}^{n} \alpha_{ij}x_jW^V  \end{aligned}\]
+
+<p>一维形式的<strong>T5</strong>式相对位置编码的实现过程如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Attention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">inner_dim</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">*</span>  <span class="n">heads</span>
+        <span class="n">project_out</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">heads</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dim_head</span> <span class="o">==</span> <span class="n">dim</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">**</span> <span class="o">-</span><span class="mf">0.5</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">attend</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Softmax</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_qkv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">inner_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span> <span class="k">if</span> <span class="n">project_out</span> <span class="k">else</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">()</span>
+
+        <span class="c1"># positional bias
+</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_bias</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">heads</span><span class="p">)</span>
+
+        <span class="n">q_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">seq_len</span><span class="p">)</span>
+        <span class="n">k_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">seq_len</span><span class="p">)</span>
+
+        <span class="n">pos_indices</span> <span class="o">=</span> <span class="p">(</span><span class="n">q_pos</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">]</span> <span class="o">-</span> <span class="n">k_pos</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="p">:]).</span><span class="nb">abs</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">'pos_indices'</span><span class="p">,</span> <span class="n">pos_indices</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">apply_pos_bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmap</span><span class="p">):</span>
+        <span class="n">bias</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pos_bias</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">pos_indices</span><span class="p">)</span>
+        <span class="n">bias</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="s">'i j h -&gt; () h i j'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fmap</span> <span class="o">+</span> <span class="p">(</span><span class="n">bias</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">qkv</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_qkv</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">chunk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">'b n (h d) -&gt; b h n d'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">heads</span><span class="p">),</span> <span class="n">qkv</span><span class="p">)</span>
+
+        <span class="n">dots</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+
+        <span class="c1"># 引入相对位置编码
+</span>        <span class="n">dots</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">apply_pos_bias</span><span class="p">(</span><span class="n">dots</span><span class="p">)</span>
+
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">attend</span><span class="p">(</span><span class="n">dots</span><span class="p">)</span>
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">attn</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">attn</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">'b h n d -&gt; b n (h d)'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>二维形式的<strong>T5</strong>式相对位置编码的实现过程如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Attention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">fmap_size</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">inner_dim</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">*</span>  <span class="n">heads</span>
+        <span class="n">project_out</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">heads</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dim_head</span> <span class="o">==</span> <span class="n">dim</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">**</span> <span class="o">-</span><span class="mf">0.5</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">attend</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Softmax</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_qkv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">inner_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span> <span class="k">if</span> <span class="n">project_out</span> <span class="k">else</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">()</span>
+
+        <span class="c1"># positional bias
+</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_bias</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">fmap_size</span> <span class="o">*</span> <span class="n">fmap_size</span><span class="p">,</span> <span class="n">heads</span><span class="p">)</span>
+
+        <span class="n">q_range</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fmap_size</span><span class="p">)</span>
+        <span class="n">k_range</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">fmap_size</span><span class="p">)</span>
+
+        <span class="n">q_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">q_range</span><span class="p">,</span> <span class="n">q_range</span><span class="p">,</span> <span class="n">indexing</span> <span class="o">=</span> <span class="s">'ij'</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">k_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">k_range</span><span class="p">,</span> <span class="n">k_range</span><span class="p">,</span> <span class="n">indexing</span> <span class="o">=</span> <span class="s">'ij'</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">q_pos</span><span class="p">,</span> <span class="n">k_pos</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">'i j c -&gt; (i j) c'</span><span class="p">),</span> <span class="p">(</span><span class="n">q_pos</span><span class="p">,</span> <span class="n">k_pos</span><span class="p">))</span>
+        <span class="n">rel_pos</span> <span class="o">=</span> <span class="p">(</span><span class="n">q_pos</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">...]</span> <span class="o">-</span> <span class="n">k_pos</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">...]).</span><span class="nb">abs</span><span class="p">()</span>
+
+        <span class="n">x_rel</span><span class="p">,</span> <span class="n">y_rel</span> <span class="o">=</span> <span class="n">rel_pos</span><span class="p">.</span><span class="n">unbind</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">pos_indices</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_rel</span> <span class="o">*</span> <span class="n">fmap_size</span><span class="p">)</span> <span class="o">+</span> <span class="n">y_rel</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">'pos_indices'</span><span class="p">,</span> <span class="n">pos_indices</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">apply_pos_bias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmap</span><span class="p">):</span>
+        <span class="n">bias</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pos_bias</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">pos_indices</span><span class="p">)</span>
+        <span class="n">bias</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="s">'i j h -&gt; () h i j'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fmap</span> <span class="o">+</span> <span class="p">(</span><span class="n">bias</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">qkv</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_qkv</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">chunk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">'b n (h d) -&gt; b h n d'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">heads</span><span class="p">),</span> <span class="n">qkv</span><span class="p">)</span>
+
+        <span class="n">dots</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+
+        <span class="c1"># 引入相对位置编码
+</span>        <span class="n">dots</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">apply_pos_bias</span><span class="p">(</span><span class="n">dots</span><span class="p">)</span>
+
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">attend</span><span class="p">(</span><span class="n">dots</span><span class="p">)</span>
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">attn</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">attn</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">'b h n d -&gt; b n (h d)'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="4-deberta式">(4) <a href="https://0809zheng.github.io/2021/04/02/deberta.html"><font color="Blue">DeBERTa式</font></a></h2>
+
+<p>在<strong>DeBERTa</strong>模型中，移除了值向量的位置编码$p_j$以及注意力计算中的位置-位置注意力项($p_i,p_j$)，并将注意力计算中$x_i,x_j$的位置编码$p_i,p_j$替换为相对位置向量$R_{j,i},R_{i,j}$：</p>
+
+\[\begin{aligned}  \alpha_{ij} &amp;=  \text{softmax}\{ x_iW^Q (W^K)^T x_j^T+x_iW^Q (W^K)^T R_{i,j}^T+R_{j,i}W^Q (W^K)^T x_j^T \} \\ z_i &amp;= \sum_{j=1}^{n} \alpha_{ij}x_jW^V  \end{aligned}\]
+
+<h2 id="5-universal-rpe-urpe">(5) <a href="https://0809zheng.github.io/2022/07/05/urpe.html"><font color="Blue">Universal RPE (URPE)</font></a></h2>
+
+<p>注意到在相对位置编码中，如果移除值向量的位置编码$p_j$，会使模型失去通用函数近似的能力。通用相对位置编码(<strong>Universal RPE</strong>)引入如下约束：</p>
+
+\[z_i = \sum_{j=1}^{n} \alpha_{ij}c_{ij}x_jW^V\]
+
+<p>其中$C=[c_{ij}]$是一个可训练的<strong>Toeplitz</strong>矩阵: $c_{ij}=g(i−j)$，它与<strong>Attention</strong>矩阵逐位相乘。尽管这使得<strong>Attention</strong>矩阵不再是按行的概率矩阵，但恢复了模型的通用近似性。</p>
+
+<h1 id="-参考文献">⚪ 参考文献</h1>
+<ul>
+  <li><a href="https://arxiv.org/abs/2102.11090">Position Information in Transformers: An Overview</a>：(arXiv2102)一篇关于Transformer中位置编码的综述。</li>
+  <li><a href="https://0809zheng.github.io/2022/07/03/rpe.html"><font color="Blue">Self-Attention with Relative Position Representations</font></a>：(arXiv1803)自注意力机制中的相对位置编码。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/19/xlnet.html"><font color="Blue">XLNet: Generalized Autoregressive Pretraining for Language Understanding</font></a>：(arXiv1906)XLNet：使用排列语言建模训练语言模型。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/08/t5.html"><font color="Blue">Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer</font></a>：(arXiv1910)T5：编码器-解码器结构的预训练语言模型。</li>
+  <li><a href="https://0809zheng.github.io/2022/07/04/complex.html"><font color="Blue">Encoding word order in complex embeddings</font></a>：(arXiv1910)在复数域空间中构造词嵌入。</li>
+  <li><a href="https://0809zheng.github.io/2022/07/02/floater.html"><font color="Blue">Learning to Encode Position for Transformer with Continuous Dynamical Model</font></a>：(arXiv2003)FLOATER：基于连续动力系统的递归位置编码。</li>
+  <li><a href="https://0809zheng.github.io/2021/04/02/deberta.html"><font color="Blue">DeBERTa: Decoding-enhanced BERT with Disentangled Attention</font></a>：(arXiv2006)DeBERTa：使用分解注意力机制和增强型掩膜解码器改进预训练语言模型。</li>
+  <li><a href="https://0809zheng.github.io/2022/07/06/roformer.html"><font color="Blue">RoFormer: Enhanced Transformer with Rotary Position Embedding</font></a>：(arXiv2104)RoFormer：使用旋转位置编码增强Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2022/07/05/urpe.html"><font color="Blue">Your Transformer May Not be as Powerful as You Expect</font></a>：(arXiv2205)使用通用相对位置编码改进Transformer的通用近似性。</li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/07/02/floater.html" class="read-next-link"></a>
+        <section>
+          <span>Learning to Encode Position for Transformer with Continuous Dynamical Model</span>
+          <p>  FLOATER：基于连续动力系统的递归位置编码.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62c2af0a5be16ec74a3bbb1a.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/06/30/simdcl.html" class="read-next-link"></a>
+          <section>
+            <span>Dual Contrastive Learning for Unsupervised Image-to-Image Translation</span>
+            <p>  SimDCL：无监督图像到图像翻译的对偶对比学习.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63e457634757feff33828227.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

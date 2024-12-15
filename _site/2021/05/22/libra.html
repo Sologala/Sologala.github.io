@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libra R-CNN: Towards Balanced Learning for Object Detection - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Libra R-CNN: Towards Balanced Learning for Object Detection">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Libra R-CNN: Towards Balanced Learning for Object Detection - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/05/22/libra.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Libra R-CNN: Towards Balanced Learning for Object Detection</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-05-22"><i class="iconfont icon-date"></i>22 May 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/652de54bc458853aef2dbee8.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Libra R-CNN: 面向目标检测中的均衡学习.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1904.02701">Libra R-CNN: Towards Balanced Learning for Object Detection</a></li>
+</ul>
+
+<p><strong>Libra R-CNN</strong>出发点为解决目标检测中的一些不均衡现象，如采样不均衡、不同阶段特征分布的不均衡、框回归过程中不均衡，提出了一些改进的过程。</p>
+
+<p><img src="https://pic.imgdb.cn/item/652de5b3c458853aef2e97ef.jpg" alt="" /></p>
+
+<p><strong>Libra R-CNN</strong>的改进包括<strong>IoU</strong>均衡采样，对<strong>FPN</strong>结构的均衡以及对<strong>L1 loss</strong>的均衡：</p>
+
+<p><img src="https://pic.imgdb.cn/item/652de603c458853aef2f3da1.jpg" alt="" /></p>
+
+<h2 id="1-iou-balanced-sampling">1. IoU balanced Sampling</h2>
+
+<p>样本级别的随机采样会带来样本不平衡，由于负样本本身<strong>iou</strong>的不平衡，当采用随机采样后，会出现难负(<strong>iou 0.5</strong>附近)和易负(<strong>iou</strong>接近<strong>0</strong>)样本不平衡采样，导致后面性能不好。</p>
+
+<p>如果是随机采样的话，随机采样到的样本超过$70\%$都是在<strong>IoU</strong>在<strong>0</strong>到<strong>0.05</strong>之间的易学习负样本，而实际统计得到的事实是$60\%$的<strong>hard negative</strong>都落在<strong>IoU</strong>大于<strong>0.05</strong>的地方。</p>
+
+<p><img src="https://pic.imgdb.cn/item/652de726c458853aef318341.jpg" alt="" /></p>
+
+<p>作者提出了<strong>IoU-balanced Sampling</strong>，核心操作是对负样本按照<strong>iou</strong>划分<strong>k</strong>个区间，先尝试在不同区间进行随机采样采相同多数目的样本，如果不够就全部采样；进行一轮后，如果样本数不够，再剩下的样本中均匀随机采样。保证易学习负样本和难负样本比例尽量平衡。实验表明对<strong>K</strong>不敏感，作者设置的是<strong>3</strong>。</p>
+
+<h2 id="2-balanced-feature-pyramid">2. Balanced Feature Pyramid</h2>
+
+<p><img src="https://pic.imgdb.cn/item/652de7dec458853aef32fb7a.jpg" alt="" /></p>
+
+<p><strong>Balanced Feature Pyramid</strong>直接基于<strong>FPN</strong>来改进设计了不同<strong>stage</strong>特征融合的过程，包括<strong>rescaling</strong>、<strong>integrating</strong>、<strong>refining</strong>和<strong>strengthening</strong>四步，实现了在<strong>FPN</strong>结构下<strong>attention map</strong>的统一生成和使用。</p>
+<ul>
+  <li><strong>rescaling</strong>：将<strong>stage</strong> $C_2,C_3,C_4,C_5$ 通过插值或者<strong>max pooling</strong>缩放至相同的大小，如$C_4$的大小。</li>
+  <li><strong>integrating</strong>：接按对应元素位置求和取平均值$C = \frac{1}{L}\sum_{l=l_{\min}}^{l_{\max}}C_l$</li>
+  <li><strong>refining</strong>：采用<strong>non-local</strong>生成一个和<strong>intergrating</strong>大小相同的<strong>attention map</strong>，<strong>non-local</strong>中具体使用的方法为<strong>embedded Gaussian</strong></li>
+  <li><strong>strengthening</strong>：将<strong>attention map</strong>通过<strong>max pooling</strong>或者插值恢复到各<strong>stage</strong>原有的尺寸，然后由原来的 $C_2,C_3,C_4,C_5$ 引出跳跃连接，二者仍然按照对应元素位置相加完成融合过程。</li>
+</ul>
+
+<h2 id="3-balanced-l1-loss">3. Balanced L1 Loss</h2>
+
+<p>对于定位损失中的<strong>smooth L1 Loss</strong>，将梯度绝对值大于$1$的样本称为<strong>outlier</strong>，其他的为<strong>inlier</strong>。<strong>outlier</strong>可以看做困难样本，对梯度的贡献比较大，而<strong>inlier</strong>这类简单样本对梯度的贡献比较小，只有$30\%$左右。</p>
+
+\[L1_\text{smooth}(x) = \begin{cases} |x|-0.5, &amp; |x| ≥ 1 \text{ (outlier)} \\ 0.5x^2, &amp;|x| &lt; 1 \text{ (inlier)} \end{cases}\]
+
+\[\frac{\partial L1_\text{smooth}}{\partial x} = \begin{cases}
+x, &amp; |x| &lt; 1 \\
+1, &amp; x \geq 1 \\
+-1, &amp; x \leq -1
+\end{cases}\]
+
+<p>对于目标检测过程，期望得到更精确的定位结果，如果直接增大定位损失的权重，可能让训练变得不稳定。因此，考虑平衡定位损失中的难易样本的梯度贡献，具体来说，增加容易样本<strong>inlier</strong>的梯度值，以帮助网络更好地定位。最终也使得分类和回归过程更加均衡。</p>
+
+<p><strong>Balanced L1 Loss</strong>首先设计梯度的函数，再通过积分得到<strong>loss</strong>的表达式。梯度形式为：</p>
+
+\[\frac{\partial L_b}{\partial x} = \begin{cases}
+\alpha \ln (b|x|+1), &amp; |x| &lt; 1 \\
+\gamma, &amp; |x| ≥ 1
+\end{cases}\]
+
+<p>对于<strong>inlier</strong>部分使用对数函数后，显著增加了这部分的梯度。$\gamma$的取值来改变梯度的上界，而$b$则用来使梯度在$x=1$处连续。实验中设置$\alpha = 0.5, \gamma=1.5$。</p>
+
+<p>在梯度表达式的基础上，积分得到<strong>Balanced L1 Loss</strong>的表达式：</p>
+
+\[L_b(x)= \begin{cases}\frac{\alpha}{b}(b|x|+1) \ln (b|x|+1)-\alpha|x| &amp; \text { if }|x|&lt;1 \\ \gamma|x|+C &amp; \text { otherwise }\end{cases}\]
+
+<p>图像很直观地显示了梯度和<strong>loss</strong>的变化：</p>
+
+<p><img src="https://pic.imgdb.cn/item/652defc9c458853aef458034.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/05/23/atss.html" class="read-next-link"></a>
+        <section>
+          <span>Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection</span>
+          <p>  通过自适应训练样本选择弥补基于Anchor和无Anchor检测之间的差距.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/652df928c458853aef5b5da0.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/05/21/gfl.html" class="read-next-link"></a>
+          <section>
+            <span>Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection</span>
+            <p>  GFocal Loss: 为密集目标检测学习合格且分散的边界框.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/65289e0cc458853aef256495.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

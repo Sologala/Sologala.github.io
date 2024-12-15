@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semantic Image Segmentation with Deep Convolutional Nets and Fully Connected CRFs - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Semantic Image Segmentation with Deep Convolutional Nets and Fully Connected CRFs">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Semantic Image Segmentation with Deep Convolutional Nets and Fully Connected CRFs - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/02/14/deeplab.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Semantic Image Segmentation with Deep Convolutional Nets and Fully Connected CRFs</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-02-14"><i class="iconfont icon-date"></i>14 Feb 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63f333c4f144a0100779ec7c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DeepLab: 通过深度卷积网络和全连接条件随机场实现图像语义分割.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1412.7062">Semantic Image Segmentation with Deep Convolutional Nets and Fully Connected CRFs</a></li>
+</ul>
+
+<p><strong>DeepLab v1</strong>网络在<strong>VGG-16</strong>的基础上修改：</p>
+<ul>
+  <li>把全连接层转为卷积层；</li>
+  <li>下采样只保留前三个最大池化，使得输出特征映射为输入的\(\frac{1}{8}\)；</li>
+  <li>池化层之后的卷积采用空洞卷积。</li>
+</ul>
+
+<p>创新点：</p>
+<ol>
+  <li>使用<strong>空洞卷积 Atrous conv</strong>在不增加参数的情况下增加了感受野；</li>
+  <li>使用<strong>双线性插值 bi-linear interpolation</strong>把特征映射恢复原始分辨率；</li>
+  <li>使用全连接的<strong>条件随机场 CRF</strong>精细化分割结果。</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/63f333ecf144a010077a1a93.jpg" alt="" /></p>
+
+<h1 id="1-空洞卷积">1. 空洞卷积</h1>
+
+<p>空洞卷积（<strong>Dilated/Atrous Convolution</strong>）也叫扩张卷积或者膨胀卷积，是指在卷积核中插入空洞，起到扩大感受野的作用。空洞卷积的直接做法是在常规卷积核中填充0，用来扩大感受野，且进行计算时，空洞卷积中实际只有非零的元素起了作用。假设以一个变量a来衡量空洞卷积的扩张系数，则加入空洞之后的实际卷积核尺寸与原始卷积核尺寸之间的关系：</p>
+
+\[K = k+(k-1)(a-1)\]
+
+<p>其中$k$为原始卷积核大小，$a$为卷积扩张率（<strong>dilation rate</strong>），$K$为经过扩展后实际卷积核大小。除此之外，空洞卷积的卷积方式跟常规卷积一样。当$a=1$时，空洞卷积就退化为常规卷积。$a=1,2,4$时，空洞卷积示意图如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f71966f144a010073ae2b4.jpg" alt="" /></p>
+
+<p>当$a=1$，原始卷积核尺寸为$3\times3$，就是常规卷积。$a=2$时，加入空洞之后的卷积核$=3+(3-1)\times(2-1)=5$，对应的感受野可计算为$2^{(a+2)}-1=7$。$a=3$时，卷积核可以变化到$3+(3-1)(4-1)=9$，感受野则增长到$2^{(a+2)}-1=15$。对比不加空洞卷积的情况，在<strong>stride</strong>为1的情况下<strong>3</strong>层<strong>3x3</strong>卷积的叠加，第三层输出特征图对应的感受野也只有$1+(3-1)\times3=7$。所以，空洞卷积的一个重要作用就是增大感受野。</p>
+
+<p>对于语义分割而言，空洞卷积主要有三个作用：</p>
+<ol>
+  <li>扩大感受野。池化也可以扩大感受野，但空间分辨率降低了，相比之下，空洞卷积可以在扩大感受野的同时不丢失分辨率，且保持像素的相对空间位置不变。简单而言就是空洞卷积可以同时控制感受野和分辨率。</li>
+  <li>获取多尺度上下文信息。当多个带有不同<strong>dilation rate</strong>的空洞卷积核叠加时，不同的感受野会带来多尺度信息，这对于分割任务是非常重要的。</li>
+  <li>可以降低计算量，不需要引入额外的参数，如上图空洞卷积示意图所示，实际卷积时只有带有红点的元素真正进行计算。</li>
+</ol>
+
+<h1 id="2-后处理技术">2. 后处理技术</h1>
+
+<p>早期语义分割模型效果较为粗糙，在没有更好的特征提取模型的情况下，研究者们便在神经网络模型的粗糙结果进行后处理（<strong>Post-Processing</strong>），主要方法就是一些常用的概率图模型，比如说条件随机场（<strong>Conditional Random Field,CRF</strong>）和马尔可夫随机场（<strong>Markov Random Field,MRF</strong>）。</p>
+
+<p><strong>CRF</strong>是一种经典的概率图模型，简单而言就是给定一组输入序列的条件下，求另一组输出序列的条件概率分布模型，<strong>CRF</strong>在自然语言处理领域有着广泛应用。<strong>CRF</strong>在语义分割后处理中用法的基本思路如下：对于网络的粗粒度分割结果而言，每个像素点$i$具有对应的类别标签$x_i$和观测值$y_i$，以每个像素为节点，以像素与像素之间的关系作为边即可构建一个<strong>CRF</strong>模型。在这个<strong>CRF</strong>模型中，我们通过观测变量$y_i$来预测像素$i$对应的标签值$x_i$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f719dff144a010073b87e8.jpg" alt="" /></p>
+
+<p>但从<strong>Deeplab v3</strong>开始，主流的语义分割网络就不再热衷于后处理技术了。一个典型的观点认为神经网络分割效果不好才会用后处理技术，这说明在分割网络本身上还有很大的提升空间。一是<strong>CRF</strong>本身不太容易训练，二来语义分割任务的端到端趋势。后来语义分割领域的<strong>SOTA</strong>网络也确实证明了这一点。</p>
+
+<h1 id="3-deeplab的实现">3. DeepLab的实现</h1>
+
+<p><strong>DeepLabV1</strong>的模型结构十分简单，基于<strong>VGG16</strong>做了一些改动。将<strong>VGG16</strong>的最后三层全连接层替换为卷积层。其中，第十一、十二、十三层为<strong>dilation=2</strong>的空洞卷积，第十四层为<strong>dilation=4</strong>的空洞卷积。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f865c3f144a010071ecb0a.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">models</span>
+
+<span class="k">class</span> <span class="nc">DeepLabV1</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DeepLabV1</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="c1">#前13层是VGG16的前13层,分为5个stage
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="n">vgg16</span> <span class="o">=</span> <span class="n">models</span><span class="p">.</span><span class="n">vgg16</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">vgg16</span><span class="p">.</span><span class="n">features</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">stage_1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="c1">#空洞卷积
+</span>            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">512</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">512</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">512</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">final</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1">#调用VGG16的前13层 VGG13
+</span>        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">stage_1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">functional</span><span class="p">.</span><span class="n">interpolate</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">x</span><span class="p">,</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span><span class="n">mode</span><span class="o">=</span><span class="s">'bilinear'</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">final</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/02/15/deeplab2.html" class="read-next-link"></a>
+        <section>
+          <span>DeepLab: Semantic Image Segmentation with Deep Convolutional Nets, Atrous Convolution, and Fully Connected CRFs</span>
+          <p>  DeepLab v2: 通过带有空洞卷积的金字塔池化实现图像语义分割.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63f720f5f144a010074686b0.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/02/13/unet.html" class="read-next-link"></a>
+          <section>
+            <span>U-Net: Convolutional Networks for Biomedical Image Segmentation</span>
+            <p>  U-Net: 用于医学图像分割的卷积网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63f32f0df144a01007721d32.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

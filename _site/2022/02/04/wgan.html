@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wasserstein GAN - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Wasserstein GAN">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Wasserstein GAN - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/02/04/wgan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Wasserstein GAN</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-02-04"><i class="iconfont icon-date"></i>04 Feb 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic1.imgdb.cn/item/63315e6e16f2c2beb1a585f9.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>WGAN：使用Wasserstein距离构造GAN.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1701.07875">Wasserstein GAN</a></li>
+</ul>
+
+<p><strong>GAN</strong>的损失函数衡量真实分布\(P_{data}(x)\)与生成分布\(P_G(x)\)之间的<a href="https://0809zheng.github.io/2020/02/03/kld.html#-js%E6%95%A3%E5%BA%A6-jenson-shannon-divergence"><font color="blue">JS散度</font></a>，<strong>JS</strong>散度在两个分布不相交时没有意义。可以选择具有更平滑的值空间的分布度量指标，比如<a href="https://0809zheng.github.io/2022/05/16/Wasserstein.html"><font color="blue">Wasserstein距离</font></a>。</p>
+
+<h1 id="1-wasserstein-distance">1. Wasserstein Distance</h1>
+
+<p><a href="https://0809zheng.github.io/2022/05/16/Wasserstein.html"><font color="blue">Wasserstein距离</font></a>又叫<strong>推土机距离(Earth Mover’s Distance)</strong>，是指把一个概率分布$P=p(x)$变成另一个概率分布$Q=q(x)$时所需要的最小变换距离。</p>
+
+<p>记从位置$x$运输到位置$y$的成本为$d(x,y)$，联合分布$\gamma(x,y)$描述了一种可行的运输方案，表示应该从位置$x$处运输多少货物到位置$y$处，才能使$p(\textbf{x})$和$q(\textbf{x})$具有相同的概率分布。在离散形势下，联合分布$\gamma(x,y)$表示为一个矩阵：</p>
+
+<p><img src="https://pic1.imgdb.cn/item/6331819916f2c2beb1ca5a64.jpg" alt="" /></p>
+
+<p>其中矩阵的每一行代表概率分布$p(\textbf{x})$的某个位置$x_p$要分配到概率分布$q(\textbf{x})$不同位置处的值；每一列代表概率分布$q(\textbf{x})$的某个位置$x_q$接收到概率分布$p(\textbf{x})$的不同位置分配的值。在该联合分布下，概率分布变换的总成本为：</p>
+
+\[\sum_{x_p,x_q} \gamma(x_p,x_q) d(x_p,x_q) = \Bbb{E}_{(x,y) \in \gamma(\textbf{x},\textbf{y})} [d(x,y)]\]
+
+<p>一般地，<strong>Wasserstein</strong>距离定义为如下最优化问题：</p>
+
+\[\begin{aligned} \mathcal{W}[p,q] = \mathop{\inf}_{\gamma \in \Pi[p,q]} &amp; \int \int \gamma(x,y) d(x,y) dxdy \\ \text{s.t. } &amp; \int \gamma(x,y) dy = p(x) \\ &amp; \int \gamma(x,y)dx = q(y) \\ &amp; \gamma(x,y) \geq 0 \end{aligned}\]
+
+<h3 id="-为什么wasserstein距离比js散度或kl散度更好">⚪ 为什么Wasserstein距离比JS散度或KL散度更好？</h3>
+
+<p><strong>Wasserstein</strong>距离可以衡量两个概率分布之间的距离；<a href="https://0809zheng.github.io/2020/02/03/kld.html"><font color="blue">JS散度</font></a>和<a href="https://0809zheng.github.io/2020/02/03/kld.html"><font color="blue">KL散度</font></a>也具有类似的功能。相比于后两者，<strong>Wasserstein</strong>距离在两个概率分布没有重叠的情况下仍然是有意义的，并且距离表示更加平滑。</p>
+
+<p>假设具有以下概率分布：</p>
+
+\[\begin{aligned} &amp;\forall (x,y) \in P, x=0,y\text{ ~ } U(0,1) \\ &amp;\forall (x,y) \in Q, x=\theta, 0 \leq \theta \leq 1,y\text{ ~ } U(0,1)  \end{aligned}\]
+
+<p><img src="https://pic1.imgdb.cn/item/634226fe16f2c2beb1e49d0d.jpg" alt="" /></p>
+
+<p>当$\theta \neq 0$时分布$P,Q$没有重叠。此时计算两个分布的<strong>KL</strong>散度、<strong>JS</strong>散度和<strong>Wasserstein</strong>距离：</p>
+
+\[\begin{aligned} D_{KL}[P || Q] &amp;= \sum P \log \frac{P}{Q}  = \sum_{x=0,y\text{ ~ } U(0,1)} 1 \cdot \log \frac{1}{0} = + \infty  \\  D_{KL}[Q || P] &amp;= \sum Q \log \frac{Q}{P}  = \sum_{x=\theta,y\text{ ~ } U(0,1)} 1 \cdot \log \frac{1}{0} = + \infty \\ D_{JS}[P || Q] &amp;= \frac{1}{2}D_{KL}[P || \frac{P+Q}{2}] + \frac{1}{2}D_{KL}[Q || \frac{P+Q}{2}] \\ &amp; =  \frac{1}{2}\sum_{x=0,y\text{ ~ } U(0,1)} 1 \cdot \log \frac{1}{1/2} +  \frac{1}{2} \sum_{x=\theta,y\text{ ~ } U(0,1)} 1 \cdot \log \frac{1}{1/2} \\ &amp; = \log 2 \\  \mathcal{W}[P,Q] &amp; = |\theta|  \end{aligned}\]
+
+<p>当$\theta = 0$时分布$P,Q$完全重叠，此时有：</p>
+
+\[D_{KL}[P || Q] = D_{KL}[Q || P] = D_{JS}[P || Q] = 0 \\ \mathcal{W}[P,Q] = 0 = |\theta|\]
+
+<p>根据上述结论，当$P,Q$没有重叠时<strong>KL</strong>散度变为无穷大；当参数$\theta$变化时<strong>JS</strong>散度的取值发生跳变；只有<strong>Wasserstein</strong>距离提供了一种平滑的分布差异测量，能够保证学习过程的稳定性。</p>
+
+<p>通常<strong>GAN</strong>的目标函数被认为是最小化数据的真实分布与生成分布之间的<strong>JS</strong>散度；如果将其替换为<strong>Wasserstein</strong>距离，可能会取得更好的效果。</p>
+
+<h1 id="2-wasserstein-gan">2. Wasserstein GAN</h1>
+
+<p><strong>Wasserstein</strong>距离具有如下<a href="https://0809zheng.github.io/2022/05/16/Wasserstein.html#3-wasserstein%E8%B7%9D%E7%A6%BB%E5%8F%8A%E5%85%B6%E5%AF%B9%E5%81%B6%E5%BD%A2%E5%BC%8F"><font color="blue">对偶形式</font></a>：</p>
+
+\[\mathcal{W}[p,q] =  \mathop{\sup}_{f, ||f||_L \leq K} \{  \Bbb{E}_{x \text{~} p(x)} [ f(x)] -\Bbb{E}_{x \text{~}q(x)}[f(x)]\}\]
+
+<p>上式要求函数$f$是$K$阶<strong>Lipschitz</strong>连续的，即应满足\(\|f\|_L \leq K\)。</p>
+
+<p>一般地，一个实值函数$f$是$K$阶<strong>Lipschitz</strong>连续的，是指存在一个实数$K\geq 0$，使得对\(\forall x_1,x_2 \in \Bbb{R}\)，有：</p>
+
+\[| f(x_1)-f(x_2) | ≤K | x_1-x_2 |\]
+
+<p>通常一个连续可微函数满足<strong>Lipschitz</strong>连续，这是因为其微分(用$\frac{|f(x_1)-f(x_2)|}{|x_1-x_2|}$近似)是有界的。但是一个<strong>Lipschitz</strong>连续函数不一定是处处可微的，比如$f(x) = |x|$。</p>
+
+<p><strong>Lipschitz</strong>连续性保证了函数的输出变化相对输入变化是缓慢的。若没有该限制，优化过程可能会使函数的输出趋向正负无穷。</p>
+
+<p>在<strong>Wasserstein GAN</strong>中，把判别器$D(\cdot)$约束为<strong>Lipschitz</strong>连续函数，则优化目标为真实分布\(P_{data}\)和生成分布$P_G$之间的<strong>Wasserstein</strong>距离：</p>
+
+\[\mathcal{W}[P_{data},P_G]  = \mathop{\sup}_{D, ||D||_L \leq K} \{ \Bbb{E}_{x \text{~} P_{data}(x)}[D(x)]-\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)] \}\]
+
+<p>此时判别器$D$不再充当区分真实数据和生成数据的二分类器，而是通过学习一个<strong>Lipschitz</strong>连续函数来计算分布的<strong>Wasserstein</strong>距离。当判别器的损失下降时，<strong>Wasserstein</strong>距离变小，生成器的输出更接近真实的数据分布。</p>
+
+<p>下面讨论如何把判别器$D(\cdot)$约束为<strong>Lipschitz</strong>连续函数，即引入约束：</p>
+
+\[| D(x_1)-D(x_2) | ≤K | x_1-x_2 |\]
+
+<p>在实践中，通过<strong>weight clipping</strong>实现该约束：在每次梯度更新后，把判别器$D$的参数$w$的取值限制在$[-c,c]$之间（$c$常取$0.01$）。</p>
+
+<p>与标准的<strong>GAN</strong>相比，<strong>Wasserstein GAN</strong>的主要改进如下：</p>
+<ol>
+  <li>在判别器的更新中，对判别器的参数取值进行裁剪$[-c,c]$；</li>
+  <li>判别器不再是二分类器，而是提供了计算<strong>Wasserstein</strong>距离的近似估计；</li>
+  <li>判别器的优化器选用<strong>RMSProp</strong>，相比于基于动量的优化器(如<strong>Adam</strong>)训练更稳定。</li>
+</ol>
+
+<h3 id="-wasserstein-gan的pytorch实现">⚪ Wasserstein GAN的pytorch实现</h3>
+
+<p><strong>Wasserstein GAN</strong>的优化目标为：</p>
+
+\[\mathop{ \min}_{G} \mathop{\max}_{D, ||D||_L \leq K} \{ \Bbb{E}_{x \text{~} P_{data}(x)}[D(x)]-\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)] \}\]
+
+<p>或写作交替优化的形式：</p>
+
+\[\begin{aligned} θ_D &amp;\leftarrow \mathop{\arg \max}_{\theta_D} \frac{1}{n} \sum_{i=1}^{n} { D(x^i)} - \frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))} \\ θ_D &amp;\leftarrow\text{clip}(\theta_D,-c,c) \\ \theta_G &amp;\leftarrow \mathop{\arg \min}_{\theta_G} -\frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))} \end{aligned}\]
+
+<p><strong>Wasserstein GAN</strong>的完整训练流程如下：</p>
+
+<p><img src="https://pic1.imgdb.cn/item/634231de16f2c2beb1f469e9.jpg" alt="" /></p>
+
+<p><strong>Wasserstein GAN</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/eriklindernoren/PyTorch-GAN/tree/master/implementations/wgan">PyTorch-GAN</a>，下面给出其损失函数的计算和参数更新过程：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">n_epochs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">real_imgs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+
+        <span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">opt</span><span class="p">.</span><span class="n">latent_dim</span><span class="p">)</span> 
+        <span class="n">gen_imgs</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  
+
+        <span class="c1"># 训练判别器
+</span>        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">d_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">discriminator</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">))</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">.</span><span class="n">detach</span><span class="p">()))</span>
+        <span class="n">d_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+            
+        <span class="c1"># 裁剪判别器参数
+</span>        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">discriminator</span><span class="p">.</span><span class="n">parameters</span><span class="p">():</span>
+            <span class="n">p</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">clamp_</span><span class="p">(</span><span class="o">-</span><span class="n">opt</span><span class="p">.</span><span class="n">clip_value</span><span class="p">,</span> <span class="n">opt</span><span class="p">.</span><span class="n">clip_value</span><span class="p">)</span>
+
+        <span class="c1"># 训练生成器
+</span>        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">opt</span><span class="p">.</span><span class="n">d_iter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">optimizer_G</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">g_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">))</span>
+            <span class="n">g_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer_G</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div></div>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/02/05/dcgan.html" class="read-next-link"></a>
+        <section>
+          <span>Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks</span>
+          <p>  DCGAN：使用深度卷积神经网络构造GAN.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic1.imgdb.cn/item/634272f816f2c2beb164f55f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/02/03/principle.html" class="read-next-link"></a>
+          <section>
+            <span>Towards Principled Methods for Training Generative Adversarial Networks</span>
+            <p>  训练生成对抗网络的原则性方法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/633103e316f2c2beb14952e4.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

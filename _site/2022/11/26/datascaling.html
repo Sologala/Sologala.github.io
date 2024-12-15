@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>On Data Scaling in Masked Image Modeling - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="On Data Scaling in Masked Image Modeling">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="On Data Scaling in Masked Image Modeling - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/11/26/datascaling.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>On Data Scaling in Masked Image Modeling</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-11-26"><i class="iconfont icon-date"></i>26 Nov 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6559666cc458853aef36f69b.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>探究掩码图像建模中的数据可扩展性.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2206.04664">On Data Scaling in Masked Image Modeling</a></li>
+</ul>
+
+<p>掩码图像建模 (<strong>masked image modeling, MIM</strong>) 被怀疑无法从更大的数据中获益。这项工作中作者通过大量实验打破了这种误解，表明该方法不仅仅是模型可扩展的，也是数据可扩展的。数据规模从 <strong>ImageNet-1K</strong> 的 $10\%$ 到完整 <strong>ImageNet-22K</strong>，模型大小从<strong>4900</strong>万到<strong>10</strong>亿，训练长度从 <strong>125K</strong> 个 <strong>iteration</strong> 到 <strong>500K</strong> 个 <strong>iteration</strong>。作者的研究表明：</p>
+<ul>
+  <li>掩码图像建模也需要更大的数据：作者观察到，非常大的模型在相对较小的数据下往往会过拟合。</li>
+  <li>训练时间的问题：通过掩码图像建模训练的大模型，可以通过更长的训练，从更多的数据中受益。</li>
+  <li>预训练中的验证集损失是衡量模型在多个任务上的微调效果的良好指标：这种观察能够对预训练的模型进行廉价的预评估，而不必每次都在下游任务上微调评估。</li>
+</ul>
+
+<p>掩码图像建模以被破坏的图像为输入，训练的目标是被掩码的区域。在本研究中，作者使用 <strong>SimMIM</strong> 作为默认的掩码图像建模方法，因为它简单且对视觉编码器的架构没有限制。<strong>SimMIM</strong> 由一个视觉编码器和一个极其轻量级的预测头 (一个线性层) 组成，通过<strong>L1</strong>回归损失预测损坏图像的原始像素。为了便于 <strong>ViT</strong> 的实现，<strong>SimMIM</strong> 的掩码采用了 <strong>patch-wise mask</strong> 的策略，掩码的 <strong>patch</strong> 大小为 <strong>32×32</strong>，掩码比为<strong>0.6</strong>。</p>
+
+<p>本研究使用 <strong>Swin Transformer V2</strong> 作为视觉编码器。由于其通用性和可扩展性，作者在多个下游任务上评估了一系列模型大小的 <strong>SwinV2</strong> 模型 (参数数量范围从 <strong>∼50M</strong> 到 <strong>∼1B</strong>, <strong>FLOPs</strong> 范围从 <strong>∼9G</strong> 到 <strong>∼190G</strong>)。详细的模型规格如下图所示。作者使用了一种新的变体 <strong>SwinV2-g (giant)</strong>，其参数数量介于 <strong>SwinV2-L</strong> 和<strong>30</strong>亿参数的 <strong>SwinV2-G (Giant)</strong> 之间。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65597ab0c458853aef72529e.jpg" alt="" /></p>
+
+<p>为了研究数据大小对掩码图像建模的影响，作者构建了不同大小的数据集，使用 <strong>ImageNet-1K</strong> 和 <strong>ImageNet-22K</strong> 的训练集作为两个大规模的数据集，并随机抽取 <strong>ImageNet-1K</strong> 训练集中 <strong>10%</strong>、<strong>20%</strong>、<strong>50%</strong> 的图像作为较小的数据集。本研究中使用的所有预训练数据集的细节和统计如下图所示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65597b13c458853aef7383fb.jpg" alt="" /></p>
+
+<p>下图是不同模型和数据规模下的训练损失、验证损失与 <strong>ImageNet-1K</strong> 微调精度和训练长度之间的关系。随着训练成本的增加，部分模型的训练损失显著下降，但是验证损失显著上升，即使使用 <strong>ImageNet-1K</strong> 的 <strong>50%</strong> 的图像，也存在过拟合现象。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6559f26ec458853aeff909df.jpg" alt="" /></p>
+
+<p>下图给出了每个模型的最佳微调性能。可以发现，当使用小数据集进行训练时，大型模型的表现甚至不如小型模型。使用更多的数据可以获得更好的性能。这些观察结果表明 <strong>MIM</strong> 的预训练方法也是需要大数据集的。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6559f2c0c458853aeffa078b.jpg" alt="" /></p>
+
+<p>通过比较不同数据大小预训练的模型的性能，发现与较小的模型相比，大模型的微调性能随着数据大小的增加而饱和得更慢。而且在较短的训练长度下，使用更多数据对预训练的改善并不显著。这一观察表明，虽然更大的模型可以从更多的数据中受益，但训练长度也必须同时增加。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6559f363c458853aeffc1164.jpg" alt="" /></p>
+
+<p>除了 <strong>ImageNet-1K</strong> 图像分类，作者还评估了 <strong>MIM</strong> 预训练的 <strong>SwinV2-S</strong>, <strong>SwinV2-B</strong> 和 <strong>SwinV2-L</strong> 在 <strong>iNaturalist 2018</strong> 细粒度图像分类，<strong>ADE20K</strong> 语义分割和 <strong>COCO</strong> 目标检测和实例分割上的效果。如下图所示，随着训练成本的增加，一些模型显示出过拟合的迹象。随着数据量的增加，较小的模型迅速达到饱和，而较大的模型在经过足够的训练后，可以从更多的数据中持续受益。这些结果表明，在 <strong>ImageNet-1K</strong> 上得出的结论广泛适用于其他视觉任务。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6559f3d1c458853aeffd854b.jpg" alt="" /></p>
+
+<p>作者还探索了 <strong>MIM</strong> 训练中的预训练的损失是否是其微调性能的良好指标。对于非过拟合模型 (绿圈)，训练损失和验证损失与下游任务的微调性能之间的相关性都为负；对于过拟合模型 (红圈)，训练损失与下游任务的微调性能之间的相关性为正，验证损失与下游任务的微调性能之间的相关性为负。以上结果说明在多个任务上，预训练中的验证损失是衡量模型在多个任务上的微调效果的良好指标。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6559f68fc458853aef073b81.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/11/27/darksecret.html" class="read-next-link"></a>
+        <section>
+          <span>Revealing the Dark Secrets of Masked Image Modeling</span>
+          <p>  揭露掩码图像建模方法的有效性.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6559fb72c458853aef18b0eb.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/11/25/convmae.html" class="read-next-link"></a>
+          <section>
+            <span>ConvMAE: Masked Convolution Meets Masked Autoencoders</span>
+            <p>  ConvMAE：结合掩码卷积与掩码自编码器.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6558591ec458853aefb5d830.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

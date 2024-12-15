@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twins: Revisiting the Design of Spatial Attention in Vision Transformers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Twins: Revisiting the Design of Spatial Attention in Vision Transformers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Twins: Revisiting the Design of Spatial Attention in Vision Transformers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/23/twins.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Twins: Revisiting the Design of Spatial Attention in Vision Transformers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-23"><i class="iconfont icon-date"></i>23 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/643b693a0d2dde5777518446.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Twins：重新思考视觉Transformer中的空间注意力设计.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2104.13840">Twins: Revisiting the Design of Spatial Attention in Vision Transformers</a></li>
+</ul>
+
+<p>相较于<strong>CNN</strong>来说，<strong>Transformer</strong>由于其能高效地捕获远距离依赖的特性，近期在计算机视觉领域也引领了一波潮流。<strong>Transformer</strong>主要是依靠<strong>Self-Attention</strong>去捕获各个<strong>token</strong>之间的关系，但是这种<strong>Global Self-Attention</strong>的计算复杂度太高，不利于在<strong>token</strong>数目较多的密集检测任务（分割、检测）中使用。</p>
+
+<p>基于以上考虑，目前主流有两种应对方法：</p>
+<ol>
+  <li>一种是以<strong>SwinTransformer</strong>为代表的<strong>Locally-Grouped Self-Attention</strong>。其在不重叠的窗口内计算<strong>Self-Attention</strong>，当窗口大小固定时，整体的计算复杂度将下降，然后再通过其他方法去实现窗口间的互动，例如<strong>SwinTransformer</strong>中的<strong>Shift-Window</strong>方法。但这种方法的缺点在于窗口的大小会不一致，不利于现代深度学习框架的优化和加速。</li>
+  <li>一种是以<strong>PVT</strong>为代表的<strong>Sub-Sampled Version Self-Attention</strong>。其在计算<strong>Self-Attention</strong>前，会先对<strong>QKV Token</strong>进行下采样，从而降低计算复杂度。</li>
+</ol>
+
+<p>本文整体思路可以认为是<strong>PVT+SwinTransformer</strong>的结合：在局部窗口内部计算<strong>Self-Attention（SwinTransformer）</strong>，同时对每个窗口内部的特征进行压缩，然后再使用一个全局<strong>Attention</strong>机制去捕获各个窗口的关系（<strong>PVT</strong>）。</p>
+
+<h2 id="-twins-pcpvt">⚪ Twins-PCPVT</h2>
+
+<p><strong>PVT</strong>中的<strong>Global Sub-Sample Attention</strong>是十分高效的，当配合上合适的<strong>Positional Encodings（Conditional Positional Encoding）</strong>时，其能取得媲美甚至超过目前<strong>SOTA</strong>的<strong>Transformer</strong>结构。</p>
+
+<p><strong>PVT</strong>通过逐步融合各个<strong>Patch</strong>的方式，形成了一种多尺度的结构，使得其更适合用于密集预测任务例如目标检测或者是语义分割，其继承了<strong>ViT</strong>和<strong>DeiT</strong>的<strong>Learnable Positional Encoding</strong>的设计，所有的<strong>Layer</strong>均直接使用<strong>Global Attention</strong>机制，并通过<strong>Spatial Reduction</strong>的方式去降低计算复杂度。</p>
+
+<p>作者通过实验发现，<strong>PVT</strong>与<strong>SwinTransformer</strong>的性能差异主要来自于<strong>PVT</strong>没有采用一个合适的<strong>Positional Encoding</strong>方式，通过采用<strong>Conditional Positional Encoding（CPE）</strong>去替换<strong>PVT</strong>中的<strong>PE</strong>，<strong>PVT</strong>即可获得与当前最好的<strong>SwinTransformer</strong>相近的性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643b6a240d2dde57775243a1.jpg" alt="" /></p>
+
+<h2 id="-twins-svt">⚪ Twins-SVT</h2>
+
+<p>更进一步，基于<strong>Separable Depthwise Convolution</strong>的思想，本文提出了一个<strong>Spatially Separable Self-Attention（SSSA）</strong>。该模块仅包含矩阵乘法，在现代深度学习框架下能够得到优化和加速。通过提出的<strong>Spatially Separable Self-Attention（SSSA）</strong>去缓解<strong>Self-Attention</strong>的计算复杂度过高的问题。<strong>SSSA</strong>由两个部分组成：<strong>Locally-Grouped Self-Attention（LSA）</strong>和<strong>Global Sub-Sampled Attention（GSA）</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643b6b250d2dde5777530ef2.jpg" alt="" /></p>
+
+<h3 id="1-locally-grouped-self-attentionlsa">(1) Locally-Grouped Self-Attention（LSA）</h3>
+
+<p>首先将<strong>2D feature map</strong>划分为多个<strong>Sub-Windows</strong>，并仅在<strong>Window</strong>内部进行<strong>Self-Attention</strong>计算，计算量会大大减少，由$O(H^2W^2d)$下降至$O(k_1k_2HWd)$，其中$k_1=\frac{H}{m},k_2=\frac{W}{n}$，当$k_1,k_2$固定时，计算复杂度将仅与$HW$呈线性关系。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LocalAttention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">patch_size</span> <span class="o">=</span> <span class="mi">7</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">inner_dim</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">*</span>  <span class="n">heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">patch_size</span> <span class="o">=</span> <span class="n">patch_size</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">**</span> <span class="o">-</span><span class="mf">0.5</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_q</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_kv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inner_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmap</span><span class="p">):</span>
+        <span class="n">shape</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">fmap</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">patch_size</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">heads</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span> <span class="o">//</span> <span class="n">p</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+
+        <span class="n">fmap</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">fmap</span><span class="p">,</span> <span class="s">'b c (x p1) (y p2) -&gt; (b x y) c p1 p2'</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">p</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">p</span><span class="p">)</span>
+
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">to_q</span><span class="p">(</span><span class="n">fmap</span><span class="p">),</span> <span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">to_kv</span><span class="p">(</span><span class="n">fmap</span><span class="p">).</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">'b (h d) p1 p2 -&gt; (b h) (p1 p2) d'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">h</span><span class="p">),</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+
+        <span class="n">dots</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s">'b i d, b j d -&gt; b i j'</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+
+        <span class="n">attn</span> <span class="o">=</span> <span class="n">dots</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s">'b i j, b j d -&gt; b i d'</span><span class="p">,</span> <span class="n">attn</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">'(b x y h) (p1 p2) d -&gt; b (h d) (x p1) (y p2)'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">h</span><span class="p">,</span> <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">p</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">p</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="2--global-sub-sampled-attentiongsa">(2)  Global Sub-Sampled Attention（GSA）</h3>
+
+<p><strong>LSA</strong>缺乏各个<strong>Window</strong>之间的信息交互，比较简单的一个方法是，在<strong>LSA</strong>后面再接一个<strong>Global Self-Attention Layer</strong>，这种方法在实验中被证明也是有效的，但是其计算复杂度会较高。</p>
+
+<p>另一个思路是，将每个<strong>Window</strong>提取一个维度较低的特征作为各个<strong>window</strong>的表征，然后基于这个表征再去与各个<strong>window</strong>进行交互，相当于<strong>Self-Attention</strong>中的<strong>Key</strong>的作用，这样一来，计算复杂度会下降至：$O(mnHWd)=O(\frac{H^2W^2d}{k_1k_2})$。</p>
+
+<p>这种方法实际上相当于对<strong>feature map</strong>进行下采样，因此被命名为<strong>Global Sub-Sampled Attention</strong>。 综合使用<strong>LSA</strong>和<strong>GSA</strong>，可以取得类似于<strong>Separable Convolution（Depth-wise+Point-wise）</strong>的效果，整体的计算复杂度为：$O(\frac{H^2W^2d}{k_1k_2}+k_1k_2HWd)$。同时有：$\frac{H^2W^2d}{k_1k_2}+k_1k_2HWd \geq 2HWd\sqrt{HW}$，当且仅当$k_1k_2 = \sqrt{HW}$。</p>
+
+<p>考虑到分类任务中，$H=W=224$是比较常规的设置，同时使用方形框，则有$k_1=k_2$，第一个<strong>stage</strong>的<strong>feature map</strong>大小为$56$，可得$k_1=k_2=\sqrt{56}=7$。 当然可以针对各个<strong>Stage</strong>去设定其窗口大小，不过为了简单性，所有的$k$均设置为$7$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GlobalAttention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">7</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">inner_dim</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">*</span>  <span class="n">heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">**</span> <span class="o">-</span><span class="mf">0.5</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_q</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_kv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">stride</span> <span class="o">=</span> <span class="n">k</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inner_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">heads</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">to_q</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">to_kv</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">'b (h d) x y -&gt; (b h) (x y) d'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">h</span><span class="p">),</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+
+        <span class="n">dots</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s">'b i d, b j d -&gt; b i j'</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+
+        <span class="n">attn</span> <span class="o">=</span> <span class="n">dots</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">attn</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s">'b i j, b j d -&gt; b i d'</span><span class="p">,</span> <span class="n">attn</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">'(b h) (x y) d -&gt; b (h d) x y'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">h</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>Twins-SVT</strong>的完整实现可参考<a href="https://github.com/lucidrains/vit-pytorch/blob/main/vit_pytorch/twins_svt.py">vit-pytorch</a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/24/oversmooth.html" class="read-next-link"></a>
+        <section>
+          <span>Improve Vision Transformers Training by Suppressing Over-smoothing</span>
+          <p>  通过抑制过度平滑改进视觉Transformer.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/643bc7a30d2dde5777c4843d.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/22/lvvit.html" class="read-next-link"></a>
+          <section>
+            <span>All Tokens Matter: Token Labeling for Training Better Vision Transformers</span>
+            <p>  LV-ViT：使用标志标签更好地训练视觉Transformers.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/643bbb8f0d2dde5777b4fd6b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

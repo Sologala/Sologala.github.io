@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>计算模型的参数量(Params)和运算量(FLOPs) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="计算模型的参数量(Params)和运算量(FLOPs)">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="计算模型的参数量(Params)和运算量(FLOPs) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/03/24/thop.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>计算模型的参数量(Params)和运算量(FLOPs)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-03-24"><i class="iconfont icon-date"></i>24 Mar 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Compute the parameters and FLOPs of the model using thop.</p>
+</blockquote>
+
+<p>衡量模型的好坏，除了任务特定的性能指标(如准确率)，还需要考虑模型的效率，比如模型的参数量和运算量。<strong>参数量</strong>是指模型的参数个数，描述模型存储所需<strong>内存</strong>；<strong>运算量</strong>通常用<strong>FLOPs</strong>衡量，描述模型使用所需<strong>计算力</strong>。</p>
+
+<p>注意是<strong>FLOPs(floating point operations)</strong>，指浮点运算数量，通常以<strong>GFLOPs</strong> ($10^9$)为单位；而不是<strong>FLOPS(floating point operations per second)</strong>，指每秒浮点运算次数，后者通常用于衡量硬件的性能指标。</p>
+
+<p>对于一个卷积核尺寸为$(h \times w \times c_{in})$的卷积层，其输出特征图的尺寸为$(H \times W \times c_{out})$，则该卷积层的：</p>
+<ul>
+  <li><strong>参数量</strong>(包含偏置参数)：$c_{out} \times (h \times w \times c_{in}+1)$</li>
+  <li><strong>FLOPs</strong>(包含偏置参数，考虑乘法与加法)：$H \times W \times c_{out} \times (2 \times h \times w \times c_{in})$</li>
+</ul>
+
+<p>通常网络中的全连接层参数量较大，需要较大的内存，但其运算量较小；卷积层参数量较小，但运算量较大，是一种计算密集型的操作。此外，还有一些网络结构(如池化和<strong>Dropout</strong>)没有参数但存在计算。</p>
+
+<h1 id="1-使用thop库计算模型的参数量和flops">1. 使用thop库计算模型的参数量和FLOPs</h1>
+
+<p><a href="https://github.com/Lyken17/pytorch-OpCounter"><strong>PyTorch-OpCounter</strong></a>是为<strong>Pytorch</strong>框架设计的模型参数量和运算量统计工具，安装语句如下：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install thop
+</code></pre></div></div>
+
+<p>使用语句如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">thop</span> <span class="kn">import</span> <span class="n">profile</span>
+
+<span class="n">tensor</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),)</span>
+<span class="n">flops</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">profile</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">tensor</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'FLOPs ='</span><span class="p">,</span> <span class="n">flops</span><span class="o">/</span><span class="mf">1e9</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'params ='</span><span class="p">,</span> <span class="n">params</span><span class="o">/</span><span class="mf">1e6</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>值得一提的是，如果在工程中使用<strong>thop</strong>库测试模型的参数等信息，在后续保存模型<code class="language-plaintext highlighter-rouge">torch.save(model.state_dict())</code>时也会把<strong>total_params</strong>和<strong>total_ops</strong>等注册到网络中，导致直接加载模型<code class="language-plaintext highlighter-rouge">model.load_state_dict(state_dict)</code>时报错：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Missing</span> <span class="n">key</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="p">:</span> <span class="s">"total_ops"</span><span class="p">,</span> <span class="s">"total_params"</span><span class="p">...</span>
+</code></pre></div></div>
+
+<p>解决办法是在加载模型时指定<code class="language-plaintext highlighter-rouge">strict</code>参数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">model</span><span class="p">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h1 id="2-使用fvcore库计算模型的参数量和flops">2. 使用fvcore库计算模型的参数量和FLOPs</h1>
+
+<p><a href="https://github.com/facebookresearch/fvcore"><strong>fvcore</strong></a>是<strong>Facebook</strong>开源的轻量级核心库，它提供计算机视觉框架中常见且基本的功能；其中就包括统计模型的参数以及<strong>FLOPs</strong>等。安装语句如下：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>pip install fvcore
+</code></pre></div></div>
+
+<p>使用语句如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">fvcore.nn</span> <span class="kn">import</span> <span class="n">FlopCountAnalysis</span><span class="p">,</span> <span class="n">parameter_count_table</span>
+
+<span class="n">tensor</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),)</span>
+<span class="n">flops</span> <span class="o">=</span> <span class="n">FlopCountAnalysis</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tensor</span><span class="p">).</span><span class="n">total</span><span class="p">()</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">parameter_count_table</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'flops ='</span><span class="p">,</span> <span class="n">flops</span><span class="o">/</span><span class="mf">1e9</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/03/25/boundary.html" class="read-next-link"></a>
+        <section>
+          <span>Boundary loss for highly unbalanced segmentation</span>
+          <p>  高度不平衡分割任务中的边界损失.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/641abd05a682492fcc635a49.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/03/23/centernet.html" class="read-next-link"></a>
+          <section>
+            <span>Objects as Points</span>
+            <p>  CenterNet：把目标检测视为中心点检测.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64c0da231ddac507ccf05109.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度学习中的正则化方法(Regularization) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="深度学习中的正则化方法(Regularization)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="深度学习中的正则化方法(Regularization) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/03/regularization.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>深度学习中的正则化方法(Regularization)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-03"><i class="iconfont icon-date"></i>03 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('http://p0.ifengimg.com/pmop/2018/0117/FF63C065C57341C7727412791090885E7EB230BD_size23_w900_h375.jpeg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Regularization in Deep Learning.</p>
+</blockquote>
+
+<p>深度学习所处理的问题包括优化问题和泛化问题。<strong>优化(optimization)</strong>问题是指在已有的数据集上实现最小的训练误差；而<strong>泛化(generalization)</strong>问题是指在未经过训练的数据集(通常假设与训练集同分布)上实现最小的<strong>泛化误差(generalize error)</strong>。通常深度神经网络具有很强的拟合能力，因此训练误差较低，但是容易<strong>过拟合(overfitting)</strong>，导致泛化误差较大。</p>
+
+<p><strong>正则化(Regularization)</strong>指的是通过<strong>引入噪声</strong>或限制模型的<strong>复杂度</strong>，降低模型对输入或者参数的敏感性，避免过拟合，提高模型的泛化能力。常用的正则化方法包括约束目标函数(等价于约束模型参数)、约束网络结构、约束优化过程。</p>
+
+<ul>
+  <li>约束<strong>目标函数</strong>：在目标函数中增加模型参数的正则化项，包括<strong>L2</strong>正则化, <strong>L1</strong>正则化, 弹性网络正则化, <strong>L0</strong>正则化, 谱正则化, 自正交性正则化, <strong>WEISSI</strong>正则化, 梯度惩罚</li>
+  <li>约束<strong>网络结构</strong>：在网络结构中添加噪声，包括随机深度, <strong>Dropout</strong>及其系列方法,</li>
+  <li>约束<strong>优化过程</strong>：在优化过程中施加额外步骤，包括数据增强, 梯度裁剪, <strong>Early Stop</strong>, 标签平滑, 变分信息瓶颈, 虚拟对抗训练, <strong>Flooding</strong></li>
+</ul>
+
+<h1 id="1-约束目标函数">1. 约束目标函数</h1>
+
+<h2 id="-l2正则化-l2-regularization">⚪ L2正则化 L2 Regularization</h2>
+
+<p><strong>L2</strong>正则化通过约束参数的<strong>L2</strong>范数（<strong>L2-norm</strong>）减小过拟合。带有<strong>L2</strong>正则化的优化问题可写作：</p>
+
+\[w^*= \mathop{\arg\min}_w \frac{1}{N} \sum_{n=1}^{N} {L(y_n,f(x_n);w)}+λ ||w||_2^2\]
+
+<h3 id="1-讨论l2正则化等价于约束参数矩阵的frobenius范数">(1) 讨论：L2正则化等价于约束参数矩阵的Frobenius范数</h3>
+
+<p>若将模型参数表示为矩阵$W$，则<strong>L2</strong>正则化等价于约束矩阵$W$的<strong>Frobenius</strong>范数：</p>
+
+\[\sum_{i,j} w_{ij}^2 = ||W||_F^2\]
+
+<p>矩阵$W$的<strong>Frobenius</strong>范数 $||W||_F$是矩阵的<a href="https://0809zheng.github.io/2020/09/19/snr.html">谱范数</a> $||W||_2$的一个上界。约束<strong>Frobenius</strong>范数能够使网络更好地满足<a href="https://0809zheng.github.io/2022/10/11/lipschitz.html">Lipschitz连续性</a>，从而降低模型对输入扰动的敏感性，增强模型的泛化能力。</p>
+
+<p>下面证明<strong>Frobenius</strong>范数是谱范数的上界。对于矩阵$W$和向量$x$，根据柯西不等式：</p>
+
+\[||Wx|| \leq ||W||_F \cdot ||x||\]
+
+<p>而谱范数的定义：</p>
+
+\[||W||_2 = \mathop{\max}_{x \neq 0} \frac{||Wx||}{||x||}\]
+
+<p>因此有：</p>
+
+\[||W||_2 \leq  ||W||_F\]
+
+<h3 id="2-讨论l2正则化等价于参数服从正态分布的最大后验估计">(2) 讨论：L2正则化等价于参数服从正态分布的最大后验估计</h3>
+
+<p>从贝叶斯角度出发，把参数$w$看作随机变量，假设其先验概率$p(w)$服从正态分布$N(0,σ_0^2)$。</p>
+
+<p>由贝叶斯定理可得参数$w$的后验概率$p(w|x,y)$：</p>
+
+\[p(w |x, y) = \frac{p(x,y | w)p(w)}{p(y)} \propto p(x,y | w)p(w)\]
+
+<p>参数$w$的最大后验估计为：</p>
+
+\[\begin{aligned} \hat{w} &amp;= \mathop{\arg \max}_{w}\log p(w |x, y) = \mathop{\arg \max}_{w}\log p(x,y | w)p(w) \\ &amp;= \mathop{\arg \max}_{w} \log p(x,y | w) +\log\frac{1}{\sqrt{2\pi}σ_0} \exp(-\frac{w^Tw}{2σ_0^2})  \\ &amp;\propto \mathop{\arg \max}_{w} \log p(x,y | w)-\frac{w^Tw}{2σ_0^2} \\ &amp;= \mathop{\arg \min}_{w} -\log p(x,y | w)+\frac{1}{2σ_0^2}||w||_2^2 \end{aligned}\]
+
+<p>因此参数服从正态分布的最大后验估计等价于引入<strong>L2</strong>正则化。</p>
+
+<h3 id="3-讨论l2正则化与权重衰减">(3) 讨论：L2正则化与权重衰减</h3>
+
+<p>在标准的梯度下降算法中，应用<strong>L2</strong>正则化后参数的更新过程为：</p>
+
+\[\begin{aligned} w^{(t+1)} &amp;\leftarrow w^{(t)} - \alpha \nabla_w[L(w)+λ ||w||_2^2] \\ &amp;\leftarrow (1-2\alpha \lambda)w^{(t)} - \alpha \nabla_w L(w) \end{aligned}\]
+
+<p>上式相当于在参数更新时首先对参数引入一个衰减系数$\alpha \lambda$，因此也称为<strong>权重衰减(Weight Decay)</strong>正则化。</p>
+
+<p>值得一提的是，在<strong>Adam</strong>等自适应学习率算法中，使用梯度的二阶矩进行梯度缩放。此时参数更新过程大约是：</p>
+
+\[\begin{aligned} w^{(t+1)} &amp;\leftarrow w^{(t)} -2\alpha \lambda \text{sign}(w^{(t)}) - \alpha \nabla_w L(w) \end{aligned}\]
+
+<p>因此对于具有较大梯度的权重，其<strong>L2</strong>正则化项会被缩小，从而与权重衰减正则化不等价。此时每个元素的惩罚都很均匀，而不是绝对值更大的元素惩罚更大，这部分抵消了<strong>L2</strong>正则的作用。<a href="https://0809zheng.github.io/2020/11/28/adamw.html">AdamW算法</a>则将权重衰减从梯度更新过程中解耦，使得所有权重以相同的正则化程度进行衰减：</p>
+
+\[\begin{aligned} w^{(t+1)} &amp;\leftarrow w^{(t)} - \alpha (\frac{\hat{m}^{(t)}(w)}{\sqrt{\hat{v}^{(t)}(w)}+\epsilon}+λ w^{(t)}) \end{aligned}\]
+
+<h2 id="-l1正则化-l1-regularization">⚪ L1正则化 L1 Regularization</h2>
+<p><strong>L1</strong>正则化通过约束参数的<strong>L1</strong>范数（<strong>L1-norm</strong>）减小过拟合。带有<strong>L1</strong>正则化的优化问题可写作：</p>
+
+\[w^*= \mathop{\arg\min}_w \frac{1}{N} \sum_{n=1}^{N} {L(y_n,f(x_n);w)}+λ ||w||_1\]
+
+<p>如下图所示，蓝圈为优化函数的等高线，棕色区域为满足<strong>L2/L1</strong>正则化约束的可行域。当等高线与可行域相交时，L1正则化会优先相交于坐标轴上。故L1正则化会使参数具有稀疏性（<strong>sparse</strong>）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/639b1a2cb1fccdcd36c53a4e.jpg" alt="" /></p>
+
+<h3 id="1-讨论l1正则化等价于参数服从拉普拉斯分布的最大后验估计">(1) 讨论：L1正则化等价于参数服从拉普拉斯分布的最大后验估计</h3>
+
+<p>从贝叶斯角度出发，把参数$w$看作随机变量，假设其先验概率$p(w)$服从拉普拉斯分布：</p>
+
+\[w \sim L(0,σ_0^2) = \frac{1}{2σ_0^2} \exp(-\frac{|w|}{σ_0^2})\]
+
+<p>由贝叶斯定理可得参数$w$的后验概率$p(w|x,y)$：</p>
+
+\[p(w |x, y) = \frac{p(x,y | w)p(w)}{p(y)} \propto p(x,y | w)p(w)\]
+
+<p>参数$w$的最大后验估计为：</p>
+
+\[\begin{aligned} \hat{w} &amp;= \mathop{\arg \max}_{w}\log p(w |x, y) = \mathop{\arg \max}_{w}\log p(x,y | w)p(w) \\ &amp;= \mathop{\arg \max}_{w} \log p(x,y | w) +\log \frac{1}{2σ_0^2} \exp(-\frac{|w|}{σ_0^2})  \\ &amp;\propto \mathop{\arg \max}_{w} \log p(x,y | w)-\frac{|w|}{σ_0^2} \\ &amp;= \mathop{\arg \min}_{w} \log p(x,y | w)+\frac{1}{σ_0^2}||w||_1 \end{aligned}\]
+
+<p>因此参数服从拉普拉斯分布的最大后验估计等价于引入<strong>L1</strong>正则化。</p>
+
+<h2 id="-弹性网络正则化-elastic-net-regularization">⚪ 弹性网络正则化 Elastic Net Regularization</h2>
+
+<ul>
+  <li>paper：<a href="https://www.jstor.org/stable/3647580">Regularization and Variable Selection via the Elastic Net</a></li>
+</ul>
+
+<p><strong>弹性网络正则化 (Elastic Net Regularization)</strong>是指同时约束参数的<strong>L2</strong>范数和<strong>L1</strong>范数：</p>
+
+\[w^*= \mathop{\arg\min}_w \frac{1}{N} \sum_{n=1}^{N} {L(y_n,f(x_n);w)}+λ_2 ||w||_2^2+λ_1 ||w||_1\]
+
+<h2 id="-l0正则化-l0-regularization">⚪ L0正则化 L0 Regularization</h2>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/08/31/l0norm.html"><font color="blue">Learning Sparse Neural Networks through L0 Regularization</font></a></li>
+</ul>
+
+<p><strong>L0正则化</strong>是指约束参数的<strong>L0</strong>范数（不为零的参数数量）：</p>
+
+\[\begin{aligned}
+w^*&amp;= \mathop{\arg\min}_w \frac{1}{N} \sum_{n=1}^{N} {L(y_n,f(x_n);w)}+λ_0 ||w||_0 \\
+||w||_0 &amp;= \sum_{j=1}^{|w|} \mathbb{I}[w_j \neq 0]
+\end{aligned}\]
+
+<p>上述损失项不可微，可通过<strong>hard concrete</strong>分布对其进行重参数化：</p>
+
+\[\begin{aligned}
+w^*&amp;= \mathop{\arg\min}_w \frac{1}{N} \sum_{n=1}^{N} {L(y_n,f(x_n);w \odot z)}+λ_0 \sum_{j=1}^{|w|} \text{sigmoid}(\log \alpha_j - \beta \log \frac{-\gamma}{\zeta}) \\
+u &amp; \sim U[0,1] \\
+s &amp;= \text{sigmoid}((\log u - \log(1-u) + \log \alpha)/\beta) \\
+\overline{s} &amp;= s(\zeta - \gamma) + \gamma \\
+z &amp;= \min(1, \max(0, \overline{s}))
+\end{aligned}\]
+
+<h2 id="-谱正则化-spectral-norm-regularization">⚪ 谱正则化 Spectral Norm Regularization</h2>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/09/19/snr.html"><font color="blue">Spectral Norm Regularization for Improving the Generalizability of Deep Learning</font></a></li>
+</ul>
+
+<p><strong>谱正则化 (Spectral Norm Regularization)</strong>是指把<strong>谱范数(spectral norm)</strong>的平方作为正则项，从而增强网络的泛化性：</p>
+
+\[\mathcal{L}(x,y;W) + \lambda ||W||_2^2\]
+
+<p>谱正则化使网络更好地满足<a href="https://0809zheng.github.io/2022/10/11/lipschitz.html">Lipschitz连续性</a>。<strong>Lipschitz</strong>连续性保证了函数对于<strong>输入扰动的稳定性</strong>，即函数的输出变化相对输入变化是缓慢的。</p>
+
+<p>谱范数是一种由向量范数诱导出来的矩阵范数，作用相当于向量的模长：</p>
+
+\[||W||_2 = \mathop{\max}_{x \neq 0} \frac{||Wx||}{||x||}\]
+
+<p>谱范数$||W||_2$的平方的取值为$W^TW$的最大特征值。</p>
+
+<h2 id="-自正交性正则化-self-orthogonality-regularization">⚪ 自正交性正则化 Self-Orthogonality Regularization</h2>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/09/30/som.html"><font color="blue">Self-Orthogonality Module: A Network Architecture Plug-in for Learning Orthogonal Filters</font></a></li>
+</ul>
+
+<p>自正交性正则化不仅能促进模型参数的正交性，而且能带来一定的结果提升。给定两个参数向量$w_i,w_j$，$\theta_{i,j} \in [0, \pi]$是它们的夹角，\(x\)是对应的输入向量，则有：</p>
+
+\[\mathcal{V}_{i,j} = \mathbb{E}_{x \sim \mathcal{X}}\left[ \text{sign}\left(x^Tw_i\right)\text{sign}\left(x^Tw_j\right) \right] = 1 - \frac{2\theta}{\pi}\]
+
+<p>若参数向量\(w_i,w_j\)正交，则\(\mathcal{V}_{i,j}=0\)。因此可以构造正则项：</p>
+
+\[\mathcal{R}_{\mathcal{V}} = \lambda_1 \left(\sum_{i \neq j}\mathcal{V}_{i,j}\right)^2 + \lambda_2 \sum_{i \neq j} \mathcal{V}_{i,j}^2\]
+
+<h2 id="-weissi正则化-weight-scale-shift-invariance-regularization">⚪ WEISSI正则化 Weight-Scale-Shift-Invariance Regularization</h2>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/09/22/weissi.html"><font color="blue">Improve Generalization and Robustness of Neural Networks via Weight Scale Shifting Invariant Regularizations</font></a></li>
+</ul>
+
+<p>基于<strong>ReLU</strong>族的神经网络通常具有权重尺度偏移不变性 (<strong>Weight-Scale-Shift-Invariance，WEISSI</strong>)。即对网络参数引入偏移$W_l=\gamma_l\tilde{W}_l$，当\(\prod_{l=1}^L \gamma_l=1\)时网络的输出不变：</p>
+
+\[\begin{aligned}
+h_L &amp;= f\left(W_Lf\left(W_{L-1}f(\cdots f\left(W_1x\right))\right)\right) \\
+&amp;= \left( \prod_{l=1}^L \gamma_l \right) f\left(\tilde{W}_Lf\left(\tilde{W}_{L-1}f\left(\cdots f\left(\tilde{W}_1x\right)\right)\right)\right) \\
+\end{aligned}\]
+
+<p>而<strong>L2</strong>正则化项不具有权重尺度偏移不变性：</p>
+
+\[\sum_{l=1}^L || W_l||_2^2 = \sum_{l=1}^L \gamma_l^2|| \tilde{W}_l||_2^2 \neq \sum_{l=1}^L || \tilde{W}_l||_2^2\]
+
+<p>此时模型完全可以找到一组新的参数\(\{\tilde{W}_l,\tilde{b}_l\}\)，它跟原来参数\(\{W_l,b_l\}\)完全等价（没有提升泛化性能），但是<strong>L2</strong>正则项更小。</p>
+
+<p>若希望正则项具有尺度偏移不变性，由于优化过程只需要用到正则项的梯度，则应有：</p>
+
+\[\frac{d}{dx} f(\gamma x) = \frac{d}{dx} f( x)\]
+
+<p>满足上式的一个解是对数函数$f(x) =\log(x)$。因此对应的正则项为：</p>
+
+\[\mathcal{L}_{reg} = \sum_{l=1}^L \log(||W_l||_2) =  \log(\prod_{l=1}^L||W_l||_2)\]
+
+<h2 id="-梯度惩罚-gradient-penalty">⚪ 梯度惩罚 Gradient Penalty</h2>
+
+<h3 id="1对参数的梯度惩罚">（1）对参数的梯度惩罚</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/09/20/implicit.html"><font color="blue">Implicit Gradient Regularization</font></a></li>
+</ul>
+
+<p>梯度下降算法是一种一阶近似优化算法，相当于隐式地在损失函数中添加了对参数的梯度惩罚项：</p>
+
+\[\begin{aligned}
+\tilde{g}(W) &amp; \approx g(W) + \frac{1}{4}\gamma \nabla_{W} ||g(W)||^2 \\
+&amp; = \nabla_{W} \left( L(W) + \frac{1}{4}\gamma ||\nabla_{W} L(W)||^2 \right)
+\end{aligned}\]
+
+<p>梯度惩罚项有助于模型到达更加平缓的区域，有利于提高泛化性能。此外也可以显式地将梯度惩罚加入到损失中：</p>
+
+\[\mathcal{L}(x,y;W) + \lambda ||\nabla_{W} \mathcal{L}(x,y;W)||^2\]
+
+<h3 id="2对输入的梯度惩罚">（2）对输入的梯度惩罚</h3>
+
+<p>在<a href="https://0809zheng.github.io/2020/07/26/adversirial_attack_in_classification.html#-%E8%AE%A8%E8%AE%BA%E5%AF%B9%E6%8A%97%E8%AE%AD%E7%BB%83%E4%B8%8E%E6%A2%AF%E5%BA%A6%E6%83%A9%E7%BD%9A">对抗训练</a>中，对输入样本施加\(\epsilon \nabla_x \mathcal{L}(x,y;\theta)\)的对抗扰动，等价于向损失函数中加入对输入的梯度惩罚：</p>
+
+\[\begin{aligned}
+\mathcal{L}(x+\Delta x,y;W) &amp;\approx \mathcal{L}(x,y;W)+\epsilon ||\nabla_x\mathcal{L}(x,y;W)||^2
+\end{aligned}\]
+
+<p>此时梯度惩罚（或对抗训练）使得模型对于较小的输入扰动具有鲁棒性。此外，对输入的梯度惩罚也被用于约束模型的<a href="https://0809zheng.github.io/2022/10/11/lipschitz.html#2%E6%A2%AF%E5%BA%A6%E6%83%A9%E7%BD%9A-gradient-penalty">Lipschitz连续性</a>。</p>
+
+<p>对输入的梯度惩罚跟<strong>Dirichlet</strong>能量有关，<strong>Dirichlet</strong>能量则可以作为模型复杂度的表征。所以施加对输入的梯度惩罚，会倾向于选择<strong>复杂度比较小</strong>的模型。</p>
+
+<h3 id="3两者的关系">（3）两者的关系</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/09/21/relation.html"><font color="blue">The Geometric Occam's Razor Implicit in Deep Learning</font></a></li>
+</ul>
+
+<p>对参数的梯度惩罚一定程度上包含了输入的梯度惩罚：</p>
+
+\[\begin{aligned}
+||\nabla_x f||^2 \left( \frac{||h^{(l)}||^2}{||W^{(l)}||^2||\nabla_x h^{(l)}||^2} \right) &amp;\leq ||\nabla_{W^{(l)}} f||^2 \\
+\end{aligned}\]
+
+<h1 id="2-约束网络结构">2. 约束网络结构</h1>
+
+<h2 id="-随机深度-stochastic-depth">⚪ 随机深度 Stochastic Depth</h2>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1603.09382">Deep Networks with Stochastic Depth</a></li>
+</ul>
+
+<p><strong>随机深度</strong>是指在训练时以一定概率丢弃网络中的模块（令其等价于恒等变换）；测试时使用完整的网络，并且按照丢弃概率对各个模块的输出进行加权。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6bfa508b683016343b891.jpg" alt="" /></p>
+
+<h2 id="-dropout">⚪ Dropout</h2>
+<ul>
+  <li>paper：<a href="http://jmlr.org/papers/v15/srivastava14a.html">Dropout: A simple way to prevent neural networks from overfitting</a></li>
+</ul>
+
+<p><strong>Dropout</strong>是指在训练深度神经网络时，随机丢弃一部分<strong>神经元</strong>。即对某一层设置概率$p$，对该层的每个神经元以概率$p$判断是否要丢弃。此时每个神经元的丢弃概率遵循概率$p$的伯努利(<strong>Bernoulli</strong>)分布。
+<img src="https://pic.downk.cc/item/5e7de4c1504f4bcb04745d05.png" alt="" /></p>
+
+<p>训练时激活神经元的平均数量是原来的$1-p$倍；而在测试时所有神经元都被激活，故测试时需将该层神经元的输出乘以$1-p$(被保留的概率)。或者采用<strong>Inverted Dropout</strong>，即在训练时对某一层按概率$p$随机丢弃神经元之后将该层的输出除以$1-p$；测试时不需再做处理。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+	<span class="k">if</span> <span class="n">level</span> <span class="o">&lt;</span> <span class="mf">0.</span> <span class="ow">or</span> <span class="n">level</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+	    <span class="k">raise</span> <span class="nb">Exception</span><span class="p">(</span><span class="s">'Dropout level must be in interval [0, 1].'</span><span class="p">)</span>
+	<span class="n">retain_prob</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">level</span>
+	<span class="n">sample</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">binomial</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">retain_prob</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+	<span class="n">x</span> <span class="o">*=</span> <span class="n">sample</span>
+	<span class="n">x</span> <span class="o">/=</span> <span class="n">retain_prob</span>
+	<span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<p>从不同角度理解<strong>Dropout</strong>：</p>
+<ol>
+  <li><strong>正则化Regularization</strong>角度：每一次<strong>Dropout</strong>相当于为原网络引入噪声，测试时通过平均抵消掉噪声；每次训练不会过度依赖于个别的神经元的输出，增强网络的泛化能力；</li>
+  <li><strong>集成Ensemble</strong>角度：每一次<strong>Dropout</strong>相当于从原网络中生成一个子网络，每次迭代相当于训练一个不同的子网络；最终的网络可以看作这些子网络的集成；</li>
+  <li><strong>贝叶斯Bayesian</strong>角度：贝叶斯学习假设参数$w$为随机变量，先验分布为$q(w)$，贝叶斯方法的预测结果如下。其中不等号由<strong>Monte Carlo</strong>方法得到，$w_m$是第$m$次<strong>Dropout</strong>的网络参数，看作对全部参数$w$的一次采样。</li>
+</ol>
+
+\[E_{q(w)}(y)=\int_{q(w)}^{} {f(x;w)q(w)dw} ≈\frac{1}{M}\sum_{m=1}^{M} {f(x;w_m)}\]
+
+<p>与<strong>Dropout</strong>相关的工作包括：</p>
+
+<ul>
+  <li>Reference：<a href="https://arxiv.org/abs/1904.13310">Survey of Dropout Methods for Deep Neural Networks</a></li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><strong>Dropout</strong>方法</th>
+      <th style="text-align: center">说明</th>
+      <th style="text-align: center">示意图</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><strong>Gaussian Dropout</strong></td>
+      <td style="text-align: center">每个神经元的丢弃概率遵循概率$p$的高斯分布$N(1,p(1-p))$</td>
+      <td style="text-align: center"><img src="https://pic.imgdb.cn/item/63b042eb2bbf0e79944c33a1.jpg" alt="" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://proceedings.neurips.cc/paper/2013/file/7b5b23f4aadf9513306bcd59afb6e4c9-Paper.pdf"><strong>Standout</strong></a> <br /> (<strong>NeurIPS2013</strong>)</td>
+      <td style="text-align: center">神经元的丢弃概率$p$通过信念网络建模</td>
+      <td style="text-align: center"><img src="https://pic.imgdb.cn/item/63b034cd2bbf0e79940d3def.jpg" alt="" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://arxiv.org/abs/1411.4280"><strong>Spatial Dropout</strong></a> <br /> (<strong>arXiv1411</strong>)</td>
+      <td style="text-align: center">对卷积特征图的通道维度应用<strong>Dropout</strong></td>
+      <td style="text-align: center"><img src="https://pic.imgdb.cn/item/63b049a12bbf0e799460fd2a.jpg" alt="" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2020/09/06/dropblock.html"><font color="blue">DropBlock</font></a> <br /> (<strong>arXiv1810</strong>)</td>
+      <td style="text-align: center">随机丢弃图像特征中的一个连续区域</td>
+      <td style="text-align: center"><img src="https://pic2.imgdb.cn/item/645b6be60d2dde577786b18a.jpg" alt="" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2020/10/19/wcd.html"><font color="blue">Weighted Channel Dropout</font></a> <br /> (<strong>AAAI2019</strong>)</td>
+      <td style="text-align: center">根据激活的相对幅度来选择通道</td>
+      <td style="text-align: center"><img src="https://pic.imgdb.cn/item/63b2a4f15d94efb26f1548af.jpg" alt="" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://arxiv.org/abs/1512.00242v1"><strong>Max-Pooling Dropout</strong></a> <br /> (<strong>arXiv1512</strong>)</td>
+      <td style="text-align: center">把<strong>Dropout</strong>应用到最大池化层</td>
+      <td style="text-align: center"><img src="https://pic.imgdb.cn/item/63b0369c2bbf0e799414a262.jpg" alt="" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="http://mipal.snu.ac.kr/images/1/16/Dropout_ACCV2016.pdf"><strong>Max-Drop</strong></a> <br /> (<strong>ACCV2016</strong>)</td>
+      <td style="text-align: center">把<strong>Gaussian Dropout</strong>应用到最大池化层</td>
+      <td style="text-align: center"><img src="https://pic.imgdb.cn/item/63b045b12bbf0e7994590826.jpg" alt="" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://arxiv.org/abs/2007.13723"><strong>MaxDropout</strong></a> <br /> (<strong>arXiv2007</strong>)</td>
+      <td style="text-align: center">对输入特征进行归一化，然后把大于给定阈值$p$的特征位置设置为$0$</td>
+      <td style="text-align: center"><img src="https://pic.imgdb.cn/item/63b022162bbf0e7994bdaa88.jpg" alt="" /></td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2021/07/10/rdrop.html"><font color="blue">R-Drop</font></a>  <br /> (<strong>arXiv2106</strong>)</td>
+      <td style="text-align: center">通过两次<strong>Dropout</strong>从同一个模型中获取同一个输入样本的两个不同输出向量，使得两次输出的分布足够接近</td>
+      <td style="text-align: center"><img src="https://pic.imgdb.cn/item/647d445e1ddac507cc2ddbf0.jpg" alt="" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="3-约束优化过程">3. 约束优化过程</h1>
+
+<h2 id="-数据增强-data-augmentation">⚪ 数据增强 Data Augmentation</h2>
+
+<p><strong>数据增强</strong>(<strong>data augmentation</strong>)是指通过对样本集中的样本进行额外的操作（通常是加入随机噪声），增加样本集的数据量，提高训练模型的鲁棒性，减少过拟合的风险。</p>
+
+<p>关于数据增强的更多讨论可参考：<a href=""></a>。</p>
+
+<h2 id="-梯度裁剪-gradient-clipping">⚪ 梯度裁剪 Gradient Clipping</h2>
+
+<p><strong>梯度裁剪</strong>是根据梯度的模长来对更新量做一个缩放，控制更新量的模长不超过一个常数:</p>
+
+\[\theta \leftarrow \theta - \eta \text{clip} \left( \nabla_{\theta}f(\theta) , - maxVal, maxVal \right)\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">losses</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+<span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">utils</span><span class="p">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="n">model</span><span class="p">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">clip_max_norm</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>论文<a href="https://0809zheng.github.io/2020/09/28/clip.html"><font color="blue">Why gradient clipping accelerates training: A theoretical justification for adaptivity</font></a>指出，梯度裁剪相当于为模型引入$(L_0,L_1)$-<strong>Smooth</strong>约束：</p>
+
+\[||\nabla_{\theta}f(\theta+\Delta \theta) - \nabla_{\theta}f(\theta)|| \leq \left(L_0+L_1 ||\nabla_{\theta}f(\theta)||\right) ||\Delta \theta||\]
+
+<h2 id="-early-stopping">⚪ Early Stopping</h2>
+<p><strong>Early Stop</strong>是指训练时当观察到验证集上的错误不再下降，就停止迭代。具体停止迭代的时机，可参考<a href="https://link.springer.com/chapter/10.1007/978-3-642-35289-8_5">Early stopping-but when?</a>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b0150c2bbf0e799482b565.jpg" alt="" /></p>
+
+<h2 id="-标签平滑-label-smoothing">⚪ 标签平滑 Label Smoothing</h2>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/11/labelsmoothing.html"><font color="blue">Rethinking the Inception Architecture for Computer Vision</font></a></li>
+</ul>
+
+<p><strong>标签平滑 (Label Smoothing)</strong>是指对样本的标签引入一定的噪声。（对于分类任务）样本的标签一般用<strong>one-hot</strong>向量表示：$y=(0,…,0,1,0,…,0)^T$。这是一种<strong>Hard Target</strong>，若样本标签本身是错误的，会导致严重的过拟合。</p>
+
+<p>标签平滑技术引入噪声对标签进行平滑，假设样本以$ε$的概率被错误标注为其他类别，则可以把标签修改为一种<strong>Soft Target</strong>：</p>
+
+\[y'=(\frac{ε}{K-1},...,\frac{ε}{K-1},1-ε,\frac{ε}{K-1},...,\frac{ε}{K-1})^T\]
+
+<h2 id="-变分信息瓶颈-variational-information-bottleneck">⚪ 变分信息瓶颈 Variational Information Bottleneck</h2>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/09/24/vib.html"><font color="Blue">Deep Variational Information Bottleneck</font></a></li>
+</ul>
+
+<p>深度学习模型可以被拆分成编码+预测两个步骤。第一步是把$x$编码为一个隐变量$z$，第二步是把隐变量$z$预测为标签$y$。</p>
+
+<p><strong>变分信息瓶颈</strong>希望能尽可能地减少隐变量$z$包含的信息量，在实现时为损失函数引入互信息$I(x,z)$的变分上界。对于分类任务，引入变分信息瓶颈后的总损失函数表示为：</p>
+
+\[\begin{aligned}
+\mathcal{L} &amp;= \mathbb{E}_{p(x)} \left[ \mathbb{E}_{p(z|x)} \left[ -\log p(y|z) \right]  + \lambda  KL\left[ p(z|x) \mid\mid q(z)\right] \right] \\
+\end{aligned}\]
+
+<p>相比原始的监督学习任务，变分信息瓶颈的改动是：</p>
+<ol>
+  <li>使用编码器$p(z|x)$编码特征的均值和方差，加入了重参数化操作；</li>
+  <li>加入了后验分布$p(z|x)$与给定的先验分布$q(z)$之间的<strong>KL</strong>散度为额外的损失函数。</li>
+</ol>
+
+<h2 id="-虚拟对抗训练-virtual-adversarial-training">⚪ 虚拟对抗训练 Virtual Adversarial Training</h2>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/09/23/vat.html"><font color="Blue">Virtual Adversarial Training: A Regularization Method for Supervised and Semi-Supervised Learning</font></a></li>
+</ul>
+
+<p><strong>虚拟对抗训练</strong>通过寻找使得损失$l(f(x+\epsilon),f(x))$尽可能大的扰动噪声$\epsilon$，并最小化该损失，从而增强网络对于扰动噪声的鲁棒性。</p>
+
+<p><strong>VAT</strong>的完整流程如下：</p>
+<ol>
+  <li>初始化向量\(u\sim \mathcal{N}(0,1)\)、标量$\epsilon, \xi$；</li>
+  <li>迭代$r$次：\(\begin{aligned} u &amp;\leftarrow \frac{u}{\mid\mid u \mid\mid} \\ u &amp;\leftarrow  \nabla_x l(f(x+\xi u),f_{sg}(x))  \end{aligned}\)</li>
+  <li>$u \leftarrow \frac{u}{\mid\mid u \mid\mid}$</li>
+  <li>用$l(f(x+\epsilon u),f_{sg}(x))$作为损失函数执行梯度下降。</li>
+</ol>
+
+<h2 id="-flooding">⚪ Flooding</h2>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/12/28/losszero.html"><font color="Blue">Do We Need Zero Training Loss After Achieving Zero Training Error?</font></a></li>
+</ul>
+
+<p>过参数化的深度网络能够在训练后实现零训练误差，此时会记忆训练数据，尽管训练损失接近<strong>0</strong>，但测试精度下降。<strong>flooding</strong>正则化方法为损失函数指定一个合理的较小值$b$，使其在优化时在该值附近波动，而不至于损失下降过小。此时尽管训练损失不会下降，但测试损失会进一步下降，从而具有更好的泛化性。</p>
+
+\[\tilde{\mathcal{L}}(w) = | \mathcal{L}(w) -b| + b\]
+
+<p><img src="https://pic.imgdb.cn/item/6227116e5baa1a80ab3c4c54.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/04/normalization.html" class="read-next-link"></a>
+        <section>
+          <span>深度学习中的归一化方法(Normalization)</span>
+          <p>  Normalization in Deep Learning.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5e79ca179dbe9d88c5e2e0b0.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/02/optimization.html" class="read-next-link"></a>
+          <section>
+            <span>深度学习中的优化算法(Optimization)</span>
+            <p>  Optimization in Deep Learning.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e7ee115504f4bcb04298afb.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>梯度提升决策树(Gradient Boosted Decision Tree, GBDT) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="梯度提升决策树(Gradient Boosted Decision Tree, GBDT)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="梯度提升决策树(Gradient Boosted Decision Tree, GBDT) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/21/GBDT.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>梯度提升决策树(Gradient Boosted Decision Tree, GBDT)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-21"><i class="iconfont icon-date"></i>21 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5efb035714195aa5948c4ccf.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Gradient Boosted Decision Tree.</p>
+</blockquote>
+
+<p><strong>梯度提升决策树 (Gradient Boosted Decision Tree, GBDT)</strong>是一种把<a href="https://0809zheng.github.io/2020/03/19/decision-tree.html">决策树</a>作为基学习器的<a href="https://0809zheng.github.io/2020/03/18/boosting.html#3-%E6%A2%AF%E5%BA%A6%E6%8F%90%E5%8D%87-gradient-boosting">梯度提升Gradient Boosting</a>算法，适用于任意可微损失函数的各类学习任务(回归，分类，排序等)。</p>
+
+<p><strong>GBDT</strong>模型可以表示为决策树的加法模型：</p>
+
+\[f_M(x) = \sum_{m=1}^M T_m(x)\]
+
+<p>其中$T_m(x)$为决策树，$M$是树的个数。无论对于哪种类型的任务，<strong>GBDT</strong>总是选择<strong>CART回归树</strong>作为基学习器。这是一种二叉树，递归地把输入空间划分为$J$个互不相交的子区域$R_1,…,R_J$，计算每个子区域$R_j$上的输出值$c_j$，从而构造回归树模型：</p>
+
+\[T(x) = \sum_{j=1}^{J} c_{j} \cdot I(x \in R_{j})\]
+
+<p>设定损失函数$L(y,f(x))$，<strong>GBDT</strong>模型采用前向分布算法，首先把第一个弱学习器$f_0(x)$初始化为常数$c$：</p>
+
+\[f_0(x) = \mathop{\arg \min}_c \sum_{n=1}^N L(y_n,c)\]
+
+<p>依次建立$M$棵决策树，其中第$m$步的<strong>GBDT</strong>模型是：</p>
+
+\[f_{m}(x) = f_{m-1}(x) + T_m(x)\]
+
+<p>其中当前决策树$T_m$通过拟合当前损失函数的负梯度$r_m$（代表损失函数的下降方向）实现：</p>
+
+\[r_m = -[\frac{\partial  L(y,f(x))}{\partial f(x)}]_{f(x)=f_{m-1}(x)}\]
+
+<p>对于生成的子决策树$m$，计算各个叶结点$j$的最佳拟合值为：</p>
+
+\[c_{m,j} = \mathop{\arg \min}_c \sum_{x \in R_{m,j}}L(y,f_{m-1}(x)+c)\]
+
+<p>则<strong>GBDT</strong>模型最终构造的强学习器$f_M(x)$为：</p>
+
+\[f_M(x) = f_0(x) + \sum_{m=1}^M \sum_{j=1}^{J_m} c_{m,j} \cdot I(x \in R_{m,j})\]
+
+<h1 id="1-回归gbdt">1. 回归GBDT</h1>
+
+<p>对于回归任务，损失函数设置为平方误差：</p>
+
+\[L(y,f(x)) = (y-f(x))^2\]
+
+<p>初始化弱学习器$f_0(x)$为所有训练样本标签值的均值：</p>
+
+\[f_0(x) = \mathop{\arg \min}_c \sum_{n=1}^N (y_n-c)^2 \leftrightarrow c = \frac{1}{N}\sum_{n=1}^N y_n\]
+
+<p>第$m$棵决策树$T_m$拟合当前损失函数的负梯度$r_m$（当前预测结果与真实标签的残差）：</p>
+
+\[\begin{aligned} r_m &amp;= -[\frac{\partial  (y-f(x))^2}{\partial f(x)}]_{f(x)=f_{m-1}(x)} \\ &amp;\propto y-f_{m-1}(x) \end{aligned}\]
+
+<p>对于生成的决策树$m$，计算各个叶结点$j$的最佳残差拟合值为：</p>
+
+\[\begin{aligned} c_{m,j} &amp;= \mathop{\arg \min}_c \sum_{x \in R_{m,j}}(y-(f_{m-1}(x)+c))^2 \\ &amp;= \frac{1}{|R_{m,j}|}\sum_{x \in R_{m,j}}y-f_{m-1}(x) \end{aligned}\]
+
+<h2 id="-使用sklearn实现gbdt回归算法">⚪ 使用sklearn实现GBDT回归算法</h2>
+
+<p>使用<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html#sklearn.ensemble.GradientBoostingRegressor">sklearn.ensemble.GradientBoostingRegressor</a>构造回归<strong>GBDT</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">GradientBoostingRegressor</span>
+
+<span class="n">gbdt</span> <span class="o">=</span> <span class="n">GradientBoostingRegressor</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s">'ls'</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                                 <span class="n">subsample</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s">'friedman_mse'</span><span class="p">,</span> <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
+                                 <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_weight_fraction_leaf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                 <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">min_impurity_decrease</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                 <span class="n">min_impurity_split</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                 <span class="n">max_features</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                                 <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">validation_fraction</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                                 <span class="n">n_iter_no_change</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span>
+                                 <span class="p">)</span>
+<span class="n">train_feat</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">()</span> <span class="c1"># [N, D]
+</span><span class="n">train_label</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">()</span> <span class="c1"># [N,]
+</span><span class="n">test_feat</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">()</span> <span class="c1"># [M, D]
+</span>
+<span class="n">gbdt</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_feat</span><span class="p">,</span> <span class="n">train_label</span><span class="p">)</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">gbdt</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_feat</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-gbdt回归任务常见的损失函数">⭐ GBDT回归任务常见的损失函数</h3>
+
+<p><strong>① 均方误差损失</strong> <code class="language-plaintext highlighter-rouge">loss='ls'</code></p>
+
+<p>默认损失函数，适用于数据噪声较少的场合。对应的表达式$L$及其负梯度$r$为：</p>
+
+\[\begin{aligned} L(y,f(x)) &amp;= (y-f(x))^2 \\ r(y,f(x)) &amp;= y-f(x) \end{aligned}\]
+
+<p><strong>② 绝对值损失</strong> <code class="language-plaintext highlighter-rouge">loss='lad'</code></p>
+
+<p>对应的表达式$L$及其负梯度$r$为：</p>
+
+\[\begin{aligned} L(y,f(x)) &amp;= |y-f(x)| \\ r(y,f(x)) &amp;= \text{sign}(y-f(x)) \end{aligned}\]
+
+<p><strong>③ 分位数损失</strong> <code class="language-plaintext highlighter-rouge">loss='quantile'</code></p>
+
+<p>对应分位数回归的损失函数，需要对训练集进行分段预测时使用，其中分位数$\alpha$通过超参数<code class="language-plaintext highlighter-rouge">alpha</code>指定。对应的表达式$L$及其负梯度$r$为：</p>
+
+\[\begin{aligned} L(y,f(x)) &amp;=\sum_{y \geq f(x)} \alpha |y-f(x)|+\sum_{y &lt; f(x)} (1-\alpha) |y-f(x)| \\ r(y,f(x)) &amp;= \begin{cases} \alpha, &amp; y \geq f(x) \\ \alpha-1, &amp; y &lt; f(x) \end{cases} \end{aligned}\]
+
+<p><strong>④ Huber损失</strong> <code class="language-plaintext highlighter-rouge">loss='huber'</code></p>
+
+<p>对于远离中心的异常点采用绝对值损失，而中心附近的点采用均方误差损失，界限用分位数点$\alpha$通过超参数<code class="language-plaintext highlighter-rouge">alpha</code>指定；适用于噪声较多的场合，对应的表达式$L$及其负梯度$r$为：</p>
+
+\[\begin{aligned} L(y,f(x)) &amp;= \begin{cases} \frac{1}{2}(y-f(x))^2, &amp; |y - f(x)| \leq \alpha \\ \alpha(|y-f(x)|-\frac{\alpha}{2}), &amp; |y - f(x)| &gt; \alpha \end{cases} \\ r(y,f(x)) &amp;= \begin{cases} y-f(x), &amp; |y - f(x)| \leq \alpha \\ \alpha \cdot \text{sign}(y-f(x)), &amp; |y - f(x)| &gt; \alpha \end{cases} \end{aligned}\]
+
+<h3 id="-gbdt回归模型的正则化">⭐ GBDT回归模型的正则化</h3>
+<p><strong>GBDT</strong>模型容易过拟合，需要设定一些正则化策略：</p>
+
+<p><strong>① Shrinkage正则化</strong> <code class="language-plaintext highlighter-rouge">learning_rate=0.1</code></p>
+
+<p>在每次对残差估计进行迭代时，不直接加上当前步所拟合的残差，而是乘以一个学习率$0&lt;\lambda\leq 1$，从而对梯度提升的步长进行调整：</p>
+
+\[f_{m}(x) = f_{m-1}(x) + \lambda T(x;\Theta_m)\]
+
+<p>较小的学习率意味着需要更多的弱学习器的迭代次数<code class="language-plaintext highlighter-rouge">n_estimators</code>。</p>
+
+<p><strong>② 子采样</strong> <code class="language-plaintext highlighter-rouge">subsample=1.0</code></p>
+
+<p>在训练每一个弱学习器时，对训练数据集进行无放回采样构造子数据集。取值小于$1$时只有一部分样本用于拟合，可以减少方差，即防止过拟合；但会增加样本拟合的偏差，因此取值不能太低。推荐在$[0.5, 0.8]$之间。使用子采样的<strong>GBDT</strong>有时也称作<strong>随机梯度提升树 (Stochastic Gradient Boosting Tree, SGBT)</strong>。</p>
+
+<p><strong>③ 剪枝</strong></p>
+
+<p>通过对每一棵子树进行剪枝防止过拟合。<code class="language-plaintext highlighter-rouge">min_samples_split=2</code>设置了对内部结点进行划分时的最少样本数量，若不满足则作为叶结点。<code class="language-plaintext highlighter-rouge">min_samples_leaf=1</code>设置了划分为叶结点时的最少样本数量，若不满足则对其剪枝。<code class="language-plaintext highlighter-rouge">min_weight_fraction_leaf=0</code>设置了划分为叶结点时的所有样本的最小权重和(默认所有样本具有相等的权重)，若不满足则对其剪枝。<code class="language-plaintext highlighter-rouge">max_depth=3</code>设置了子树的最大深度。<code class="language-plaintext highlighter-rouge">min_impurity_decrease=0</code>设置了内部结点进行划分时的不纯度阈值。<code class="language-plaintext highlighter-rouge">max_features=None</code>设置了拆分结点时考虑的最大特征数量，可设置为浮点数或整数，也可设置为<code class="language-plaintext highlighter-rouge">{'auto', 'sqrt', 'log2'}</code>。<code class="language-plaintext highlighter-rouge">max_leaf_nodes=None</code>设置了子树的最大叶结点数量。</p>
+
+<p><strong>④ Early Stopping</strong> <code class="language-plaintext highlighter-rouge">n_iter_no_change=None</code></p>
+
+<p>选择一部分样本作为验证集，在迭代拟合训练集的过程中，如果模型在验证集里错误率不再下降，就停止训练。用<code class="language-plaintext highlighter-rouge">validation_fraction</code>设置验证集的比例，用<code class="language-plaintext highlighter-rouge">n_iter_no_change</code>($\geq 1$)设置验证损失不变化的轮数，若损失变化不超过<code class="language-plaintext highlighter-rouge">tol=1e-4</code>则视为不变化。</p>
+
+<p><strong>⑤ Dropout</strong></p>
+
+<p>[DART: Dropouts meet Multiple Additive Regression Trees]指出<strong>GBDT</strong>会出现<strong>over-specialization</strong>的问题：前面迭代的树对预测值的贡献比较大，后面的树会集中预测一小部分样本的偏差。作者通过<strong>Dropout</strong>来平衡所有树对预测的贡献：每次新加一棵树时，这棵树要拟合的并不是之前全部树集成后的残差，而是随机抽取的一些树集成；同时对新加的树的结果进行规范化。</p>
+
+<h1 id="2-二分类gbdt">2. 二分类GBDT</h1>
+
+<p>无论是回归任务还是分类任务，<strong>GBDT</strong>模型都采用回归树作为基学习器。这是因为<strong>GBDT</strong>模型顺序地使用决策树拟合当前损失函数的负梯度，如果采用硬分类方法（即模型直接输出类别序号），则真实标签减去弱分类器的输出结果是没有意义的。因此对于二分类问题，<strong>GBDT</strong>模型采用回归的形式拟合事件$y=1|x$的<strong>对数几率</strong>（把输入$x$预测为正样本的概率）：</p>
+
+\[f(x) = \log \frac{P(y=1|x)}{1-P(y=1|x)}\]
+
+<p>因此二元<strong>GBDT</strong>分类模型的思想和<a href="https://0809zheng.github.io/2020/03/13/logistic-regression.html">逻辑回归</a>是一致的，相当于线性回归+<strong>Sigmoid</strong>函数：</p>
+
+\[P(y=1|x) = \frac{1}{1+e^{-f(x)}}\]
+
+<p>二元<strong>GBDT</strong>分类模型的损失函数采用二元交叉熵损失：</p>
+
+\[\begin{aligned} L(y,f(x)) &amp;= -y \log P(y=1|x)  - (1-y) \log P(y=0|x) \\ &amp; = y \log (1+e^{-f(x)}) +(1-y) [f(x)+ \log(1+e^{-f(x)})]\\ &amp; = \log (1+e^{-f(x)}) +(1-y) f(x)  \end{aligned}\]
+
+<p>对应损失函数的负梯度$r_m$为：</p>
+
+\[\begin{aligned}  r_m &amp;=-[\frac{\partial  L(y,f(x))}{\partial f(x)}]_{f(x)=f_{m-1}(x)} \\ &amp;= -[ \frac{-e^{-f(x)}}{1+e^{-f(x)}}+1-y]_{f(x)=f_{m-1}(x)} \\ &amp;  = y- \frac{1}{1+e^{-f_{m-1}(x)}}  \end{aligned}\]
+
+<p>利用数据集中的先验信息来初始化弱学习器$f_0(x)$：</p>
+
+\[f_0(x) = \log \frac{P(y=1|x)}{1-P(y=1|x)}\]
+
+<p>第$m$棵决策树$T_m$拟合当前损失函数的负梯度：</p>
+
+\[\begin{aligned} T_m(x) &amp;= y- \frac{1}{1+e^{-f_{m-1}(x)}} \end{aligned}\]
+
+<p>对于生成的决策树$m$，计算各个叶结点$j$的最佳拟合值为：</p>
+
+\[\begin{aligned} c_{m,j} &amp;= \mathop{\arg \min}_c \sum_{x \in R_{m,j}}L(y,f_{m-1}(x)+c)  \end{aligned}\]
+
+<p>对于交叉熵损失，上式没有闭式解。因此采用近似值代替。首先计算交叉熵损失的一阶导数和二阶导数：</p>
+
+\[\begin{aligned}  \frac{\partial  L(y,f(x))}{\partial f(x)} &amp;  = \frac{1}{1+e^{-f(x)}}-y  \\  \frac{\partial^2  L(y,f(x))}{\partial f^2(x)} &amp;  =  \frac{e^{-f(x)}}{(1+e^{-f(x)})^2}  \end{aligned}\]
+
+<p>对损失函数$L(y,f(x)+c)$在$f(x)$处进行二阶泰勒展开：</p>
+
+\[\begin{aligned} L(y,f(x)+c) &amp;≈ L(y,f(x)) + \frac{\partial  L(y,f(x))}{\partial f(x)}c + \frac{1}{2}\frac{\partial^2  L(y,f(x))}{\partial f^2(x)} c^2  \end{aligned}\]
+
+<p>当上式取极小值时，存在关系：</p>
+
+\[\begin{aligned} c &amp;= -\frac{\frac{\partial  L(y,f(x))}{\partial f(x)}}{2 \cdot \frac{1}{2}\frac{\partial^2  L(y,f(x))}{\partial f^2(x)}} = \frac{y-\frac{1}{1+e^{-f(x)}}}{\frac{e^{-f(x)}}{(1+e^{-f(x)})^2}} = \frac{r_m}{(y-r_m)(1-y+r_m)}  \end{aligned}\]
+
+<p>因此决策树$m$的叶结点$j$的最佳拟合值为：</p>
+
+\[\begin{aligned} c_{m,j} &amp;= \frac{\sum_{x_i \in R_{m,j}} r_{m,i}}{\sum_{x_i \in R_{m,j}}(y_i-r_{m,i})(1-y_i+r_{m,i})} \end{aligned}\]
+
+<h2 id="-使用sklearn实现gbdt二分类算法">⚪ 使用sklearn实现GBDT二分类算法</h2>
+
+<p>使用<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html#sklearn.ensemble.GradientBoostingClassifier">sklearn.ensemble.GradientBoostingClassifier</a>构造二分类<strong>GBDT</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">GradientBoostingClassifier</span>
+
+<span class="n">gbdt</span> <span class="o">=</span> <span class="n">GradientBoostingClassifier</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s">'deviance'</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                                  <span class="n">subsample</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s">'friedman_mse'</span><span class="p">,</span> <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
+                                  <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_weight_fraction_leaf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">min_impurity_decrease</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">min_impurity_split</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                                  <span class="n">max_features</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                                  <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">validation_fraction</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                                  <span class="n">n_iter_no_change</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span>
+                                  <span class="p">)</span>
+<span class="n">train_feat</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">()</span> <span class="c1"># [N, D]
+</span><span class="n">train_label</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">()</span> <span class="c1"># [N,]
+</span><span class="n">test_feat</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">()</span> <span class="c1"># [M, D]
+</span>
+<span class="n">gbdt</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_feat</span><span class="p">,</span> <span class="n">train_label</span><span class="p">)</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">gbdt</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_feat</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>其主要超参数与GBDT回归算法类似，主要区别在于损失函数不同。二分类<strong>GBDT</strong>的损失函数包括：</p>
+<ul>
+  <li><strong>对数损失函数</strong> <code class="language-plaintext highlighter-rouge">deviance</code>：即二元交叉熵损失函数，默认设置。</li>
+  <li><strong>指数损失函数</strong> <code class="language-plaintext highlighter-rouge">exponential</code>：$L(y,f(x))=\exp(-yf(x))$，此时相当于<a href="https://0809zheng.github.io/2020/03/18/boosting.html#2-adaboost">AdaBoost算法</a>。</li>
+</ul>
+
+<h1 id="3-多分类gbdt">3. 多分类GBDT</h1>
+
+<p>把二分类<strong>GBDT</strong>模型推广到多分类<strong>GBDT</strong>模型的思路是分别对每一个类别$k$训练一个模型$f_k$，采用回归的形式拟合事件$y=k|x$的<strong>对数几率</strong>（把输入$x$预测为正样本的概率）：</p>
+
+\[f_k(x) = \log \frac{P(y=k|x)}{1-P(y=k|x)}\]
+
+<p>因此多分类<strong>GBDT</strong>模型相当于线性回归+<strong>Softmax</strong>函数：</p>
+
+\[P(y=k|x) = \frac{e^{f_k(x)}}{\sum_{k=1}^K e^{f_k(x)}}\]
+
+<p>对应的损失函数采用多元交叉熵损失，其中真实标签$y$为<strong>one-hot</strong>编码形式：</p>
+
+\[\begin{aligned} L(y,f(x)) &amp;= -\sum_{k=1}^K y_k \log P(y=k|x) = -\sum_{k=1}^K y_k \log \frac{e^{f_k(x)}}{\sum_{k=1}^K e^{f_k(x)}} \\ &amp; = - \sum_{k=1}^K y_k[f_k(x)-\log (\sum_{k=1}^K e^{f_k(x)})]  \end{aligned}\]
+
+<p>其中预测第$k$个类别的模型$f_k$对应损失函数的负梯度$r_{k,m}$为：</p>
+
+\[\begin{aligned}  r_{k,m} &amp;=-[\frac{\partial  L(y,f(x))}{\partial f_k(x)}]_{f_k(x)=f_{k,m-1}(x)} \\ &amp;= [ y_k-\frac{e^{f_k(x)}}{\sum_{k=1}^K e^{f_k(x)}}]_{f_k(x)=f_{k,m-1}(x)} \\ &amp;  = y_k- P(y=k|x)  \end{aligned}\]
+
+<p>因此每个类别的模型$f_k$的训练过程与二分类<strong>GBDT</strong>模型相同。本质上相当于把$K$分类的多分类任务转换为$K$个二分类任务。下图给出了把一个三分类任务转换成三个二分类任务的过程：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a96c8708b6830163d92dbd.jpg" alt="" /></p>
+
+<p>使用<strong>sklearn</strong>实现<strong>GBDT</strong>多分类算法的过程与二分类算法相同，其中损失函数只能选择<strong>对数损失函数</strong> <code class="language-plaintext highlighter-rouge">deviance</code>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/22/boosttree.html" class="read-next-link"></a>
+        <section>
+          <span>提升树(Boosting Tree)</span>
+          <p>  Boosting Tree.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63a7f0dc08b6830163d71677.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/20/random-forest.html" class="read-next-link"></a>
+          <section>
+            <span>随机森林(Random Forest)</span>
+            <p>  Random Forest.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5efb023c14195aa5948bf48e.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

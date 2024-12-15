@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视觉Transformer(Vision Transformer) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="视觉Transformer(Vision Transformer)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="视觉Transformer(Vision Transformer) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/01/vit.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>视觉Transformer(Vision Transformer)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-01"><i class="iconfont icon-date"></i>01 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63f48f89f144a0100755912f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Vision Transformer.</p>
+</blockquote>
+
+<p><a href="https://0809zheng.github.io/2020/04/25/transformer.html"><font color="blue">Transformer</font></a>是基于<strong>自注意力机制(self-attention mechanism)</strong>的深度神经网络，该模型在$2017$年$6$月被提出，并逐渐在自然语言处理任务上取得最好的性能。</p>
+
+<p><img src="https://pic.downk.cc/item/5fe9916d3ffa7d37b3c174be.jpg" alt="" /></p>
+
+<p><strong>Transformer</strong>最近被扩展到计算机视觉任务上。由于<strong>Transformer</strong>缺少<strong>CNN</strong>的<strong>inductive biases</strong>如平移等变性 (<strong>Translation equivariance</strong>)，通常认为<strong>Transformer</strong>在图像领域需要大量的数据或较强的数据增强才能完成训练。随着结构设计不断精细，也有一些视觉<strong>Transformer</strong>只依赖小数据集就能取得较好的表现。</p>
+
+<p>本文主要介绍视觉<strong>Transformer</strong>在基础视觉任务(即图像分类)上的应用，这些模型训练完成后正如图像识别的<strong>CNN</strong>模型一样，可以作为<strong>backbone</strong>迁移到不同的下游视觉任务上，如目标检测、图像分割或<strong>low-level</strong>视觉任务。</p>
+
+<h1 id="1-视觉transformer的基本架构">1. 视觉Transformer的基本架构</h1>
+
+<p><a href="https://0809zheng.github.io/2020/12/30/vit.html"><font color="Blue">ViT</font></a>是最早把<strong>Transformer</strong>引入图像分类任务的工作之一。在<strong>ViT</strong>中，输入图像被划分为一系列图像块(<strong>patch</strong>)；使用嵌入层把每个图像块编码为序列向量；再使用<strong>Transformer</strong>编码器进行特征提取；在输入序列中额外引入一个分类<strong>token</strong>，则对应的输出特征用于分类任务。</p>
+
+<h2 id="1-patch-tokenization">(1) Patch Tokenization</h2>
+
+<p>把输入图像划分成若干图像块，对每个图像块通过线性映射转换为嵌入向量，并在起始位置增加一个类别嵌入；最后加入可学习的位置编码。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">einops.layers.torch</span> <span class="kn">import</span> <span class="n">Rearrange</span>
+
+<span class="bp">self</span><span class="p">.</span><span class="n">to_patch_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+    <span class="n">Rearrange</span><span class="p">(</span><span class="s">'b c (h p1) (w p2) -&gt; b (h w) (p1 p2 c)'</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">patch_height</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">patch_width</span><span class="p">),</span>
+    <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">patch_dim</span><span class="p">),</span>
+    <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">patch_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+    <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="bp">self</span><span class="p">.</span><span class="n">cls_token</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+<span class="bp">self</span><span class="p">.</span><span class="n">pos_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_patches</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+<span class="n">cls_tokens</span> <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cls_token</span><span class="p">,</span> <span class="s">'1 1 d -&gt; b 1 d'</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">((</span><span class="n">cls_tokens</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">+=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">[:,</span> <span class="p">:(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+</code></pre></div></div>
+
+<h2 id="2-transformer-encoder">(2) Transformer Encoder</h2>
+
+<p>为了充分利用<strong>Transformer</strong>在自然语言处理领域的优化技巧，<strong>ViT</strong>最大程度地保留了<strong>Transformer</strong>编码器的原始结构。</p>
+
+<p><strong>Transformer</strong>编码器采用<strong>pre-norm</strong>的形式，即<strong>layer norm</strong>放置在自注意力机制或<strong>MLP</strong>之前。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f48f89f144a0100755912f.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span>
+
+<span class="k">class</span> <span class="nc">PreNorm</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">fn</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">FeedForward</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">GELU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Attention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">inner_dim</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">*</span>  <span class="n">heads</span>
+        <span class="n">project_out</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">heads</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dim_head</span> <span class="o">==</span> <span class="n">dim</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">**</span> <span class="o">-</span><span class="mf">0.5</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">attend</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Softmax</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_qkv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">inner_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span> <span class="k">if</span> <span class="n">project_out</span> <span class="k">else</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">qkv</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_qkv</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">chunk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">'b n (h d) -&gt; b h n d'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">heads</span><span class="p">),</span> <span class="n">qkv</span><span class="p">)</span>
+
+        <span class="n">dots</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">attend</span><span class="p">(</span><span class="n">dots</span><span class="p">)</span>
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">attn</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">attn</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">'b h n d -&gt; b n (h d)'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Transformer</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">heads</span><span class="p">,</span> <span class="n">dim_head</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span>
+                <span class="n">PreNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">Attention</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="n">dim_head</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span><span class="p">)),</span>
+                <span class="n">PreNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">FeedForward</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span><span class="p">))</span>
+            <span class="p">]))</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attn</span><span class="p">,</span> <span class="n">ff</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">attn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">ff</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<h1 id="2-改进视觉transformer">2. 改进视觉Transformer</h1>
+
+<h2 id="1改进训练策略">（1）改进训练策略</h2>
+
+<h3 id="-simplevit">⚪ <a href="https://0809zheng.github.io/2023/01/02/simplevit.html"><font color="Blue">SimpleViT</font></a></h3>
+
+<p><strong>SimpleViT</strong>对<strong>ViT</strong>模型结构进行如下改动：位置编码采用<strong>sincos2d</strong>；分类特征采用全局平均池化；分类头采用单层线性层；移除了<strong>Dropout</strong>。在训练方面采用<strong>RandAug</strong>和<strong>MixUP</strong>数据增强，训练<strong>batch size</strong>采用$1024$。</p>
+
+<h3 id="-deit-data-efficient-image-transformer">⚪ <a href="https://0809zheng.github.io/2023/01/03/deit.html"><font color="Blue">DeiT (Data-efficient Image Transformer)</font></a></h3>
+
+<p><strong>DeiT</strong>在输入图像块序列尾部添加了一个蒸馏<strong>token</strong>，以教师网络输出作为目标进行学习。蒸馏方式包括硬蒸馏(通过交叉熵学习教师网络决策结果)和软蒸馏(通过<strong>KL</strong>散度学习教师网络预测概率)。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f6c8f2f144a01007973b06.jpg" alt="" /></p>
+
+<h3 id="-token-labeling">⚪ <a href="https://0809zheng.github.io/2023/01/22/lvvit.html"><font color="Blue">Token Labeling</font></a></h3>
+
+<p><strong>Token Labeling</strong>是指使用预训练的强分类模型为每个<strong>patch token</strong>分配一个软标签，作为额外的训练目标。本文还设计了<strong>MixToken</strong>，在<strong>Patch embedding</strong>后对两个样本的<strong>token</strong>序列进行混合。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643bb4910d2dde5777acd9bc.jpg" alt="" /></p>
+
+<h3 id="-suppressing-over-smoothing">⚪ <a href="https://0809zheng.github.io/2023/01/24/oversmooth.html"><font color="Blue">Suppressing Over-smoothing</font></a></h3>
+
+<p>作者把视觉<strong>Transformer</strong>训练不稳定的原因归结为<strong>Over-smoothing</strong>问题，即不同<strong>token</strong>之间的相似性随着模型的加深而增加。基于此提出了三种提高训练稳定性的损失函数：相似度惩罚项减小输出<strong>token</strong>之间的相似度、<strong>Patch Contrastive Loss</strong>使得深层<strong>token</strong>与浅层对应<strong>token</strong>更加接近、<strong>Patch Mixing Loss</strong>给每个<strong>Patch</strong>提供一个监督信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643bcc650d2dde5777c9a2b7.jpg" alt="" /></p>
+
+<h2 id="2改进patch-tokenization">（2）改进Patch Tokenization</h2>
+
+<h3 id="-visual-transformer">⚪ <a href="https://0809zheng.github.io/2023/01/10/vt.html"><font color="Blue">Visual Transformer</font></a></h3>
+
+<p><strong>Visual Transformer</strong>把卷积<strong>backbone</strong>提取的特征图通过空间注意力转换为一组视觉语义<strong>tokens</strong>，再通过<strong>Transformer</strong>处理高级概念和语义信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fc51c0f144a01007a5a4ee.jpg" alt="" /></p>
+
+<h3 id="-cct-compact-convolutional-transformer">⚪ <a href="https://0809zheng.github.io/2023/01/08/cct.html"><font color="Blue">CCT (Compact Convolutional Transformer)</font></a></h3>
+
+<p><strong>CCT</strong>引入了<strong>序列池化</strong>，对输出的序列特征进行加权平均用于后续的分类任务；并且使用卷积层编码图像<strong>patch</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fab73af144a0100760db0a.jpg" alt="" /></p>
+
+<h3 id="-t2t-vit-tokens-to-token-vit">⚪ <a href="https://0809zheng.github.io/2023/01/07/t2tvit.html"><font color="Blue">T2T-ViT (Tokens-to-Token ViT)</font></a></h3>
+
+<p><strong>T2T-ViT</strong>通过 <strong>Tokens-to-Token module</strong> 来建模一张图片的局部信息，和更高效的 <strong>Transformer Backbone</strong> 架构设计来提升中间特征的丰富程度减少冗余以提升性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f9cccaf144a0100731574f.jpg" alt="" /></p>
+
+<h3 id="-cpvt-conditional-position-encoding-vision-transformer">⚪ <a href="https://0809zheng.github.io/2023/01/11/cpvt.html"><font color="Blue">CPVT (Conditional Position encoding Vision Transformer)</font></a></h3>
+
+<p><strong>CPVT</strong>提出了<strong>Positional Encoding Generator (PEG)</strong>代替位置编码，通过带零填充的深度卷积为<strong>tokens</strong>引入灵活的位置表示和更高效的位置信息编码。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fda563f144a01007aee896.jpg" alt="" /></p>
+
+<h3 id="-pit-pooling-based-vision-transformer">⚪ <a href="https://0809zheng.github.io/2023/01/16/pit.html"><font color="Blue">PiT (Pooling-based Vision Transformer)</font></a></h3>
+
+<p><strong>PiT</strong>在视觉<strong>Transformer</strong>体系结构中引入了池化层。池化层将<strong>patch token</strong>重塑为具有空间结构的<strong>3D</strong>张量，通过深度卷积来执行空间大小的减小和通道的增加。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6415779aa682492fcc51735c.jpg" alt="" /></p>
+
+<h2 id="3改进self-attention">（3）改进Self-Attention</h2>
+
+<h3 id="-deepvit">⚪ <a href="https://0809zheng.github.io/2023/01/04/deepvit.html"><font color="Blue">DeepViT</font></a></h3>
+
+<p><strong>DeepViT</strong>设计了<strong>Re-attention</strong>模块，采用一个可学习的变换矩阵$\Theta$把不同<strong>head</strong>的信息结合起来重新构造<strong>attention map</strong>，以此缓解不同层的注意力坍塌。</p>
+
+\[\operatorname{Re-}\operatorname{Attention}(Q, K, V)=\operatorname{Norm}\left(\Theta^{\top}\left(\operatorname{Softmax}\left(\frac{Q K^{\top}}{\sqrt{d}}\right)\right)\right) V\]
+
+<p><img src="https://pic.imgdb.cn/item/63f811a8f144a010079e26e2.jpg" alt="" /></p>
+
+<h3 id="-cait-class-attention-in-image-transformer">⚪ <a href="https://0809zheng.github.io/2023/01/06/cait.html"><font color="Blue">CaiT (Class-Attention in Image Transformer)</font></a></h3>
+
+<p><strong>CaiT</strong>引入<strong>LayerScale</strong>使得深层<strong>ViT</strong>更易于训练；并提出<strong>Class-Attention Layer</strong>，在网络前半部分，<strong>Patch Token</strong>相互交互计算注意力；而在网络最后几层，<strong>Patch Token</strong>不再改变，<strong>Class Token</strong>与其交互计算注意力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f81fc9f144a01007b3c99e.jpg" alt="" /></p>
+
+<h3 id="-twins-svt">⚪ <a href="https://0809zheng.github.io/2023/01/23/twins.html"><font color="Blue">Twins-SVT</font></a></h3>
+
+<p><strong>Twins-SVT</strong>设计了<strong>Spatially Separable Self-Attention（SSSA）</strong>。<strong>SSSA</strong>由两个部分组成：<strong>Locally-Grouped Self-Attention（LSA）</strong>和<strong>Global Sub-Sampled Attention（GSA）</strong>。<strong>LSA</strong>将<strong>2D feature map</strong>划分为多个<strong>Sub-Windows</strong>，并仅在<strong>Window</strong>内部进行<strong>Self-Attention</strong>计算；<strong>GSA</strong>将每个<strong>Window</strong>提取一个维度较低的特征作为各个<strong>window</strong>的表征，然后基于这个表征再去与各个<strong>window</strong>进行交互。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643b6b250d2dde5777530ef2.jpg" alt="" /></p>
+
+<h3 id="-refiner">⚪ <a href="https://0809zheng.github.io/2023/01/25/refiner.html"><font color="Blue">Refiner</font></a></h3>
+
+<p><strong>Refiner</strong>首先通过 <strong>Linear Expansion</strong> 来对 <strong>attention map</strong> 的<strong>head</strong>数量进行扩展；再进行 <strong>Head-wise</strong> 的卷积操作，以建模<strong>tokens</strong> 之间的 <strong>local relationship</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643fd0520d2dde577730d6db.jpg" alt="" /></p>
+
+<h2 id="4多尺度输入">（4）多尺度输入</h2>
+
+<h3 id="-pvt">⚪ <a href="https://0809zheng.github.io/2023/01/18/pvt.html"><font color="Blue">PVT</font></a></h3>
+
+<p><strong>PVT</strong>在每个阶段进行<strong>patch embedding</strong>时划分<strong>2x2</strong>大小(第一阶段为<strong>4x4</strong>)，以提取不同尺度的特征。为进一步减少计算量，设计了<strong>spatial-reduction attention (SRA)</strong>，将<strong>K</strong>和<strong>V</strong>的空间分辨率都降低了<strong>R</strong>倍。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6418163ca682492fccc8c1dc.jpg" alt="" /></p>
+
+<h3 id="-tnt">⚪ <a href="https://0809zheng.github.io/2021/03/08/tnt.html"><font color="Blue">TNT</font></a></h3>
+
+<p><strong>TNT</strong>使用<strong>outer transformer</strong>处理<strong>patch embedding</strong>，使用<strong>inner transformer</strong>处理每个<strong>patch</strong>的<strong>pixel embedding</strong>，从而融合了<strong>Patch</strong>内部信息与不同<strong>Patch</strong>之间的信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fdb1faf144a01007c33c80.jpg" alt="" /></p>
+
+<h3 id="-crossvit">⚪ <a href="https://0809zheng.github.io/2023/01/12/crossvit.html"><font color="Blue">CrossViT</font></a></h3>
+
+<p><strong>CrossViT</strong>采用双分支结构来处理不同大小的图像<strong>patch</strong>，以提取多尺度特征表示；不同分支之间通过基于交叉注意的<strong>token</strong>融合模块交换信息，该模块使用一个分支的<strong>CLS token</strong>作为一个查询与另一个分支的<strong>patch token</strong>进行交互。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64156e7ba682492fcc414425.jpg" alt="" /></p>
+
+<h2 id="5引入卷积层">（5）引入卷积层</h2>
+
+<h3 id="-botnet-bottleneck-transformer">⚪ <a href="https://0809zheng.github.io/2021/01/31/botnet.html"><font color="Blue">BotNet (Bottleneck Transformer)</font></a></h3>
+
+<p><strong>BotNet</strong>把<strong>ResNet</strong>中的$3×3$卷积替换为自注意力层。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643b634c0d2dde57774bec45.jpg" alt="" /></p>
+
+<h3 id="-cvt-convolutional-vision-transformer">⚪ <a href="https://0809zheng.github.io/2023/01/20/cvt.html"><font color="Blue">CvT (Convolutional vision Transformer)</font></a></h3>
+
+<p><strong>CvT</strong>使用三个阶段的卷积层对图像和特征进行嵌入和下采样，并使用深度可分离卷积构造$Q,K,V$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6427d8e2a682492fcc6535b7.jpg" alt="" /></p>
+
+<h3 id="-ceit-convolution-enhanced-image-transformer">⚪ <a href="https://0809zheng.github.io/2023/01/21/ceit.html"><font color="Blue">CeiT (Convolution-enhanced image Transformer)</font></a></h3>
+
+<p><strong>CeiT</strong>使用卷积层对图像进行嵌入，并使用深度卷积替换<strong>Transformer</strong>模块中的<strong>FFN</strong>层。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6427e138a682492fcc72d524.jpg" alt="" /></p>
+
+<h3 id="-levit">⚪ <a href="https://0809zheng.github.io/2023/01/09/levit.html"><font color="Blue">LeViT</font></a></h3>
+
+<p><strong>LeViT</strong>把视觉<strong>Transformer</strong>中的所有线性变换替换为卷积操作，并采用卷积+下采样结构。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fb031ef144a01007de797e.jpg" alt="" /></p>
+
+<h2 id="-视觉transformer">⚪ 视觉Transformer</h2>
+
+<ul>
+  <li>
+    <p><a href="https://0809zheng.github.io/2021/02/04/it.html">Image Transformer</a>：(arXiv1802)基于Transformer的图像生成自回归模型。</p>
+  </li>
+  <li>
+    <p><a href="https://0809zheng.github.io/2021/01/04/SAandConv.html">On the Relationship between Self-Attention and Convolutional Layers</a>：(arXiv1911)理解自注意力和卷积层的关系。</p>
+  </li>
+  <li>
+    <p><a href="https://0809zheng.github.io/2020/12/29/igpt.html">Generative Pretraining from Pixels</a>：(ICML2020)iGPT：像素级的图像预训练模型。</p>
+  </li>
+  <li>
+    <p><a href="https://0809zheng.github.io/2020/06/20/detr.html">DETR：End-to-End Object Detection with Transformers</a>：(arXiv2005)DETR：使用Transformer进行目标检测。</p>
+  </li>
+  <li>
+    <p><a href="https://0809zheng.github.io/2020/12/31/ddetr.html">Deformable DETR: Deformable Transformers for End-to-End Object Detection</a>：(arXiv2010)Deformable DETR：使用多尺度可变形的注意力模块进行目标检测。</p>
+  </li>
+  <li>
+    <p><a href="https://0809zheng.github.io/2021/02/09/ipt.html">Pre-Trained Image Processing Transformer</a>：(arXiv2012)IPT：使用Transformer解决超分辨率、去噪和去雨等底层视觉任务。</p>
+  </li>
+  <li>
+    <p><a href="https://0809zheng.github.io/2021/12/10/swint.html">Swin Transformer: Hierarchical Vision Transformer using Shifted Windows</a>：(arXiv2103)Swin Transformer: 基于移动窗口的分层视觉Transformer。</p>
+  </li>
+</ul>
+
+<h1 id="-参考文献">⚪ 参考文献</h1>
+<ul>
+  <li><a href="https://github.com/lucidrains/vit-pytorch">Vision Transformer</a>：(知乎) 通用 Vision Backbone 超详细解读 (原理分析+代码解读)。</li>
+  <li><a href="https://github.com/lucidrains/vit-pytorch">vit-pytorch</a>：(github) Implementation of Vision Transformer in Pytorch。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/10/visual-transformer.html"><font color="Blue">A Survey on Visual Transformer</font></a>：(arXiv2012)一篇关于视觉Transformer的综述。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/10/vt.html"><font color="Blue">Visual Transformers: Token-based Image Representation and Processing for Computer Vision</font></a>：(arXiv2006)VT：基于Token的图像表示和处理。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/30/vit.html"><font color="Blue">An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale</font></a>：(arXiv2010)ViT：使用图像块序列的Transformer进行图像分类。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/03/deit.html"><font color="Blue">Training data-efficient image transformers &amp; distillation through attention</font></a>：(arXiv2012)DeiT：通过注意力蒸馏训练数据高效的视觉Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/07/t2tvit.html"><font color="Blue">Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet</font></a>：(arXiv2101)T2T-ViT：在ImageNet上从头开始训练视觉Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/31/botnet.html"><font color="Blue">Bottleneck Transformers for Visual Recognition</font></a>：(arXiv2101)BotNet：CNN与Transformer结合的backbone。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/11/cpvt.html"><font color="Blue">Do We Really Need Explicit Position Encodings for Vision Transformers?</font></a>：(arXiv2102)视觉Transformer真的需要显式位置编码吗？</li>
+  <li><a href="https://0809zheng.github.io/2023/01/18/pvt.html"><font color="Blue">Pyramid Vision Transformer: A Versatile Backbone for Dense Prediction without Convolutions</font></a>：(arXiv2102)PVT：一种无卷积密集预测的通用骨干。</li>
+  <li><a href="https://0809zheng.github.io/2021/03/08/tnt.html"><font color="Blue">Transformer in Transformer</font></a>：(arXiv2103)TNT：对图像块与图像像素同时建模的Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/04/deepvit.html"><font color="Blue">DeepViT: Towards Deeper Vision Transformer</font></a>：(arXiv2103)DeepViT：构建更深的视觉Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/06/cait.html"><font color="Blue">Going deeper with Image Transformers</font></a>：(arXiv2103)CaiT：更深的视觉Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/12/crossvit.html"><font color="Blue">CrossViT: Cross-Attention Multi-Scale Vision Transformer for Image Classification</font></a>：(arXiv2103)CrossViT：图像分类的交叉注意力多尺度视觉Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/16/pit.html"><font color="Blue">Rethinking Spatial Dimensions of Vision Transformers</font></a>：(arXiv2103)PiT：重新思考视觉Transformer的空间维度。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/20/cvt.html"><font color="Blue">CvT: Introducing Convolutions to Vision Transformers</font></a>：(arXiv2103)CvT：向视觉Transformer中引入卷积。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/21/ceit.html"><font color="Blue">Incorporating Convolution Designs into Visual Transformers</font></a>：(arXiv2103)CeiT：将卷积设计整合到视觉Transformers中。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/08/cct.html"><font color="Blue">Escaping the Big Data Paradigm with Compact Transformers</font></a>：(arXiv2104)CCT：使用紧凑的Transformer避免大数据依赖。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/09/levit.html"><font color="Blue">LeViT: a Vision Transformer in ConvNet's Clothing for Faster Inference</font></a>：(arXiv2104)LeViT：以卷积网络的形式进行快速推理的视觉Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/23/twins.html"><font color="Blue">Twins: Revisiting the Design of Spatial Attention in Vision Transformers</font></a>：(arXiv2104)Twins：重新思考视觉Transformer中的空间注意力设计。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/22/lvvit.html"><font color="Blue">All Tokens Matter: Token Labeling for Training Better Vision Transformers</font></a>：(arXiv2104)LV-ViT：使用标志标签更好地训练视觉Transformers。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/24/oversmooth.html"><font color="Blue">Improve Vision Transformers Training by Suppressing Over-smoothing</font></a>：(arXiv2104)通过抑制过度平滑改进视觉Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/25/refiner.html"><font color="Blue">Refiner: Refining Self-attention for Vision Transformers</font></a>：(arXiv2106)Refiner：精炼视觉Transformer中的自注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/02/simplevit.html"><font color="Blue">Better plain ViT baselines for ImageNet-1k</font></a>：(arXiv2205)在ImageNet-1k数据集上更好地训练视觉Transformer。</li>
+</ul>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/02/simplevit.html" class="read-next-link"></a>
+        <section>
+          <span>Better plain ViT baselines for ImageNet-1k</span>
+          <p>  在ImageNet-1k数据集上更好地训练视觉Transformer.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63f5d794f144a0100725133f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/12/30/mp3.html" class="read-next-link"></a>
+          <section>
+            <span>Position Prediction as an Effective Pretraining Strategy</span>
+            <p>  位置预测作为高效的预训练策略.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/668b4d9ad9c307b7e93066e7.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

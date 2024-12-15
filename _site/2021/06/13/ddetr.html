@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deformable DETR: Deformable Transformers for End-to-End Object Detection - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Deformable DETR: Deformable Transformers for End-to-End Object Detection">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Deformable DETR: Deformable Transformers for End-to-End Object Detection - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/06/13/ddetr.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Deformable DETR: Deformable Transformers for End-to-End Object Detection</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-06-13"><i class="iconfont icon-date"></i>13 Jun 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6535d34ac458853aef291795.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Deformable DETR：通过可变形Transformer实现端到端目标检测.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2010.04159">Deformable DETR: Deformable Transformers for End-to-End Object Detection</a></li>
+</ul>
+
+<p><strong>DETR</strong>利用了<strong>Transformer</strong>通用以及强大的对相关性的建模能力，来取代<strong>anchor</strong>等一些手工设计的目标检测元素。但是依旧存在缺陷：</p>
+<ul>
+  <li>训练时间极长：相比于已有的检测器，<strong>DETR</strong>需要更久的训练才能达到收敛(<strong>500 epochs</strong>)，比<strong>Faster R-CNN</strong>慢了<strong>10-20</strong>倍。这是因为在初始化阶段，<strong>DETR</strong>对于特征图中的所有像素的权重是均匀的，导致要学习的注意力权重集中在稀疏的有意义的位置这一过程需要很长时间。</li>
+  <li>计算复杂度高：<strong>DETR</strong>对小目标的性能很差，现代许多种检测器通常利用多尺度特征，从高分辨率特征图中检测小物体。但是高分辨率的特征图会大大提高<strong>DETR</strong>复杂度，因为自注意力计算的复杂度是像素点数目的平方。</li>
+</ul>
+
+<p>为解决<strong>DETR</strong>收敛速度慢和计算复杂度高的问题，本文提出了<strong>Deformable DETR</strong>，结合了可变形卷积(<strong>Deformable Convolution</strong>)的稀疏空间采样的本领，以及<strong>Transformer</strong>对于相关性建模的能力。</p>
+
+<h2 id="1-deformable-attention-module">1. Deformable Attention Module</h2>
+
+<p>在自注意力机制中，每个查询向量<strong>Query</strong>需要与所有键向量<strong>Key</strong>交互以计算注意力图；<strong>Deformable DETR</strong>提出了可变形注意力模块(<strong>Deformable Attention Module</strong>)，每个查询向量<strong>Query</strong>的查询对象通过学习一组偏移<strong>offset</strong>得到，而注意力图通过线性变换得到。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6535d73fc458853aef324f3d.jpg" alt="" /></p>
+
+\[\operatorname{DeformAttn}\left(\boldsymbol{z}_q, \boldsymbol{p}_q, \boldsymbol{x}\right)=\sum_{m=1}^M \boldsymbol{W}_m\left[\sum_{k=1}^K A_{m q k} \cdot \boldsymbol{W}_m^{\prime} \boldsymbol{x}\left(\boldsymbol{p}_q+\Delta \boldsymbol{p}_{m q k}\right)\right]\]
+
+<p>假设输入查询<strong>Query</strong>的维度是$(N_q,C)$，经过线性变换后得到$\Delta_x,\Delta_y,A$，维度均为$(N_q,MK)$。其中$\Delta_x,\Delta_y$表示关注特征位置相对参考点的偏移量<strong>offset</strong>，$A$表示学习到的注意力图。$N_q$是查询向量的数目($N_q=HW$)，$M$是<strong>multi-head</strong>数量，$K$是关注特征的数量。</p>
+
+<p>对输入特征$(HW,C)$做线性变换得到值矩阵$V$。根据$\Delta_x,\Delta_y$，需要为$N_q$个查询<strong>Query</strong>分别采样$K$个值，采样之后的值矩阵$V \in (N_q, K, C)$，$M$个<strong>head</strong>对应$V \in (N_q, M, K, C_M),C=MC_M$。</p>
+
+<p>之后使用注意力图$A$与查询到的值矩阵$V$交互，对$K$个值进行加权平均，得到输出特征$O\in (N_q,M,C_M)$。</p>
+
+<p>大多数目标检测框架受益于多尺度特征图，而<strong>Deformable Attention Module</strong>可以自然地扩展到多尺度特征图中。<strong>Multi-scale Deformable Attention Module</strong>从多尺度特征图中共采样$LK$个点，相当于对所有层均采$K$个点，融合了不同层的特征。</p>
+
+\[\operatorname{MSDeformAttn}\left(\boldsymbol{z}_q, \hat{\boldsymbol{p}}_q,\left\{\boldsymbol{x}^l\right\}_{l=1}^L\right)=\sum_{m=1}^M \boldsymbol{W}_m\left[\sum_{l=1}^L \sum_{k=1}^K A_{m l q k} \cdot \boldsymbol{W}_m^{\prime} \boldsymbol{x}^l\left(\phi_l\left(\hat{\boldsymbol{p}}_q\right)+\Delta \boldsymbol{p}_{m l q k}\right)\right]\]
+
+<h2 id="2-deformable-detr">2. Deformable DETR</h2>
+
+<p><img src="https://pic.imgdb.cn/item/6535e122c458853aef4a9378.jpg" alt="" /></p>
+
+<p><strong>Deformable DETR</strong>将<strong>transformer</strong>编码器中处理特征的部分都做替换，即所有的<strong>self-attention</strong>模块都使用了<strong>Deformable Attention Module</strong>。<strong>Encoder</strong>的输入输出均为多尺度<strong>feature map</strong>，保持相同的分辨率。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6535e2ccc458853aef4ef146.jpg" alt="" /></p>
+
+<p><strong>Deformable DETR</strong>使用的多尺度特征一共有$4$种尺度的特征\(\{x_l\}_{l=1}^4\)，所有的特征都是$256$通道。多尺度可变形注意力可以在多尺度特征图之间交换信息。作者还给不从尺度的特征加了尺度级的嵌入表示\(\{e_l\}_{l=1}^4\)，随机初始化并随网络一起训练。</p>
+
+<p><strong>Deformable DETR</strong>的<strong>Decoder</strong>中有交叉注意力和自注意力两种模块，它们的<strong>Query</strong>都来自<strong>Object queries</strong>，交叉注意力的 <strong>Key</strong>来自<strong>Encoder</strong>的输出，<strong>Object queries</strong>从<strong>encoder</strong>输出的特征图中提取特征。自注意力的<strong>Key</strong>来自<strong>Object queries</strong>，<strong>Object queries</strong>彼此交互。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/06/14/groupsoftmax.html" class="read-next-link"></a>
+        <section>
+          <span>Overcoming Classifier Imbalance for Long-tail Object Detection with Balanced Group Softmax</span>
+          <p>  BAGS：按照类别样本的量级对长尾数据集进行分组分类.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60f524c25132923bf824e472.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/06/12/scgrnn.html" class="read-next-link"></a>
+          <section>
+            <span>Segmented convolutional gated recurrent neural networks for human activity recognition in ultra-wideband radar</span>
+            <p>  SCGRNN：用于雷达人体活动识别的分段卷积门控循环神经网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60c42763844ef46bb2588eb2.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

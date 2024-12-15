@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prefix-Tuning: Optimizing Continuous Prompts for Generation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Prefix-Tuning: Optimizing Continuous Prompts for Generation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Prefix-Tuning: Optimizing Continuous Prompts for Generation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/02/04/prefixtuning.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Prefix-Tuning: Optimizing Continuous Prompts for Generation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-02-04"><i class="iconfont icon-date"></i>04 Feb 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648d79211ddac507ccda0f9d.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Prefix-Tuning：优化生成的连续提示.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2101.00190">Prefix-Tuning: Optimizing Continuous Prompts for Generation</a></li>
+</ul>
+
+<p>对于预训练语言模型的微调工作主要是人工设计离散的模版或者自动化搜索离散的模版。对于人工设计的模版，模版的变化对模型最终的性能特别敏感，加一个词、少一个词或者变动位置都会造成比较大的变化。而对于自动化搜索模版，成本也比较高，这种离散化的<strong>token</strong>搜索出来的结果可能并不是最优的。</p>
+
+<p>传统的微调范式利用预训练模型去对不同的下游任务进行微调，对每个任务都要保存一份微调后的模型权重，一方面微调整个模型耗时长；另一方面也会占很多存储空间。</p>
+
+<p>基于上述两点，<strong>Prefix-Tuning</strong>提出固定预训练语言模型，为语言模型添加可训练、任务特定的前缀，这样就可以为不同任务保存不同的前缀，微调成本也小；这种<strong>Prefix</strong>实际就是连续可微的虚拟<strong>Token</strong>，相比离散的<strong>Token</strong>更好优化，效果更好。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d79631ddac507ccda7778.jpg" alt="" /></p>
+
+<p><strong>Prefix-Tuning</strong>是指在输入<strong>token</strong>之前构造一段任务相关的<strong>virtual tokens</strong>作为<strong>Prefix</strong>，在训练时只更新<strong>Prefix</strong>部分的参数，而语言模型中的其他部分参数固定。</p>
+
+<p>针对不同的模型结构，需要构造不同的<strong>Prefix</strong>：</p>
+<ul>
+  <li>自回归架构模型：在句子前面添加前缀，得到 <strong>z = [PREFIX; x; y]</strong>，合适的上文能够在固定语言模型的情况下去引导生成下文（比如：<strong>GPT3</strong>的上下文学习）。</li>
+  <li>编码器-解码器架构模型：编码器和解码器都增加了前缀，得到 <strong>z = [PREFIX; x; PREFIX’; y]</strong>。编码器端增加前缀是为了引导输入部分的编码，解码器端增加前缀是为了引导后续<strong>token</strong>的生成。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/648d7bd31ddac507ccdfd35c.jpg" alt="" /></p>
+
+<p>为了防止直接更新<strong>Prefix</strong>的参数导致训练不稳定和性能下降的情况，在<strong>Prefix</strong>层前面加了<strong>MLP</strong>结构，训练完成后，只保留<strong>Prefix</strong>的参数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d7c791ddac507cce19460.jpg" alt="" /></p>
+
+<p>除此之外，通过消融实验证实，只调整<strong>embedding</strong>层的表现力不够，将导致性能显著下降，因此，在每层都加了<strong>prompt</strong>的参数，改动较大。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d7cba1ddac507cce1f792.jpg" alt="" /></p>
+
+<p>另外实验还对比了<strong>Prefix</strong>的位置对于生成效果的影响，<strong>Prefix-tuning</strong>也是要略优于<strong>Infix-tuning</strong>的。其中，<strong>Prefix-tuning</strong>形式为 <strong>[PREFIX; x; y]</strong>，<strong>Infix-tuning</strong>形式为 <strong>[x; INFIX; y]</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d7d0f1ddac507cce26886.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/02/05/prompttuning.html" class="read-next-link"></a>
+        <section>
+          <span>The Power of Scale for Parameter-Efficient Prompt Tuning</span>
+          <p>  Prompt Tuning：参数高效的提示微调.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/648d89321ddac507ccfc8e95.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/02/03/bitfit.html" class="read-next-link"></a>
+          <section>
+            <span>BitFit: Simple Parameter-efficient Fine-tuning for Transformer-based Masked Language-models</span>
+            <p>  BitFit：基于Transformer的掩码语言模型的简单参数高效微调.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/648d74131ddac507cccc8353.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

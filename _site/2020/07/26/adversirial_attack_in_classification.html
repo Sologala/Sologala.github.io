@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对抗训练(Adversarial Training)：攻击和防御 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="对抗训练(Adversarial Training)：攻击和防御">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="对抗训练(Adversarial Training)：攻击和防御 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/07/26/adversirial_attack_in_classification.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>对抗训练(Adversarial Training)：攻击和防御</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-07-26"><i class="iconfont icon-date"></i>26 Jul 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic2.imgdb.cn/item/645df3520d2dde5777316bd4.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Adversarial Training: Attack and Defense.</p>
+</blockquote>
+
+<p><strong>对抗训练(Adversarial Training)</strong>是指通过构造对抗样本，对模型进行对抗攻击和防御来增强模型的稳健性。对抗样本通常是指具有小扰动的样本，对于人类来说“看起来”几乎一样，但对于模型来说预测结果却完全不一样：</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645df31c0d2dde5777312330.jpg" alt="" /></p>
+
+<p>对抗攻击是指想办法造出更多的对抗样本；对抗防御是指想办法让模型能正确识别更多的对抗样本；对抗训练是指构造一些对抗样本加入到原数据集中，希望增强模型对对抗样本的鲁棒性。</p>
+
+<p>论文<a href="https://arxiv.org/abs/1706.06083">Towards Deep Learning Models Resistant to Adversarial Attacks</a>提出了对抗训练的一般形式：</p>
+
+\[\mathcal{\min}_{\theta} \mathbb{E}_{(x,y)\sim \mathcal{D}} \left[ \mathcal{\max}_{\Delta x \in \Omega}  \mathcal{L}(x+\Delta x,y;\theta) \right]\]
+
+<p>其中\(\mathcal{D}\)表示训练集，$x$表示输入样本，$y$表示样本标签，$\theta$表示模型参数，\(\mathcal{L}\)是损失函数，$\Delta x$是样本的对抗扰动，$\Omega$是扰动空间。</p>
+
+<p>完整的对抗训练步骤如下：</p>
+<ol>
+  <li>为输入样本$x$添加对抗扰动$\Delta x$，$\Delta x$的目标是使得损失\(\mathcal{L}(x+\Delta x,y;\theta)\)尽可能增大，即尽可能让现有模型的预测出错；</li>
+  <li>对抗扰动$\Delta x$要满足一定的约束，比如模长不超过一个常数$\epsilon$：\(\|\Delta x\| \leq \epsilon\)；</li>
+  <li>对每个样本$x$都构造一个对抗样本$x+\Delta x$，用样本对$(x+\Delta x,y)$最小化损失函数训练模型参数$\theta$。</li>
+</ol>
+
+<h3 id="-讨论对抗扰动delta-x的约束">⚪ 讨论：对抗扰动$\Delta x$的约束</h3>
+
+<p>在对抗训练中，通常期望为输入样本$x$添加的对抗扰动$\Delta x$是微小的：</p>
+
+\[d(x+\Delta x,x) ≤ ε\]
+
+<p>其中<strong>Constraint</strong>函数$d(\cdot,\cdot)$可以选用：</p>
+<ul>
+  <li><strong>L2范数</strong>：计算差值图像每个像素的平方和：\(d(x,x')=\mid\mid x-x' \mid\mid_2\)；寻找满足\(d(x+\Delta x,x) ≤ ε\)且与原$x$最接近的$x$。</li>
+  <li><strong>L-∞范数</strong>：计算差值图像绝对值最大的像素：\(d(x,x')=\mid\mid x-x' \mid\mid_∞\)；把$x$超过$ε$的元素限制到$ε$。</li>
+</ul>
+
+<p><img src="https://pic2.imgdb.cn/item/645e1e900d2dde577787faf7.jpg" alt="" /></p>
+
+<p>在实践中，<strong>L-∞范数</strong>约束的使用频率更高，该约束不允许某个像素值的变化特别大：</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645e1ecb0d2dde57778899a5.jpg" alt="" /></p>
+
+<h3 id="-讨论对抗训练与梯度惩罚">⚪ 讨论：对抗训练与梯度惩罚</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1711.09404">Improving the Adversarial Robustness and Interpretability of Deep Neural Networks by Regularizing their Input Gradients</a></li>
+</ul>
+
+<p>考虑\(\mathcal{L}(x+\Delta x,y;\theta)\)对$\Delta x$的泰勒展开：</p>
+
+\[\mathcal{L}(x+\Delta x,y;\theta) \approx \mathcal{L}(x,y;\theta)+&lt;\nabla_x\mathcal{L}(x,y;\theta),\Delta x&gt;\]
+
+<p>对于对抗扰动$\Delta x$，通常选择损失函数的梯度上升方向\(\Delta x = \epsilon \nabla_x \mathcal{L}(x,y;\theta)\)，代入得：</p>
+
+\[\begin{aligned}
+\mathcal{L}(x+\Delta x,y;\theta) &amp;\approx \mathcal{L}(x,y;\theta)+&lt;\nabla_x\mathcal{L}(x,y;\theta),\epsilon \nabla_x \mathcal{L}(x,y;\theta)&gt; \\
+&amp; = \mathcal{L}(x,y;\theta)+\epsilon ||\nabla_x\mathcal{L}(x,y;\theta)||^2
+\end{aligned}\]
+
+<p>因此对输入样本施加\(\epsilon \nabla_x \mathcal{L}(x,y;\theta)\)的对抗扰动，等价于向损失函数中加入对输入的梯度惩罚。</p>
+
+<h2 id="1-对抗攻击">1. 对抗攻击</h2>
+
+<p>对于一个已训练好的模型$f_θ$，输入样本$x$会得到正确的预测结果$y^{true}$，对抗攻击旨在为每个输入样本$x$生成微小的对抗扰动$\Delta x$，使得$x’ = x+\Delta x$输入网络后将不能得到正确的结果$y^{true}$，甚至得到指定的错误结果$y^{false}$。</p>
+
+<p>对抗攻击要求具有<strong>跨模型可转移性（cross-model transferability）</strong>，即对一个模型制作的对抗样本在很大概率下会欺骗其他模型。可转移性使得对抗攻击能够应用于实际，并引发严重的安全问题（自动驾驶、医疗）。</p>
+
+<p>对抗攻击的分类方法：</p>
+<ul>
+  <li>按照模型参数是否已知：
+    <ol>
+      <li><strong>白盒攻击（white-box attacks）</strong>：在已经获取机器学习模型内部的所有信息和参数上进行攻击。已知给定模型的梯度信息生成对抗样本。</li>
+      <li><strong>黑盒攻击（black-box attacks）</strong>：在神经网络结构为黑箱时，仅通过模型的输入和输出，生成对抗样本。</li>
+    </ol>
+  </li>
+  <li>按照对抗样本的更新次数：
+    <ol>
+      <li><strong>单步攻击</strong>：仅进行一次更新，容易<strong>underfit</strong>，针对白盒攻击效果差，针对黑盒攻击效果好（转移性强）；</li>
+      <li><strong>多步攻击</strong>：迭代地更新，容易<strong>overfit</strong>，针对白盒攻击效果好，针对黑盒攻击效果差（转移性差）。</li>
+    </ol>
+  </li>
+  <li>按照预测类别是否给定：
+    <ol>
+      <li><strong>无目标攻击 (Non-targeted Attack)</strong>：构造对抗样本时，使使预测结果偏离正确结果$y^{true}$: \(\mathcal{\max}_{\Delta x \in \Omega}  \mathcal{L}(x+\Delta x,y^{true};\theta)\)；</li>
+      <li><strong>有目标攻击 (Targeted Attack)</strong>：构造对抗样本时，使模型把样本预测为给定的错误类别$y^{false}$: \(\mathcal{\max}_{\Delta x \in \Omega}  \mathcal{L}(x+\Delta x,y^{true};\theta)-\mathcal{L}(x+\Delta x,y^{false};\theta)\)。</li>
+    </ol>
+  </li>
+</ul>
+
+<p><img src="https://pic2.imgdb.cn/item/645e1d880d2dde577784d383.jpg" alt="" /></p>
+
+<p>常用的对抗攻击方法包括：<strong>FGSM</strong>, <strong>I-FGSM</strong>, <strong>MI-FGSM</strong>, <strong>NI-FGSM</strong>, <strong>DIM</strong>, <strong>TIM</strong>, <strong>One Pixel Attack</strong>, <strong>Black-box Attack</strong>。</p>
+
+<h3 id="-fgsmfast-gradient-sign-method">⚪ FGSM（Fast Gradient Sign Method）</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1412.6572">Explaining and Harnessing Adversarial Examples</a></li>
+</ul>
+
+<p><strong>FGSM</strong>通过寻找样本$x$的对抗扰动$\Delta x$来使损失函数\(\mathcal{L}(x+\Delta x,y;\theta)\)最大化。假设决策边界周围的数据点是线性的，采用梯度上升让损失函数增大，即沿梯度方向移动步长$\epsilon$：</p>
+
+\[\Delta x={\epsilon} \cdot \text{sign}({\nabla}_x\mathcal{L}(x,y;\theta))\]
+
+<p><strong>FGSM</strong>方法相当于使用了无穷大的学习率更新样本后，再使用<strong>L-∞</strong>范数进行约束：</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645e1f3f0d2dde577789b211.jpg" alt="" /></p>
+
+<h3 id="-i-fgsmiterative-fgsm">⚪ I-FGSM（Iterative FGSM）</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1607.02533v4">Adversarial examples in the physical world</a></li>
+</ul>
+
+<p><strong>FGSM</strong>算法只涉及单次梯度更新；<strong>I-GFSM</strong>相比于<strong>FGSM</strong>，实现迭代更新对抗样本$x^{adv}$，该方法也叫 <strong>BIM（Basic Iterative Method）</strong>或<strong>Projected Gradient Descent（PGD）</strong>。如果迭代过程中模长超过了$ϵ$，将溢出的数值用边界值$\epsilon$代替。</p>
+
+\[\begin{aligned}
+x_0^{adv}&amp;=x \\
+x_{t+1}^{adv}&amp;=\text{Clip}_{|x| \leq\epsilon}\{x_{t}^{adv}+{\epsilon} \cdot \text{sign}({\nabla}_x\mathcal{L}(x_{t}^{adv},y;\theta))\}
+\end{aligned}\]
+
+<p>此外作者还提出了一种有目标的攻击方法：<strong>iterative least-likely class method（LLC）</strong>：将输入图像分类成原本最不可能分到的类别$y^{LL}$。</p>
+
+\[\begin{aligned}
+x_0^{adv}&amp;=x \\
+x_{t+1}^{adv}&amp;=\text{Clip}_{|x| \leq\epsilon}\{x_{t}^{adv}-{\epsilon} \cdot \text{sign}({\nabla}_x\mathcal{L}(x_{t}^{adv},^{LL};\theta))\}
+\end{aligned}\]
+
+<h3 id="-mi-fgsmmomentum-iterative-fgsm">⚪ MI-FGSM（Momentum Iterative FGSM）</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1710.06081">Boosting Adversarial Attacks with Momentum</a></li>
+</ul>
+
+<p><strong>MI-GFSM</strong>在梯度上升中引入了动量方法，稳定更新方向，避免局部极值：</p>
+
+\[\begin{aligned}
+g_{t+1}&amp;={\mu}g_{t} + \frac{ {\nabla}_x\mathcal{L}(x_{t}^{adv},y;\theta) } {\mid\mid {\nabla}_x\mathcal{L}(x_{t}^{adv},y;\theta) \mid\mid_1} \\
+x_{t+1}^{adv}&amp;=\text{Clip}_{|x| \leq\epsilon}\{x_{t}^{adv}+{\epsilon} \cdot \text{sign}(g_{t+1})\}
+\end{aligned}\]
+
+<p>作者还提出了攻击的<strong>集成方法（ensemble attack）</strong>，即攻击集成模型：</p>
+
+\[l(x) = \sum_{k=1}^{K} w_k l_k(x)\]
+
+<p>其中$w_k$是第$k$个模型对应的权重，$l_k(x)$表示的是第$k$个模型输出的<strong>logits</strong>。</p>
+
+<h3 id="-ni-fgsmnesterov-iterative-fgsm">⚪ NI-FGSM（Nesterov Iterative FGSM）</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1908.06281v2">Nesterov Accelerated Gradient and Scale Invariance for Adversarial Attack</a></li>
+</ul>
+
+<p><strong>NI-FGSM</strong>将<strong>Nesterov Accelerated Gradient（NAG）</strong>应用到对抗攻击中。相比于<strong>Momentum</strong>，<strong>NAG</strong>除了具有稳定梯度更新方向的作用之外，还具有向前看的性质，可以有效加速对抗样本的生成和收敛效果。</p>
+
+\[\begin{aligned}
+x_t^{nes} &amp;= x_{t}^{adv} + \epsilon \cdot \mu \cdot g_{t} \\
+g_{t+1}&amp;={\mu}g_{t} + \frac{ {\nabla}_x\mathcal{L}(x_{t}^{nes},y;\theta) } {\mid\mid {\nabla}_x\mathcal{L}(x_{t}^{nes},y;\theta) \mid\mid_1} \\
+x_{t+1}^{adv}&amp;=\text{Clip}_{|x| \leq\epsilon}\{x_{t}^{adv}+{\epsilon} \cdot \text{sign}(g_{t+1})\}
+\end{aligned}\]
+
+<p>此外，从模型增强的角度出发，通过攻击不同放缩大小的图片，变相实现对被攻击的白盒模型的模型增强，从而提高生成的对抗样本的泛化能力。</p>
+
+<h3 id="-dimdiverse-input-method">⚪ DIM（Diverse Input Method）</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1803.06978">Improving Transferability of Adversarial Examples with Input Diversity</a></li>
+</ul>
+
+<p><strong>DIM</strong>对每次攻击图像引入了一个随机移植函数$T$，每轮更新有概率$p$会对图像进行<strong>resize</strong>和<strong>padding</strong>操作：</p>
+
+<p><img src="https://pic.downk.cc/item/5f02e07114195aa594ecaa17.jpg" alt="" /></p>
+
+\[\begin{aligned}
+x_0^{adv}&amp;=x \\
+x_{t+1}^{adv}&amp;=\text{Clip}_{|x| \leq\epsilon}\{x_{t}^{adv}+{\epsilon} \cdot \text{sign}({\nabla}_x\mathcal{L}(T(x_{t}^{adv},p),y;\theta))\}
+\end{aligned}\]
+
+<h3 id="-timtranslation-invariant-method">⚪ TIM（Translation-Invariant Method）</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1904.02884">Evading Defenses to Transferable Adversarial Examples by Translation-Invariant Attacks</a></li>
+</ul>
+
+<p>为了生成对白盒模型的识别区域不敏感的对抗样本，<strong>TIM</strong>采用的方法是用一系列平移后的图像来优化对抗样本：</p>
+
+\[\begin{aligned}
+x_0^{adv}&amp;=x \\
+x_{t+1}^{adv}&amp;=\text{Clip}_{|x| \leq\epsilon}\{x_{t}^{adv}+{\epsilon} \cdot \text{sign}({\nabla}_x\sum_{i,j} w_{ij}\mathcal{L}(T_{ij}(x_{t}^{adv}),y;\theta))\}
+\end{aligned}\]
+
+<p>其中$T_{ij}(x)$是<strong>平移函数（translation operation）</strong>，将图像$x$在对应维度平移$i$、$j$个像素点，设置\(i,j∈\{-k,…,0,…,k\}\)，$k$为平移的最大像素值。这样，生成的对抗样本将减弱对被攻击的白盒模型的识别区域的敏感，这能够帮助其转移到其他模型。</p>
+
+<p>对于上述优化算法，需要计算$(2k+1)^2$张图像的梯度。经过推导：</p>
+
+\[{\nabla}_x\sum_{i,j} w_{ij}\mathcal{L}(T_{ij}(x_{t}^{adv}),y;\theta) ≈W * \nabla_x \mathcal{L}(x_{t}^{adv},y;\theta)\]
+
+<p>因此不需要求得所有图像的梯度；而是求未平移图像的梯度，然后对梯度和由权值$w_{ij}$组成的核$W$做卷积。下面是一些核矩阵的选取方法：</p>
+<ul>
+  <li><strong>uniform kernel</strong>：\(W_{ij}=\frac{1}{(2k+1)^2}\)</li>
+  <li><strong>linear kernel</strong>：\(W_{ij}=\frac{\hat{W}_{ij}}{\sum_{i,j}^{} {\hat{W}_{ij}}},\hat{W}_{ij}=(1-\frac{\mid i \mid}{k+1})\cdot(1-\frac{\mid j \mid}{k+1})\)</li>
+  <li><strong>Gaussian kernel</strong>：\(W_{ij}=\frac{\hat{W}_{ij}}{\sum_{i,j}^{} {\hat{W}_{ij}}},\hat{W}_{ij}=\frac{1}{2\pi σ^2}\exp(-\frac{i^2+j^2}{2σ^2}), σ=\frac{k}{\sqrt{3}}\)</li>
+</ul>
+
+<h3 id="-one-pixel-attack">⚪ One Pixel Attack</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1710.08864">One pixel attack for fooling deep neural networks</a></li>
+</ul>
+
+<p><strong>One Pixel Attack</strong>只修改图像的一个像素值，即：</p>
+
+\[d(x,x') = \mid\mid x-x' \mid\mid_0 = 1\]
+
+<p>其中$L0$范数表示非零元素的个数。对像素值的修改是通过<strong>Differential Evolution</strong>实现的。</p>
+
+<p>该方法的出发点是对于图像分类任务，尤其是类别很多时，攻击不需要使正确的类别得分大幅度降低，只需要让某个错误类别的得分超过正确类别即可。</p>
+
+<h3 id="-black-box-attack">⚪ Black-box Attack</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1611.02770">Delving into Transferable Adversarial Examples and Black-box Attacks</a></li>
+</ul>
+
+<p>当模型未知时，如果能获得模型的训练数据，用训练数据自行训练一个<strong>proxy network</strong>；在<strong>proxy network</strong>上获得的<strong>attack object</strong>，通常可以对原模型进行攻击。</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645e207a0d2dde57778c1012.jpg" alt="" /></p>
+
+<p>如果没有训练数据，则自己利用原网络构造一些输入-输出对作为训练数据。</p>
+
+<h2 id="2-对抗防御">2. 对抗防御</h2>
+
+<p><strong>Defense</strong>可以分为被动式和主动式：</p>
+<ul>
+  <li><strong>Passive defense</strong>：不修改模型，找到异常的图像，类似于<strong>异常检测Anomaly Detection</strong>。常用方法包括<strong>Smoothing</strong>, <strong>Feature Squeezing</strong>, <strong>Randomization</strong>。</li>
+  <li><strong>Proactive defense</strong>：训练模型，使其对对抗攻击具有鲁棒性。</li>
+</ul>
+
+<h3 id="1-被动式防御-passive-defense">(1) 被动式防御 Passive defense</h3>
+
+<h3 id="-smoothing">⚪ Smoothing</h3>
+
+<p>对输入图像进行平滑滤波：</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645e21630d2dde57778e94ae.jpg" alt="" /></p>
+
+<h3 id="-feature-squeezing">⚪ Feature Squeezing</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1704.01155">Feature Squeezing: Detecting Adversarial Examples in Deep Neural Networks</a></li>
+</ul>
+
+<p>用多个不同的卷积<strong>filter</strong>进行检测：</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645e21c70d2dde57778fa01d.jpg" alt="" /></p>
+
+<h3 id="-randomization">⚪ Randomization</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1711.01991">Mitigating Adversarial Effects Through Randomization</a></li>
+</ul>
+
+<p>对输入图像做一些随机的<strong>resize</strong>和<strong>padding</strong>：</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645e22090d2dde5777904aa9.jpg" alt="" /></p>
+
+<h3 id="2-主动式防御-proactive-defense">(2) 主动式防御 Proactive defense</h3>
+<p>给定训练数据\(X={(x^1,y^1),...,(x^N,y^N)}\)，从$t=1$到$T$进行迭代：每次迭代时对每个样本$x^n$，构造一个对抗攻击的样本$\hat{x}^n$，将其作为新的训练数据；每轮得到新的训练数据\(X'={(\hat{x}^1,y^1),...,(\hat{x}^N,y^N)}\)，更新模型。</p>
+
+<p><strong>为什么要进行$T$次迭代？</strong>：每次使用对抗攻击的样本更新模型时可能会产生新的漏洞。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/08/01/rcan.html" class="read-next-link"></a>
+        <section>
+          <span>Image Super-Resolution Using Very Deep Residual Channel Attention Networks</span>
+          <p>  RCAN：残差通道注意力网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f43acf4160a154a67279065.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/07/20/cornernet.html" class="read-next-link"></a>
+          <section>
+            <span>CornerNet: Detecting Objects as Paired Keypoints</span>
+            <p>  CornerNet：一种anchor-free的目标检测算法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f15ac1a14195aa59450bfc6.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

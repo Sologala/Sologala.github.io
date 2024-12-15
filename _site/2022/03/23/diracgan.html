@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Which Training Methods for GANs do actually Converge? - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Which Training Methods for GANs do actually Converge?">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Which Training Methods for GANs do actually Converge? - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/03/23/diracgan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Which Training Methods for GANs do actually Converge?</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-03-23"><i class="iconfont icon-date"></i>23 Mar 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/638d5ba2b1fccdcd36d9d667.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>使用Dirac GAN分析GAN的收敛性态.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1801.04406">Which Training Methods for GANs do actually Converge?</a></li>
+</ul>
+
+<p><strong>GAN</strong>的学习过程为交替优化以下目标函数：</p>
+
+\[\begin{aligned} \mathop{ \min}_{\theta_G} \mathop{\max}_{\theta_D} L(\theta_G,\theta_D) &amp; =  \Bbb{E}_{x \text{~} P_{data}(x)}[\log D(x;\theta_D)] + \Bbb{E}_{z \text{~} P_{Z}(z)}[\log(1-D(G(z;\theta_G);\theta_D))]  \end{aligned}\]
+
+<p>若学习算法采用<a href="https://0809zheng.github.io/2020/03/02/optimization.html#-%E5%8A%A8%E5%8A%9B%E5%AD%A6%E8%A7%92%E5%BA%A6">梯度下降算法</a>，则上式对应一个由常微分方程组<strong>ODEs</strong>表示的动力系统：</p>
+
+\[\begin{pmatrix} \dot{\theta}_D \\ \dot{\theta}_G  \end{pmatrix}= \begin{pmatrix} \nabla_{\theta_D} L(\theta_G,\theta_D) \\ -\nabla_{\theta_G} L(\theta_G,\theta_D) \end{pmatrix}\]
+
+<p>本文作者提出了<strong>Dirac GAN</strong>，用于快速地对<strong>GAN</strong>的性态进行分析:</p>
+<ul>
+  <li>收敛性态：系统的理论均衡点是否存在；令上式右端为$0$得$P_{data}(x)=P_{G}(x)$，因此<strong>GAN</strong>的均衡点通常存在。</li>
+  <li>局部渐近收敛性态：从任意一个初值（模型初始化）出发，经过迭代后最终能否到达理论均衡点；可以在在均衡点附近做线性展开分析。</li>
+</ul>
+
+<p><strong>Dirac GAN</strong>的出发点是考虑真实样本分布只有一个样本点（记为零向量$0$）的情况下，分析<strong>GAN</strong>模型的表现。</p>
+
+<p>此时直接用向量$\theta_G$表示生成样本（也即生成器的参数），而(激活函数前的)判别器设置为线性模型$D(x)=x \cdot \theta_D$，$\theta_D$是判别器的参数。</p>
+
+<p><strong>Dirac GAN</strong>在该极简假设下，分析生成分布能否收敛到真实分布，即$\theta_G$能否最终收敛到$0$。</p>
+
+<h2 id="-分析non-saturating-gan">⚪ 分析non-saturating GAN</h2>
+
+<p><a href="https://0809zheng.github.io/2022/02/01/gan.html#-%E4%BB%8Emmgan%E5%88%B0nsgan">non-saturating GAN</a>是<strong>GAN</strong>的标准形式，其目标函数如下：</p>
+
+\[\begin{aligned} &amp; \mathop{ \max}_{D} \Bbb{E}_{x \text{~} P_{data}(x)}[\log D(x)] + \Bbb{E}_{z \text{~} P_z}[\log(1-D(G(z)))]  \\  &amp; \mathop{ \max}_{G}  \Bbb{E}_{z \text{~} P_z}[\log D(G(z))] \end{aligned}\]
+
+<p>在<strong>Dirac GAN</strong>假设下，目标函数简化为：</p>
+
+\[\begin{aligned} &amp; \mathop{ \max}_{\theta_D} \log(1-\sigma(\theta_G \cdot \theta_D)) \\  &amp; \mathop{ \max}_{\theta_G}  \log \sigma(\theta_G \cdot \theta_D) \end{aligned}\]
+
+<p>其中判别器的激活函数采用<strong>Sigmoid</strong>函数。上式对应的动力系统为：</p>
+
+\[\begin{pmatrix} \dot{\theta}_D \\ \dot{\theta}_G  \end{pmatrix}= \begin{pmatrix} \nabla_{\theta_D} \log(1-\sigma(\theta_G \cdot \theta_D)) \\ \nabla_{\theta_G} \log \sigma(\theta_G \cdot \theta_D) \end{pmatrix}= \begin{pmatrix} -\sigma(\theta_G \cdot \theta_D) \cdot \theta_G \\ (1-\sigma(\theta_G \cdot \theta_D)) \cdot \theta_D \end{pmatrix}\]
+
+<p>令上式为$0$，可得到该动力系统的均衡点为$\theta_G = \theta_D=0$下面讨论从一个初始点出发，最终能否收敛到均衡点。</p>
+
+<p>假设系统已经在均衡点附近，即$\theta_G ≈ \theta_D≈0$，近似地作线性展开：</p>
+
+\[\begin{pmatrix} \dot{\theta}_D \\ \dot{\theta}_G  \end{pmatrix}= \begin{pmatrix} -\sigma(\theta_G \cdot \theta_D) \cdot \theta_G \\ (1-\sigma(\theta_G \cdot \theta_D)) \cdot \theta_D \end{pmatrix} ≈ \begin{pmatrix} -\theta_G /2 \\ \theta_D /2 \end{pmatrix}\]
+
+<p>因此有：</p>
+
+\[\ddot{\theta}_G≈-\theta_G /4\]
+
+<p>上述常微分方程的解是周期解，并不能满足$\theta_G \to 0$。因此对于<strong>non-saturating GAN</strong>，即使模型已经相当接近均衡点，但它始终不会收敛到均衡点，而是在均衡点附近振荡。</p>
+
+<p><img src="https://spaces.ac.cn/usr/uploads/2019/05/3509281292.gif" alt="" /></p>
+
+<p>事实上上述结果可以推广到任意以<a href="https://0809zheng.github.io/2022/02/07/fgan.html">f散度</a>为目标函数的<strong>GAN</strong>模型中，这类模型会慢慢地收敛到均衡点附近，但最终在均衡点附近振荡，无法完全收敛到均衡点。</p>
+
+<h2 id="-分析wgan">⚪ 分析WGAN</h2>
+
+<p><a href="https://0809zheng.github.io/2022/02/04/wgan.html">WGAN</a>的目标函数如下：</p>
+
+\[\begin{aligned} \mathop{ \min}_{G} \mathop{ \max}_{D,||D||_L \leq 1} \Bbb{E}_{x \text{~} P_{data}(x)}[D(x)]-\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)]  \end{aligned}\]
+
+<p>在<strong>Dirac GAN</strong>假设下，目标函数简化为：</p>
+
+\[\begin{aligned} \mathop{ \min}_{\theta_G} \mathop{ \max}_{\theta_D,||\theta_D||_L \leq 1} -\theta_G \cdot \theta_D \end{aligned}\]
+
+<p>其中<strong>Lipschitz</strong>约束通过模长归一化实现：</p>
+
+\[\begin{aligned} \mathop{ \min}_{\theta_G} \mathop{ \max}_{\theta_D} \frac{-\theta_G \cdot \theta_D}{||\theta_D||} \end{aligned}\]
+
+<p>上式对应的动力系统为：</p>
+
+\[\begin{pmatrix} \dot{\theta}_D \\ \dot{\theta}_G  \end{pmatrix}= \begin{pmatrix} \nabla_{\theta_D} \frac{-\theta_G \cdot \theta_D}{||\theta_D||} \\ -\nabla_{\theta_G}\frac{-\theta_G \cdot \theta_D}{||\theta_D||} \end{pmatrix}= \begin{pmatrix} -\theta_G/ ||\theta_D|| + (\theta_G \cdot \theta_D) \cdot \theta_D / ||\theta_D||^3 \\ \theta_D / ||\theta_D|| \end{pmatrix}\]
+
+<p>通过数值求解，可以得到$\theta_G$在均衡点附近的优化轨迹（二维情形）：</p>
+
+<p><img src="https://spaces.ac.cn/usr/uploads/2019/05/3348520049.gif" alt="" /></p>
+
+<p>结果表明<strong>WGAN</strong>的优化过程仍然在均衡点附近振荡，并没有达到均衡点。</p>
+
+<h2 id="-分析wgan-gp和wgan-div">⚪ 分析WGAN-GP和WGAN-div</h2>
+
+<p><a href="https://0809zheng.github.io/2022/02/06/wgangp.html">WGAN-GP</a>通过引入梯度惩罚项来迫使判别器满足<strong>Lipschitz</strong>约束，其目标函数的形式如下：</p>
+
+\[\begin{aligned} \mathop{ \max}_{D} &amp; \Bbb{E}_{x \text{~} P_{data}(x)}[D(x)]-\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)] \\ &amp; - λ \Bbb{E}_{x \text{~} \epsilon P_{data}(x) + (1-\epsilon)P_{G}(x) }[(|| \nabla_xD(x) || -c)^2]  \\  \mathop{ \min}_{G}&amp;  -\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)] \end{aligned}\]
+
+<p>梯度惩罚既可以以$1$为中心，也可以以$0$为中心（对应<a href="https://0809zheng.github.io/2022/02/09/wgandiv.html">WGAN-div</a>）。</p>
+
+<p>在<strong>Dirac GAN</strong>假设下，目标函数简化为：</p>
+
+\[\begin{aligned} \mathop{ \max}_{\theta_D} &amp; -\theta_G \cdot \theta_D  - λ (|| \theta_D || -c)^2  \\  \mathop{ \min}_{\theta_G}&amp;  -\theta_G \cdot \theta_D \end{aligned}\]
+
+<p>上式对应的动力系统为：</p>
+
+\[\begin{pmatrix} \dot{\theta}_D \\ \dot{\theta}_G  \end{pmatrix}= \begin{pmatrix} \nabla_{\theta_D} (-\theta_G \cdot \theta_D  - λ (|| \theta_D || -c)^2) \\ -\nabla_{\theta_G}( -\theta_G \cdot \theta_D) \end{pmatrix}= \begin{pmatrix} -\theta_G  - 2λ (1 -c/|| \theta_D ||)\cdot \theta_D \\ \theta_D  \end{pmatrix}\]
+
+<p>通过数值求解，可以分别得到$c=0$和$c=1$时对应的二维情形下$\theta_G$在均衡点附近的优化轨迹：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"><a href="https://0809zheng.github.io/2022/02/09/wgandiv.html">WGAN-div</a> <br /> $c=0$</th>
+      <th style="text-align: center"><a href="https://0809zheng.github.io/2022/02/06/wgangp.html">WGAN-GP</a> <br /> $c=1$</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><img src="https://spaces.ac.cn/usr/uploads/2019/05/376352434.gif" alt="" /></td>
+      <td style="text-align: center"><img src="https://spaces.ac.cn/usr/uploads/2019/05/3072868450.gif" alt="" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>结果表明，加入以$1$为中心的梯度惩罚后，模型并没有收敛到均衡点，反而只收敛到一个圆上；而加入以$0$为中心的梯度惩罚后模型收敛到均衡点。</p>
+
+<h2 id="-促进收敛的方法">⚪ 促进收敛的方法</h2>
+
+<p>根据上述分析，多数<strong>GAN</strong>模型都具有振荡性，无法渐进收敛到均衡点。下面讨论几个促进收敛的方法：</p>
+<ol>
+  <li><strong>L2</strong>正则项：向损失函数中加入判别器权重的<strong>L2</strong>正则项，会迫使判别器权重向零移动，从而打破振荡（振荡对应具有周期解的动态平衡）。</li>
+  <li><a href="https://0809zheng.github.io/2020/03/02/optimization.html#4-%E5%85%B6%E4%BB%96%E4%BC%98%E5%8C%96%E7%AE%97%E6%B3%95">权重滑动平均</a>：多数<strong>GAN</strong>模型在均衡点附近周期性振荡，振荡中心即为均衡点；因此通过平均振荡的轨迹点，可以得到近似的振荡中心。</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/638da14fb1fccdcd363fecc4.jpg" alt="" /></p>
+
+<p>权重滑动平均的衰减率越大，生成图像越平滑，但会丧失一些细节；衰减率越小，保留的细节越多，但也会保留额外的噪声。实验中通常设置衰减率为$0.999$。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/03/24/ttur.html" class="read-next-link"></a>
+        <section>
+          <span>GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium</span>
+          <p>  GAN的TTUR训练方法和FID评估指标.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/638da641b1fccdcd36485404.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/03/22/lapgan.html" class="read-next-link"></a>
+          <section>
+            <span>Deep Generative Image Models using a Laplacian Pyramid of Adversarial Networks</span>
+            <p>  LAPGAN：使用拉普拉斯金字塔对抗网络生成高分辨率图像.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/636e064416f2c2beb1ce8201.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

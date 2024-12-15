@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极限梯度提升(eXtreme Gradient Boosting, XGBoost) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="极限梯度提升(eXtreme Gradient Boosting, XGBoost)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="极限梯度提升(eXtreme Gradient Boosting, XGBoost) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/12/27/xgboost.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>极限梯度提升(eXtreme Gradient Boosting, XGBoost)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-12-27"><i class="iconfont icon-date"></i>27 Dec 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63aa471108b6830163ef2890.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>XGBoost: A Scalable Tree Boosting System.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1603.02754v3">XGBoost: A Scalable Tree Boosting System</a></li>
+</ul>
+
+<p><strong>XGBoost (eXtreme Gradient Boosting)</strong>是一种高效、灵活、大规模的分布式梯度提升库，是<a href="https://0809zheng.github.io/2020/03/21/GBDT.html">梯度提升决策树GBDT</a>算法的工程实现。</p>
+
+<p><strong>XGBoost</strong>和<strong>GBDT</strong>的主要区别在于：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center"> </th>
+      <th style="text-align: center"><strong>GBDT</strong></th>
+      <th style="text-align: center"><strong>XGBoost</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><strong>基学习器</strong></td>
+      <td style="text-align: center"><strong>CART</strong>回归树</td>
+      <td style="text-align: center">支持多种类型的基学习器，比如决策树或线性模型</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>损失函数</strong></td>
+      <td style="text-align: center">使用损失函数的一阶导数信息，当前基学习器拟合损失函数的负梯度</td>
+      <td style="text-align: center">使用损失函数的一阶和二阶导数信息，当前基学习器最小化损失函数的二阶泰勒近似</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>正则项</strong></td>
+      <td style="text-align: center">没有显式引入正则项</td>
+      <td style="text-align: center">使用叶结点数量和叶结点权重的<strong>L2</strong>范数作为正则项</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>缺失值处理</strong></td>
+      <td style="text-align: center">手动对缺失值进行填充</td>
+      <td style="text-align: center">通过稀疏感知算法为每个结点学习出特征划分的缺省方向</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>XGBoost</strong>的主要优点包括：</p>
+<ul>
+  <li><strong>精度更高</strong>：在模型训练时使用损失函数的一阶和二阶导数信息，能让梯度收敛更快更准确。</li>
+  <li><strong>泛化性更好</strong>：显式地加入了正则项来控制模型的复杂度，有利于防止过拟合，从而提高模型的泛化能力。</li>
+  <li><strong>灵活性更强</strong>：基学习器支持多种形式，损失函数支持自定义任意能够求一阶和二阶导的损失形式。</li>
+  <li><strong>并行学习</strong>：每个特征按特征值对样本进行预排序并存储为块结构，在查找特征分割点时可以通过多线程并行计算，提升训练速度。</li>
+</ul>
+
+<p><strong>XGBoost</strong>的主要缺点是预排序过程的空间复杂度过高，不仅需要存储特征值，还需要存储特征对应的样本索引，占用了两倍的内存。</p>
+
+<h1 id="1-xgboost的建模">1. XGBoost的建模</h1>
+
+<p><strong>XGBoost</strong>是由$K$个基学习器组成的加法模型，学习过程采用前向分布算法。假设第$t$次迭代时训练的基学习器是$f_t(x)$，则样本的当前预测结果为：</p>
+
+\[\hat{y}^{(t)} = \sum_{k=1}^t f_k(x) = \hat{y}^{(t-1)}+f_t(x)\]
+
+<p><strong>XGBoost</strong>的目标函数由损失函数$l$（衡量模型的偏差）和正则化项$\Omega$（防止过拟合）共同组成:</p>
+
+\[Obj = \sum_{i=1}^n l(y_i,\hat{y}_i) + \sum_{k=1}^K \Omega(f_k)\]
+
+<p>则第$t$次迭代时的目标函数为：</p>
+
+\[\begin{aligned} Obj^{(t)} &amp;= \sum_{i=1}^n l(y_i,\hat{y}^{(t)}_i) + \sum_{k=1}^t \Omega(f_k) \\  &amp;= \sum_{i=1}^n l(y_i,\hat{y}^{(t-1)}_i+f_t(x_i)) +\Omega(f_t) +  Const. \end{aligned}\]
+
+<p><strong>XGBoost</strong>对损失函数$l(y_i,\hat{y}^{(t-1)}_i+f_t(x_i))$在点$f_t(x_i)$处进行二阶泰勒展开：</p>
+
+\[l(y_i,\hat{y}^{(t-1)}_i+f_t(x_i)) ≈ l(y_i,\hat{y}^{(t-1)}_i) + g_i f_t(x_i) +\frac{1}{2}h_i f_t^2(x_i)\]
+
+<p>其中$g_i,h_i$分别是损失函数的一阶导数和二阶导数：</p>
+
+\[\begin{aligned} g_i &amp;= \frac{\partial l(y_i,\hat{y}^{(t-1)}_i)}{\partial \hat{y}^{(t-1)}_i} \\ h_i &amp;= \frac{\partial^2 l(y_i,\hat{y}^{(t-1)}_i)}{\partial (\hat{y}^{(t-1)}_i)^2}  \end{aligned}\]
+
+<p>因此<strong>XGBoost</strong>在第$t$次迭代时的目标函数为：</p>
+
+\[\begin{aligned} Obj^{(t)} &amp;≈ \sum_{i=1}^n [l(y_i,\hat{y}^{(t-1)}_i) + g_i f_t(x_i) +\frac{1}{2}h_i f_t^2(x_i)] +\Omega(f_t) +  Const.  \\ &amp; \propto \sum_{i=1}^n [ g_i f_t(x_i) +\frac{1}{2}h_i f_t^2(x_i)] +\Omega(f_t) \end{aligned}\]
+
+<p>在每一次迭代中，只需要求出当前损失函数的一阶导数值和二阶导数值，然后最优化上述目标函数，就可以得到当前迭代的基学习器$f_t(x)$，最后根据加法模型得到一个整体模型。</p>
+
+<h1 id="2-使用决策树的xgboost模型">2. 使用决策树的XGBoost模型</h1>
+
+<p><strong>XGBoost</strong>的基学习器不仅支持决策树，还支持线性模型。本节主要讨论基于决策树的<strong>XGBoost</strong>模型。</p>
+
+<p>一颗决策树可以由叶结点的权重向量$w$和样本到叶结点的映射关系$q$描述:</p>
+
+\[f(x) = w_{q(x)}, w \in \Bbb{R}^J, q: \Bbb{R}^d \to \{1,2,...,J\}\]
+
+<p><img src="https://pic.imgdb.cn/item/63aa5c2208b68301630b40a2.jpg" alt="" /></p>
+
+<p>其中$J$为叶结点的个数，$J$越小则模型越简单，因此可以衡量决策树的复杂度；此外叶结点也不应含有过高的权重。因此正则化项$\Omega$由生成的决策树$f$的叶结点数量和所有叶结点权重的<strong>L2</strong>范数共同决定：</p>
+
+\[\Omega(f) = \gamma J + \frac{1}{2}\lambda \sum_{j=1}^J w_j^2\]
+
+<p>把属于第$j$个叶结点的所有样本$x_i$划入到一个叶子结点的样本集合中：$I_j = {i | q(x_i)=j}$。<strong>XGBoost</strong>在第$t$次迭代时的目标函数可以写成：</p>
+
+\[\begin{aligned} Obj^{(t)}  &amp; \propto \sum_{i=1}^n [ g_i f_t(x_i) +\frac{1}{2}h_i f_t^2(x_i)] +\Omega(f_t) \\ &amp;=  \sum_{i=1}^n [ g_i w_{q(x_i)} +\frac{1}{2}h_i w^2_{q(x_i)}] +\gamma J + \frac{1}{2}\lambda \sum_{j=1}^J w_j^2 \\ &amp;=  \sum_{j=1}^J [ (\sum_{i \in I_j}g_i) w_{j} +\frac{1}{2}(\sum_{i \in I_j}h_i +\lambda)w^2_{j}] +\gamma J  \end{aligned}\]
+
+<p>其中第二个等式是遍历所有样本后求每个样本的损失函数；第三个等式是遍历所有叶结点，获取每个叶结点上的样本集合后再求损失函数；由于最终每个样本会落在某一个叶结点上，因此两式是等价的。</p>
+
+<p>记$G_j = \sum_{i \in I_j}g_i$为叶结点$j$所包含样本的一阶偏导数累加之和，$H_j = \sum_{i \in I_j}h_i$为叶结点$j$所包含样本的二阶偏导数累加之和。由于$G_j,H_j$是根据前$t-1$步计算的结果，因此是常量。<strong>XGBoost</strong>在第$t$次迭代时的最终目标函数为：</p>
+
+\[Obj^{(t)}  =  \sum_{j=1}^J [ G_j w_{j} +\frac{1}{2}(H_j +\lambda)w^2_{j}] +\gamma J\]
+
+<p>注意到上式左半部分为$w_j$的一元二次函数，当$w_j=-\frac{G_j}{H_j +\lambda}$时取极小值，因此总目标函数可以化简为：</p>
+
+\[Obj^{(t)}  =  -\frac{1}{2}\sum_{j=1}^J \frac{G_j^2}{H_j +\lambda}  +\gamma J\]
+
+<p><img src="https://pic.imgdb.cn/item/63aa60ee08b683016312b957.jpg" alt="" /></p>
+
+<h1 id="3-xgboost的工程实现">3. XGBoost的工程实现</h1>
+
+<h2 id="1-结点划分算法-split-finding">(1) 结点划分算法 Split Finding</h2>
+
+<p>在实际训练过程中，当建立第$t$棵树时需要找到叶结点的最优切分点，<strong>XGBoost</strong>支持两种划分数据的方法：贪心算法和近似算法。</p>
+
+<h3 id="-贪心算法">⚪ 贪心算法</h3>
+
+<p>贪心算法是构造决策树的通用算法，可以得到最优解。从树的深度为$0$开始，贪心算法的步骤如下：</p>
+<ol>
+  <li>对每个叶结点枚举所有可用的特征；</li>
+  <li>针对每个特征，把属于该结点的训练样本根据该特征值进行升序排列，通过线性扫描的方式来决定该特征的最佳分裂点，并记录该特征的分裂收益；</li>
+  <li>选择收益最大的特征作为分裂特征，用该特征的最佳分裂点作为分裂位置，在该结点上分裂出左右两个新的叶结点，并为每个新结点关联对应的样本集；</li>
+  <li>递归执行<strong>1-3</strong>直到满足特定条件为止。</li>
+</ol>
+
+<p>通过对特征值进行升序排列，可以通过一次线性扫描枚举出所有分割的$G,H$组合。分裂前后的目标函数分别为：</p>
+
+\[\begin{aligned} Obj_1  &amp; =-\frac{1}{2} \frac{(G_L+G_R)^2}{H_L+H_R +\lambda}  +\gamma \\ Obj_2  &amp; =-\frac{1}{2}(\frac{G_L^2}{H_L +\lambda} + \frac{G_R^2}{H_R +\lambda}) +2\gamma   \end{aligned}\]
+
+<p>因此分裂收益计算为：</p>
+
+\[Gain = \frac{1}{2}[\frac{G_L^2}{H_L +\lambda} + \frac{G_R^2}{H_R +\lambda}- \frac{(G_L+G_R)^2}{H_L+H_R +\lambda}]  -\gamma\]
+
+<p>其中惩罚项$\gamma$给出了分裂收益的阈值，如果划分结点后的收益没有超过这个阈值，则对其进行剪枝。</p>
+
+<h3 id="-近似算法">⚪ 近似算法</h3>
+
+<p>当数据量太大时贪心算法无法把数据读入内存进行计算。对于数据的每个特征，近似算法通过只考察特征的几个分位点给出近似最优解，从而减少计算复杂度。</p>
+
+<p><strong>分位点(quantile)</strong>的选择有两种策略：</p>
+<ol>
+  <li><strong>global</strong>：预先给定候选的分位点，学习每棵树时都采用这种分割；这种策略通常需要设置更多的候选分位点才能得到满意的性能。</li>
+  <li><strong>local</strong>：在每次拆分时重新指定候选的分位点；每次可以设置较少的分位点，但是需要更多的计算步骤。</li>
+</ol>
+
+<p><strong>XGBoost</strong>以二阶导数值$h_i$作为样本的权重划分分位点，通过<strong>加权分位缩略图(Weighted Quantile Sketch)</strong>实现。下图给出了选择三分位点的例子：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aa6ac308b683016321c80c.jpg" alt="" /></p>
+
+<p>下面说明为何用二阶导数值$h_i$划分分位点。对目标函数做如下变换（不考虑正则化项）：</p>
+
+\[\begin{aligned} Obj^{(t)}  &amp; \propto \sum_{i=1}^n [ g_i f_t(x_i) +\frac{1}{2}h_i f_t^2(x_i)] \\&amp; = \sum_{i=1}^n \frac{1}{2}h_i[ \frac{2g_i f_t(x_i)}{h_i} + f_t^2(x_i)]\\&amp; = \sum_{i=1}^n \frac{1}{2}h_i[ \frac{2g_i f_t(x_i)}{h_i} + f_t^2(x_i) + (-\frac{g_i}{h_i})^2-(-\frac{g_i}{h_i})^2] \\&amp; = \sum_{i=1}^n \frac{1}{2}h_i[  f_t^2(x_i) - (-\frac{g_i}{h_i})]^2-\sum_{i=1}^n \frac{1}{2}\frac{g_i^2}{h_i} \end{aligned}\]
+
+<p>因此$h_i$相当于平方损失函数中的样本权重。</p>
+
+<h2 id="2-稀疏感知算法-sparsity-aware">(2) 稀疏感知算法 Sparsity-aware</h2>
+
+<p>实际工程中一般会出现输入值稀疏的情况，比如数据特征的缺失。<strong>XGBoost</strong>在构建树的结点的过程中只对特征为非缺失值的数据进行遍历，同时为每个结点增加一个缺省方向，当样本相应的特征值缺失时，可以被归类到缺省方向上，最优的缺省方向可以从数据中学到。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aa6fbe08b6830163297e01.jpg" alt="" /></p>
+
+<p>学习缺省方向的方法是分别把特征缺省的样本划分到左右分支后计算增益，选择增益最大的方向即为最优缺省方向。</p>
+
+<h2 id="3-特征并行学习-parallel-learning">(3) 特征并行学习 Parallel Learning</h2>
+
+<p>在树的生成过程中最耗时的步骤之一是在每次寻找最佳分裂点时都需要对特征的值进行排序。<strong>XGBoost</strong>在训练之前会根据特征对数据进行排序，并把每一个特征排序后的值以及对应样本的索引存储到由<strong>稀疏矩阵存储格式 (Compressed Sparse Columns Format, CSC)</strong>定义的块结构中。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aa733808b68301632ecab5.jpg" alt="" /></p>
+
+<p>在训练的过程中通过顺序访问排序后的块，以遍历样本特征的取值，可以大大减小计算量。此外分块存储后不同特征之间互不干涉，可以实现分布式或者多线程同时对不同的特征进行切分点查找，即特征的并行化处理。</p>
+
+<h2 id="4-缓存访问算法-cache-aware-access">(4) 缓存访问算法 Cache-aware Access</h2>
+
+<p>在顺序访问特征值时，访问的是一块连续的内存空间；但通过特征值持有的样本索引访问样本获取一阶、二阶导数时，这个访问操作访问的内存空间并不连续，这样可能造成<strong>cpu</strong>缓存命中率低，影响算法效率。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aa745008b6830163306e3a.jpg" alt="" /></p>
+
+<p>为了解决缓存命中率低的问题，<strong>XGBoost</strong>提出了缓存访问算法：为每个线程分配一个连续的缓存区，将需要的梯度信息存放在缓冲区中，这样就实现了非连续空间到连续空间的转换，提高了算法效率。此外适当调整块大小，也可以有助于缓存优化。</p>
+
+<h2 id="5-核外块计算-blocks-for-out-of-core-computation">(5) 核外块计算 Blocks for Out-of-core Computation</h2>
+
+<p>当数据量非常大时，不能把所有的数据都加载到内存中。此时必须将一部分数据先存放在硬盘中，当需要时再加载进内存。这样操作具有很明显的计算瓶颈，即硬盘的<strong>IO</strong>操作速度远远低于内存的处理速度，导致存在大量等待硬盘<strong>IO</strong>操作的情况。</p>
+
+<p>针对这个问题<strong>XGBoost</strong>提出了“核外”计算的优化方法。具体操作为，将数据集分成多个块存放在硬盘中，使用一个独立的线程专门从硬盘读取数据，加载到内存中，这样算法在内存中处理数据就可以和从硬盘中读取数据同时进行。</p>
+
+<p>此外，<strong>XGBoost</strong>还用了两种方法来降低硬盘的读写开销：</p>
+<ul>
+  <li><strong>块压缩 (Block Compression)</strong>：按列进行压缩，读取的时候用另外的线程解压。对于行索引，只保存第一个索引值，然后用<strong>16</strong>位整数保存与该块第一个索引的差值。</li>
+  <li><strong>块分区 (Block Sharding)</strong>：将特征块分区存放在不同的硬盘上，以此来增加硬盘<strong>IO</strong>的吞吐量。</li>
+</ul>
+
+<h1 id="4-xgboost的代码实现">4. XGBoost的代码实现</h1>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pip</span> <span class="n">install</span> <span class="n">xgboost</span>
+</code></pre></div></div>
+
+<h2 id="1-xgboost的主要参数">(1) XGBoost的主要参数</h2>
+
+<p>下面介绍<a href="https://xgboost.readthedocs.io/en/stable/parameter.html">xgboost</a>库中定义的<strong>XGBoost</strong>模型的主要参数：</p>
+
+<h3 id="-通用参数-general-parameters">⚪ 通用参数 General Parameters</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">booster='gbtree'</code>：设置基学习器，可选<code class="language-plaintext highlighter-rouge">'gbtree'</code>(<strong>CART</strong>决策树), <code class="language-plaintext highlighter-rouge">'dart'</code>(决策树+<strong>dropout</strong>)和<code class="language-plaintext highlighter-rouge">'gblinear'</code>(线性函数)。</li>
+  <li><code class="language-plaintext highlighter-rouge">verbosity</code>：打印信息的模式，可选<code class="language-plaintext highlighter-rouge">0</code>(静默模式), <code class="language-plaintext highlighter-rouge">1</code>(<strong>warning</strong>模式), <code class="language-plaintext highlighter-rouge">2</code>(<strong>info</strong>模式), <code class="language-plaintext highlighter-rouge">1</code>(<strong>debug</strong>模式)。</li>
+  <li><code class="language-plaintext highlighter-rouge">nthread</code>：多线程数量，默认选择最大的线程数。</li>
+</ul>
+
+<h3 id="-决策树参数-parameters-for-tree-booster">⚪ 决策树参数 Parameters for Tree Booster</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">eta=0.3</code>：加法模型的<strong>shrinkage</strong>系数，相当于学习率$y^{(t)}=y^{(t-1)}+\eta f_t$。</li>
+  <li><code class="language-plaintext highlighter-rouge">gamma=0</code>：允许结点切分的最小损失减少量。</li>
+  <li><code class="language-plaintext highlighter-rouge">max_depth=6</code>：树的最大深度。</li>
+  <li><code class="language-plaintext highlighter-rouge">min_child_weight=1</code>：允许结点切分的最小子结点样本权重。</li>
+  <li><code class="language-plaintext highlighter-rouge">max_delta_step=0</code>：允许叶结点输出的最大增量步长，<code class="language-plaintext highlighter-rouge">0</code>表示无限制。</li>
+  <li><code class="language-plaintext highlighter-rouge">subsample=1</code>：样本集的子采样率，小于$1$时构造每棵树只使用一部分训练样本。</li>
+  <li><code class="language-plaintext highlighter-rouge">colsample_bytree=1</code>：样本集特征的子采样率，小于$1$时构造每棵树只使用训练样本的一部分特征。</li>
+  <li><code class="language-plaintext highlighter-rouge">lambda=1</code>：权重的<strong>L2</strong>正则化系数。</li>
+  <li><code class="language-plaintext highlighter-rouge">alpha=0</code>：权重的<strong>L1</strong>正则化系数。</li>
+  <li><code class="language-plaintext highlighter-rouge">tree_method='auto'</code>：结点划分算法，默认根据数据集大小自动划分。<code class="language-plaintext highlighter-rouge">exact</code>为精确的贪心算法，<code class="language-plaintext highlighter-rouge">approx</code>为基于分位点的近似算法，<code class="language-plaintext highlighter-rouge">hist</code>为更快的直方图优化近似算法，<code class="language-plaintext highlighter-rouge">gpu_hist</code>为<strong>GPU</strong>环境下的近似算法。</li>
+  <li><code class="language-plaintext highlighter-rouge">max_bin=256</code>：采用近似结点划分算法时，所允许的最大分位数。</li>
+</ul>
+
+<h3 id="-学习任务参数-learning-task-parameters">⚪ 学习任务参数 Learning Task Parameters</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">objective</code>：设置损失函数。对于回归任务可选<code class="language-plaintext highlighter-rouge">'reg:squarederror', 'reg:squaredlogerror', 'reg:logistic', 'reg:pseudohubererror', 'reg:absoluteerror'</code>，对于二分类任务可选<code class="language-plaintext highlighter-rouge">'binary:logistic', 'binary:hinge'</code>，对于多分类任务可选<code class="language-plaintext highlighter-rouge">'multi:softmax'</code>。</li>
+  <li><code class="language-plaintext highlighter-rouge">num_class</code>：多分类任务的类别数。</li>
+  <li><code class="language-plaintext highlighter-rouge">seed=0</code>：随机数种子。</li>
+</ul>
+
+<h2 id="2-使用xgboost原生接口进行多分类">(2) 使用XGBoost原生接口进行多分类</h2>
+
+<p>下面以<strong>IRIS</strong>鸢尾花分类数据集为例，介绍使用<strong>XGBoost</strong>原生接口进行多分类任务的例子：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">xgboost</span> <span class="k">as</span> <span class="n">xgb</span>
+<span class="c1"># 设置XGBoost的参数
+</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'booster'</span><span class="p">:</span> <span class="s">'gbtree'</span><span class="p">,</span>
+    <span class="s">'objective'</span><span class="p">:</span> <span class="s">'multi:softmax'</span><span class="p">,</span> 
+    <span class="s">'num_class'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s">'gamma'</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s">'max_depth'</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="s">'lambda'</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s">'subsample'</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
+    <span class="s">'colsample_bytree'</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
+    <span class="s">'min_child_weight'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s">'eta'</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="c1"># 准备数据集
+</span><span class="n">iris</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">iris</span><span class="p">.</span><span class="n">data</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">iris</span><span class="p">.</span><span class="n">target</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+
+<span class="c1"># 训练XGBoost
+</span><span class="n">dtrain</span> <span class="o">=</span> <span class="n">xgb</span><span class="p">.</span><span class="n">DMatrix</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">num_rounds</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">xgb</span><span class="p">.</span><span class="n">train</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">dtrain</span><span class="p">,</span> <span class="n">num_rounds</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span>
+<span class="c1"># 对测试集进行预测
+</span><span class="n">dtest</span> <span class="o">=</span> <span class="n">xgb</span><span class="p">.</span><span class="n">DMatrix</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">ans</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dtest</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">"Accuracy : "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">accuracy_score</span><span class="p">(</span><span class="n">ans</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)))</span>
+
+<span class="kn">from</span> <span class="nn">xgboost</span> <span class="kn">import</span> <span class="n">plot_importance</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="c1"># 显示重要特征
+</span><span class="n">plot_importance</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="3-使用基于scikit-learn接口的xgboost进行回归">(3) 使用基于Scikit-learn接口的XGBoost进行回归</h2>
+
+<p>本节以<strong>kaggle</strong>竞赛中的<a href="https://www.kaggle.com/c/house-prices-advanced-regression-techniques">House Prices回归问题</a>为例，介绍使用基于<strong>Scikit-learn</strong>接口的<strong>XGBoost</strong>进行回归的方法。</p>
+
+<p>该数据集一共有81列，第一列是id，最后一列是标签，中间79列是特征。这79列特征中，有43列是分类型变量，33列是整数变量，3列是浮点型变量。训练数据集中存在缺失值。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="c1"># 1.读文件
+</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">'./dataset/train.csv'</span><span class="p">)</span>
+<span class="n">data</span><span class="p">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s">'SalePrice'</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># 2.切分数据 (输入：特征) (输出：预测目标变量)
+</span><span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">SalePrice</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">drop</span><span class="p">([</span><span class="s">'SalePrice'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">).</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s">'object'</span><span class="p">])</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="c1"># 3.切分训练集、测试集, 切分比例75 : 25
+</span><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">values</span><span class="p">,</span> <span class="n">y</span><span class="p">.</span><span class="n">values</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.impute</span> <span class="kn">import</span> <span class="n">SimpleImputer</span>
+<span class="c1"># 4.空值处理，默认方法：使用特征列的平均值进行填充
+</span><span class="n">my_imputer</span> <span class="o">=</span> <span class="n">SimpleImputer</span><span class="p">()</span>
+<span class="n">train_X</span> <span class="o">=</span> <span class="n">my_imputer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
+<span class="n">test_X</span> <span class="o">=</span> <span class="n">my_imputer</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">test_X</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">xgboost</span> <span class="k">as</span> <span class="n">xgb</span>
+<span class="c1"># 5.调用XGBoost模型，使用训练集数据进行训练
+</span><span class="n">my_model</span> <span class="o">=</span> <span class="n">xgb</span><span class="p">.</span><span class="n">XGBRegressor</span><span class="p">(</span>
+    <span class="n">objective</span><span class="o">=</span><span class="s">'reg:squarederror'</span><span class="p">,</span>
+    <span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># 对应的xgb.XGBClassifier()为分类模型
+</span><span class="n">my_model</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># 6.使用模型对测试集数据进行预测
+</span><span class="n">predictions</span> <span class="o">=</span> <span class="n">my_model</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_absolute_error</span>
+<span class="c1"># 7.对模型的预测结果进行评判（平均绝对误差）
+</span><span class="k">print</span><span class="p">(</span><span class="s">"Mean Absolute Error : "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test_y</span><span class="p">)))</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/12/28/lightgbm.html" class="read-next-link"></a>
+        <section>
+          <span>轻量级梯度提升机(Light Gradient Boosting Machine, LightGBM)</span>
+          <p>  LightGBM: A Highly Efficient Gradient Boosting Decision...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63ab972308b6830163d494de.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/12/26/dynopool.html" class="read-next-link"></a>
+          <section>
+            <span>Pooling Revisited: Your Receptive Field is Suboptimal</span>
+            <p>  DynOPool: 学习最优感受野的动态优化池化.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63abf58908b683016391cd12.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

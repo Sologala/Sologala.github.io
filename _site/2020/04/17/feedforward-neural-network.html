@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前馈神经网络 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="前馈神经网络">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="前馈神经网络 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/17/feedforward-neural-network.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>前馈神经网络</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-17"><i class="iconfont icon-date"></i>17 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e95b7cac2a9a83be5deb0bd.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Feedforward Neural Networks，亦称多层感知机（Multi-Layer Perceptron，MLP）.</p>
+</blockquote>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>模型介绍</li>
+  <li>前向传播</li>
+  <li>反向传播</li>
+  <li>自动求导</li>
+</ol>
+
+<h1 id="1-模型介绍">1. 模型介绍</h1>
+<p><strong>前馈神经网络（Feedforward Neural Networks，FNN）</strong>，亦称<strong>多层感知机（Multi-Layer Perceptron，MLP）</strong>。</p>
+
+<p>前馈神经网络包含<strong>输入层(input layer)</strong>、<strong>隐藏层(hidden layer)</strong>和<strong>输出层(output layer)</strong>。计算网络层数时通常不考虑输入层。</p>
+
+<p><strong><a href="https://www.researchgate.net/publication/245468707_Approximations_by_superpositions_of_a_sigmoidal_function">通用近似定理(Universal Approximation Theorem)</a></strong>:</p>
+
+<p>具有非线性激活函数的单隐藏层前馈神经网络，只要其隐藏层神经元的数量足够，它可以以任意的精度来近似任何一个定义在实数空间$\Bbb{R}^D$中的有界闭集函数。</p>
+
+<p>通用近似定理只是说明了神经网络的计算能力可以去近似一个给定的连续函数，但并没有给出如何找到这样一个网络，以及是否是最优的。因为神经网络的强大能力，反而容易在训练集上过拟合。</p>
+
+<h1 id="2-前向传播">2. 前向传播</h1>
+
+<p>对于一个$L$层的前馈神经网络，引入以下记号：</p>
+<ol>
+  <li>\(M_l\):第$l$层神经元的个数(\(0≤l≤L\));</li>
+  <li>\(W^{(l)} \in \Bbb{R}^{M_l×M_{l-1}}\):第$l-1$层到第$l$层的权重矩阵;</li>
+  <li>\(b^{(l)} \in \Bbb{R}^{M_l}\):第$l$层的偏置;</li>
+  <li>\(z^{(l)} \in \Bbb{R}^{M_l}\):第$l$层激活函数之前的值(仿射变换的输出);</li>
+  <li>\(a^{(l)} \in \Bbb{R}^{M_l}\):第$l$层激活函数之后的值(神经元的激活值),且\(x = a^{(0)}\)</li>
+</ol>
+
+<p>则神经网络第$l$层的<strong>前向传播(forward propagation)</strong>过程：</p>
+
+\[z^{(l)} = W^{(l)}a^{(l-1)} + b^{(l)}\]
+
+\[a^{(l)} = f(z^{(l)})\]
+
+<p>其中$f$表示第$l$层的激活函数。</p>
+
+<p>特别地，线性回归、Logistic回归或Softmax回归也可以看作只有一层的神经网络。</p>
+
+<h1 id="3-反向传播">3. 反向传播</h1>
+
+<p>记神经网络的损失函数为\(L(y,\hat{y})\)，在神经网络的训练中经常使用<strong>反向传播算法(back propagation, BP)</strong>来高效地计算梯度。</p>
+
+<p>记第$l$层的误差项为\(δ^{(l)}\):</p>
+
+\[δ^{(l)} = \frac{\partial L(y,\hat{y})}{\partial z^{(l)}}\]
+
+<p>网络的输出为：</p>
+
+\[\hat{y} = f^{(L)}(z^{(L)})\]
+
+<p>其中\(f^{(L)}\)表示输出层的激活函数。</p>
+
+<p>则反向传播算法可表示为：</p>
+
+\[δ^{(L)} = \frac{\partial L(y,\hat{y})}{\partial z^{(L)}} = \frac{\partial L(y,\hat{y})}{\partial \hat{y}} \frac{\partial \hat{y}}{\partial z^{(L)}}\]
+
+\[δ^{(l)} = \frac{\partial L(y,\hat{y})}{\partial z^{(l)}} = \frac{\partial L(y,\hat{y})}{\partial z^{(l+1)}} \frac{\partial z^{(l+1)}}{\partial z^{(l)}} = δ^{(l+1)} \frac{\partial z^{(l+1)}}{\partial a^{(l)}} \frac{\partial a^{(l)}}{\partial z^{(l)}} = {W^{(l+1)}}^T δ^{(l+1)} \ast f'(z^{(l)})\]
+
+\[\frac{\partial L(y,\hat{y})}{\partial W^{(l)}} = \frac{\partial L(y,\hat{y})}{\partial z^{(l)}} \frac{\partial z^{(l)}}{\partial W^{(l)}} = δ^{(l)}{a^{(l-1)}}^T\]
+
+\[\frac{\partial L(y,\hat{y})}{\partial b^{(l)}} = \frac{\partial L(y,\hat{y})}{\partial z^{(l)}} \frac{\partial z^{(l)}}{\partial b^{(l)}} = δ^{(l)}\]
+
+<p>对于矩阵微积分，常用<strong>维度检验(dimensionality check)</strong>的方法判断公式的正确性。</p>
+
+<p>注意到在误差\(δ^{(l)}\)的反向传播过程中，在每一层都要乘以该层的激活函数的导数，当激活函数存在饱和区时，容易产生<strong>梯度消失（Vanishing Gradient）</strong>问题。</p>
+
+<h1 id="4-自动求导">4. 自动求导</h1>
+<p>目前，主流的深度学习框架都包含了自动梯度计算的功能，自动计算梯度的方法可以分为以下三类：</p>
+<ol>
+  <li>数值微分</li>
+  <li>符号微分</li>
+  <li>自动微分</li>
+</ol>
+
+<h3 id="1-数值微分">(1). 数值微分</h3>
+<p><strong>数值微分（Numerical Differentiation）</strong>是用数值方法来计算函数<strong>f(x)</strong>的导数。</p>
+
+\[f'(x) = \frac{f(x+Δx)-f(x)}{Δx}\]
+
+<p>对\(f(x+Δx)\)在点\(x\)进行Taylor展开，可得上述计算的误差是\(O(Δx^2)\)。</p>
+
+<p>在实际应用，经常使用下面公式来计算梯度:</p>
+
+\[f'(x) = \frac{f(x+Δx)-f(x-Δx)}{2Δx}\]
+
+<p>对\(f(x+Δx)\)、\(f(x-Δx)\)在点\(x\)进行Taylor展开，可得上述计算的误差是\(O(Δx^4)\)。</p>
+
+<p>数值微分由于计算复杂度高，仅用来进行<strong>梯度检查(gradient check)</strong>。</p>
+
+<h3 id="2-符号微分">(2). 符号微分</h3>
+<p><strong>符号微分（Symbolic Differentiation）</strong>是一种基于<strong>符号计算</strong>的自动求导方法。</p>
+
+<p>符号计算一般来讲是对输入的表达式，通过迭代或递归使用一些事先定义的规则进行转换。当转换结果不能再继续使用变换规则时，便停止计算。</p>
+
+<p>符号计算的一个<strong>优点</strong>是符号计算和平台无关，可以在CPU或GPU上运行。</p>
+
+<p>符号微分的<strong>不足</strong>：</p>
+<ol>
+  <li>编译时间较长，特别是对于循环，需要很长时间进行编译；</li>
+  <li>为了进行符号微分，一般需要设计一种专门的语言来表示数学表达式，并且要对变量（符号）进行预先声明；</li>
+  <li>很难对程序进行调试。</li>
+</ol>
+
+<h3 id="3-自动微分">(3). 自动微分</h3>
+<p><strong>自动微分（Automatic Differentiation，AD）</strong>是目前大多数深度学习框架的首选。</p>
+
+<p>自动微分的基本原理是所有的数值计算可以分解为一些基本操作，构成一个<strong>计算图(computational graph)</strong>，然后利用链式法则来自动计算一个复合函数的梯度。</p>
+
+<p>按照计算导数的顺序，自动微分可以分为两种模式：<strong>前向模式</strong>和<strong>反向模式</strong>。</p>
+<ol>
+  <li><strong>前向模式</strong>是按计算图中计算方向的相同方向来递归地计算梯度,前向模式需要对每一个输入变量都进行一遍遍历;</li>
+  <li><strong>反向模式</strong>是按计算图中计算方向的相反方向来递归地计算梯度,反向模式需要对每一个输出都进行一个遍历。</li>
+</ol>
+
+<p><img src="https://pic.downk.cc/item/5ea13376c2a9a83be5b064cb.jpg" alt="" /></p>
+
+<p>在前馈神经网络的参数学习中，\(\Bbb{R}^N → \Bbb{R}\)，输出为标量，因此采用反向模式为最有效的计算方式，只需要一遍计算。</p>
+
+<p>计算图按构建方式可以分为<strong>静态计算图</strong>和<strong>动态计算图</strong>。</p>
+
+<p><strong>1.静态计算图</strong></p>
+
+<p>静态计算图是在编译时构建计算图，计算图构建好之后在程序运行时不能改变；</p>
+
+<p>优点：</p>
+<ul>
+  <li>构建时可以优化；</li>
+  <li>并行能力强。</li>
+</ul>
+
+<p>缺点：</p>
+<ul>
+  <li>灵活性差。</li>
+</ul>
+
+<p>如：Theano、Tensorflow。</p>
+
+<p><strong>2.动态计算图</strong>是在程序运行时动态构建。</p>
+
+<p>优点：</p>
+<ul>
+  <li>灵活性高。</li>
+</ul>
+
+<p>缺点：</p>
+<ul>
+  <li>不容易优化；</li>
+  <li>难以并行计算。</li>
+</ul>
+
+<p>如：PyTorch、Tensorflow 2.0。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/18/rbf-network.html" class="read-next-link"></a>
+        <section>
+          <span>Radial Basis Function(RBF)：径向基函数网络</span>
+          <p>  Radial Basis Function Networks.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5edf57bfc2a9a83be5dd5cc4.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/16/deep-belief-network.html" class="read-next-link"></a>
+          <section>
+            <span>Deep Belief Network：深度信念网络</span>
+            <p>  Deep Belief Networks.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e97dbe0c2a9a83be538717b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

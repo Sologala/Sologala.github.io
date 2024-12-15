@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>行人检测与属性识别(Pedestrian Detection and Attribute Recognition) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="行人检测与属性识别(Pedestrian Detection and Attribute Recognition)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="行人检测与属性识别(Pedestrian Detection and Attribute Recognition) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/05/12/pedestrian-attribute-recognition.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>行人检测与属性识别(Pedestrian Detection and Attribute Recognition)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-05-12"><i class="iconfont icon-date"></i>12 May 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ed8a773c2a9a83be5131f5b.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Pedestrian Detection and Attribute Recognition.</p>
+</blockquote>
+
+<h1 id="1-行人检测-pedestrian-detection">1. 行人检测 Pedestrian Detection</h1>
+
+<p><strong>行人检测(Pedestrian Detection)</strong>要解决的问题是：找出图像或视频帧中所有的行人，包括位置和大小，一般用矩形框表示，是典型的目标检测问题。</p>
+
+<p>行人检测的主要困难：</p>
+<ul>
+  <li>外观差异大：外观差异主要体现在视角，姿态，服饰和附着物，光照，成像距离等。</li>
+  <li>遮挡问题：在很多应用场景中，行人非常密集，存在严重的遮挡，这对检测算法带来了严重的挑战。</li>
+  <li>背景复杂：无论是室内还是室外，行人检测一般面临的背景都非常复杂，有些物体的外观和形状、颜色、纹理很像人体。</li>
+  <li>检测速度：行人检测一般采用了复杂的模型，运算量相当大，要达到实时非常困难，一般需要大量的优化。</li>
+</ul>
+
+<p>行人检测常用的数据集包括：</p>
+
+<p><img src="https://pic.downk.cc/item/5ed88636c2a9a83be5e5e0bc.jpg" alt="" /></p>
+
+<p>用于评估检测器性能的指标通常有：对数平均漏检率（<strong>LAMR</strong>）、每秒帧数(帧率）（<strong>FPS</strong>）、准确率（<strong>AP</strong>）和召回率（<strong>recall</strong>）。帧率表示模型的效率，准确率、对数平均漏检率和召回率反映了模型的准确性。</p>
+
+<h3 id="-deeppartsdeep-learning-strong-parts-for-pedestrian-detection">⚪ <a href="https://www.researchgate.net/publication/300412405_Deep_Learning_Strong_Parts_for_Pedestrian_Detection">DeepParts：Deep Learning Strong Parts for Pedestrian Detection</a></h3>
+
+<p><strong>DeepParts</strong>基于多个局部检测器完成行人检测；使用对身体的局部检测来降低对行人检测的丢失率。进行局部检测的目的主要是为了处理行人身体被遮挡的问题。</p>
+
+<p>算法流程：</p>
+<ol>
+  <li>构造<strong>part pool</strong>；</li>
+  <li>对于每一个<strong>part</strong>，训练一个单独的检测器；</li>
+  <li>使用互补的检测器推断目标。</li>
+</ol>
+
+<h3 id="-part-pool">① Part Pool</h3>
+
+<p><img src="https://pic.downk.cc/item/5ed8a28ec2a9a83be50c4851.jpg" alt="" /></p>
+
+<p>使用$2m×m$的网格定义一个人的全身，将身体的一部分（<strong>Part prototype</strong>）定义为$P=(x,y,w,h,i)$，$x,y$为中心点坐标，$w,h$分别为网格的宽高,i表示第几个<strong>Part prototype</strong>。</p>
+
+<p>其中，为了避免可能有太细小的部分生成，使$w$和$h$的最小值为$2$。在具体的实现中定义了$45$个<strong>Part prototype</strong>。</p>
+
+<h3 id="-part-detector">② Part Detector</h3>
+<p>对于每个Part，都单独训练了卷积网络分类器。</p>
+<ul>
+  <li>负样本为对应区域不是行人的候选区域；</li>
+  <li>正样本是当<strong>ground truth</strong>中可见得部分能覆盖<strong>Part prototype</strong>时，提取对应部分为作为正样本。</li>
+</ul>
+
+<p>如下图是<strong>head-shoulder part</strong>的分类器：</p>
+
+<p><img src="https://pic.downk.cc/item/5ed8a3aec2a9a83be50dc14b.jpg" alt="" /></p>
+
+<h3 id="-bbox-shifting">③ Bbox Shifting</h3>
+<p>检测得到的边界框存在漂移问题。</p>
+
+<p>若在单方向上相对<strong>ground truth</strong>偏移$10\%$，就会使$IoU$为$0.9$，但是当在两个方向同时偏移$10\%$时，$IoU$就成了$0.68$，这就可能导致人体重要部分丢失，所以就要解决偏移问题。</p>
+
+<p><img src="https://pic.downk.cc/item/5ed8a459c2a9a83be50ec041.jpg" alt="" /></p>
+
+<p>在候选区域周围抖动的裁剪多个图像块，将这些块进行检测，选择得分最高的区域作为最终的结果。</p>
+
+<p>为减少计算量，使用全卷积网络实现。将每个候选区域送给全卷积神经网络之前，重调它的大小为$(227+32n)×(227+32n)$，最后就可以得到对应于每个$227×227$区域的$(1+n)×(1+n)$个得分映射。取其中得分最大的区域作为候选区域。。</p>
+
+<p><img src="https://pic.downk.cc/item/5ed8a548c2a9a83be5100384.jpg" alt="" /></p>
+
+<h1 id="2-行人属性识别-pedestrian-attribute-recognition">2. 行人属性识别 Pedestrian Attribute Recognition</h1>
+
+<p><strong>行人属性识别（Pedestrian Attribute Recognition，PAR）</strong>是从行人图像中挖掘属性信息，属性信息是行人的高层语义信息，将属性信息集成到行人检测、行人重识别等任务中可以获得更好的性能。</p>
+
+<p>行人属性识别常用的数据集包括：</p>
+<ul>
+  <li><strong>PETA</strong>：19000张图像，分辨率从17 × 39 到 169 × 365，来自于8705个人，共61个二分类属性和4个多分类属性。</li>
+  <li><strong>RAP</strong>:   41585张图像，分辨率从36 × 92 到 344 × 554，共72个属性(69个二分类属性，3个多分类属性)</li>
+  <li><strong>PA-100K</strong>:  来自于598个室外监控视频，100000幅图像，分辨率50×100到758 × 454，目前最大的PAR数据集，共26个属性。</li>
+</ul>
+
+<h3 id="-deepsar--deepmarmulti-attribute-learning-for-pedestrian-attribute-recognition-in-surveillance-scenarios">⚪ <a href="https://www.researchgate.net/publication/283484818_Multi-attribute_Learning_for_Pedestrian_Attribute_Recognition_in_Surveillance_Scenarios">DeepSAR &amp; DeepMAR：Multi-attribute Learning for Pedestrian Attribute Recognition in Surveillance Scenarios</a></h3>
+
+<p><strong>DeepSAR</strong>是对行人的单一属性进行识别，<strong>DeepMAR</strong>是对行人的多项属性进行识别；即通过卷积网络后分别进行二分类和多个二分类：</p>
+
+<p><img src="https://pic.downk.cc/item/5ed8a876c2a9a83be51486e0.jpg" alt="" /></p>
+
+<h3 id="-hydraplus-net-attentive-deep-features-for-pedestrian-analysis">⚪ <a href="https://arxiv.org/abs/1709.09930">HydraPlus-Net: Attentive Deep Features for Pedestrian Analysis</a></h3>
+
+<p><strong>HP-Net</strong>将注意力机制引入行人属性识别中。</p>
+
+<p>网络分为<strong>Main Net(M-Net)</strong>和<strong>Attentive Feature Net(AF-Net)</strong>。网络的四条主路径是共享参数的。</p>
+
+<p><img src="https://pic.downk.cc/item/5ed8ad56c2a9a83be51be388.jpg" alt="" /></p>
+
+<p>在<strong>AF-Net</strong>中，分别对三个<strong>Inception</strong>模块使用了<strong>multi-directional attention (MDA)</strong>：</p>
+
+<p><img src="https://pic.downk.cc/item/5ed8ad68c2a9a83be51c09b2.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/05/13/text-summary.html" class="read-next-link"></a>
+        <section>
+          <span>文本摘要</span>
+          <p>  Text Summarization.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ed5e96ec2a9a83be54a8149.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/05/10/face-recognition.html" class="read-next-link"></a>
+          <section>
+            <span>人脸检测, 识别与验证(Face Detection, Recognition, and Verification)</span>
+            <p>  Face Detection, Recognition, and Verification.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ec24f09c2a9a83be5645938.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

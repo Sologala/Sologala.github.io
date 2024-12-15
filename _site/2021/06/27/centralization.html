@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Centralization: A New Optimization Technique for Deep Neural Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Gradient Centralization: A New Optimization Technique for Deep Neural Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Gradient Centralization: A New Optimization Technique for Deep Neural Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/06/27/centralization.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Gradient Centralization: A New Optimization Technique for Deep Neural Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-06-27"><i class="iconfont icon-date"></i>27 Jun 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60dd62325132923bf859d24e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>梯度中心化：一种新的深度神经网络优化技术.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Gradient Centralization: A New Optimization Technique for Deep Neural Networks</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2004.01461v1">link</a></li>
+  <li>code：<a href="https://github.com/Yonghongwei/Gradient-Centralization">github</a></li>
+</ul>
+
+<h1 id="1-梯度中心化的定义">1. 梯度中心化的定义</h1>
+
+<p><img src="https://pic.imgdb.cn/item/60dd63e15132923bf868180c.jpg" alt="" /></p>
+
+<p>在深度学习方法中，通常在前向传播过程中根据网络参数$W$计算损失函数$\mathcal{L}$，并在反向传播中计算损失的梯度$\nabla_W \mathcal{L}$，从而应用梯度下降算法更新参数。本文提出了一种<strong>梯度中心化(gradient centralization,GC)</strong>方法，对梯度先应用中心化后再更新参数。梯度中心化可以表示为：</p>
+
+\[\Phi_{GC}(\nabla_{w_i} \mathcal{L}) = \nabla_{w_i} \mathcal{L}-\mu_{\nabla_{w_i} \mathcal{L}}\]
+
+<p>其中梯度均值向量计算为$\mu_{\nabla_{w_i} \mathcal{L}}=\frac{1}{M}\sum_{j=1}^{M}\nabla_{w_{i,j}} \mathcal{L}$.对于全连接网络，参数表示为$W \in \Bbb{R}^{C_{in} \times C_{out}}$；对于卷积神经网络，参数表示为$W \in \Bbb{R}^{C_{in} \times C_{out}\times (k_1k_2)} $；沿$C_{out}$维度计算平均梯度。若记$e$为$M$维单位向量，则梯度中心化也可表示为：</p>
+
+\[\Phi_{GC}(\nabla_{W} \mathcal{L}) = P\nabla_{W} \mathcal{L}, \quad P=I-ee^T\]
+
+<p>值得一提的是，矩阵$P$在形式上就是<strong>PCA</strong>算法中的<strong>中心矩阵(centering matrix)</strong>，是一个对称的幂等矩阵，其左乘样本矩阵后可以实现样本矩阵的归一化。</p>
+
+<h1 id="2-梯度中心化嵌入到优化方法中">2. 梯度中心化嵌入到优化方法中</h1>
+<p>梯度中心化可以很容易地嵌入到不同优化方法中，只需要在其计算梯度后加上中心化这一步即可，如应用到<strong>SGD</strong>和<strong>Adam</strong>算法中：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60dd68f75132923bf895acf7.jpg" alt="" /></p>
+
+<h1 id="3-梯度中心化的性质">3. 梯度中心化的性质</h1>
+
+<h2 id="1提高泛化能力--improving-generalization-performance">(1)提高泛化能力  Improving Generalization Performance</h2>
+
+<h3 id="权重空间正则化-weight-space-regularization">权重空间正则化 Weight space regularization</h3>
+<p>矩阵$P$是一个对称的幂等矩阵$P^2=P=P^T$，因此可以看作一个投影矩阵。容易证明：</p>
+
+\[e^TP = e^T(I-ee^T) = e^T-e^Tee^T = e^T-e^T = 0\]
+
+<p>因此矩阵$P$负责将向量投影到法向量为$e$的超平面上。梯度中心化$\Phi_{GC}(\nabla_{W} \mathcal{L})$相当于把梯度$\nabla_{W} \mathcal{L}$投影到该超平面上，这使得梯度更新被限制在同一个超平面上进行：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60dd79395132923bf8152d60.jpg" alt="" /></p>
+
+<p>这使得每次梯度更新的参数也在同一个超平面上，即$e^T(w-w^t)=0$。在优化损失函数时，相当于引入了潜在的约束：</p>
+
+\[\mathop{\min}_{w}\mathcal{L}(w), \qquad s.t. \quad e^T(w-w^0)=0\]
+
+<p>这是一个关于参数向量$w$的约束优化问题，它正则化了$w$的解空间，从而减少了过度拟合训练数据的可能性，进一步提高了模型的泛化能力。</p>
+
+<h3 id="输出特征空间正则化-output-feature-space-regularization">输出特征空间正则化 Output feature space regularization</h3>
+<p>将梯度中心化应用到<strong>SGD</strong>算法，可以得到对应的更新公式：</p>
+
+\[w^{t+1} = w^{t} - \alpha^{t}\Phi_{GC}(\nabla_{W^{t}} \mathcal{L}) = w^{t} - \alpha^{t} P\nabla_{W^{t}} \mathcal{L}\]
+
+<p>上式可以展开为：</p>
+
+\[w^{t} = w^{0} - \sum_{i=0}^{t-1} P\alpha^{i} \nabla_{W^{i}} \mathcal{L}\]
+
+<p>如果对输入$x$增加一个恒定强度变化的较小的扰动$\gamma 1$，则输出激活的变化为：</p>
+
+\[(w^{t})^T(x+\gamma 1)-(w^{t})^T x = \gamma (w^{t})^T 1 = \gamma 1^T w^{t} \\ = \gamma 1^T (w^{0} - \sum_{i=0}^{t-1} P\alpha^{i} \nabla_{W^{i}} \mathcal{L}) = \gamma 1^T w^{0} - \gamma 1^T\sum_{i=0}^{t-1} P\alpha^{i} \nabla_{W^{i}} \mathcal{L} \\ = \gamma 1^T w^{0} - \gamma 1^TP\sum_{i=0}^{t-1}\alpha^{i} \nabla_{W^{i}} \mathcal{L}\]
+
+<p>注意到：</p>
+
+\[1^TP = 1^T(I-ee^T) = 1^T(I-\frac{1}{M}11^T) = 1^T-\frac{1}{M}1^T11^T = 1^T-1^T = 0\]
+
+<p>因此：</p>
+
+\[(w^{t})^T(x+\gamma 1)-(w^{t})^T x = \gamma 1^T w^{0}\]
+
+<p>即对输入进行微小的扰动，其输出变化只与参数的初始值$w^{0}$有关，而与更新后的参数值$w^{t}$无关。若参数的初始值接近$0$，则输出激活对输入特征的强度变化不敏感，输出特征空间对于输入的变化具有更强的稳定性。</p>
+
+<p>实际中常选用的初始化策略(如<strong>Xavier</strong>初始化,<strong>Kaiming</strong>初始化)会使权重参数$w^{0}$接近$0$，下面展示两种初始化方法得到的参数的绝对值均值的对数分布，可以看出大多数参数向量的均值都非常小，如果使用梯度中心化的<strong>SGD</strong>算法更新模型，其输出特征相对于输入特征的强度变化不敏感。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60dd77f95132923bf80c4e01.jpg" alt="" /></p>
+
+<h2 id="2加速训练过程-accelerating-training-process">(2)加速训练过程 Accelerating Training Process</h2>
+
+<h3 id="平滑优化曲面-optimization-landscape-smoothing">平滑优化曲面 Optimization landscape smoothing</h3>
+<ul>
+  <li>定理1：梯度中心化后的<strong>L2</strong>范数比原梯度的<strong>L2</strong>范数小。</li>
+</ul>
+
+<p>证明如下：</p>
+
+\[||\Phi_{GC}(\nabla_{W} \mathcal{L})||_2^2 = \Phi_{GC}(\nabla_{W} \mathcal{L})^T\Phi_{GC}(\nabla_{W} \mathcal{L}) = (P\nabla_{W} \mathcal{L})^TP\nabla_{W} \mathcal{L} \\ = \nabla_{W} \mathcal{L}^TP^TP\nabla_{W} \mathcal{L} = \nabla_{W} \mathcal{L}^T(I-ee^T)^T(I-ee^T)\nabla_{W} \mathcal{L} \\ = \nabla_{W} \mathcal{L}^T(I-2ee^T+ee^Tee^T)\nabla_{W} \mathcal{L} = \nabla_{W} \mathcal{L}^T(I-ee^T)\nabla_{W} \mathcal{L} \\ = \nabla_{W} \mathcal{L}^T\nabla_{W} \mathcal{L} - \nabla_{W} \mathcal{L}^Tee^T\nabla_{W} \mathcal{L} = ||\nabla_{W} \mathcal{L}||_2^2 - ||e^T\nabla_{W} \mathcal{L}||_2^2 \\ ≤ ||\nabla_{W} \mathcal{L}||_2^2\]
+
+<ul>
+  <li>定理2：梯度中心化后的<strong>Hessian</strong>矩阵比原梯度的<strong>Hessian</strong>矩阵小。</li>
+</ul>
+
+<p>证明如下：</p>
+
+\[||\nabla \Phi_{GC}(\nabla_{W} \mathcal{L})||_2^2 = ||\nabla P\nabla_{W} \mathcal{L}||_2^2 = || P\nabla_{W}^2 \mathcal{L}||_2^2 \\ = \nabla_{W}^2 \mathcal{L}^TP^TP\nabla_{W}^2 \mathcal{L} = \nabla_{W}^2 \mathcal{L}^T(I-ee^T)\nabla_{W}^2 \mathcal{L} \\ = \nabla_{W}^2 \mathcal{L}^T\nabla_{W}^2 \mathcal{L} - \nabla_{W}^2 \mathcal{L}^Tee^T\nabla_{W}^2 \mathcal{L}  = ||\nabla_{W}^2 \mathcal{L}||_2^2 - ||e^T\nabla_{W}^2 \mathcal{L}||_2^2 \\ ≤ ||\nabla_{W}^2 \mathcal{L}||_2^2\]
+
+<p>上述两个定理表明被梯度中心化约束的损失函数与原始的损失函数相比，能够达到更好的<strong>Lipschitz</strong>特性，从而使得损失函数曲面更加平滑，实现更为快速和高效的训练。</p>
+
+<h3 id="抑制梯度爆炸-gradient-explosion-suppression">抑制梯度爆炸 Gradient explosion suppression</h3>
+<p>梯度中心化可以抑制梯度爆炸，使得训练过程更加稳定。这个性质和梯度裁剪类似，防止梯度出现过大的值。使用梯度中心化后梯度的<strong>L2</strong>范数和最大值都会变小：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60dd6a625132923bf8a1d458.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/06/28/fno.html" class="read-next-link"></a>
+        <section>
+          <span>Fourier Neural Operator for Parametric Partial Differential Equations</span>
+          <p>  为偏微分方程设计的傅里叶神经算子.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60d93a175132923bf8c0736b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/06/25/peclr.html" class="read-next-link"></a>
+          <section>
+            <span>PeCLR: Self-Supervised 3D Hand Pose Estimation from monocular RGB via Equivariant Contrastive Learning</span>
+            <p>  PeCLR：通过等变对比学习实现单目RGB自监督3D手部姿态估计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/668f7fcad9c307b7e9db1829.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

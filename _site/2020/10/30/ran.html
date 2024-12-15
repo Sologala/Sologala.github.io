@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residual Attention Network for Image Classification - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Residual Attention Network for Image Classification">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Residual Attention Network for Image Classification - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/10/30/ran.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Residual Attention Network for Image Classification</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-10-30"><i class="iconfont icon-date"></i>30 Oct 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/643267830d2dde57772290d3.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>图像分类的残差注意力网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1704.06904">Residual Attention Network for Image Classification</a></li>
+</ul>
+
+<p><strong>Attention</strong>的出发点是将注意力集中在部分显著或者是感兴趣的图像点上。其实卷积网络本身就自带<strong>Attention</strong>效果，以分类网络为例，高层<strong>feature map</strong>所激活的<strong>pixel</strong>也恰好集中在分类任务相关的区域。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643268630d2dde577723b088.jpg" alt="" /></p>
+
+<p>本文提出一种可堆叠的<strong>Residual Attention Module</strong>模块，在普通的<strong>ResNet</strong>网络中，增加侧分支，侧分支通过一系列的卷积和池化操作，逐渐提取高层特征并增大模型的感受野。</p>
+
+<p>高层特征的激活对应位置能够反映<strong>attention</strong>的区域，然后再对这种具有<strong>attention</strong>特征的<strong>feature map</strong>进行上采样，使其大小回到原始<strong>feature map</strong>的大小。</p>
+
+<p><strong>attention map</strong>对应到原始图片的每一个位置上，与原来的<strong>feature map</strong>进行<strong>element-wise product</strong>的操作，相当于一个权重器，增强有意义的特征，抑制无意义的信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64326a660d2dde5777271374.jpg" alt="" /></p>
+
+<p><strong>Attention Module</strong>分为两个分支，右边的分支就是普通的卷积网络，即主干分支，叫做<strong>Trunk Branch</strong>。左边的分支是为了得到一个掩码<strong>mask</strong>，该掩码的作用是得到输入特征的<strong>attention map</strong>，所以叫做<strong>Mask Branch</strong>，这个<strong>Mask Branch</strong>包含<strong>down sample</strong>和<strong>up sample</strong>的过程，目的是为了保证和右边分支的输出大小一致。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64326add0d2dde577727c6d8.jpg" alt="" /></p>
+
+<p>得到<strong>Attention map</strong>的<strong>mask</strong>以后，可以直接用<strong>mask</strong>和主干分支进行一个<strong>element-wise product</strong>的操作，即$M(x) \cdot T(x)$，来对特征做一次权重操作。但是这样导致的问题就是：$M(x)$的掩码是通过最后的<strong>sigmoid</strong>函数得到的，$M(x)$值在$[0, 1]$之间，连续多个<strong>Module</strong>模块直接相乘的话会导致<strong>feature map</strong>的值越来越小，同时也有可能打破原有网络的特性，使得网络的性能降低。比较好的方式就借鉴<strong>ResNet</strong>恒等映射的方法：</p>
+
+\[H(x) = (1+M(x)) \cdot T(x)\]
+
+<p>其中$M(x)$为<strong>Soft Mask Branch</strong>的输出，$T(x)$为<strong>Trunk Branch</strong>的输出，那么当$M(x)=0$时，该层的输入就等于$T(x)$，因此该层的效果不可能比原始的$T(x)$差，这一点也借鉴了<strong>ResNet</strong>中恒等映射的思想，同时这样的加法，也使得<strong>Trunk Branch</strong>输出的<strong>feature map</strong>中显著的特征更加显著，增加了特征的判别性。经过这种残差结构的堆叠，能够很容易的将模型的深度达到很深的层次，具有非常好的性能。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">attention_block</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">input_channels</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">output_channels</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">encoder_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">input_channels</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">input_channels</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">get_shape</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">value</span>
+    <span class="k">if</span> <span class="n">output_channels</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">output_channels</span> <span class="o">=</span> <span class="n">input_channels</span>
+    <span class="c1"># First Residual Block
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+        <span class="nb">input</span> <span class="o">=</span> <span class="n">residual_block</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+    <span class="c1"># Trunk Branch
+</span>    <span class="n">output_trunk</span> <span class="o">=</span> <span class="nb">input</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+        <span class="n">output_trunk</span> <span class="o">=</span> <span class="n">residual_block</span><span class="p">(</span><span class="n">output_trunk</span><span class="p">)</span>
+        
+    <span class="c1"># Soft Mask Branch
+</span>    <span class="c1">## encoder
+</span>    <span class="c1">### first down sampling
+</span>    <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">MaxPool2D</span><span class="p">(</span><span class="n">padding</span><span class="o">=</span><span class="s">'same'</span><span class="p">)(</span><span class="nb">input</span><span class="p">)</span>  <span class="c1"># 32x32
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+        <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">residual_block</span><span class="p">(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+ 
+    <span class="n">skip_connections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">encoder_depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1">## skip connections
+</span>        <span class="n">output_skip_connection</span> <span class="o">=</span> <span class="n">residual_block</span><span class="p">(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+        <span class="n">skip_connections</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">output_skip_connection</span><span class="p">)</span>
+        <span class="c1">## down sampling
+</span>        <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">MaxPool2D</span><span class="p">(</span><span class="n">padding</span><span class="o">=</span><span class="s">'same'</span><span class="p">)(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">residual_block</span><span class="p">(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+ 
+    <span class="c1">## decoder
+</span>    <span class="n">skip_connections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">skip_connections</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">encoder_depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1">## upsampling
+</span>        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">residual_block</span><span class="p">(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+        <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">UpSampling2D</span><span class="p">()(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+        <span class="c1">## skip connections
+</span>        <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">Add</span><span class="p">()([</span><span class="n">output_soft_mask</span><span class="p">,</span> <span class="n">skip_connections</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+ 
+    <span class="c1">### last upsampling
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+        <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">residual_block</span><span class="p">(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+    <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">UpSampling2D</span><span class="p">()(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+ 
+    <span class="c1">## Output
+</span>    <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">Conv2D</span><span class="p">(</span><span class="n">input_channels</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+    <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">Conv2D</span><span class="p">(</span><span class="n">input_channels</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+    <span class="n">output_soft_mask</span> <span class="o">=</span> <span class="n">Activation</span><span class="p">(</span><span class="s">'sigmoid'</span><span class="p">)(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+ 
+    <span class="c1"># Attention: (1 + output_soft_mask) * output_trunk
+</span>    <span class="n">output</span> <span class="o">=</span> <span class="n">Lambda</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)(</span><span class="n">output_soft_mask</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">Multiply</span><span class="p">()([</span><span class="n">output</span><span class="p">,</span> <span class="n">output_trunk</span><span class="p">])</span>  <span class="c1">#
+</span> 
+    <span class="c1"># Last Residual Block
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">residual_block</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+ 
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/10/31/nam.html" class="read-next-link"></a>
+        <section>
+          <span>NAM: Normalization-based Attention Module</span>
+          <p>  NAM：基于归一化的注意力模块.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63b92c1ebe43e0d30ed72aed.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/10/29/atac.html" class="read-next-link"></a>
+          <section>
+            <span>Attention as Activation</span>
+            <p>  使用注意力机制作为激活函数.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63b8ccd3be43e0d30e440589.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

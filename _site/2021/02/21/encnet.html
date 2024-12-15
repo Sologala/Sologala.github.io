@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Encoding for Semantic Segmentation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Context Encoding for Semantic Segmentation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Context Encoding for Semantic Segmentation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/02/21/encnet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Context Encoding for Semantic Segmentation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-02-21"><i class="iconfont icon-date"></i>21 Feb 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63fb1266f144a01007f6d877.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>EncNet: 语义分割的上下文编码.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1803.08904">Context Encoding for Semantic Segmentation</a></li>
+</ul>
+
+<p><strong>EncNet</strong>通过<strong>Context Encoding Module</strong>和<strong>Semantic Encoding Loss (SE-loss)</strong>来增加模型对上下文语义的理解。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fb12bcf144a01007f7486a.jpg" alt="" /></p>
+
+<p>引入<strong>Context Encoding Module</strong>（上下文编码模块）来捕捉全局信息的上下文信息，尤其是与场景相关联的类别信息。通过计算每个通道的缩放因子，来突出类别和类别相关的特征图，预测一组特征图的放缩因子作为循环用于突出需要强调的类别。</p>
+
+<p>上下文编码模块包括一个编码层和一个通道注意力过程。对于预训练网络，使用编码层捕获特征图的统计信息作为全局上下文语义，将编码层的输出作为<strong>编码语义(encoded semantics)</strong>。为了使用上下文，预测一组放缩因子(<strong>scaling factors</strong>)用于突出和类别相关的特征图。编码层学习带有上下文语义的固有字典，输出丰富上下文信息的残差编码。</p>
+
+<p>编码层学习包含$K$个<strong>codewords</strong>的固有字典 \(D=\{d_1,...,d_K\}\)，和一组视觉中心平滑因子\(S=\{s_1,...,s_K\}\)。编码层输出残差编码，其中第$i$个空间位置的特征与第$k$个字典向量的残差计算为$r_{ik}=x_i-d_k$，残差编码通过沿字典维度的重加权构造：</p>
+
+\[e_{i k}=\frac{\exp \left(-s_k\left\|r_{i k}\right\|^2\right)}{\sum_{j=1}^K \exp \left(-s_j\left\|r_{i j}\right\|^2\right)} r_{i k}\]
+
+<p>第$k$个字典向量的残差编码计算为$e_k=\sum_{i=1}^N e_{i k}$，总残差编码通过所有字典向量的残差编码的平均构造，并通过<strong>BN+ReLU</strong>增强。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Encoding</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">num_codes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Encoding</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="c1"># init codewords and smoothing factor
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_codes</span> <span class="o">=</span> <span class="n">channels</span><span class="p">,</span> <span class="n">num_codes</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="p">((</span><span class="n">num_codes</span> <span class="o">*</span> <span class="n">channels</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="c1"># [num_codes, channels]
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">codewords</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">torch</span><span class="p">.</span><span class="n">empty</span><span class="p">(</span><span class="n">num_codes</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nb">float</span><span class="p">).</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">std</span><span class="p">,</span> <span class="n">std</span><span class="p">),</span>
+            <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="c1"># [num_codes]
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span>
+            <span class="n">torch</span><span class="p">.</span><span class="n">empty</span><span class="p">(</span><span class="n">num_codes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nb">float</span><span class="p">).</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">scaled_l2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">codewords</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+        <span class="n">num_codes</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="n">codewords</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">reshaped_scale</span> <span class="o">=</span> <span class="n">scale</span><span class="p">.</span><span class="n">view</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_codes</span><span class="p">))</span>
+        <span class="n">expanded_x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">expand</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">num_codes</span><span class="p">,</span> <span class="n">channels</span><span class="p">))</span>
+        <span class="n">reshaped_codewords</span> <span class="o">=</span> <span class="n">codewords</span><span class="p">.</span><span class="n">view</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_codes</span><span class="p">,</span> <span class="n">channels</span><span class="p">))</span>
+ 
+        <span class="n">scaled_l2_norm</span> <span class="o">=</span> <span class="n">reshaped_scale</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">expanded_x</span> <span class="o">-</span> <span class="n">reshaped_codewords</span><span class="p">).</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">scaled_l2_norm</span>
+ 
+    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">assigment_weights</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">codewords</span><span class="p">):</span>
+        <span class="n">num_codes</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="n">codewords</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="n">reshaped_codewords</span> <span class="o">=</span> <span class="n">codewords</span><span class="p">.</span><span class="n">view</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_codes</span><span class="p">,</span> <span class="n">channels</span><span class="p">))</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+ 
+        <span class="n">expanded_x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">expand</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">num_codes</span><span class="p">,</span> <span class="n">channels</span><span class="p">))</span>
+        <span class="n">encoded_feat</span> <span class="o">=</span> <span class="p">(</span><span class="n">assigment_weights</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span>
+                        <span class="p">(</span><span class="n">expanded_x</span> <span class="o">-</span> <span class="n">reshaped_codewords</span><span class="p">)).</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">encoded_feat</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">x</span><span class="p">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="p">.</span><span class="n">channels</span>
+        <span class="c1"># [batch_size, channels, height, width]
+</span>        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># [batch_size, height x width, channels]
+</span>        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">contiguous</span><span class="p">()</span>
+ 
+        <span class="c1"># assignment_weights: [batch_size, channels, num_codes]
+</span>        <span class="n">assigment_weights</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">scaled_l2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">codewords</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># aggregate: [batch_size, num_codes, channels]
+</span>        <span class="n">encoded_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">assigment_weights</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">codewords</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">encoded_feat</span>
+</code></pre></div></div>
+
+<p>对总残差编码按照通道注意力的形式作用于预训练模型提取的特征，以进行特征增强：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">EncModule</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">num_codes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EncModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">encoding_project</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="p">,</span>
+            <span class="n">in_channels</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">Encoding</span><span class="p">(</span><span class="n">channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">num_codes</span><span class="o">=</span><span class="n">num_codes</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="n">num_codes</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">),</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sigmoid</span><span class="p">())</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="s">"""Forward function."""</span>
+        <span class="n">encoding_projection</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encoding_project</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">encoding_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encoding</span><span class="p">(</span><span class="n">encoding_projection</span><span class="p">).</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="n">batch_size</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc</span><span class="p">(</span><span class="n">encoding_feat</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">gamma</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">relu_</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">encoding_feat</span><span class="p">,</span> <span class="n">output</span>
+</code></pre></div></div>
+
+<p><strong>SE loss</strong>实现对场景内类别的关注，迫使模型学习每个场景内可能会出现的类别，为模型提供一个先验知识。同时不同于像素级别的损失，<strong>SE loss</strong>对于不同大小的物体目标的计算方式是等同的，根据个体的类别来计算，这就使大物体和小物体在损失贡献上相同，有利于小目标的分割。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fb1369f144a01007f82532.jpg" alt="" /></p>
+
+<p>文章中还对<strong>backbone</strong>网络做了一部分改动，将<strong>backbone</strong>的最后两层网络的空洞卷积速率设为2和4。在第三层和第四层均可以输出一个<strong>SE loss</strong>。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">EncHead</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">33</span><span class="p">,</span>
+                 <span class="n">num_codes</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                 <span class="n">use_se_loss</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EncHead</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">use_se_loss</span> <span class="o">=</span> <span class="n">use_se_loss</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">add_lateral</span> <span class="o">=</span> <span class="n">add_lateral</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_codes</span> <span class="o">=</span> <span class="n">num_codes</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">2048</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">512</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bottleneck</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            
+        <span class="bp">self</span><span class="p">.</span><span class="n">enc_module</span> <span class="o">=</span> <span class="n">EncModule</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span>
+            <span class="n">num_codes</span><span class="o">=</span><span class="n">num_codes</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">cls_seg</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">use_se_loss</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">se_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span><span class="p">)</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="s">"""Forward function."""</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bottleneck</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">encode_feat</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">enc_module</span><span class="p">(</span><span class="n">feat</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">functional</span><span class="p">.</span><span class="n">interpolate</span><span class="p">(</span><span class="nb">input</span> <span class="o">=</span> <span class="n">output</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">"bilinear"</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cls_seg</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">use_se_loss</span><span class="p">:</span>
+            <span class="n">se_output</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">se_layer</span><span class="p">(</span><span class="n">encode_feat</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="n">se_output</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">output</span>
+ 
+<span class="k">class</span> <span class="nc">ENCNet</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ENCNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">ResNet</span><span class="p">.</span><span class="n">resnet50</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">EncHead</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<p><strong>SE loss</strong>在实现时，用来预测当前图像中所有可能存在的类别：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 33是类别数, pred.shape[0]是batch_size的大小
+</span><span class="n">exist_class</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">FloatTensor</span><span class="p">([[</span><span class="mi">1</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">y</span><span class="p">[</span><span class="n">i_batch</span><span class="p">]</span> <span class="k">else</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">33</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">i_batch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pred</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span>
+
+<span class="n">exist_class</span> <span class="o">=</span> <span class="n">exist_class</span><span class="p">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">se_output</span> <span class="o">=</span> <span class="n">net</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">l1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">functional</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">se_output</span><span class="p">,</span> <span class="n">exist_class</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/02/22/dfanet.html" class="read-next-link"></a>
+        <section>
+          <span>DFANet: Deep Feature Aggregation for Real-Time Semantic Segmentation</span>
+          <p>  DFANet: 实时语义分割的深度特征聚合.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63fbfbc2f144a010072c4428.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/02/20/attunet.html" class="read-next-link"></a>
+          <section>
+            <span>Attention U-Net: Learning Where to Look for the Pancreas</span>
+            <p>  Attention U-Net: 向U-Net引入注意力机制.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63f974d5f144a01007b96eba.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

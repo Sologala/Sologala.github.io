@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>f-GAN: Training Generative Neural Samplers using Variational Divergence Minimization - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="f-GAN: Training Generative Neural Samplers using Variational Divergence Minimization">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="f-GAN: Training Generative Neural Samplers using Variational Divergence Minimization - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/02/07/fgan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>f-GAN: Training Generative Neural Samplers using Variational Divergence Minimization</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-02-07"><i class="iconfont icon-date"></i>07 Feb 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic1.imgdb.cn/item/6344cf4f16f2c2beb19594f3.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>fGAN：通过f散度构造GAN.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1606.00709">f-GAN: Training Generative Neural Samplers using Variational Divergence Minimization</a></li>
+</ul>
+
+<p><strong>GAN</strong>的生成器在优化时试图减小真实的数据分布\(P_{data}\)和生成分布\(P_G\)之间的<strong>KL散度</strong>。<strong>KL散度</strong>并不是唯一的选择，本文作者通过一般的<a href="https://0809zheng.github.io/2020/02/03/kld.html#-f%E6%95%A3%E5%BA%A6-f-divergence">f散度</a>来构造<strong>GAN</strong>。</p>
+
+<h1 id="-f散度">① f散度</h1>
+
+<p>一般地，$p(x)$和$q(x)$之间的<strong>f散度</strong>定义为：</p>
+
+\[D_f(P || Q) = \int_{x}^{} {q(x)f(\frac{p(x)}{q(x)})dx}\]
+
+<p>其中函数$f(\cdot)$的性质：</p>
+<ul>
+  <li>$f(\cdot)$是非负实数到实数的映射\(\Bbb{R}^{*} \to \Bbb{R}\)；</li>
+  <li>$f(1)=0$；对应$p(x)=q(x)$时散度为$0$;</li>
+  <li>$f(\cdot)$是凸函数：该性质使<strong>f</strong>散度恒大于等于零(根据<a href="https://0809zheng.github.io/2022/07/20/jenson.html">Jenson不等式</a>)：</li>
+</ul>
+
+\[D_f(P || Q) = \int_{x}^{} {q(x)f(\frac{p(x)}{q(x)})dx} ≥ f(\int_{x}^{} {q(x)\frac{p(x)}{q(x)}dx}) = f(1) = 0\]
+
+<p>当函数$f(\cdot)$选择不同时，<strong>f</strong>散度对应到不同的散度：</p>
+<ul>
+  <li><strong>KL散度</strong>：$f(x) = x \log x$</li>
+</ul>
+
+\[D_f(P || Q) = \int_{x}^{} {q(x) \frac{p(x)}{q(x)} \log(\frac{p(x)}{q(x)})dx} = \int_{x}^{} {p(x) \log(\frac{p(x)}{q(x)})dx}\]
+
+<ul>
+  <li><strong>Reverse KL散度</strong>：$f(x) = -\log x$</li>
+</ul>
+
+\[D_f(P || Q) = \int_{x}^{} {q(x) (-\log(\frac{p(x)}{q(x)}))dx} = \int_{x}^{} {q(x) \log(\frac{q(x)}{p(x)})dx}\]
+
+<ul>
+  <li>$\chi^2$<strong>散度</strong>：$f(x) = (x-1)^2$</li>
+</ul>
+
+\[D_f(P || Q) = \int_{x}^{} {q(x) (\frac{p(x)}{q(x)}-1)^2dx} = \int_{x}^{} {\frac{(p(x)-q(x))^2}{q(x)}dx}\]
+
+<p>下表给出了不同的散度对应的凸函数$f(x)$：
+<img src="https://pic1.imgdb.cn/item/6344d10216f2c2beb19864b8.jpg" alt="" /></p>
+
+<h1 id="-凸共轭-fenchel-conjugate">② 凸共轭 Fenchel Conjugate</h1>
+
+<p>对于凸函数$f(x)$，选择任意一个点$\xi$，计算$y=f(x)$在$x=\xi$处的切线：</p>
+
+\[y = f(\xi) + f'(\xi)(x-\xi)\]
+
+<p>对于凸函数，函数总在其切线上方，因此有：</p>
+
+\[\begin{aligned} f(x) &amp; \geq f(\xi) + f'(\xi)(x-\xi) \\ &amp; = f(\xi) - f'(\xi)\xi  + f'(\xi)x \end{aligned}\]
+
+<p>对于定义域内的所有点\(\xi \in \Bbb{D}\)，$f(x)$可以用其所有切线簇表示：</p>
+
+\[f(x) = \mathop{\max}_{\xi \in \Bbb{D}} \{ f(\xi) - f'(\xi)\xi  + f'(\xi)x \}\]
+
+<p>记$t=f’(\xi)$，$f^{*}(t) = -f(\xi) + f’(\xi)\xi$，则有：</p>
+
+\[f(x) = \mathop{\max}_{t \in f'(\Bbb{D})} \{ xt - f^{*}(t) \}\]
+
+<p>上式的几何意义为，对于凸函数$f(x)$，任意一点$x$处的取值为其所有切线簇在该点取值的最大值。</p>
+
+<p><img src="https://pic.downk.cc/item/5ebcfd25c2a9a83be542cee6.jpg" alt="" /></p>
+
+<p>式中$f^{*}(t)$称为凸函数$f(x)$的<strong>共轭函数（conjugate function）</strong> ，具有如下性质：</p>
+<ul>
+  <li>$f^*$也是凸函数；</li>
+  <li>$(f^{*})^{*}=f$，因此有：</li>
+</ul>
+
+\[f^{*}(t) = \mathop{\max}_{x \in \Bbb{D}} \{ xt - f(x) \}\]
+
+<p>直观上，通过共轭函数$f^*(t)$给出了凸函数$f(x)$的线性近似。对于任意$x$，通过共轭函数给出$f(x)$的一个下界$xt-f^{*}(t)$，并且该下界关于$x$是线性的；通过在每一个$x$处最大化$t$才能取得$f(x)$的结果，因此该方法称为<strong>局部变分</strong>方法，$t$可以看作$x$的函数$t(x)$：</p>
+
+\[f(x) = \mathop{\max}_{t \in f'(\Bbb{D})} \{ xt(x) - f^{*}(t(x)) \}\]
+
+<h3 id="例题kl散度的fx--xlog-x对应-ft--et-1">例题：<strong>KL散度</strong>的$f(x) = x\log x$对应 $f^*(t) = e^{t-1}$</h3>
+
+<p>求解下式：</p>
+
+\[f^*(t) = \mathop{\max}_{x \in \Bbb{D}} \{ xt - x\log x \}\]
+
+<p>令\(\frac{\partial(xt-x\log x)}{\partial x}=0\)得\(t-\log x-1=0\)，即\(x=e^{t-1}\),代入得：</p>
+
+\[f^*(t) = e^{t-1}t - e^{t-1}(t-1) = e^{t-1}\]
+
+<h1 id="-f-gan">③ f-GAN</h1>
+
+<p>根据<strong>f散度</strong>的计算公式：</p>
+
+\[D_f(P || Q) = \int_{x}^{} {q(x)f(\frac{p(x)}{q(x)})dx}\]
+
+<p>注意到只有$p(x)$和$q(x)$的解析形式均已知时上式才能求解。在实际应用中，有些概率分布形式未知，只能通过采样获得有限的样本；比如对于生成对抗网络，将$p(x)$视为数据真实分布，$q(x)$视为生成分布，这两种分布的概率形式都是未知的。</p>
+
+<p>此时可以通过共轭函数估算<strong>f散度</strong>。根据共轭函数给出的凸函数$f(x)$表达式：</p>
+
+\[f(x) = \mathop{\max}_{t \in f'(\Bbb{D})} \{ xt(x) - f^{*}(t(x)) \}\]
+
+<p><strong>f散度</strong>可以表示为：</p>
+
+\[\begin{aligned} D_f(P || Q)&amp; = \int_{x}^{} {q(x)f(\frac{p(x)}{q(x)})dx} \\ &amp;= \int_{x}^{} {q(x)(\mathop{\max}_{t \in f'(\Bbb{D})} \{ \frac{p(x)}{q(x)} t(x) - f^*(t(x)) \})dx} \\ &amp;= \mathop{\max}_{t \in f'(\Bbb{D})}\int_{x}^{} {q(x)( \frac{p(x)}{q(x)} t(x) - f^*(t(x)) )dx} \\ &amp;= \mathop{\max}_{t \in f'(\Bbb{D})} \int_{x}^{} p(x)t(x)- {q(x)f^*(t(x))dx} \\&amp;= \mathop{\max}_{t \in f'(\Bbb{D})} \{ \Bbb{E}_{x\text{~}p(x)}[t(x)]- \Bbb{E}_{x\text{~}q(x)}[f^*(t(x))] \} \end{aligned}\]
+
+<p>其中$t(x)$可以用神经网络$D(x)$拟合，相当于<strong>GAN</strong>中的“判别器”；生成分布$q(x)$是由生成器构造的。生成器的目标是减小两个分布的差异，而判别器的目标是增大两个分布的差异，两者的目标函数合并为：</p>
+
+\[\mathop{\min}_{G}\mathop{\max}_{D \in f'(\Bbb{D})} \{ \Bbb{E}_{x\text{~}p(x)}[D(x)]- \Bbb{E}_{x\text{~}q_G(x)}[f^*(D(x))] \}\]
+
+<p>其中凸函数$f(x)$需自行选择。注意到选定$f$后，$t(x)$（或$D(x)$）的值域是有限制的。在实践时可以通过施加激活函数约束$D(x)$的输出范围。激活函数的选择应满足以下几点：</p>
+<ol>
+  <li>激活函数的定义域为\(\Bbb{R}\)，值域为$f’(x)$的值域；</li>
+  <li>最好选择全局光滑的函数；如值域要求为\(\Bbb{R}^+\)，则优先考虑$e^x$而不是\(\text{ReLU}(x)\)；</li>
+  <li>选择激活函数时，应使其与$f^*(\cdot)$的复合运算比较简单。</li>
+</ol>
+
+<p>下面列出一些凸函数对应的共轭函数及其激活函数选择：</p>
+
+<p><img src="https://pic1.imgdb.cn/item/6345194e16f2c2beb11096c4.jpg" alt="" /></p>
+
+<h3 id="例题js散度对应的目标函数">例题：JS散度对应的目标函数</h3>
+
+<p>原目标函数为：</p>
+
+\[\mathop{\min}_{G}\mathop{\max}_{D \in f'(\Bbb{D})} \{ \Bbb{E}_{x\text{~}p(x)}[t(x)]- \Bbb{E}_{x\text{~}q(x)}[f^*(t(x))] \}\]
+
+<p>不妨取凸函数$f(x)=-(x+1)\log \frac{1+x}{2}+x \log x$，对应<strong>JS</strong>散度。其共轭函数为$f^{*}(t)=-\log(2-\exp(t))$，此时目标函数为：</p>
+
+\[\Bbb{E}_{x\text{~}p(x)}[t(x)]- \Bbb{E}_{x\text{~}q(x)}[-\log(2-\exp(t(x)))]\]
+
+<p>不妨取$D(x) = \frac{\exp(t(x))}{2}$，则上式简化为：</p>
+
+\[\begin{aligned} \Bbb{E}_{x\text{~}p(x)}[\log 2D(x)]- \Bbb{E}_{x\text{~}q(x)}[-\log(2-2D(x))] \\ = \Bbb{E}_{x\text{~}p(x)}[\log D(x)]+\Bbb{E}_{x\text{~}q(x)}[\log(1-D(x))] + 2\log 2 \end{aligned}\]
+
+<p>此即标准<strong>GAN</strong>的目标函数。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/02/08/sngan.html" class="read-next-link"></a>
+        <section>
+          <span>Spectral Normalization for Generative Adversarial Networks</span>
+          <p>  SN-GAN：在WGAN中引入谱归一化.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic1.imgdb.cn/item/634624c716f2c2beb1cfd9e2.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/02/06/wgangp.html" class="read-next-link"></a>
+          <section>
+            <span>Improved Training of Wasserstein GANs</span>
+            <p>  WGAN-GP：在WGAN中引入梯度惩罚.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/634405b216f2c2beb151bbad.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

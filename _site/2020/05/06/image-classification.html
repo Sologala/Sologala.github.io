@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图像识别(Image Recognition) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="图像识别(Image Recognition)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="图像识别(Image Recognition) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/05/06/image-classification.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>图像识别(Image Recognition)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-05-06"><i class="iconfont icon-date"></i>06 May 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5eba62edc2a9a83be59d07b6.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Image Recognition.</p>
+</blockquote>
+
+<p><strong>图像识别(Image Recognition)</strong>也叫<strong>图像分类(Image Classification)</strong>，是<strong>计算机视觉</strong>的基本任务，旨在对每张图像内出现的物体进行类别区分。图像识别任务面临的主要问题是<strong>语义鸿沟(semantic gap)</strong>，表现在：</p>
+<ul>
+  <li>不同图像的低级视觉特征(<strong>low-level visual features</strong>)相似，但高级语义(<strong>high-level concepts</strong>)差别很大；</li>
+  <li>不同图像的低级视觉特征差距很大，但高级语义相同。</li>
+</ul>
+
+<p>传统的图像处理是先对图像手工提取特征，再根据特征对图像进行分类。而深度学习方法不需要手工提取特征，使用卷积神经网络自动提取特征并进行分类。</p>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>图像识别模型</li>
+  <li>图像识别基准</li>
+</ol>
+
+<h3 id="-扩展阅读">⭐ 扩展阅读</h3>
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/01/29/tricks-classify.html"><font color="blue">Bag of Tricks for Image Classification with Convolutional Neural Networks</font></a>：(arXiv1812)一些使用卷积神经网络进行图像分类的技巧。</li>
+  <li><a href="https://0809zheng.github.io/2020/06/29/generalize.html"><font color="blue">Do ImageNet Classifiers Generalize to ImageNet?</font></a>：(arXiv1902)一篇讨论图像分类模型泛化能力的文章。</li>
+</ul>
+
+<h1 id="1-图像识别模型">1. 图像识别模型</h1>
+
+<p>本节主要介绍应用于图像识别任务的<strong>卷积神经网络</strong>，按照其结构发展概述如下：</p>
+<ol>
+  <li>早期探索：奠定“卷积层-下采样层-全连接层”的拓扑结构。如<strong>LeNet5</strong>, <strong>AlexNet</strong>, <strong>ZFNet</strong>, <strong>NIN</strong>, <strong>SPP-net</strong>, <strong>VGGNet</strong></li>
+  <li>深度化：增加堆叠卷积层的数量。如<strong>Highway Network</strong>, <strong>ResNet</strong>, <strong>Stochastic Depth</strong>, <strong>DenseNet</strong>, <strong>Pyramidal ResNet</strong></li>
+  <li>模块化：设计用于堆叠的网络模块。如<strong>Inception v1-4</strong>, <strong>WideResNet</strong>, <strong>Xception</strong>, <strong>ResNeXt</strong>, <strong>NASNet</strong>, <strong>ResNeSt</strong>, <strong>ConvNeXt v1-2</strong></li>
+  <li>轻量化：设计轻量级卷积层，可参考<a href="https://0809zheng.github.io/2021/09/10/lightweight.html"><font color="Blue">轻量级卷积神经网络</font></a>。</li>
+  <li>其他结构：<strong>Noisy Student</strong>, <strong>SCAN</strong>, <strong>NFNet</strong>, <strong>ResNet-RS</strong></li>
+</ol>
+
+<h2 id="1-早期探索">(1) 早期探索</h2>
+
+<p>卷积神经网络结构设计的早期探索过程，奠定了“卷积层-下采样层-全连接层”的拓扑结构，并通过实现和理论分析总结了使用小尺寸的卷积核(如$3 \times 3$)并且增加网络深度的设计思想。</p>
+
+<h3 id="-lenet5">⚪ LeNet5</h3>
+<ul>
+  <li>paper：<a href="http://vision.stanford.edu/cs598_spring07/papers/Lecun98.pdf">Gradient-based learning applied to document recognition</a></li>
+</ul>
+
+<p><strong>LeNet</strong>由<strong>LeCun</strong>在<strong>1998</strong>年提出，是历史上最早提出的卷积网络之一，被用于手写字符的识别。该网络由五层交替的卷积和下采样层组成，后接全连接层，网络参数并不庞大，大约有<strong>6</strong>万个参数。它具有对数字进行分类的能力，而不会受到较小的失真、旋转以及位置和比例变化的影响。当时<strong>GPU</strong>未广泛用于加速训练，传统多层全连接神经网络计算负担大，卷积神经网络利用了图像的潜在基础，即相邻像素彼此相关，不仅减少了参数数量和计算量，而且能够自动学习特征。在原始的LeNet模型中，使用了带参数的下采样层，模型最后还使用了高斯径向基连接，这些方法在今天已经很少再使用了，但这个网络奠定了卷积网络“卷积层-下采样层-全连接层”的拓扑结构，产生了深远的影响。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6b78308b683016336776f.jpg" alt="" /></p>
+
+<h3 id="-alexnet">⚪ AlexNet</h3>
+<ul>
+  <li>paper：<a href="http://stanford.edu/class/cs231m/references/alexnet.pdf">ImageNet Classification with Deep Convolutional Neural Networks</a></li>
+</ul>
+
+<p><strong>AlexNet</strong>被认为是第一个深层卷积神经网络，设计了一个八层的网络结构，大约有<strong>6000</strong>万个参数。网络使用了<strong>Dropout</strong>帮助训练，还使用了<strong>ReLU</strong>作为激活函数提高收敛速度。网络也使用了最大池化和局部响应归一化。这个网络获得了<strong>2012</strong>年<strong>ImageNet</strong>图像分类竞赛的冠军，之后的网络大多在该网络的基础上进行演变。值得一提的是，受到当时条件的限制，网络是在两块<strong>GPU</strong>上进行并行训练的，只在部分层有<strong>GPU</strong>之间的交互。这种方法后来被研究者进一步研究，演变成如今的“组卷积”的概念。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6b7a808b683016336b4c2.jpg" alt="" /></p>
+
+<h3 id="-zfnet">⚪ ZFNet</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1311.2901">Visualizing and Understanding Convolutional Networks</a></li>
+</ul>
+
+<p>早期网络超参数的学习机制主要是基于反复试验，而不知道改进背后的确切原因，缺乏了解限制了网络在复杂图像上的性能。<strong>2013</strong>年，<strong>Zeiler</strong>和<strong>Fergus</strong>提出了<strong>ZFNet</strong>，设计该网络的初衷是定量可视化网络性能。网络激活可视化的想法是通过解释神经元的激活来监视网络性能。通过实验发现，减小卷积核的尺寸和步幅能够保留更多的特征，从而最大限度地提高学习能力。拓扑结构的重新调整带来了性能提高，表明特征可视化可用于识别设计缺陷并及时调整参数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6b7ce08b683016336ff18.jpg" alt="" /></p>
+
+<h3 id="-nin">⚪ NIN</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1312.4400">Network In Network</a></li>
+</ul>
+
+<p><strong>NIN</strong>提出用非线性函数($1\times 1$卷积)增强卷积层提取的局部特征，同时使用全局平均池化层替代全连接层作为网络尾部的分类部分。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6b87c08b68301633819d3.jpg" alt="" /></p>
+
+<h3 id="-spp-net">⚪ SPP-net</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1406.4729">Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition</a></li>
+</ul>
+
+<p>通常的卷积神经网络包含卷积层和全连接层，后者要求输入固定数量的特征数，因此在网络输入时会把图像通过裁剪和拉伸调整为固定的大小，然而这样会改变图像的尺寸和纵横比，并扭曲原始信息。<strong>SPP-net</strong>通过在卷积层和全连接层中间引入空间金字塔池化结构，能够把任意不同尺寸和不同纵横比的图像特征转换为固定尺寸大小的输出特征向量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63abf68f08b6830163947507.jpg" alt="" /></p>
+
+<h3 id="-vggnet">⚪ VGGNet</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1409.1556">Very Deep Convolutional Networks for Large-Scale Image Recognition</a></li>
+</ul>
+
+<p><strong>VGGNet</strong>提出了一种简单有效的卷积神经网络结构设计原则，该模型用多层<strong>3x3</strong>卷积层代替了<strong>11x11</strong>和<strong>5x5</strong>卷积层，并通过实验证明，同时放置多层<strong>3x3</strong>卷积可以达到大尺寸卷积的效果，并且减少了参数的数量。该网络提出的使用小尺寸的卷积核并且增加网络深度的设计思想一直沿用至今。<strong>VGGNet</strong>的主要限制是计算成本高，比如<strong>VGGNet</strong>这个<strong>16</strong>层的卷积网络，由于增加了层数，即使使用小尺寸的滤波器，也有约<strong>1.4</strong>亿个参数，仍承受着很高的计算负担。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6ba2508b68301633a9cd1.jpg" alt="" /></p>
+
+<h2 id="2-深度化设计">(2) 深度化设计</h2>
+
+<p>深度化设计的思路是通过增加堆叠卷积层的数量来增强模型的非线性表示能力。</p>
+
+<h3 id="-highway-network">⚪ Highway Network</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1505.00387">Highway Networks</a></li>
+</ul>
+
+<p><strong>Highway Network</strong>通过门控机制引入新的跨层连接，利用深度来学习丰富的特征表示。实验表明，即使深度为<strong>900</strong>层，<strong>Highway Network</strong>的收敛速度也比普通网络快得多。</p>
+
+\[y=H(x) \cdot T(x) + x \cdot(1-T(x))\]
+
+<p><img src="https://pic.imgdb.cn/item/63a6bd8208b6830163401304.jpg" alt="" /></p>
+
+<h3 id="-resnet">⚪ ResNet</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1512.03385">Deep Residual Learning for Image Recognition</a></li>
+</ul>
+
+<p><strong>ResNet</strong>通过引入残差学习使得训练深层的卷积网络成为可能。该网络设计了一种如图所示的残差连接，即在一些卷积层前后用一个恒等映射进行连接，这样主路径的卷积网络学习的是信号的残差，由于连接了这样一条恒等映射，使得在反向传播时梯度可以更容易的回传，从而减小了训练网络的困难。作者训练了超过<strong>100</strong>层的网络，并在分类挑战赛中取得了很好的成绩。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6be8a08b683016341bbc2.jpg" alt="" /></p>
+
+<h3 id="-stochastic-depth">⚪ Stochastic Depth</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1603.09382">Deep Networks with Stochastic Depth</a></li>
+</ul>
+
+<p>随机深度是指在训练时以一定概率丢弃网络中的模块（等价于恒等变换）；测试时使用完整的网络，并且按照丢弃概率对各个模块的特征进行加权。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6bfa508b683016343b891.jpg" alt="" /></p>
+
+<h3 id="-densenet">⚪ DenseNet</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1608.06993">Densely Connected Convolutional Networks</a></li>
+</ul>
+
+<p><strong>ResNet</strong>的问题在于训练了一个深层的网络，但是网络中许多层可能贡献很少或根本没有信息。为了解决此问题，<strong>DenseNet</strong>使用了跨层连接，以前馈的方式将每一层连接到更深的层中，假设网络有$L$层，<strong>DenseNet</strong>建立了$(L(L+1))/2$个直接连接，并且对先前层的特征使用了级联而不是相加，可以显式区分网络不同深度的信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6c19a08b683016347250c.jpg" alt="" /></p>
+
+<h3 id="-pyramidal-resnet">⚪ Pyramidal ResNet</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1610.02915">Deep Pyramidal Residual Networks</a></li>
+</ul>
+
+<p><strong>Pyramidal ResNet</strong>也是一种残差网络结构，在整个网络结构中逐渐增加特征的通道数</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6c55608b68301634d0bbc.jpg" alt="" /></p>
+
+<h2 id="3-模块化设计">(3) 模块化设计</h2>
+
+<p>模块化设计的思想是首先设计包含卷积层的网络模块，然后通过堆叠相同的模块构造深度网络。</p>
+
+<h3 id="-inception-googlenet">⚪ Inception (GoogLeNet)</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1409.4842">Going Deeper with Convolutions</a></li>
+</ul>
+
+<p><strong>GoogLeNet</strong>提出了网络模块在设计时的基本思想，即<strong>拆分-变换-融合(split、transform、merge)</strong>的方法。该模型引入了如图所示的<strong>inception</strong>模块，首先把上一层的输出拆分成<strong>4</strong>路，分别通过<strong>1x1</strong>、<strong>3x3</strong>、<strong>5x5</strong>的卷积操作和一个<strong>3x3</strong>的最大池化操作进行变换，再把转换后的特征连接起来作为该模块的输出。在模块中封装了不同大小的卷积核以捕获不同尺度的空间信息。在采用大尺寸卷积核之前，使用<strong>1x1</strong>卷积作为瓶颈层，从而减小了模块的参数量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6bca208b68301633ec290.jpg" alt="" /></p>
+
+<h3 id="-inception-v2-inception-v3">⚪ Inception-V2, Inception-V3</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1512.00567">Rethinking the Inception Architecture for Computer Vision</a></li>
+</ul>
+
+<p>后续的<strong>inceptionv2</strong>版本主要引入了<strong>batchnorm</strong>进行优化。在<strong>inceptionv3</strong>模块中，首先将一个<strong>5x5</strong>的卷积层转换为两层<strong>3×3</strong>的卷积层，两者具有相同的感受野但后者的参数量更少一些；进一步，该模块把<strong>nxn</strong>的卷积转换成<strong>nx1</strong>的卷积和<strong>1xn</strong>的卷积的串联或并联的形式。</p>
+
+<p><img src="https://pic.downk.cc/item/5e818862504f4bcb040451fb.png" alt="" /></p>
+
+<h3 id="-inception-v4-inception-resnet">⚪ Inception-V4, Inception-ResNet</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1602.07261v1">Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning</a></li>
+</ul>
+
+<p><strong>Inception-ResNet</strong>是在<strong>Inception</strong>模块中引入了残差连接。</p>
+
+<p><img src="https://pic.downk.cc/item/5e82b01a504f4bcb04cebd2f.png" alt="" /></p>
+
+<h3 id="-wideresnet">⚪ WideResNet</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1605.07146">Wide Residual Networks</a></li>
+</ul>
+
+<p><strong>WideResNet</strong>通过增大网络结构的宽度(特征通道数)来改善网络的性能，并在卷积层之间引入了<strong>dropout</strong>进行正则化；实现了使用浅层网络获得跟深层网络相当的准确度。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6c14008b6830163466b0a.jpg" alt="" /></p>
+
+<h3 id="-xception">⚪ Xception</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1610.02357">Xception: Deep learning with depthwise separable convolutions</a></li>
+</ul>
+
+<p><strong>Xception</strong>可以被认为是一种极端(<strong>eXtreme</strong>)的<strong>Inception</strong>结构。它设计了深度可分离卷积，即首先使用<strong>1x1</strong>卷积降低通道数提高网络的计算效率，然后分别对特征的每个通道进行$3 \times 3$卷积。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6c2f508b683016349403e.jpg" alt="" /></p>
+
+<h3 id="-resnext">⚪ ResNeXt</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1611.05431">Aggregated Residual Transformations for Deep Neural Networks</a></li>
+</ul>
+
+<p><strong>ResNeXt</strong>引入了一个概念<strong>cardinality</strong>，是指一个附加的维度，用来表示对特征进行拆分和变换时的路径数目。比如图中把输入特征拆分成了<strong>32</strong>条路径，这里的<strong>cardinality</strong>就是<strong>32</strong>。实验表明增加<strong>cardinality</strong>能够显着改善性能，尽管会带来一些运算量的增加。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6c5e508b68301634dd2be.jpg" alt="" /></p>
+
+<h3 id="-nasnet">⚪ NASNet</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1707.07012">Learning Transferable Architectures for Scalable Image Recognition</a></li>
+</ul>
+
+<p>直接在大型数据集上学习网络结构的计算成本过高，<strong>NASNet</strong>通过神经结构搜索的方法在小数据上学习网络模块。网络在搜索时预先设定了一些基本操作，如不同尺寸的卷积、池化、空洞卷积和深度可分离卷积，通过网络自动组合这些操作寻找最优的拓扑结构。值得一提的是，这样的搜索方法成本是相当高的，<strong>NASNet</strong>在搜索时使用了<strong>500</strong>块<strong>GPU</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6d1cf08b68301636105e0.jpg" alt="" /></p>
+
+<h3 id="-resnest">⚪ ResNeSt</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/09/09/resnest.html"><font color="blue">ResNeSt: Split-Attention Networks</font></a></li>
+</ul>
+
+<p><strong>ResNeSt</strong>结合了多路径设计和通道注意力机制。多路径(<strong>multi-path</strong>)设计参考了<strong>ResNeXt</strong>，引入超参数<strong>cardinality</strong>控制分组卷积的分支数$k$；通道注意力机制参考了<strong>SKNet</strong>，引入超参数<strong>radix</strong>控制注意力计算的分支数$r$。</p>
+
+<p><img src="https://pic.downk.cc/item/5fec3e5a3ffa7d37b366a46a.jpg" alt="" /></p>
+
+<h3 id="-convnext">⚪ ConvNeXt</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/12/25/convnext.html"><font color="blue">A ConvNet for the 2020s</font></a></li>
+</ul>
+
+<p><strong>ConvNeXt</strong>通过把标准<strong>ResNet</strong>逐步修改为<strong>Swin Transformer</strong>，在此过程中发现了导致卷积神经网络和视觉<strong>Transformer</strong>存在性能差异的几个关键组件，在此基础上设计的卷积模块结合训练技巧与微观设计，实现了性能最佳的卷积网络。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63ac435f08b68301632949ce.jpg" alt="" /></p>
+
+<h3 id="-convnext-v2">⚪ ConvNeXt v2</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2023/01/05/convnext2.html"><font color="blue">ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders</font></a></li>
+</ul>
+
+<p><strong>ConvNeXt v2</strong>采用基于稀疏卷积设计的全卷积掩蔽自编码器(<strong>FCMAE</strong>)进行视觉自监督预训练，并引入全局响应归一化(<strong>GRN</strong>)缓解特征<strong>collapse</strong>现象。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b6d61dbe43e0d30e7858d8.jpg" alt="" /></p>
+
+<h2 id="4-轻量化设计">(4) 轻量化设计</h2>
+
+<p><strong>轻量级</strong>网络设计旨在设计计算复杂度更低的卷积网络结构，更多细节可参考<a href="https://0809zheng.github.io/2021/09/10/lightweight.html"><font color="Blue">轻量级(LightWeight)卷积神经网络</font></a>。</p>
+<ul>
+  <li>从<strong>结构</strong>的角度考虑，卷积层提取的特征存在冗余，可以设计特殊的卷积操作，减少卷积操作的冗余，从而减少计算量。如<strong>SqueezeNet</strong>, <strong>SqueezeNext</strong>, <strong>MobileNet V1,2,3</strong>, <strong>ShuffleNet V1,2</strong>, <strong>IGCNet V1,2</strong>, <strong>ChannelNet</strong>, <strong>EfficientNet V1,2</strong>, <strong>GhostNet</strong>, <strong>MicroNet</strong>, <strong>CompConv</strong>。</li>
+  <li>从<strong>计算</strong>的角度，模型推理过程中存在大量乘法运算，而乘法操作(相比于加法)对于目前的硬件设备不友好，可以对乘法运算进行优化，也可以减少计算量。如<strong>AdderNet</strong>使用<strong>L1</strong>距离代替卷积乘法；使用<strong>Mitchell</strong>近似代替卷积乘法。</li>
+</ul>
+
+<h2 id="5-其他结构">(5) 其他结构</h2>
+
+<h3 id="-noisy-student">⚪ Noisy Student</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/08/07/noisy-student-training.html"><font color="blue">Self-training with Noisy Student improves ImageNet classification</font></a></li>
+</ul>
+
+<p><strong>Noisy Student</strong>是一种半监督的图像分类方法。首先使用标记数据集训练一个教师网络；其次使用训练好的教师网络对大量无标签数据进行分类，构造伪标签；然后训练一个模型容量相等或更大的学生网络同时学习原标记数据和伪标签数据，在学习过程中引入数据增强、<strong>Dropout</strong>和随机深度等噪声干扰；最后将训练好的学生网络作为新的教师网络，并重复上述过程。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63ac21ab08b6830163f13903.jpg" alt="" /></p>
+
+<h3 id="-semantic-clustering-by-adopting-nearest-neighbors-scan">⚪ Semantic Clustering by Adopting Nearest neighbors (SCAN)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/07/15/scan.html"><font color="blue">SCAN: Learning to Classify Images without Labels</font></a></li>
+</ul>
+
+<p><strong>SCAN</strong>是一种无监督的图像分类方法，包括特征学习和聚类两个步骤。首先通过特征学习从图像中提取特征，学习过程采用自监督表示学习方法；然后对每一张图像的特征，在特征空间中寻找最近邻的$k$个特征，通过调整网络使得图像特征与这最近邻的$k$个特征内积最大（即相似度最高）。同时通过聚类给图像分配一个伪标签，通过调整网络最大化图像特征属于该类别的概率。</p>
+
+<h3 id="-normalizer-free-resnet-nfnet">⚪ Normalizer-Free ResNet (NFNet)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/21/nfnet.html"><font color="blue">High-Performance Large-Scale Image Recognition Without Normalization</font></a></li>
+</ul>
+
+<p><strong>NFNet</strong>是一个不使用<strong>BatchNorm</strong>的大批量图像分类网络，通过引入自适应梯度裁剪来保证较大<strong>batch size</strong>下训练的稳定性：</p>
+
+\[\begin{aligned} G \leftarrow \begin{cases} \lambda\frac{||W||}{||G||}G, &amp; ||G|| \geq \lambda \\ G, &amp; \text{otherwise} \end{cases} \end{aligned}\]
+
+<h3 id="-revisiting-resnet-resnet-rs">⚪ Revisiting ResNet (ResNet-RS)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/18/resnetrs.html"><font color="blue">Revisiting ResNets: Improved Training and Scaling Strategies</font></a></li>
+</ul>
+
+<p><strong>ResNet-RS</strong>通过改进<strong>ResNet</strong>的网络结构，引入新的训练和正则化方法，并调整缩放策略，使得经典<strong>ResNet</strong>重新成为分类<strong>SOTA</strong>模型。作者提出的推荐缩放策略为在可能出现过拟合问题的大训练轮数下首选扩大深度，否则扩大宽度；并且应缓慢扩大分辨率。</p>
+
+<h1 id="2-图像识别基准">2. 图像识别基准</h1>
+
+<p>常见的图像识别基准有<strong>MNIST</strong>, <strong>CIFAR</strong>, <strong>Places2</strong>, <strong>Cats vs Dogs</strong>, <strong>ImageNet</strong>, <strong>PASCAL VOC</strong>.</p>
+
+<h3 id="1-mnistmixed-national-institute-of-standards-and-technology">(1) MNIST（Mixed National Institute of Standards and Technology）</h3>
+<p><a href="http://yann.lecun.com/exdb/mnist/">MNIST</a>是由纽约大学的<strong>Yann LeCun</strong>整理的手写数字识别数据集。其训练集包含$60000$张图像，测试集包含$10000$张图像，每张图像都进行了尺度归一化和数字居中处理，固定尺寸大小为$28×28$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6d2f308b683016362ab7f.jpg" alt="" /></p>
+
+<h3 id="2-cifarcanada-institute-for-advanced-research">(2) CIFAR（Canada Institute For Advanced Research）</h3>
+<p><a href="http://www.cs.toronto.edu/~kriz/cifar.html">CIFAR</a>是由加拿大先进技术研究院的<strong>AlexKrizhevsky</strong>, <strong>Vinod Nair</strong>和<strong>Geoffrey Hinton</strong>收集而成的小图片数据集，包含<strong>CIFAR-10</strong>和<strong>CIFAR-100</strong>两个数据集。</p>
+<ul>
+  <li><strong>CIFAR-10</strong>：由$60000$张$32*32$的$RGB$彩色图片构成，共$10$个分类。包含$50000$张训练图像，$10000$张测试图像。<img src="https://pic.imgdb.cn/item/63a6d3c708b683016363d0f6.jpg" alt="" /></li>
+  <li><strong>CIFAR-100</strong>：由$60000$张图像构成，包含$100$个类别，每个类别$600$张图像，其中$500$张用于训练，$100$张用于测试。其中这$100$个类别又组成了$20$个大的类别，每个图像包含小类别和大类别两个标签。<img src="https://pic.imgdb.cn/item/63a6d3e608b683016363f89d.jpg" alt="" /></li>
+</ul>
+
+<h3 id="3-places2">(3) Places2</h3>
+
+<p><a href="http://places2.csail.mit.edu/index.html">Places2</a>是由<strong>MIT</strong>开发的一个场景图像数据集，可用于以场景和环境为应用内容的视觉认知任务。包含一千万张图片，<strong>400</strong>多个不同类型的场景环境，每一类有<strong>5000-30000</strong>张图片。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6d42508b6830163644969.jpg" alt="" /></p>
+
+<h3 id="4-cats-vs-dogs">(4) Cats vs Dogs</h3>
+<p><a href="https://www.kaggle.com/c/dogs-vs-cats/data">Cats vs Dogs</a>是<strong>kaggle</strong>上的猫狗分类数据集，共<strong>25000</strong>张图片，猫、狗各<strong>12500</strong>张。</p>
+
+<h3 id="5-imagenet">(5) ImageNet</h3>
+<p><a href="http://www.image-net.org/">ImageNet</a>是斯坦福大学的计算机科学家李飞飞建立的目前世界上最大的图像识别数据库之一，目前已经包含<strong>14197122</strong>张图像，<strong>21841</strong>个类别。</p>
+
+<p>基于<strong>ImageNet</strong>举办的<strong>ILSVRC（ImageNet Large-Scale Visual Recognition Challenge）</strong>比赛是图像识别领域最重要的赛事，催生出一系列著名的卷积神经网络。该比赛使用的数据集是<strong>ImageNet</strong>的一个子集，总共有$1000$类，每类大约有$1000$张图像。具体地，有大约$120$万张训练图像，$5$万张验证图像，$15$万张测试图像。</p>
+
+<p><img src="https://pic.downk.cc/item/5eba62edc2a9a83be59d07b6.jpg" alt="" /></p>
+
+<h3 id="6-pascal-voc">(6) PASCAL VOC</h3>
+<p><a href="http://pjreddie.com/projects/pascal-voc-dataset-mirror/">PASCAL VOC</a>数据集是一个视觉对象的分类识别和检测的基准测试集，提供了检测算法和学习性能的标准图像注释数据集和标准的评估系统。该数据集包含<strong>VOC2007</strong>（$430M$）、<strong>VOC2012</strong>（$1.9G$）两个下载版本。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/05/07/semantic-segmentation.html" class="read-next-link"></a>
+        <section>
+          <span>图像分割(Image Segmentation)</span>
+          <p>  Image Segmentation.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63f2c620f144a01007e3c370.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/05/05/mean-shift.html" class="read-next-link"></a>
+          <section>
+            <span>Mean-Shift</span>
+            <p>  Mean-Shift Clustering.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5eb3bf40c2a9a83be5282b0b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

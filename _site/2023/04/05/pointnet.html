@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/04/05/pointnet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-04-05"><i class="iconfont icon-date"></i>05 Apr 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/649d316a1ddac507cc30125f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>PointNet：用于3D点集分类与分割的深度学习模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1612.00593">PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation</a></li>
+</ul>
+
+<p>点云（<strong>point cloud</strong>）是一种无规律性（<strong>irregular</strong>）的几何数据结构。本文设计了一种可以直接处理点云的神经网络<strong>PointNet</strong>，<strong>PointNet</strong>的输入是点云，输出是整个输入的类别标签或者每个输入点的分割或者分块的标签。考虑到输入点云序列不变性的特征，使用一个简单的对称函数（<strong>max-pooling</strong>）编码无序的点云全局特征。</p>
+
+<p>点云是一组<strong>3D</strong>点的集合，每一个点最基本应包含坐标$(x,y,z)$，还可以包含颜色，法向量等特征。它具有如下三大主要特性：</p>
+<ul>
+  <li><strong>无序性（Unordered）</strong>：与图像中的像素数组或者体素网格中的体素数组不同，点云是一系列无序点的集合。神经网络在处理$N$个<strong>3D</strong>点时，应该对$N!$种输入顺序具有不变性。</li>
+  <li><strong>点之间的相互关系（Interaction Among Points）</strong>：点集中的大部分点不是孤立的，邻域点一定属于一个有意义的子集。因此，网络需要从近邻点学习到局部结构，以及局部结构的相互关系。</li>
+  <li><strong>变换不变性（Invariance Under Transformations）</strong>：作为一个几何目标，学习的点特征应该对特定的变换具有不变性。比如旋转和平移变换不会改变全局点云的类别以及每个点的分割结果。</li>
+</ul>
+
+<p><strong>PointNet</strong>在处理上述三个特点时采用以下设计：</p>
+<ul>
+  <li>无序性：使用对输入集合的顺序不敏感的<strong>对称函数</strong>，比如最大池化。</li>
+  <li>交互性：对称函数的聚合操作能够得到全局信息，将点的特征向量与全局特征向量<strong>连接</strong>起来，就可以让每个点感知到全局的语义信息。</li>
+  <li>变换不变性：对输入做一个<strong>标准化</strong>操作，比如使用网络训练一个变换矩阵。</li>
+</ul>
+
+<p><strong>PointNet</strong>的网络结构如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/649d318c1ddac507cc304a37.jpg" alt="" /></p>
+
+<h3 id="-分类网络">⚪ 分类网络</h3>
+
+<p>分类网络的输入是$n$个三维坐标，通过<strong>T-Net</strong>预测一个变换矩阵对输入进行变换（矩阵乘法），然后使用<strong>MLP</strong>对每个点做特征嵌入，之后在特征空间中预测一个变换矩阵对特征进行变换，然后使用<strong>MLP</strong>再做一次特征增强，最后通过最大池化得到全局特征，并用<strong>MLP</strong>做分类预测。</p>
+
+<h3 id="-分割网络">⚪ 分割网络</h3>
+
+<p>相比分类，分割需要每个点捕捉全局信息后才能知道自己是哪一类，于是把每个点的特征和全局特征进行连接，然后使用<strong>MLP</strong>做特征增强和分类预测。</p>
+
+<h3 id="-pointnet的pytorch实现">⚪ PointNet的Pytorch实现</h3>
+
+<p>用于构造变换矩阵的<strong>T-Net</strong>实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">STN</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">STN</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv3</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">k</span> <span class="o">*</span> <span class="n">k</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn4</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">512</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn5</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">k</span><span class="o">=</span><span class="n">k</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="s">"""
+        :param x: size[batch,channel(feature_dim),L(length of signal sequence)]
+        """</span>
+        <span class="n">batchsize</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn1</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn2</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn3</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv3</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1024</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu4</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn4</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu5</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn5</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">iden</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">k</span><span class="p">).</span><span class="n">flatten</span><span class="p">().</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">))).</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">).</span><span class="n">repeat</span><span class="p">(</span>
+            <span class="n">batchsize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">x</span><span class="p">.</span><span class="n">is_cuda</span><span class="p">:</span>
+            <span class="n">iden</span> <span class="o">=</span> <span class="n">iden</span><span class="p">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">iden</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<p>如果在网络中引入了<strong>T-Net</strong>，则希望<strong>T-Net</strong>生成的变换矩阵尽量接近旋转矩阵（即正交矩阵），会使优化过程更稳定。因此额外引入正交性损失：</p>
+
+\[L_{reg} = ||I-AA^T||_F^2\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">feature_transform_reguliarzer</span><span class="p">(</span><span class="n">trans</span><span class="p">):</span>
+    <span class="s">"""
+    :param trans: Rotation Matrix
+    """</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">trans</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)[</span><span class="bp">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+    <span class="k">if</span> <span class="n">trans</span><span class="p">.</span><span class="n">is_cuda</span><span class="p">:</span>
+        <span class="n">I</span> <span class="o">=</span> <span class="n">I</span><span class="p">.</span><span class="n">cuda</span><span class="p">()</span>
+    <span class="c1">#网络得到的旋转矩阵应该尽量正交，并以正交性作为损失
+</span>    <span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">trans</span><span class="p">,</span> <span class="n">trans</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">I</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">loss</span>
+</code></pre></div></div>
+
+<p><strong>PointNet</strong>中用于提取点云特征的部分实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PointNetEncoder</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="s">"""
+        :param channel: input channel
+        :param transform: if use STN
+        """</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PointNetEncoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">transform</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">STN</span> <span class="o">=</span> <span class="n">STN</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">STN_feature</span> <span class="o">=</span> <span class="n">STN</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv4</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span><span class="mi">128</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv5</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv1d</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span><span class="mi">1024</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn4</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn5</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">transform</span><span class="o">=</span><span class="n">transform</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">global_feature</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="c1"># global_feature: True：return global_feature False：return cat(points_feature,global_feature)
+</span>        <span class="n">N</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">transform</span><span class="p">:</span>
+            <span class="n">tran1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">STN</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tran1</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn1</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn2</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">transform</span><span class="p">:</span>
+            <span class="n">tran2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">STN_feature</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tran2</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">transform</span><span class="p">:</span>
+            <span class="n">tran_mat</span> <span class="o">=</span> <span class="p">(</span><span class="n">tran1</span><span class="p">,</span><span class="n">tran2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tran_mat</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="n">point_wise_feature</span><span class="o">=</span><span class="n">x</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn3</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv3</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn4</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv4</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn5</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv5</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+
+        <span class="n">global_feature_vec</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">global_feature_vec</span> <span class="o">=</span> <span class="n">global_feature_vec</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">global_feature</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">global_feature_vec</span><span class="p">,</span> <span class="n">tran_mat</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">global_feature_vec</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">N</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">point_wise_feature</span><span class="p">,</span><span class="n">temp</span><span class="p">],</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">tran_mat</span>
+</code></pre></div></div>
+
+<p><strong>PointNet</strong>的分类网络实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PointNet_cls</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">normal_channel</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PointNet_cls</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">normal_channel</span><span class="p">:</span>
+            <span class="n">channel</span> <span class="o">=</span> <span class="mi">6</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">channel</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">feat</span> <span class="o">=</span> <span class="n">PointNetEncoder</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span><span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">512</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">log_softmax</span><span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">LogSoftmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">trans_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">feat</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn1</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn2</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">))))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">trans_mat</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/04/06/sam.html" class="read-next-link"></a>
+        <section>
+          <span>Segment Anything</span>
+          <p>  SAM：分割任意模型.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/642e6ba6a682492fccbabbb6.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/04/04/octnet.html" class="read-next-link"></a>
+          <section>
+            <span>OctNet: Learning Deep 3D Representations at High Resolutions</span>
+            <p>  OctNet：在高分辨率下学习深度3D表示.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/649d1bea1ddac507cc0af178.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

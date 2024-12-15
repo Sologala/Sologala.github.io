@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoencoder: 自编码器 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Autoencoder: 自编码器">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Autoencoder: 自编码器 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/09/autoencoder.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>Autoencoder: 自编码器</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-09"><i class="iconfont icon-date"></i>09 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e8eb7ff504f4bcb040d0c17.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Auto Encoder.</p>
+</blockquote>
+
+<p><strong>自编码器(AutoEncoder)</strong>是一种具有<strong>瓶颈层(bottleneck layer)</strong>的神经网络模型，被用于重建高维数据，并通过无监督的方式学习数据的有效编码（或表示）。</p>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>自编码器 <strong>Autoencoder</strong></li>
+  <li>稀疏自编码器 <strong>Sparse Autoencoder</strong></li>
+  <li>压缩自编码器 <strong>Contractive Autoencoder</strong></li>
+  <li>降噪自编码器 <strong>Denoising Autoencoder</strong></li>
+  <li>栈式自编码器 <strong>Stacked Autoencoder</strong></li>
+  <li>变分自编码器 <strong>Variational Autoencoder</strong></li>
+</ol>
+
+<h1 id="1-自编码器">1. 自编码器</h1>
+<p><strong>自编码器(AutoEncoder)</strong>以无监督的方式重构原始输入，同时压缩输入数据，从而发现更高效的压缩表示。</p>
+
+<p>假设有一组$D$维的样本\(x^{(n)} \in \Bbb{R}^D,1≤n≤N\)，自编码器将这组数据映射到隐空间，得到每个样本的编码\(z^{(n)} \in \Bbb{R}^M,1≤n≤N\)。自编码器由两个网络组成：</p>
+<ul>
+  <li><strong>编码器</strong> \(g : \Bbb{R}^D → \Bbb{R}^M\)：将原始的高维输入转换为低维的特征编码$z=g(x)$。</li>
+  <li><strong>解码器</strong> \(f : \Bbb{R}^M → \Bbb{R}^D\)：从编码中恢复数据$x’=f(g(x))$。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/62a41c0c094754312953248f.jpg" alt="" /></p>
+
+<p>自编码器旨在学习一个恒等函数$x=f(g(x))$。自编码器的目标函数可以选择任意量化两个张量之间的差异的度量，如<strong>重构误差(Reconstruction error)</strong>:</p>
+
+\[L = \sum_{n=1}^{N} {|| x^{(n)}-f(g(x^{(n)})) ||^2}\]
+
+<h3 id="-使用多层感知机实现自编码器">⚪ 使用多层感知机实现自编码器</h3>
+
+<p><img src="https://pic.downk.cc/item/5e8e9ba9504f4bcb04f2e20e.jpg" alt="" /></p>
+
+<p>使用多层感知机对自编码器的编码器和解码器进行建模：</p>
+
+\[\begin{aligned} z &amp;= g(W^{(1)}x+b^{(1)}), x' = f(W^{(2)}z+b^{(2)}) \\ L &amp;= \sum_{n=1}^{N} {|| x^{(n)}-x'^{(n)} ||^2} + λ || W ||_F^2 \end{aligned}\]
+
+<p>如果$W^{(2)} = {W^{(1)}}^T$，称为<strong>捆绑权重(Tied weight)</strong>。捆绑权重自编码器的参数更少，因此更容易学习。此外，捆绑权重还在一定程度上起到正则化的作用，其中λ是正则化系数。</p>
+
+<p>如果特征空间的维度$M$小于原始空间的维度$D$，自编码器相当于是一种降维或特征抽取方法。</p>
+
+<p>如果编码只能取$K$个不同的值\((𝐾&lt;𝑁)\)，那么自编码器就可以转换为一个$K$类的聚类（Clustering）问题。</p>
+
+<p>使用自编码器是为了得到有效的数据表示，因此在训练结束后，一般会去掉解码器，只保留编码器。编码器的输出可以直接作为后续机器学习模型的输入。</p>
+
+<h1 id="2-稀疏自编码器">2. 稀疏自编码器</h1>
+<p><strong>稀疏自编码器（Sparse Auto-Encoder）</strong>是指对隐藏层单元$z$增加稀疏性约束，使得模型在任意时间只能激活少量的隐藏单元。稀疏性能够避免过拟合并提高模型鲁棒性，同时进行了隐式的特征选择，具有很高的可解释性。</p>
+
+<p>稀疏自编码器的目标函数是：</p>
+
+\[L = \sum_{n=1}^{N} {|| x^{(n)}-x'^{(n)} ||^2} + λ || W ||_F^2 + ηρ(z)\]
+
+<p>其中λ是正则化系数，$ρ(z)$是一个衡量<strong>稀疏性</strong>的函数。</p>
+
+<p>$ρ(z)$通常使用$l_1$范数:</p>
+
+\[ρ(z) = \sum_{m=1}^{M} {| z_m |}\]
+
+<p>或者事先给定隐藏层第$m$个神经元激活的目标概率$ρ^<em>$ (常取$0.05$)，由样本计算第$m$个神经元的<strong>平均激活度</strong>$ρ_m= \frac{1}{N} \sum_{n=1}^{N} {z_m^{(n)}}$，并用KL散度衡量$ρ^</em>$和$ρ_m$的差异：</p>
+
+\[\begin{aligned} ρ(z) &amp;= \sum_{m=1}^{M} {KL(ρ^* || ρ_m)} \\ &amp; = \sum_{m=1}^{M}  ρ^*log(\frac{ρ^*}{ρ_m}) + (1-ρ^*)log(\frac{1-ρ^*}{1-ρ_m}) \end{aligned}\]
+
+<p>平均激活度$ρ_m$理论上应根据所有样本计算出来，实际中可以只计算Mini-Batch中包含的样本的平均激活度，然后用滑动平均迭代计算近似值：</p>
+
+\[ρ_m^{(t)} = βρ_m^{(t-1)} + (1-β)ρ_m^{(t)}\]
+
+<h3 id="-k-sparse-autoencoder">⚪ k-Sparse Autoencoder</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1312.5663">k-Sparse Autoencoders</a></li>
+</ul>
+
+<p><strong>k稀疏自编码器</strong>只保留隐藏层单元$z$中前$k$个最大的值，从而实现稀疏性。首先通过编码器网络获得压缩编码$z=g(x)$，对编码向量中的值进行排序，只保留前$k$个最大的值，其他神经元设置为$0$，从而构造稀疏的编码$z’$。损失函数计算为$L=|x-f(z’)|^2_2$。反向传播时梯度只通过被激活的$k$个神经元。</p>
+
+<h1 id="3-压缩自编码器">3. 压缩自编码器</h1>
+<ul>
+  <li>paper：<a href="http://www.icml-2011.org/papers/455_icmlpaper.pdf">Contractive Auto-Encoders: Explicit Invariance During Feature Extraction</a></li>
+</ul>
+
+<p>与稀疏自编码器类似，<strong>压缩自编码器（Contractive Autoencoder）</strong>学习到的特征表示存在一个压缩的空间中，以增强模型的鲁棒性。</p>
+
+<p>压缩自编码器在损失函数中增加一个惩罚项，以防止学习到的表示对于输入过于敏感，以此提高模型对训练数据附近的微小扰动的鲁棒性。敏感性是通过衡量编码器的输出表示$z=f(x)$相对于输入的<strong>Jacobian</strong>矩阵的<strong>Frobenius</strong>范数实现的：</p>
+
+\[||J_f(x)||_F^2 = \sum_{ij} (\frac{\partial f_j(x)}{\partial x_i})^2\]
+
+<p>该惩罚项是学习到的编码相对于每个输入维度的偏导数的平方和，经验表明该惩罚项倾向于使得编码表示落入低维非线性流形中，对于正交于该流形的一些主方向保持较强的不变性。</p>
+
+<h1 id="4-降噪自编码器">4. 降噪自编码器</h1>
+
+<ul>
+  <li>paper：<a href="https://www.researchgate.net/publication/221346269_Extracting_and_composing_robust_features_with_denoising_autoencoders">Extracting and composing robust features with denoising autoencoders</a></li>
+</ul>
+
+<p>由于自编码器旨在学习恒等函数，因此当模型的参数数量多于输入样本的数据量时，存在<strong>过拟合</strong>的风险，模型可能会“记住”所有样本。</p>
+
+<p>为了避免过拟合并增加模型的鲁棒性，<strong>降噪自编码器（Denoising Auto-Encoder）</strong>在输入数据中添加随机噪声，然后训练模型以恢复原始输入（而不是有噪声的输入）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62a4349709475431297147ee.jpg" alt="" /></p>
+
+<p>对于输入样本$x$，可以根据损坏比例$μ$随机将$x$的一些维度的值设置为$0$，得到带有噪声的向量$\tilde{x}$。也可以引入Gaussian噪声，即\(\tilde{x} = x + ε\)，噪声$ε$~\(N(0,σ^2)\)。然后将$\tilde{x}$输入给自编码器得到编码$z$，并重构原始的无损输入$x’$。若用\(\mathcal{M}_D\)表示真实数据样本到噪声数据的映射，则降噪自编码器建模为：</p>
+
+\[\begin{aligned} \tilde{x} &amp;= \mathcal{M}_D(\tilde{x} | x) \\ L_{DAE} &amp;= \sum_{n=1}^{N} {|| x^{(n)}-f(g(\tilde{x}^{(n)})) ||^2} \end{aligned}\]
+
+<h1 id="5-栈式自编码器">5. 栈式自编码器</h1>
+<p><strong>栈式自编码器（Stacked Auto-Encoder，SAE）</strong>是指使用逐层堆叠的方式来训练一个深层的自编码器。</p>
+
+<p>栈式自编码器一般可以采用<a href="https://www.researchgate.net/publication/200744514_Greedy_layer-wise_training_of_deep_networks">逐层训练（Layer-Wise Training）</a>来学习网络参数：</p>
+
+<ol>
+  <li>首先训练第一个自编码器，然后保留第一个自编码器的编码器部分；</li>
+  <li>把第一个自编码器的中间层作为第二个自编码器的输入层进行训练；</li>
+  <li>反复地把前一个自编码器的中间层作为后一个编码器的输入层，进行迭代训练。</li>
+</ol>
+
+<p><img src="https://pic.downk.cc/item/5ee0d720c2a9a83be5d3fe2f.jpg" alt="" /></p>
+
+<h1 id="6-变分自编码器">6. 变分自编码器</h1>
+<p>上述讨论的自编码器模型是将观测数据$x$编码为固定的特征向量$z$，每一个特征向量对应特征空间中的一个离散点。<strong>变分自编码器（Variational Auto-Encoder，VAE）</strong>是自编码器的<strong>Bayesian</strong>形式，将特征向量$z$看作随机变量，使其能够覆盖特征空间中的一片区域。</p>
+
+<p>若随机变量的概率分布$p$被$\theta$参数化，则可以定义先验(<strong>prior</strong>)概率$p_{\theta}(z)$、似然(<strong>likelihood</strong>)概率$p_{\theta}(x|z)$和后验概率(<strong>prior</strong>)概率$p_{\theta}(z|x)$。<strong>VAE</strong>的目标是构造真实数据分布$p_{\theta}(x)$，这是通过极大化对数似然实现的：</p>
+
+\[\theta^* = \mathop{\arg \max}_{\theta} \sum_{n} \log p_{\theta}(x_n)\]
+
+<p>在实践中计算$p_{\theta}(x_n)$是相当困难的，因此引入通过$\phi$参数化的函数$q_{\phi}(z|x)$来近似后验分布$p_{\theta}(z|x)$。则整体结构近似于自编码器：</p>
+<ul>
+  <li>条件概率$p_{\theta}(x|z)$定义了一个生成模型，被称作概率编码器。</li>
+  <li>近似函数$q_{\phi}(z|x)$被称作概率解码器。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/62ac64e909475431296e555c.jpg" alt="" /></p>
+
+<p>关于变分自编码器的细节请参考<a href="https://0809zheng.github.io/2022/04/01/vae.html"><font color="blue">VAE专题</font></a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/11/PCA.html" class="read-next-link"></a>
+        <section>
+          <span>主成分分析(Principal Component Analysis, PCA)</span>
+          <p>  Principal Component Analysis.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ec4a0b8c2a9a83be52f72f0.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/08/sparse-coding.html" class="read-next-link"></a>
+          <section>
+            <span>稀疏编码(Sparse Coding)</span>
+            <p>  Sparse Coding.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e8db2d5504f4bcb043bd7cf.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

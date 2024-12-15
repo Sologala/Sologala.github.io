@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rethinking Attention with Performers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Rethinking Attention with Performers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Rethinking Attention with Performers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/08/12/performer.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Rethinking Attention with Performers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-08-12"><i class="iconfont icon-date"></i>12 Aug 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61136ff95132923bf8281465.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Performer: 通过随机投影将Attention的复杂度线性化.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Rethinking Attention with Performers</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2009.14794">link</a></li>
+</ul>
+
+<p>标准的<strong>Attention</strong>首先将输入序列\(X=[x_1,...,x_n] \in \Bbb{R}^{n×d}\)($n$个维度为$d$的特征向量，通常$n&gt;d$)转换成查询矩阵$Q$,键矩阵$K$,值矩阵$V$：</p>
+
+\[Q = XW_q \in \Bbb{R}^{n×d}, \quad W_q \in \Bbb{R}^{d×d}\]
+
+\[K = XW_k \in \Bbb{R}^{n×d}, \quad W_k \in \Bbb{R}^{d×d}\]
+
+\[V = XW_v \in \Bbb{R}^{n×d}, \quad W_v \in \Bbb{R}^{d×d}\]
+
+<p>并通过下式计算自注意力，对于第$i$个输入$x_i$，其输出计算为:</p>
+
+\[\text{Attention}(Q,K,V)_i=(\text{softmax}(\frac{QK^T}{\sqrt{d}})V)_i=\frac{\sum_{j=1}^{n}e^{\frac{q_i^Tk_j}{\sqrt{d}}}v_j}{\sum_{j=1}^{n}e^{\frac{q_i^Tk_j}{\sqrt{d}}}}=\frac{\sum_{j=1}^{n}\text{sim}(q_i,k_j)v_j}{\sum_{j=1}^{n}\text{sim}(q_i,k_j)}\]
+
+<p>上式可以表示为使用查询向量和键向量计算相似度函数$\text{sim}(q,k)≥0$，并对值向量进行加权求和。对于标准的点积自注意力机制，相似度函数选用：</p>
+
+\[\text{sim}(q_i,k_j) = e^{\frac{q_i^Tk_j}{\sqrt{d}}}\]
+
+<p>作者的出发点还是上述标准自注意力，为简化省略了缩放因子，即表示为$\text{sim}(q_i,k_j) = e^{q_i\cdot k_j}$。若希望将计算复杂度线性化，则寻找新的向量满足：</p>
+
+\[\text{sim}(q,k) ≈ \tilde{q}\cdot\tilde{k}\]
+
+<p>作者找到了一种映射：</p>
+
+\[e^{q\cdot k} = \Bbb{E}_{\omega \text{~} \mathcal{N}(\omega;0,1_d)} [e^{w\cdot q-||q||^2/2}\times e^{w\cdot k-||k||^2/2}] \\ ≈ \frac{1}{\sqrt{m}} \begin{pmatrix} e^{w_1\cdot q-||q||^2/2} \\ e^{w_2\cdot q-||q||^2/2} \\ \cdots \\ e^{w_m\cdot q-||q||^2/2} \end{pmatrix} \cdot \frac{1}{\sqrt{m}} \begin{pmatrix} e^{w_1\cdot k-||k||^2/2} \\ e^{w_2\cdot k-||k||^2/2} \\ \cdots \\ e^{w_m\cdot k-||k||^2/2} \end{pmatrix} \\ = \tilde{q}\cdot\tilde{k}\]
+
+<p>上式表示从标准正态分布$\mathcal{N}(\omega;0,1_d)$中采样足够多的$\omega$，然后计算\(e^{w\cdot q-\|q\|^2/2}\times e^{w\cdot k-\|k\|^2/2}\)的数学期望，结果等于$e^{q\cdot k}$。实际中$\omega$只能采集有限个，因此采集$m$个并作上述近似。上式将两个$d$维向量的内积的指数$e^{q\cdot k}$转化为两个$m$维向量的内积$\tilde{q}\cdot\tilde{k}$，则对应的自注意力计算为：</p>
+
+\[\text{Attention}(Q,K,V)_i=\frac{\sum_{j=1}^{n}(\tilde{q}_i\cdot\tilde{k}_j)v_j}{\sum_{j=1}^{n}\tilde{q}_i\cdot\tilde{k}_j} = \frac{\tilde{q}_i\sum_{j=1}^{n}\tilde{k}_j\cdot v_j}{\tilde{q}_i\sum_{j=1}^{n}\tilde{k}_j}\]
+
+<p>根据矩阵乘法的结合律，计算复杂度为$O(n^2)$的$QK^T$变为计算复杂度为$O(n)$的$\tilde{K}V^T$，从而将自注意力运算线性化。</p>
+
+<p>该映射推导如下。注意到$e^{q\cdot k}$可以改写为：</p>
+
+\[e^{q\cdot k} = e^{||q||^2/2+||k||^2/2-||q-k||^2/2}\]
+
+<p>对$e^{-||q-k||^2/2}$做傅里叶变换：</p>
+
+\[\mathcal{F}(e^{-||q-k||^2/2})=\frac{1}{\sqrt{2\pi}}\int_{}^{} e^{-||q-k||^2/2}e^{-i\omega (q-k)}d(q-k)=\frac{1}{\sqrt{2\pi}}\int_{}^{} e^{-||t||^2/2}e^{-i\omega t}dt \\ = \frac{1}{\sqrt{2\pi}}\int_{}^{} e^{-(||t||^2+2i\omega t-\omega^2+\omega^2)/2}dt = e^{-\omega^2/2}\frac{1}{\sqrt{2\pi}}\int_{}^{} e^{-(t+2i\omega)^2/2}dt = e^{-\omega^2/2}\]
+
+<p>再应用傅里叶逆变换：</p>
+
+\[e^{-||q-k||^2/2} = \mathcal{F}^{-1}(e^{-\omega^2/2})=\frac{1}{\sqrt{2\pi}}\int_{}^{} e^{-\omega^2/2}e^{i\omega (q-k)}d\omega\]
+
+<p>代入原式得：</p>
+
+\[e^{q\cdot k} = e^{||q||^2/2+||k||^2/2}\frac{1}{\sqrt{2\pi}}\int_{}^{} e^{-\omega^2/2}e^{i\omega (q-k)}d\omega \\ = \frac{e^{||q||^2/2+||k||^2/2}}{\sqrt{2\pi}}\int_{}^{} e^{-\omega^2/2+i\omega (q-k)}d\omega\]
+
+<p>对于上式，若令$q \to -iq,k \to ik$，则有：</p>
+
+\[e^{q\cdot k}  = \frac{e^{-||q||^2/2-||k||^2/2}}{\sqrt{2\pi}}\int_{}^{} e^{-\omega^2/2+\omega (q+k)}d\omega \\ = \int_{}^{} \frac{e^{-\omega^2/2}}{\sqrt{2\pi}}e^{\omega q-||q||^2/2}\cdot e^{\omega k-||k||^2/2}d\omega \\ = \Bbb{E}_{\omega \text{~} \mathcal{N}(\omega;0,1_d)} [e^{w\cdot q-||q||^2/2}\times e^{w\cdot k-||k||^2/2}]\]
+
+<p>$\omega_1,\omega_2,…,\omega_m$是独立地从标准正态分布$\mathcal{N}(\omega;0,1_d)$中采样得到的。作者指出，若将$\omega_i$进行正交化，能够有效地降低估计方差，提高估计的平均精度。这是因为分布$\mathcal{N}(\omega;0,1_d)$是各向同性的，即在方向上是均匀的，向量正交化使得采样结果更均匀，从而降低估计方差。值得一提的是，上述正交化仅对$m≤d$有效；若$m&gt;d$，则每$d$个向量进行分组，组内正交化。</p>
+
+<p>作者使用上述机制设计了<strong>Performer</strong>，当输入序列长度$n$较大时(比如超过$2048$)，比标准的<strong>Transformer</strong>具有明显的速度优势：</p>
+
+<p><img src="https://pic.imgdb.cn/item/611389405132923bf85d49d8.jpg" alt="" /></p>
+
+<p>作者比较了不同设置下输出的近似程度。采用正交化采样比独立采样更有效；本文所提方法比直接把$e^{q\cdot k}$展开为<strong>sin,cos</strong>函数的形式更精确：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61138ae25132923bf8608d4a.jpg" alt="" /></p>
+
+<p>理论上<strong>Performer</strong>与标准的<strong>Transformer</strong>可以相互转换。但实验表明<strong>Performer</strong>直接加载<strong>Transformer</strong>的权重效果较差，经过微调后能够获得较高的准确率：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61138c5c5132923bf86376c3.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/08/13/linformer.html" class="read-next-link"></a>
+        <section>
+          <span>Linformer: Self-Attention with Linear Complexity</span>
+          <p>  Linformer: 线性复杂度的自注意力机制.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6114c5e15132923bf88f2f23.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/08/11/reformer.html" class="read-next-link"></a>
+          <section>
+            <span>Reformer: The Efficient Transformer</span>
+            <p>  Reformer: 使用局部敏感哈希和可逆FFN实现高效Transformer.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/61136f275132923bf8265b88.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

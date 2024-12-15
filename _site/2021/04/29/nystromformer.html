@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyströmformer: A Nyström-Based Algorithm for Approximating Self-Attention - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Nyströmformer: A Nyström-Based Algorithm for Approximating Self-Attention">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Nyströmformer: A Nyström-Based Algorithm for Approximating Self-Attention - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/04/29/nystromformer.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Nyströmformer: A Nyström-Based Algorithm for Approximating Self-Attention</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-04-29"><i class="iconfont icon-date"></i>29 Apr 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://img.imgdb.cn/item/608a52c6d1a9ae528f8e6415.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Nyströmformer：使用Nyström方法近似自注意力运算.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Nyströmformer: A Nyström-Based Algorithm for Approximating Self-Attention</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2102.03902">link</a></li>
+</ul>
+
+<h1 id="1-nyström-method">1. Nyström Method</h1>
+<p><strong>Nyström</strong>方法最初是用来解决如下特征函数问题的数值方式：</p>
+
+\[\int_{a}^{b} W(x,y) \phi(y) dy = \lambda \phi(x)\]
+
+<p>注意到直接求解该积分方程是困难的。在积分区间$[a,b]$内选择一系列点$\xi_1,\xi_2,…,\xi_n$，做如下近似计算：</p>
+
+\[\frac{(b-a)}{n} \sum_{j=1}^{n} W(x,\xi_j)\hat{\phi}(\xi_j) = \lambda \hat{\phi}(x)\]
+
+<p>整理可得$\phi(x)$的近似表达式：</p>
+
+\[\hat{\phi}(x) = \frac{(b-a)}{\lambda n} \sum_{j=1}^{n} W(x,\xi_j)\hat{\phi}(\xi_j)\]
+
+<p>通过上式可以用有限个点($\xi_1,\xi_2,…,\xi_n$)近似计算任意点的特征函数值。<strong>Nyström</strong>方法的特点便是使用有限的特征表示所有特征。</p>
+
+<h1 id="2-nyström-completion">2. Nyström Completion</h1>
+<p>矩阵的<strong>Nyström</strong>分解是指在矩阵$W = \begin{bmatrix} A &amp; B \ C &amp; D \ \end{bmatrix}$中随机地选择一些列向量$(A,C)^T$和行向量$(A,B)$，从而用这些矩阵近似地替代原矩阵。分解形式为：</p>
+
+\[W≈ \begin{bmatrix} A &amp; B \\ C &amp; C A^{-1} B \\ \end{bmatrix} = \begin{bmatrix} A  \\ C  \\ \end{bmatrix}A^{-1}\begin{bmatrix} A &amp; B  \end{bmatrix}\]
+
+<p><strong>Nyström</strong>方法常被用在<strong>矩阵补全(Matrix Completion)</strong>，如用来近似替代<strong>亲和矩阵(Affinity Matrix)</strong>。
+亲和矩阵用于衡量空间中任意两点的距离或者相似度，因此是一个对称矩阵。亲和矩阵$W$的一个划分如下：</p>
+
+\[W = \begin{bmatrix} A &amp; B \\ B^T &amp; C \\ \end{bmatrix}\]
+
+<p>其中$A$表示随机选择的一些样本点之间的相似度矩阵，$C$表示其余未选择的样本点之间的相似度矩阵，$B$表示这两组样本点之间的相似度。通常选择$A$的尺寸小，$C$的尺寸比较大。由于矩阵$W$本身比较大，因此该方法通过储存矩阵$A$和$B$来近似替代矩阵$W$。</p>
+
+<p>由于矩阵$A$是对称矩阵，可以将其对角化$A=U \Lambda U^T$。记$\overline{U}$为矩阵$W$的特征向量，则其表示为：</p>
+
+\[\overline{U} = \begin{bmatrix} U \\ B^T U \Lambda^{-1} \\ \end{bmatrix}\]
+
+<p>则矩阵$W$可以近似表示为：</p>
+
+\[\hat{W} = \overline{U} \Lambda \overline{U}^T = \begin{bmatrix} U \\ B^T U \Lambda^{-1} \\ \end{bmatrix} \Lambda \begin{bmatrix} U^T &amp; \Lambda^{-1} U^T B \\ \end{bmatrix} \\ = \begin{bmatrix} U \Lambda U^T &amp; B \\ B^T &amp; B^T U \Lambda^{-1} U^T B \\ \end{bmatrix} = \begin{bmatrix} A &amp; B \\ B^T &amp; B^T A^{-1} B \\ \end{bmatrix}\]
+
+<h1 id="3-nyströmformer">3. Nyströmformer</h1>
+<p>作者将<strong>Nyström</strong>方法引入<strong>Transformer</strong>中的自注意力矩阵计算中。标准的自注意力矩阵计算如下：</p>
+
+\[Q=XW_Q, K=XW_K, V=XW_V\]
+
+\[S = \text{softmax}(\frac{QK^T}{\sqrt{d_q}})\]
+
+<p>注意到直接计算$S$矩阵的计算量是比较大的，其中矩阵乘法$QK^T$的计算复杂度为$O(n^2)$。作者使用<strong>Nyström</strong>方法对$QK^T$进行近似分解：</p>
+
+\[\hat{S} = \text{softmax}(\frac{1}{\sqrt{d_q}}\begin{bmatrix} A &amp; B \\ C &amp; C A^{-1} B \\ \end{bmatrix} ) = \text{softmax}(\frac{1}{\sqrt{d_q}} \begin{bmatrix} A  \\ C  \\ \end{bmatrix}A^{-1}\begin{bmatrix} A &amp; B  \end{bmatrix}) \\ = \text{softmax}(\frac{1}{\sqrt{d_q}} \begin{bmatrix} A  \\ C  \\ \end{bmatrix})\times\text{softmax}(\frac{1}{\sqrt{d_q}} A^{-1})\times\text{softmax}(\frac{1}{\sqrt{d_q}} \begin{bmatrix} A &amp; B  \end{bmatrix}) \\ = \tilde{F}\times\tilde{A}\times\tilde{B}\]
+
+<p>因此<strong>Nyström</strong>方法将自注意力矩阵近似成三个矩阵相乘的形式：</p>
+
+<p><img src="https://img.imgdb.cn/item/608b73d7d1a9ae528f8a4e84.jpg" alt="" /></p>
+
+<p>其中矩阵$\begin{bmatrix} A  \ C  \ \end{bmatrix}$是从矩阵$QK^T$中随机选择的$k$列，在实践中采用<strong>Segment-Means(sMEANS)</strong>的方法，即先通过平均池化将矩阵$K$下采样为具有$k$列的矩阵$\tilde{K}$，再用矩阵$Q\tilde{K}^T$近似替代矩阵$\begin{bmatrix} A  \ C  \ \end{bmatrix}$，则有：</p>
+
+\[\tilde{F} = \text{softmax}(\frac{1}{\sqrt{d_q}} \begin{bmatrix} A  \\ C  \\ \end{bmatrix}) = \text{softmax}(\frac{Q\tilde{K}^T}{\sqrt{d_q}} )\]
+
+<p>矩阵$\begin{bmatrix} A &amp; B  \end{bmatrix}$是从矩阵$QK^T$中随机选择的$k$行，采用<strong>sMEANS</strong>的方法，即先通过平均池化将矩阵$Q$下采样为具有$k$行的矩阵$\tilde{Q}$，再用矩阵$\tilde{Q}K^T$近似替代矩阵$\begin{bmatrix} A &amp; B  \end{bmatrix}$，则有：</p>
+
+\[\tilde{B} = \text{softmax}(\frac{1}{\sqrt{d_q}} \begin{bmatrix} A &amp; B  \end{bmatrix}) = \text{softmax}(\frac{\tilde{Q}K^T}{\sqrt{d_q}} )\]
+
+<p>矩阵$A$是从矩阵$QK^T$中随机选择的$k$行$k$列交汇处，采用<strong>sMEANS</strong>的方法，即根据平均池化获得的矩阵$\tilde{K}$和矩阵$\tilde{Q}$，用矩阵$\tilde{Q}\tilde{K}^T$近似替代矩阵$A$，则有：</p>
+
+\[\tilde{A} = \text{softmax}(\frac{1}{\sqrt{d_q}} A^{-1}) = \text{softmax}(\frac{\tilde{Q}\tilde{K}^T}{\sqrt{d_q}} )^{-1}\]
+
+<p>则使用<strong>Nyström</strong>方法近似自注意力矩阵的算法流程如下：</p>
+
+<p><img src="https://img.imgdb.cn/item/608b7410d1a9ae528f8c7654.jpg" alt="" /></p>
+
+<p>完整的<strong>Nyström</strong>方法进行自注意力运算的结构图如下：</p>
+
+<p><img src="https://img.imgdb.cn/item/608b7421d1a9ae528f8d21c2.jpg" alt="" /></p>
+
+<h1 id="4-实验分析">4. 实验分析</h1>
+<p>下图是遮挡语言模型<strong>MLM</strong>和句子顺序预测<strong>SOP</strong>这两个预训练任务上模型的表现。实验表明模型的表现和标准的自注意力机制表现相差不大，在<strong>MLM</strong>任务上甚至超过了标准的表现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/611797ea5132923bf8fae87d.jpg" alt="" /></p>
+
+<p>模型计算复杂度下降带来的内存占用减少和推理时间加快也比较明显：</p>
+
+<p><img src="https://pic.imgdb.cn/item/611798b55132923bf8fe75f3.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/04/30/pipnet.html" class="read-next-link"></a>
+        <section>
+          <span>Pixel-in-Pixel Net: Towards Efficient Facial Landmark Detection in the Wild</span>
+          <p>  PIP-Net：面向高效人脸关键点检测.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64d078471ddac507cc7c8cc9.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/04/28/simcc.html" class="read-next-link"></a>
+          <section>
+            <span>SimCC: a Simple Coordinate Classification Perspective for Human Pose Estimation</span>
+            <p>  SimCC：人体姿态估计的简单坐标分类视角.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64d0680b1ddac507cc591b2f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

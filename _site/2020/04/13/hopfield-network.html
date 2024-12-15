@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hopfield Neural Network：Hopfield神经网络 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Hopfield Neural Network：Hopfield神经网络">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Hopfield Neural Network：Hopfield神经网络 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/13/hopfield-network.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>Hopfield Neural Network：Hopfield神经网络</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-13"><i class="iconfont icon-date"></i>13 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e9464d5c2a9a83be50658b8.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Hopfield Neural Networks.</p>
+</blockquote>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>Hopfield神经网络</li>
+  <li>能量函数</li>
+  <li>联想记忆</li>
+</ol>
+
+<h1 id="1-hopfield神经网络">1. Hopfield神经网络</h1>
+<p><strong>Hopfield神经网络(Hopfield Neural Network)</strong>是一种循环神经网络模型，是一种相互连接型的网络，也是一种单层反馈神经网络。</p>
+
+<p>Hopfield网络中，每一个神经元都和除自己外的所有神经元相互连接，如下图所示：</p>
+
+<p><img src="https://pic.downk.cc/item/5e945a60c2a9a83be5fee159.jpg" alt="" /></p>
+
+<p>本文主要关注<strong>离散型</strong>Hopfield网络，即每一个神经元的取值是离散的：\(\{0,1\}\)。</p>
+
+<p>Hopfield网络中不同神经元之间连接权重是<strong>对称</strong>的，若记$w_{ij}$为神经元$i$和$j$之间的连接权重，则满足：</p>
+
+\[w_{ii} = 0\]
+
+\[w_{ij} = w_{ji}, \quad i ≠ j\]
+
+<p>Hopfield网络的更新分为<strong>异步</strong>和<strong>同步</strong>两种方式：</p>
+<ul>
+  <li><strong>异步(串行)更新</strong>是指每次更新一个神经元，神经元的更新顺序可以是随机或事先固定的；</li>
+  <li><strong>同步(并行)更新</strong>是指一次更新所有的神经元，需要有一个时钟来进行同步。</li>
+</ul>
+
+<p>假设Hopfield网络有$N$个神经元，第$i$个神经元的更新规则如下：</p>
+
+\[x_i^{(t+1)} = \begin{cases} 1, &amp; \text {if $\sum_{n=1}^{N} {w_{in}x_n^{(t)}+b_i} ≥ 0$} \\ 0, &amp; \text{otherwise} \end{cases}\]
+
+<p>其中$w_{in}$为神经元$i$和$n$之间的连接权重，$b_i$为神经元$i$的偏置。</p>
+
+<p>一种简单的连接权重学习方式是：</p>
+
+\[w_{ij} = \frac{1}{M} \sum_{m=1}^{M} {x_i^mx_j^m}\]
+
+<p>其中$M$表示总共有$M$个数据。</p>
+
+<p>这种学习规则和人脑的学习方式<strong>Hebbian法则</strong>类似：如果两个神经元经常同时激活，则它们之间的连接加强；如果两个神经元经常不同时激活，则连接消失。</p>
+
+<h1 id="2-能量函数">2. 能量函数</h1>
+<p>Hopfield网络的<strong>能量函数$E$</strong>定义为：</p>
+
+\[E = -\frac{1}{2}\sum_{i,j}^{} {w_{ij}x_ix_j} - \sum_{i}^{} {b_ix_i}\]
+
+<p>能量函数可以作为Hopfield网络训练的终止判断条件。</p>
+
+<p>根据定义的更新规则，能量函数是<strong>非递增</strong>的。即随时间的不断增加而逐渐减小，直到网络达到稳定状态为止。</p>
+
+<p>网络最终到达的稳定状态称为<strong>吸引点(Attractor)</strong>。吸引点是能量函数的一系列局部极小点。</p>
+
+<p>下图给出了Hopfield网络的能量函数。红线为网络能量的演化方向，蓝点为吸引点。</p>
+
+<p><img src="https://pic.downk.cc/item/5e945f9cc2a9a83be5029da0.jpg" alt="" /></p>
+
+<h1 id="3-联想记忆">3. 联想记忆</h1>
+<p><strong>联想记忆（Associative Memory）</strong>是指当输入模式为某种状态时，输出端要给出与之相应的输出模式。可以通过神经网络的动态演化来进行联想。</p>
+
+<ul>
+  <li><strong>自联想记忆</strong>：输入的模式和输出的模式在同一空间。可以作为自编码器。</li>
+  <li><strong>异联想记忆</strong>：输入的模式和输出的模式不在同一空间。可以作为分类器。</li>
+</ul>
+
+<p>Hopfield网络存在有限的吸引点，可以看作网络中存储的<strong>模式（Pattern）</strong>。将网络输入作为起始状态，随时间收敛到吸引点上的过程作为<strong>检索</strong>过程。</p>
+
+<p>Hopfield网络中可以作为有效稳定点的状态数量就是其<strong>存储容量</strong>。对于具有$N$个神经元的Hopfield网络，其存储容量是$0.14N$。</p>
+
+<p>通过改进学习算法，Hopfield网络的最大容量可以达到$O(N)$。</p>
+
+<p>如果允许高阶（阶数为$𝐾$）连接，比如三个神经元连接关系，其稳定存储的最大容量为$O(N^{K-1})$。</p>
+
+<p>当需要记忆的模式之间的较为相似、或者需要记忆的模式太多时，Hopfield神经网络就不能正确地辨别模式。这种相互干扰、不能准确记忆的情况称为<strong>串扰（crosstalk）</strong>。</p>
+
+<p>解决串扰的方法：</p>
+<ol>
+  <li>模式正交化；</li>
+  <li>玻尔兹曼机。</li>
+</ol>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/14/boltzmann-machine.html" class="read-next-link"></a>
+        <section>
+          <span>Boltzmann Machine：玻尔兹曼机</span>
+          <p>  Boltzmann Machine.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5e954cbbc2a9a83be594d120.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/12/energy.html" class="read-next-link"></a>
+          <section>
+            <span>Energy-based Model：能量模型</span>
+            <p>  Energy-based Model.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/634e48dc16f2c2beb147c676.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

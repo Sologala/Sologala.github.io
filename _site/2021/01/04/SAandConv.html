@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>On the Relationship between Self-Attention and Convolutional Layers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="On the Relationship between Self-Attention and Convolutional Layers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="On the Relationship between Self-Attention and Convolutional Layers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/01/04/SAandConv.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>On the Relationship between Self-Attention and Convolutional Layers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-01-04"><i class="iconfont icon-date"></i>04 Jan 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ff2715e3ffa7d37b38d69a9.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>理解自注意力和卷积层的关系.</p>
+</blockquote>
+
+<ul>
+  <li>paper：On the Relationship between Self-Attention and Convolutional Layers</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1911.03584">link</a></li>
+</ul>
+
+<h1 id="1-自注意力机制">1. 自注意力机制</h1>
+<p>假设$X \in \Bbb{R}^{T \times D_{in}}$表示包含$T$个维度为$D_{in}$的<strong>token</strong>的数据矩阵，其物理意义是长度为$T$的离散序列，每一个<strong>token</strong>为该序列的一个元素（如<strong>NLP</strong>中句子中的一个单词，<strong>CV</strong>中图像的一部分像素）。自注意力层将其映射为维度为$D_{out}$的输出：</p>
+
+\[Self \text{-} Attention(X) = softmax(A)XW_{val} = softmax(XW_{qry}W_{key}^TX^T)XW_{val}\]
+
+<p>其中$softmax(A)$表示<strong>注意力概率(attention probability)</strong>，是由<strong>注意力得分(attention score)</strong> $A$计算得到的。该层通过<strong>query</strong>矩阵$W_{qry} \in \Bbb{R}^{D_{in} \times D_{out}}$、<strong>key</strong>矩阵$W_{key} \in \Bbb{R}^{D_{in} \times D_{out}}$和<strong>value</strong>矩阵$W_{val} \in \Bbb{R}^{D_{in} \times D_{out}}$参数化。</p>
+
+<p>上式的计算是无序的，即将$T$个<strong>token</strong>打乱顺序后不会影响输出结果。因此引入<strong>位置编码(position encoding)</strong> $P$学习每个<strong>token</strong>在序列中的位置，将其应用到注意力得分的计算中：</p>
+
+\[A = (X+P)W_{qry}W_{key}^T(X+P)^T\]
+
+<p>其中$P \in \Bbb{R}^{T \times D_{in}}$代表位置编码向量，可以由任意函数表示。</p>
+
+<p>实践发现为自注意力机制引入<strong>multi head</strong>能够提高表现。具体地，使用$N_h$个独立的自注意力模块得到$D_{h} = \frac{D_{out}}{N_h}$维中间结果，将其连接后映射到$D_{out}$维输出：</p>
+
+\[MHSA(X) = concat[Self \text{-} Attention_h(X)]W_{out} + b_{out}\]
+
+<p>上式引入两个新的参数：$W_{out} \in \Bbb{R}^{N_hD_{h} \times D_{out}}$和$b_{out} \in \Bbb{R}^{D_{out}}$。</p>
+
+<h1 id="2-图像的注意力">2. 图像的注意力</h1>
+<p>给定图像张量$X \in \Bbb{R}^{W \times H \times D_{in}}$，卷积层输出的$(i,j)$位置可以表示为：</p>
+
+\[Conv(X)_{i,j,:} = \sum_{(\delta_1,\delta_2 \in \Delta_K)}^{} X_{i+\delta_1,j+\delta_2,:} W_{\delta_1,\delta_2,:,:} + b\]
+
+<p>其中$W \in \Bbb{R}^{K \times K \times D_{in} \times D_{out}}$代表权重张量，$b \in \Bbb{R}^{D_{out}}$代表偏置向量。$\Delta_K$代表$K \times K$的卷积核可取的所有(相对中心)位置集合。</p>
+
+<p>将图像的<strong>pixel</strong>看作<strong>token</strong>，将图像按空间$W \times H$展开成$1D$张量，则像素$p$的输出计算为：</p>
+
+\[Self \text{-} Attention(X)_p = \sum_{k}^{} softmax(A_{p,:})_kX_{k,:}W_{val}\]
+
+<p>位置编码有两种形式，<strong>绝对(absolute)</strong>位置编码和<strong>相对(relative)</strong>位置编码。</p>
+
+<p>绝对位置编码对每个像素$p$附加一个固定或可学习的向量$P_{p,:}$，则像素$q$和像素$k$的注意力得分计算为：</p>
+
+\[A_{q,k}^{abs} = (X_{q,:}+P_{q,:})W_{qry}W_{key}^T(X_{k,:}+P_{k,:})^T \\ = X_{q,:}W_{qry}W_{key}^TX_{k,:}^T + X_{q,:}W_{qry}W_{key}^TP_{k,:}^T + P_{q,:}W_{qry}W_{key}^TX_{k,:}^T + P_{q,:}W_{qry}W_{key}^TP_{k,:}^T\]
+
+<p>相对位置编码只考虑<strong>query</strong>像素和<strong>key</strong>像素的位置差异，而不是表示它们的绝对位置。此时像素$q$和像素$k$的注意力得分由它们的相对位置$\delta = k - q$决定：</p>
+
+\[A_{q,k}^{rel} = X_{q,:}^TW_{qry}^TW_{key}X_{k,:} + X_{q,:}^TW_{qry}^T \hat{W}_{key}r_{\delta} + u^TW_{key}X_{k,:} + v^T \hat{W}_{key}r_{\delta}\]
+
+<p>其中可学习向量$u$和$v$对每个<strong>head</strong>是独立的，相对位置编码$r_{\delta} \in \Bbb{R}^{D_p}$被所有层和所有<strong>head</strong>共享。<strong>key</strong>的权重也被划分为两部分：由输入决定的$W_{key}$和由像素相对位置决定的$\hat{W}_{key}$。</p>
+
+<h1 id="3-将自注意力表示为卷积层">3. 将自注意力表示为卷积层</h1>
+<ul>
+  <li><strong>定理</strong>：给定包含$N_h$个维度为$D_{h}$的<strong>head</strong>的自注意力层，其输出维度是$D_{out}$，相对位置编码的维度$D_p ≥ 3$。则其可以表示任意卷积核大小为$\sqrt{N_h} \times \sqrt{N_h}$、输出通道维度为$min(D_h,D_{out})$的卷积层。</li>
+</ul>
+
+<p>证明如下：</p>
+
+<p>将<strong>multi head</strong>自注意力计算重写为：</p>
+
+\[MHSA(X) = concat[Self \text{-} Attention_h(X)]W_{out} + b_{out} \\ = concat[softmax(A^{(h)})XW_{val}^{(h)}]W_{out} + b_{out} \\ = \sum_{h \in [N_h]}^{} softmax(A^{(h)})XW_{val}^{(h)}W_{out}[(h-1)D_h+1:h-D_h+1] + b_{out} \\ := \sum_{h \in [N_h]}^{} softmax(A^{(h)})XW^{(h)} + b_{out}\]
+
+<p>则其每一个输出像素$q$表示为：</p>
+
+\[MHSA(X)_{q,:} = \sum_{h \in [N_h]}^{} (\sum_{k}^{} softmax(A_{q,:}^{(h)})_kX_{k,:})W^{(h)} + b_{out}\]
+
+<p>对于<strong>head</strong> $h$，假设每个像素$q$只关注像素$k$(相对位置为$q-k$)，注意力得分简化为：</p>
+
+\[softmax(A_{q,:}^{(h)})_k = \begin{cases} 1 \quad \text{if } f(h) = q-k \\ 0 \quad \text{otherwise} \end{cases}\]
+
+<p>则自注意力计算简化为：</p>
+
+\[MHSA(X)_{q,:} = \sum_{h \in [N_h]}^{} X_{q-f(h),:}W^{(h)} + b_{out}\]
+
+<p>对比卷积层的计算：</p>
+
+\[Conv(X)_{i,j,:} = \sum_{(\delta_1,\delta_2 \in \Delta_K)}^{} X_{i+\delta_1,j+\delta_2,:} W_{\delta_1,\delta_2,:,:} + b\]
+
+<p>可以得出，当每个<strong>head</strong>的注意力计算只关注某一具体位置的像素时，$N_h$个<strong>head</strong>的计算与$\sqrt{N_h} \times \sqrt{N_h}$的卷积核计算是等价的。</p>
+
+<p><img src="https://pic.downk.cc/item/5ff52ab03ffa7d37b3642d3f.jpg" alt="" /></p>
+
+<h1 id="4-可视化自注意力head">4. 可视化自注意力head</h1>
+<p>作者可视化$6$层的$9$个<strong>head</strong>，具体地展示了中心某像素位置的注意力图，通过可视化发现不同层、不同<strong>head</strong>学习到类似于卷积层的特征模式。</p>
+
+<p><img src="https://pic.downk.cc/item/5ff52ae33ffa7d37b3645390.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/01/05/logitadjust.html" class="read-next-link"></a>
+        <section>
+          <span>Long-tail learning via logit adjustment</span>
+          <p>  Logit Adjustment Loss: 将类别出现频率引入logits.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/625ffffc239250f7c54885b1.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/01/03/gpt.html" class="read-next-link"></a>
+          <section>
+            <span>Improving Language Understanding by Generative Pre-Training</span>
+            <p>  GPT：使用生成式预训练模型提高对语言的理解.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60ec11fd5132923bf808ee56.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

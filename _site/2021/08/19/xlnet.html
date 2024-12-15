@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XLNet: Generalized Autoregressive Pretraining for Language Understanding - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="XLNet: Generalized Autoregressive Pretraining for Language Understanding">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="XLNet: Generalized Autoregressive Pretraining for Language Understanding - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/08/19/xlnet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>XLNet: Generalized Autoregressive Pretraining for Language Understanding</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-08-19"><i class="iconfont icon-date"></i>19 Aug 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/611e01354907e2d39c828342.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>XLNet：使用排列语言建模训练语言模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1906.08237">XLNet: Generalized Autoregressive Pretraining for Language Understanding</a></li>
+</ul>
+
+<p>预训练语言模型可以根据不同的预训练任务进行分类。两种重要的预训练任务分别是：</p>
+<ul>
+  <li>自回归式(<strong>autoregressive</strong>)：学习序列的条件概率分布，如<strong>LM</strong>(<strong>GPT</strong>)；即给定一个序列$x=[x_1,x_2,…,x_T]$，(以前向概率为例)最大化序列的条件概率似然。若用$h_{\theta}(\cdot)$表示神经网络，$e(\cdot)$表示词嵌入，则目标函数表示为：</li>
+</ul>
+
+\[\mathop{\max}_{\theta} \quad \log p_{\theta}(x) =\sum_{t=1}^{T}\log p_{\theta}(x_t|x_{&lt;t})=\sum_{t=1}^{T}\log \frac{\exp(h_{\theta}(x_{1:t-1})^Te(x_t))}{\sum_{x'}^{} \exp(h_{\theta}(x_{1:t-1})^Te(x'))}\]
+
+<ul>
+  <li>自编码式(<strong>autoencoding</strong>)：学习序列的隐变量并重构，如<strong>MLM</strong>(<strong>BERT</strong>)；<strong>BERT</strong>中类似降噪自编码器，对输入的某些位置加上<code class="language-plaintext highlighter-rouge">[MASK]</code>噪声，并预测这些<strong>mask</strong>对应的<strong>token</strong>。若$\hat{x}$表示加上<code class="language-plaintext highlighter-rouge">[MASK]</code>后的序列，$\overline{x}$表示<strong>mask</strong>掉的<strong>token</strong>，$m_t$表示位置$t$是否被<strong>mask</strong>掉，则目标函数表示为：</li>
+</ul>
+
+\[\mathop{\max}_{\theta} \quad \log p_{\theta}(\overline{x}|\hat{x}) ≈\sum_{t=1}^{T}m_t\log p_{\theta}(x_t|\hat{x})=\sum_{t=1}^{T}m_t\log \frac{\exp(h_{\theta}(\hat{x})_t^Te(x_t))}{\sum_{x'}^{} \exp(h_{\theta}(\hat{x})_t^Te(x'))}\]
+
+<p>这两种方法的对比如下：</p>
+<ul>
+  <li>独立性假设：自回归式假设输入序列的<strong>token</strong>之间是独立的，则可以用概率链式法则表示；自编码式的输入序列<strong>token</strong>之间不是独立的。</li>
+  <li>输入噪声：自编码式在训练时引入了后续任务中不会出现的噪声<code class="language-plaintext highlighter-rouge">[MASK]</code>，引入了预训练和微调之间的<strong>discrepancy</strong>。</li>
+  <li>上下文依赖：自回归式只能使用单向的序列信息，自编码式可以使用双向的上下文信息。</li>
+</ul>
+
+<p>为了结合上述两种方式的优点，本文提出了<strong>排列语言模型(Permutation Language Modeling,PLM)</strong>，即给定序列$x=[x_1,x_2,…,x_T]$，首先对其进行随机地排列，共有$T!$种排列方式。然后在该排列序列$z$下进行自回归语言模型的训练:</p>
+
+\[\mathop{\max}_{\theta} \Bbb{E}_{z \text{~} \mathcal{Z}_T} [\sum_{t=1}^{T}\log p_{\theta}(x_{z_t}|x_{z_{&lt;t}})]\]
+
+<p>每次采样序列顺序$z$不同，则输入序列也不同，理论上模型可以学习到任意顺序。下图展示了在几种不同的序列顺序下，第$3$个<strong>token</strong>所获取的单向信息来自不同的<strong>token</strong>(相当于获取双向的上下文信息)：</p>
+
+<p><img src="https://pic.imgdb.cn/item/611e0d154907e2d39ca80cbb.jpg" alt="" /></p>
+
+<p>可以从注意力矩阵的角度理解语言模型。自编码式模型的自注意力矩阵的每一个位置都有值，位置$(i,j)$表示第$i$个<strong>token</strong>与第$j$个<strong>token</strong>的注意力得分。而自回归式模型的自注意力矩阵是一个下三角阵，即每一个输出<strong>token</strong>(列)只能与其前面位置的输入<strong>token</strong>(行)进行交互，通过对注意力矩阵进行<strong>mask</strong>也可以达到这种效果:</p>
+
+<p><img src="https://pic.imgdb.cn/item/611e0eea4907e2d39cad82cf.jpg" alt="" /></p>
+
+<p>如上图所示，注意力矩阵的每一行代表每一个输出，而每一列代表每一个输入，注意力矩阵的数值表示输出和输入的关联。对于自回归式模型，第一个输出$x_1$只能跟起始标记<code class="language-plaintext highlighter-rouge">&lt;s&gt;</code>相关，而第二个输出$x_2$只能跟起始标记<code class="language-plaintext highlighter-rouge">&lt;s&gt;</code>和第一个输出$x_1$相关，依此类推。</p>
+
+<p>对于乱序的语言模型，相当于把上述下三角形式的注意力矩阵打乱，如对于序列<code class="language-plaintext highlighter-rouge">&lt;s&gt; → 迎 → 京 → 你 → 欢 → 北 → &lt;e&gt;</code>，其不同语言模型对应的注意力矩阵分别为：</p>
+
+<p><img src="https://pic.imgdb.cn/item/611e10274907e2d39cb11cb1.jpg" alt="" /></p>
+
+<p>对于乱序的语言模型，直接构造上述<strong>mask</strong>的注意力矩阵比较繁琐，有一种更简单的等效训练方法。由于注意力机制本身是一个无序的模型，序列顺序是通过位置编码引入的，因此输入不仅包括<strong>token</strong>，还包括<strong>token</strong>所在的位置<strong>id</strong>，如上述序列的实际输入为<code class="language-plaintext highlighter-rouge">{(迎, 4), (京, 2), (你, 5), (欢, 3), (北, 1)}</code>。若按该顺序将<strong>token</strong>在输入层打乱，则可以等效地构造自回归式训练：</p>
+
+<p><img src="https://pic.imgdb.cn/item/611e12164907e2d39cb72ff1.jpg" alt="" /></p>
+
+<p>作者在实现时引入了<strong>two-stream</strong>的自注意力结构，即把每一个输入<strong>token</strong>的特征分解成两部分：</p>
+<ul>
+  <li>上下文(<strong>context</strong>)特征$h_{\theta}(x_{z≤t})$或$h_{z_t}$: 相当于标准的自注意力计算中的隐状态；</li>
+  <li>查询(<strong>query</strong>)特征$g_{\theta}(x_{z&lt;t},z_t)$或$g_{z_t}$: 引入位置信息。</li>
+</ul>
+
+<p>训练中$h_{z_t}^0$初始化为词嵌入向量$e(x_{z_t})$，$g_{z_t}^0$初始化为位置编码$w$，更新如下：</p>
+
+\[h_{z_t}^m ← Attention(Q=h_{z_t}^{m-1},K,V=h_{z≤t}^{m-1})\]
+
+\[g_{z_t}^m ← Attention(Q=g_{z_t}^{m-1},K,V=h_{z&lt;t}^{m-1})\]
+
+<p><img src="https://pic.imgdb.cn/item/611e15264907e2d39cc046f8.jpg" alt="" /></p>
+
+<p>由于全部的排列数量太多，因此作者设置只预测序列的最后一些<strong>token</strong>；即以长度$c$把序列分成两部分，只自回归地生成后面的<strong>token</strong>，则目标函数变为：</p>
+
+\[\mathop{\max}_{\theta} \Bbb{E}_{z \text{~} \mathcal{Z}_T} [\sum_{t=c+1}^{T}\log p_{\theta}(x_{z_t}|x_{z_{&lt;t}})]\]
+
+<p>此外，作者在模型中使用了一种特殊的相对位置编码。对于使用绝对位置编码的自注意力机制运算如下：</p>
+
+\[\begin{aligned} q_i &amp;= (x_i+p_i) W^Q , k_j = (x_j+p_j) W^K ,v_j = (x_j+p_j) W^V  \\ \alpha_{ij} &amp;= \text{softmax}\{(x_i+p_i)W^Q ( (x_j+p_j)W^K)^T \} \\ &amp;=  \text{softmax}\{ x_iW^Q (W^K)^T x_j^T+x_iW^Q (W^K)^T p_j^T+p_iW^Q (W^K)^T x_j^T+p_iW^Q (W^K)^T p_j^T \} \\ z_i &amp;= \sum_{j=1}^{n} \alpha_{ij}(x_jW^V+p_jW^V)  \end{aligned}\]
+
+<p>而在<strong>XLNet</strong>中，作者将$x_j$的位置编码$p_j$替换为由三角函数编码表示的相对位置编码$R_{i-j}$，把$x_i$的位置编码$p_i$替换为可学习的向量$u,v$，并移除了值向量的位置编码：</p>
+
+\[\begin{aligned}  \alpha_{ij} &amp;=  \text{softmax}\{ x_iW^Q (W^K)^T x_j^T+x_iW^Q (W^K)^T R_{i-j}^T+uW^Q (W^K)^T x_j^T+vW^Q (W^K)^T R_{i-j}^T \} \\ z_i &amp;= \sum_{j=1}^{n} \alpha_{ij}x_jW^V  \end{aligned}\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/08/20/taylor.html" class="read-next-link"></a>
+        <section>
+          <span>泰勒公式(Taylor Formula)</span>
+          <p>  Taylor Formula.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/611f4d394907e2d39c35a7ee.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/08/18/mass.html" class="read-next-link"></a>
+          <section>
+            <span>MASS: Masked Sequence to Sequence Pre-training for Language Generation</span>
+            <p>  MASS：序列到序列的掩码语言建模.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/611e1a844907e2d39ccfcaa0.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

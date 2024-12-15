@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pooling Revisited: Your Receptive Field is Suboptimal - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Pooling Revisited: Your Receptive Field is Suboptimal">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Pooling Revisited: Your Receptive Field is Suboptimal - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/12/26/dynopool.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Pooling Revisited: Your Receptive Field is Suboptimal</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-12-26"><i class="iconfont icon-date"></i>26 Dec 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63abf58908b683016391cd12.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DynOPool: 学习最优感受野的动态优化池化.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2205.15254">Pooling Revisited: Your Receptive Field is Suboptimal</a></li>
+</ul>
+
+<p>本文提出了一种简单有效的<strong>动态优化池化 (Dynamically Optimized Pooling operation, DynOPool)</strong>，它通过学习每一层感受野的最佳大小和形状来调整特征映射的空间尺寸。深度神经网络中任何类型的空间尺寸调整模块都可以用<strong>DynOPool</strong>操作以最小的成本替换。此外，<strong>DynOPool</strong>通过引入一个限制计算成本的附加损失项来控制模型的复杂度。</p>
+
+<h1 id="1-池化层的感受野">1. 池化层的感受野</h1>
+
+<p>感受野的大小和形状决定了网络如何聚集本地信息，并对模型的整体性能产生显著影响。神经网络中的卷积和池化运算的核大小和步长都会影响感受野。然而现有方法产生的是具有固定大小和形状的感受野，不擅长捕捉以下信息：</p>
+<ul>
+  <li>不对称分布的信息：最佳感受野的形状会根据数据集中固有空间信息的不对称性而改变，在大多数情况下这种固有的不对称性是不可测量的。此外通过对输入图像的大小进行预处理调整也会导致信息不对称，比如图像的长宽比经常被调整以满足模型的输入规格。</li>
+  <li>密集分布或稀疏分布信息：卷积网络通过级联的方式聚合局部信息来学习图像的复杂表示，而局部信息的重要性取决于图像的属性。例如当一个图像被模糊化时，大多数有意义的微观模式(如物体的纹理)会被抹去，此时最好在早期网络层中扩展感受野以捕捉全局信息；如果一幅图像在局部细节中包含大量类特定的信息，则识别局部信息将会更加重要。</li>
+</ul>
+
+<p>作者通过<strong>CIFAR-100</strong>构造了三个不同的合成数据集：(a) 随机裁剪经过垂直拉伸的图像；(b) 把缩小的图像平铺为<strong>4×4</strong>网格；(c) 直接放大缩小的图像。作者统计了经过本文所提方法生成的网络不同层中的最优感受野大小，发现感受野应具有不同的大小和形状以提取更具有价值的信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aaf7c008b68301630fbc6d.jpg" alt="" /></p>
+
+<h1 id="2-动态优化池化">2. 动态优化池化</h1>
+
+<p><strong>动态优化池化（DynOPool）</strong>是一个可学习的空间尺寸大小调整模块，可以替代标准的尺寸调整操作(比如最大池化层)。该模块在数据集上学习感受野的最佳比例因子，从而将网络的中间特征图调整为适当的大小和形状。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aaf99508b68301631306b2.jpg" alt="" /></p>
+
+<p>记输入特征的空间尺寸为$H_{in} \times W_{in}$，给定缩放因子$r=(r_h,r_w)$，<strong>DynOPool</strong>首先把特征图划分为$H_{out} \times W_{out}$个栅格，有</p>
+
+\[\begin{aligned} H_{out} &amp;= \lfloor H_{in} \cdot r_h  \rceil \\ W_{out} &amp;= \lfloor W_{in} \cdot r_w  \rceil \end{aligned}\]
+
+<p>对于某个栅格中心$p=(p_h,p_w)$，构造四个查询点$q=(p_h ± \delta_h,p_w± \delta_w)$，四个查询点的像素值通过双线性插值获得。则该栅格的输出可以通过四个查询点的聚合函数构造，本文选择最大池化操作。</p>
+
+<p><strong>DynOPool</strong>通过参数$r=(r_h,r_w)$控制感受野的大小，通过参数$\delta=( \delta_h,\delta_w)$控制感受野的形状。这些参数都是从数据集中学习得到的。由于通过参数$r$构造输出特征可能出现非整数的空间尺寸，因此引入四舍五入运算\(\lfloor \cdot  \rceil\)，并通过梯度停止算子$sg(\cdot)$实现可微量化技巧：</p>
+
+\[\begin{aligned} H_{out} &amp;= \lfloor H_{in} \cdot r_h  \rceil +H_{in} \cdot r_h-sg(H_{in} \cdot r_h) \\ W_{out} &amp;= \lfloor W_{in} \cdot r_w  \rceil + W_{in} \cdot r_w - sg(W_{in} \cdot r_w) \end{aligned}\]
+
+<p>参数$r$通常是比较小的数，为了减少优化困难，对其重参数化为$\alpha = [\alpha_h,\alpha_w]$：</p>
+
+\[[\alpha_h,\alpha_w] = [r_h^{-1},r_w^{-1}]\]
+
+<p>则完整的前向传播与梯度更新过程为：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63abeed408b6830163806bb2.jpg" alt="" /></p>
+
+<p>为了防止<strong>DynOPool</strong>学习到的特征分辨率过大，作者在损失函数中额外引入了约束第$t$轮训练中网络的特征图尺寸比例和<strong>GMACs</strong>(统计网络中的加乘操作数)的项：</p>
+
+\[\mathcal{L}_{GMACs} = \sum_{l=1}^N \frac{H_{out}^{t^{(l)}} \cdot W_{out}^{t^{(l)}}}{H_{out}^{0^(l)} \cdot W_{out}^{0^{(l)}}} \cdot GMACs[l]\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/12/27/xgboost.html" class="read-next-link"></a>
+        <section>
+          <span>极限梯度提升(eXtreme Gradient Boosting, XGBoost)</span>
+          <p>  XGBoost: A Scalable Tree Boosting System.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63aa471108b6830163ef2890.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/12/25/convnext.html" class="read-next-link"></a>
+          <section>
+            <span>A ConvNet for the 2020s</span>
+            <p>  ConvNeXt: 设计现代化卷积神经网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63ac376b08b6830163178d26.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

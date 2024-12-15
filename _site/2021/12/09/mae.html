@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masked Autoencoders Are Scalable Vision Learners - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Masked Autoencoders Are Scalable Vision Learners">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Masked Autoencoders Are Scalable Vision Learners - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/12/09/mae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Masked Autoencoders Are Scalable Vision Learners</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-12-09"><i class="iconfont icon-date"></i>09 Dec 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61b16fba2ab3f51d919ca6a8.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>MAE: 掩码自编码器是可扩展的视觉学习者.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2111.06377">Masked Autoencoders Are Scalable Vision Learners</a></li>
+</ul>
+
+<p>本文设计了一种应用于计算机视觉的自监督学习方法，掩码自编码器(<strong>masked autoencoder, MAE</strong>)。<strong>MAE</strong>接收随机遮挡部分<strong>patch</strong>的图像为输入，并重构原始图像。</p>
+
+<p><strong>MAE</strong>的整个网络采用非对称的编码器-解码器结构。编码器只对未遮挡的图像块进行操作；解码器是轻量级的，旨在从编码特征和遮挡<strong>token</strong>中重建输入图像。</p>
+
+<p>相比于语言任务，图像的信息密度低，即挡住图片的一部分<strong>patches</strong>，可以很容易地通过看它周围的 <strong>patches</strong> 而想象出它的样子来。因此通常对图像进行较大比例的遮挡(如$75\%$)，此时掩码重建任务具有一定的难度，而且可以较大程度地减少了计算量和内存消耗，并降低预训练时间。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61b171a22ab3f51d919d9984.jpg" alt="" /></p>
+
+<p>编码器采用<strong>ViT</strong>结构，只输入未遮挡的图像块序列，因此能够使用有限的内存和计算训练非常大的编码器。编码器的特征和用于表示遮挡图像块的遮挡<strong>token</strong>组合后作为解码器的输入，通过一组轻量级的<strong>Transformer</strong>模块重构原始图像。预训练完成后，解码器可以被丢弃，只使用编码器提取图像特征用于下游任务。</p>
+
+<p>解码器输出的每一个元素表示一个遮挡图像块的像素值向量，损失函数计算原始图像和重构图像上遮挡部分的像素的均方误差。作者指出先计算出每个 <strong>patch</strong> 的像素值的均值和方差，并使用它们去归一化这个 <strong>patch</strong> 的每个像素值。最后再使用归一化的像素值进行 <strong>MSE Loss</strong> 计算，能够提高特征表示的质量。</p>
+
+<p>在实际实现时，通过线性映射和位置编码为每一个图像块生成一个<strong>token</strong>，对<strong>token</strong>序列随机打乱(记住打乱顺序)后，根据掩码率删除序列的最后一部分，其保留的部分便是未遮挡的图像块序列，用作编码器的输入。</p>
+
+<p><strong>MAE</strong>的具体实现过程为：</p>
+<ol>
+  <li>首先通过<strong>Linear Projection</strong>和位置编码得到 <strong>image tokens</strong>。</li>
+  <li>随机 <strong>shuffle</strong> 这些 <strong>tokens</strong>，按照 <strong>masking ratio</strong> 扔掉最后的一部分。</li>
+  <li>把 <strong>unmasked patches</strong> 输出到 <strong>Encoder</strong> 中，得到这些 <strong>tokens</strong> 的表征。</li>
+  <li>把 <strong>Encoder</strong> 的输出结合 <strong>masked tokens</strong> (可学习的向量)，执行 <strong>unshuffle</strong> 操作恢复顺序，再一起输入到 <strong>Decoder</strong> 中。</li>
+  <li><strong>shuffle</strong> 和 <strong>unshuffle</strong> 操作的时间开销可忽略不计。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MAE</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">encoder</span><span class="p">,</span> <span class="c1"># 传入ViT
+</span>        <span class="n">decoder_dim</span><span class="p">,</span>
+        <span class="n">masking_ratio</span> <span class="o">=</span> <span class="mf">0.75</span><span class="p">,</span>
+        <span class="n">decoder_depth</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">decoder_heads</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="n">decoder_dim_head</span> <span class="o">=</span> <span class="mi">64</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">masking_ratio</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">masking_ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'masking ratio must be kept between 0 and 1'</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">masking_ratio</span> <span class="o">=</span> <span class="n">masking_ratio</span>
+
+        <span class="c1"># extract some hyperparameters and functions from encoder (vision transformer to be trained)
+</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">encoder</span>
+        <span class="n">num_patches</span><span class="p">,</span> <span class="n">encoder_dim</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_patch</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">patch_to_emb</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">encoder</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="n">pixel_values_per_patch</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">weight</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># decoder parameters
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">decoder_dim</span> <span class="o">=</span> <span class="n">decoder_dim</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">enc_to_dec</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">encoder_dim</span><span class="p">,</span> <span class="n">decoder_dim</span><span class="p">)</span> <span class="k">if</span> <span class="n">encoder_dim</span> <span class="o">!=</span> <span class="n">decoder_dim</span> <span class="k">else</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mask_token</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">decoder_dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">decoder</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="n">decoder_dim</span><span class="p">,</span> <span class="n">depth</span> <span class="o">=</span> <span class="n">decoder_depth</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="n">decoder_heads</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="n">decoder_dim_head</span><span class="p">,</span> <span class="n">mlp_dim</span> <span class="o">=</span> <span class="n">decoder_dim</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">decoder_pos_emb</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">num_patches</span><span class="p">,</span> <span class="n">decoder_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_pixels</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">decoder_dim</span><span class="p">,</span> <span class="n">pixel_values_per_patch</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">img</span><span class="p">.</span><span class="n">device</span>
+
+        <span class="c1"># get patches
+</span>        <span class="n">patches</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_patch</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="n">batch</span><span class="p">,</span> <span class="n">num_patches</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">patches</span><span class="p">.</span><span class="n">shape</span>
+
+        <span class="c1"># patch to encoder tokens and add positions
+</span>        <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">patch_to_emb</span><span class="p">(</span><span class="n">patches</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">encoder</span><span class="p">.</span><span class="n">pool</span> <span class="o">==</span> <span class="s">"cls"</span><span class="p">:</span>
+            <span class="n">tokens</span> <span class="o">+=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encoder</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:(</span><span class="n">num_patches</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="p">.</span><span class="n">encoder</span><span class="p">.</span><span class="n">pool</span> <span class="o">==</span> <span class="s">"mean"</span><span class="p">:</span>
+            <span class="n">tokens</span> <span class="o">+=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encoder</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tokens</span><span class="p">.</span><span class="n">dtype</span><span class="p">)</span> 
+
+        <span class="c1"># calculate of patches needed to be masked, and get random indices, dividing it up for mask vs unmasked
+</span>        <span class="n">num_masked</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">masking_ratio</span> <span class="o">*</span> <span class="n">num_patches</span><span class="p">)</span>
+        <span class="n">rand_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">num_patches</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">).</span><span class="n">argsort</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">masked_indices</span><span class="p">,</span> <span class="n">unmasked_indices</span> <span class="o">=</span> <span class="n">rand_indices</span><span class="p">[:,</span> <span class="p">:</span><span class="n">num_masked</span><span class="p">],</span> <span class="n">rand_indices</span><span class="p">[:,</span> <span class="n">num_masked</span><span class="p">:]</span>
+
+        <span class="c1"># get the unmasked tokens to be encoded
+</span>        <span class="n">batch_range</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">)[:,</span> <span class="bp">None</span><span class="p">]</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokens</span><span class="p">[</span><span class="n">batch_range</span><span class="p">,</span> <span class="n">unmasked_indices</span><span class="p">]</span>
+
+        <span class="c1"># get the patches to be masked for the final reconstruction loss
+</span>        <span class="n">masked_patches</span> <span class="o">=</span> <span class="n">patches</span><span class="p">[</span><span class="n">batch_range</span><span class="p">,</span> <span class="n">masked_indices</span><span class="p">]</span>
+
+        <span class="c1"># attend with vision transformer
+</span>        <span class="n">encoded_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encoder</span><span class="p">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+
+        <span class="c1"># project encoder to decoder dimensions, if they are not equal - the paper says you can get away with a smaller dimension for decoder
+</span>        <span class="n">decoder_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">enc_to_dec</span><span class="p">(</span><span class="n">encoded_tokens</span><span class="p">)</span>
+
+        <span class="c1"># reapply decoder position embedding to unmasked tokens
+</span>        <span class="n">unmasked_decoder_tokens</span> <span class="o">=</span> <span class="n">decoder_tokens</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">decoder_pos_emb</span><span class="p">(</span><span class="n">unmasked_indices</span><span class="p">)</span>
+
+        <span class="c1"># repeat mask tokens for number of masked, and add the positions using the masked indices derived above
+</span>        <span class="n">mask_tokens</span> <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">mask_token</span><span class="p">,</span> <span class="s">'d -&gt; b n d'</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">batch</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">num_masked</span><span class="p">)</span>
+        <span class="n">mask_tokens</span> <span class="o">=</span> <span class="n">mask_tokens</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">decoder_pos_emb</span><span class="p">(</span><span class="n">masked_indices</span><span class="p">)</span>
+
+        <span class="c1"># concat the masked tokens to the decoder tokens and attend with decoder
+</span>        <span class="n">decoder_tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">num_patches</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">decoder_dim</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">decoder_tokens</span><span class="p">[</span><span class="n">batch_range</span><span class="p">,</span> <span class="n">unmasked_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">unmasked_decoder_tokens</span>
+        <span class="n">decoder_tokens</span><span class="p">[</span><span class="n">batch_range</span><span class="p">,</span> <span class="n">masked_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">mask_tokens</span>
+        <span class="n">decoded_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">decoder</span><span class="p">(</span><span class="n">decoder_tokens</span><span class="p">)</span>
+
+        <span class="c1"># splice out the mask tokens and project to pixel values
+</span>        <span class="n">mask_tokens</span> <span class="o">=</span> <span class="n">decoded_tokens</span><span class="p">[</span><span class="n">batch_range</span><span class="p">,</span> <span class="n">masked_indices</span><span class="p">]</span>
+        <span class="n">pred_pixel_values</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_pixels</span><span class="p">(</span><span class="n">mask_tokens</span><span class="p">)</span>
+
+        <span class="c1"># calculate reconstruction loss
+</span>        <span class="n">recon_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">pred_pixel_values</span><span class="p">,</span> <span class="n">masked_patches</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">recon_loss</span>
+</code></pre></div></div>
+
+<p>下面展示一些恢复结果：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61b171bc2ab3f51d919da73f.jpg" alt="" /></p>
+
+<p>作者针对不同的掩码率进行了实验。有趣的是，对图像进行约$75\%$的遮挡能够获得最好的效果，这和自然语言处理中使用的较低掩码率不同(<strong>BERT</strong>约$15\%$)。这可能是因为较大的遮挡使得模型必须学习有用的通用表示，而不是简单地通过线条或纹理来完成任务。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61b172c72ab3f51d919e28a3.jpg" alt="" /></p>
+
+<p>作者进一步进行了一些消融实验，其中<strong>fit</strong>表示对模型进行端到端的微调；<strong>lin</strong>表示仅微调输出端的线性层。</p>
+<ul>
+  <li>表(<strong>a</strong>)和(<strong>b</strong>)调整了解码器的深度和宽度；结果表明足够深且更窄的 <strong>Decoder</strong>能够在 <strong>fine-tuning</strong> 时获得较好的性能；</li>
+  <li>表(<strong>c</strong>)测试了编码器输入是否使用遮挡<strong>token</strong>；结果表明效果变差，这可能是因为在这种情况下预训练和部署之间存在差距。即在预训练的输入中有很大一部分是<strong>mask tokens</strong>，这在测试图像中是不存在的。</li>
+  <li>表(<strong>d</strong>)测试了不同的重构目标；结果表明使用归一化的像素值进行 <strong>MSE Loss</strong>计算效果更好。</li>
+  <li>表(<strong>e</strong>)测试了不同的数据增强；结果表明只使用<strong>cropping-only</strong>就比较好，在 <strong>MAE</strong> 中数据增强的角色其实是由 <strong>random masking</strong> 来扮演的，每个 <strong>iteration</strong> 的 <strong>mask</strong> 都不同，所以就相当于是产生了新的训练样本。</li>
+  <li>表(<strong>f</strong>)测试了不同的掩码采样方法，包括随机采样、按块采样和网格采样。结果表明简单的随机抽样最适合 <strong>MAE</strong> 模型。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/61b173292ab3f51d919e5020.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/61b173612ab3f51d919e6ee8.jpg" alt="" /></p>
+
+<p>作者比较了<strong>MAE</strong>和其他自监督模型的表现。对于 <strong>ViT-B</strong> 模型，所有的方法性能相似，但是对于更大的 <strong>ViT-L</strong> 模型，性能差距就拉开了，证明了 <strong>MAE</strong> 对于大模型的泛化性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61b1742f2ab3f51d919ee411.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/12/10/swint.html" class="read-next-link"></a>
+        <section>
+          <span>Swin Transformer: Hierarchical Vision Transformer using Shifted Windows</span>
+          <p>  Swin Transformer: 基于移动窗口的分层视觉Transformer.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/61e75fec2ab3f51d91b1881d.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/12/02/VAAL.html" class="read-next-link"></a>
+          <section>
+            <span>Variational Adversarial Active Learning</span>
+            <p>  VAAL: 变分对抗主动学习.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/631b1c0b16f2c2beb1bce3e6.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

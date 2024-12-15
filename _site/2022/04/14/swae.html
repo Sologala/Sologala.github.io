@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliced-Wasserstein Autoencoder: An Embarrassingly Simple Generative Model - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Sliced-Wasserstein Autoencoder: An Embarrassingly Simple Generative Model">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Sliced-Wasserstein Autoencoder: An Embarrassingly Simple Generative Model - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/14/swae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Sliced-Wasserstein Autoencoder: An Embarrassingly Simple Generative Model</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-14"><i class="iconfont icon-date"></i>14 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/628c9d810947543129af93b9.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SWAE：引入Sliced-Wasserstein距离构造VAE.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1804.01947">Sliced-Wasserstein Autoencoder: An Embarrassingly Simple Generative Model</a></li>
+</ul>
+
+<h1 id="1-waewasserstein-autoencoder">1. WAE：Wasserstein Autoencoder</h1>
+
+<p><strong>Wasserstein</strong>自编码器（<a href="https://0809zheng.github.io/2022/04/04/wae.html"><font color="Blue">WAE</font></a>）的设计思路是约束原输入数据的概率分布$P_X$和生成数据的概率分布$P_G(x | z)$之间的<strong>Wasserstein</strong>距离：</p>
+
+\[\mathcal{W}[P_X,P_G] = \mathop{\inf}_{\Gamma \in \mathcal{P}[X\text{~}P_X,Y\text{~}P_G]} \Bbb{E}_{(X,Y)\text{~}\Gamma} [c(X,Y)]\]
+
+<p>其中$c(X,Y)$是代价函数，$\Gamma$是联合分布。如果引入限制$Q_Z=P_Z$，则上式被松弛为：</p>
+
+\[\mathop{\inf}_{Q:Q_Z=P_Z} \Bbb{E}_{P_X}\Bbb{E}_{Q(z|x)} [c(X,G(Z))]\]
+
+<p>则<strong>WAE</strong>的总损失描述如下：</p>
+
+\[D_{WAE}(P_X,P_G) = \mathop{\inf}_{Q(Z|X) \in \mathcal{Q}} \Bbb{E}_{P_X}\Bbb{E}_{Q(Z|X)} [c(X,G(Z))]+\lambda \cdot \mathcal{D}_Z(Q_Z,P_Z)\]
+
+<p>注意到<strong>WAE</strong>放松了对编码器$Q(Z|X)$的约束，即不再强制其映射到正态分布，而是仅约束先验分布$P_Z$为正态分布。此时非随机编码器将输入确定性地映射到隐变量，其表现形式与普通的编码器类似，因此也不再依赖重参数化技巧。</p>
+
+<h1 id="2-swaesliced-wasserstein-autoencoder">2. SWAE：Sliced-Wasserstein Autoencoder</h1>
+
+<p>在<strong>WAE</strong>中，优化的出发点是输入数据$P_X$和生成数据$P_G$之间的<strong>Wasserstein</strong>距离\(\mathcal{W}[P_X,P_G]\)，而先验约束\(\mathcal{D}_Z(Q_Z,P_Z)\)是约束条件的松弛项。作者提出了改进的<strong>WAE</strong>：<strong>Sliced-Wasserstein Autoencoder</strong>(<strong>SWAE</strong>)，其损失函数如下：</p>
+
+\[\mathop{\arg \min}_{P_X,P_G} \mathcal{W}^+[P_X,P_G]+\lambda \cdot SW_c(Q_Z,P_Z)\]
+
+<h3 id="-重构损失">⚪ 重构损失</h3>
+
+<p>其中\(\mathcal{W}^+\)是<strong>Wasserstein</strong>距离\(\mathcal{W}\)的一个上界：</p>
+
+\[\mathcal{W}[P_X,P_G] \leq W^+[P_X,P_G] = \Bbb{E}_{P_X}(c(X,G(Q(Z|X)))) \\ = \int_{X} c(X,G(Q(Z|X)))P_XdX ≈ \frac{1}{N} \sum_{n=1}^{N} c(X_n,G(Q(Z|X_n)))\]
+
+<p>在实际实现时，重构损失选用均方误差和绝对值误差的和：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss_l2</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+<span class="n">recons_loss_l1</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">l1_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+<span class="n">recons_loss</span> <span class="o">=</span> <span class="n">recons_loss_l2</span> <span class="o">+</span> <span class="n">recons_loss_l1</span>
+</code></pre></div></div>
+
+<h3 id="-sliced-wasserstein距离">⚪ Sliced-Wasserstein距离</h3>
+
+<p>$SW_c$是指<strong>Sliced-Wasserstein</strong>距离。由于$Q_Z,P_Z$没有显式的关系，因此无法直接构造两者的<strong>Wasserstein</strong>距离。<strong>Sliced-Wasserstein</strong>距离是指把高维分布投影到低维空间中再计算<strong>Wasserstein</strong>距离。</p>
+
+<p>对于一维分布函数，<strong>Wasserstein</strong>距离有闭式解：</p>
+
+\[\mathcal{W}[P_X,P_Y] = \int_{0}^{1} c(P_X^{-1}(\tau),P_Y^{-1}(\tau))d \tau\]
+
+<p>则<strong>Sliced-Wasserstein</strong>距离定义如下：</p>
+
+\[SW_c(P_X,P_Y) = \int_{\Bbb{S}^{d-1}} \mathcal{W}[\mathcal{R}_{P_X}(\cdot ;\theta),\mathcal{R}_{P_Y}(\cdot ;\theta)] d\theta\]
+
+<p>其中\(\Bbb{S}^{d-1}\)是$d$维空间中的单位球面，\(\mathcal{R}_{P_X}\)和\(\mathcal{R}_{P_Y}\)是一维分布函数，表示以$\theta$为参数对高维分布$P_X,P_Y$进行投影：</p>
+
+\[\mathcal{R}_{P_X}(t ;\theta) = \int_{X} P_X(x)\delta(t-\theta\cdot x)dx, \forall \theta \in \Bbb{S}^{d-1},\forall t \in \Bbb{R}\]
+
+<p>在实践中，计算<strong>Sliced-Wasserstein</strong>距离包括两个步骤：计算编码$Q_Z$和先验$P_Z$的随机映射和计算两个映射之间的<strong>Wasserstein</strong>距离。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="c1"># [N  x D]
+</span><span class="k">def</span> <span class="nf">compute_swd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+                <span class="n">p</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">2.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="s">"""
+    Computes the Sliced Wasserstein Distance (SWD) - which consists of
+    randomly projecting the encoded and prior vectors and computing
+    their Wasserstein distance along those projections.
+    :param z: Latent samples # [N  x D]
+    :param p: Value for the p^th Wasserstein distance
+    :return:
+    """</span>
+    <span class="n">prior_z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="c1"># [N x D]
+</span>    <span class="n">device</span> <span class="o">=</span> <span class="n">z</span><span class="p">.</span><span class="n">device</span>
+
+    <span class="bp">self</span><span class="p">.</span><span class="n">latent_dim</span> <span class="o">=</span> <span class="n">latent_dim</span> <span class="c1"># int=D
+</span>    <span class="bp">self</span><span class="p">.</span><span class="n">num_projections</span> <span class="o">=</span> <span class="n">num_projections</span> <span class="c1"># int=50
+</span>    <span class="n">proj_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">get_random_projections</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">latent_dim</span><span class="p">,</span>
+                                              <span class="n">num_samples</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">num_projections</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="n">latent_projections</span> <span class="o">=</span> <span class="n">z</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">proj_matrix</span><span class="p">)</span> <span class="c1"># [N x S]
+</span>    <span class="n">prior_projections</span> <span class="o">=</span> <span class="n">prior_z</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">proj_matrix</span><span class="p">)</span> <span class="c1"># [N x S]
+</span>
+    <span class="c1"># The Wasserstein distance is computed by sorting the two projections
+</span>    <span class="c1"># across the batches and computing their element-wise l2 distance
+</span>    <span class="n">w_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="n">latent_projections</span><span class="p">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> \
+             <span class="n">torch</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="n">prior_projections</span><span class="p">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">w_dist</span> <span class="o">=</span> <span class="n">w_dist</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">w_dist</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>其中低维空间的<strong>Wasserstein</strong>距离是通过对两个投影随机变量各个特征维度之间最大值差异的<strong>L2</strong>距离实现的。而随机投影过程从正态分布或<strong>Cauchy</strong>分布中采样构造：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">distributions</span> <span class="k">as</span> <span class="n">dist</span>
+
+<span class="k">def</span> <span class="nf">get_random_projections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="s">"""
+    Returns random samples from latent distribution's (Gaussian)
+    unit sphere for projecting the encoded samples and the
+    distribution samples.
+    :param latent_dim: (Int) Dimensionality of the latent space (D)
+    :param num_samples: (Int) Number of samples required (S)
+    :return: Random projections from the latent unit sphere
+    """</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj_dist</span> <span class="o">==</span> <span class="s">'normal'</span><span class="p">:</span>
+        <span class="n">rand_samples</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj_dist</span> <span class="o">==</span> <span class="s">'cauchy'</span><span class="p">:</span>
+        <span class="n">rand_samples</span> <span class="o">=</span> <span class="n">dist</span><span class="p">.</span><span class="n">Cauchy</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]),</span>
+                                   <span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.0</span><span class="p">])).</span><span class="n">sample</span><span class="p">((</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)).</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="s">'Unknown projection distribution.'</span><span class="p">)</span>
+
+    <span class="n">rand_proj</span> <span class="o">=</span> <span class="n">rand_samples</span> <span class="o">/</span> <span class="n">rand_samples</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rand_proj</span> <span class="c1"># [S x D]
+</span></code></pre></div></div>
+
+<p><strong>SWAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/swae.py">PyTorch-VAE</a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/15/factorvae.html" class="read-next-link"></a>
+        <section>
+          <span>Disentangling by Factorising</span>
+          <p>  FactorVAE：通过分解特征表示的分布进行解耦.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/628dc6be09475431292effbe.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/13/logcosh.html" class="read-next-link"></a>
+          <section>
+            <span>Log Hyperbolic Cosine Loss Improves Variational Auto-Encoder</span>
+            <p>  使用对数双曲余弦损失改进变分自编码器.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/628c82e309475431298117da.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

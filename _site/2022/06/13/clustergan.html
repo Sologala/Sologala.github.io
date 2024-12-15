@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClusterGAN : Latent Space Clustering in Generative Adversarial Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="ClusterGAN : Latent Space Clustering in Generative Adversarial Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="ClusterGAN : Latent Space Clustering in Generative Adversarial Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/06/13/clustergan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>ClusterGAN : Latent Space Clustering in Generative Adversarial Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-06-13"><i class="iconfont icon-date"></i>13 Jun 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63a2b279b1fccdcd367b7b51.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>ClusterGAN：生成对抗网络的隐空间聚类.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1809.03627v2">ClusterGAN : Latent Space Clustering in Generative Adversarial Networks</a></li>
+</ul>
+
+<p><strong>ClusterGAN</strong>通过从一个<strong>one-hot</strong>编码变量和连续隐变量的混合分布中对隐变量进行采样，结合<strong>GAN</strong>模型和一个编码器（将数据投影到隐空间）共同训练，能够实现在隐空间的聚类。</p>
+
+<h1 id="1-网络结构">1. 网络结构</h1>
+
+<p><strong>ClusterGAN</strong>由生成器、判别器和编码器构成。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a2b3d6b1fccdcd367e5301.jpg" alt="" /></p>
+
+<p>生成器$G$从一个离散分布$z_c$和连续分布$z_n$共同组成的分布中采样生成图像$x_g$；判别器$D$用于区分生成图像$x_g$和真实图像$x_r$；编码器把生成图像$x_g$编码为重构的离散编码$\hat{z}_c$和连续编码$\hat{z}_n$。</p>
+
+<p>从混合分布中采样的流程如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a2b680b1fccdcd36832f11.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">sample_z</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">latent_dim</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_c</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">fix_class</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">req_grad</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">fix_class</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="p">(</span><span class="n">fix_class</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">fix_class</span> <span class="o">&lt;</span> <span class="n">n_c</span><span class="p">)</span> <span class="p">),</span> <span class="s">"Requested class %i outside bounds."</span><span class="o">%</span><span class="n">fix_class</span>
+    <span class="c1"># Sample noise as generator input, zn
+</span>    <span class="n">zn</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">((</span><span class="n">shape</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="n">req_grad</span><span class="p">)</span>
+    <span class="c1">######### zc, zc_idx variables with grads, and zc to one-hot vector
+</span>    <span class="c1"># Pure one-hot vector generation
+</span>    <span class="n">zc_FT</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">shape</span><span class="p">,</span> <span class="n">n_c</span><span class="p">))</span>
+    <span class="n">zc_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nb">long</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">fix_class</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">zc_idx</span> <span class="o">=</span> <span class="n">zc_idx</span><span class="p">.</span><span class="n">random_</span><span class="p">(</span><span class="n">n_c</span><span class="p">)</span>
+        <span class="n">zc_FT</span> <span class="o">=</span> <span class="n">zc_FT</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">zc_idx</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">zc_idx</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">fix_class</span>
+        <span class="n">zc_FT</span><span class="p">[:,</span> <span class="n">fix_class</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">zc</span> <span class="o">=</span> <span class="n">zc_FT</span><span class="p">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="n">req_grad</span><span class="p">)</span>
+    <span class="c1"># Return components of latent space variable
+</span>    <span class="k">return</span> <span class="n">zn</span><span class="p">,</span> <span class="n">zc</span><span class="p">,</span> <span class="n">zc_idx</span>
+</code></pre></div></div>
+
+<p>训练完成后，从隐空间中采样的隐变量具有聚类特性：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a2b5b9b1fccdcd36820642.jpg" alt="" /></p>
+
+<h1 id="2-损失函数">2. 损失函数</h1>
+
+<p><strong>ClusterGAN</strong>的目标函数可以拆分成三部分，即对抗损失、连续编码$\hat{z}_n$的<strong>L2</strong>重构损失和离散编码$\hat{z}_c$的交叉熵损失。</p>
+
+\[\begin{aligned} \mathop{ \min}_{G,E} \mathop{\max}_{D} &amp; \Bbb{E}_{x \text{~} P_{data}(x)}[\log D(x)] + \Bbb{E}_{(z_n,z_c) \text{~} P(z)} [\log(1-D(G(z_n,z_c)))] \\ &amp; + \beta_n \Bbb{E}_{(z_n,z_c) \text{~} P(z)} [||z_n-E^{n}(G(z_n,z_c))||_2^2] \\ &amp; + \beta_c \Bbb{E}_{(z_n,z_c) \text{~} P(z)} [z_c \log E^{c}(G(z_n,z_c))] \end{aligned}\]
+
+<p><strong>ClusterGAN</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/eriklindernoren/PyTorch-GAN/tree/master/implementations/clustergan">PyTorch-GAN</a>，下面给出其损失函数的计算和参数更新过程：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Loss function
+</span><span class="n">bce_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">BCELoss</span><span class="p">()</span>
+<span class="n">xe_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+<span class="n">mse_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">MSELoss</span><span class="p">()</span>
+
+<span class="c1"># Optimizers
+</span><span class="n">optimizer_G</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">optim</span><span class="p">.</span><span class="n">Adam</span><span class="p">(</span>
+    <span class="n">itertools</span><span class="p">.</span><span class="n">chain</span><span class="p">(</span><span class="n">E</span><span class="p">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">G</span><span class="p">.</span><span class="n">parameters</span><span class="p">()),</span>
+    <span class="n">lr</span><span class="o">=</span><span class="n">opt</span><span class="p">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">opt</span><span class="p">.</span><span class="n">b2</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">optimizer_D</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">optim</span><span class="p">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">D1</span><span class="p">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">opt</span><span class="p">.</span><span class="n">lr</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">b1</span><span class="p">,</span> <span class="n">opt</span><span class="p">.</span><span class="n">b2</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">n_epochs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">real_imgs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+        <span class="c1"># Adversarial ground truths
+</span>        <span class="n">valid</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">fake</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="c1"># ----------------------------------
+</span>        <span class="c1"># forward propogation
+</span>        <span class="c1"># ----------------------------------
+</span>        <span class="c1"># Sample random latent variables
+</span>        <span class="n">zn</span><span class="p">,</span> <span class="n">zc</span><span class="p">,</span> <span class="n">zc_idx</span> <span class="o">=</span> <span class="n">sample_z</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">real_imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                  <span class="n">latent_dim</span><span class="o">=</span><span class="n">latent_dim</span><span class="p">,</span>
+                                  <span class="n">n_c</span><span class="o">=</span><span class="n">n_c</span><span class="p">)</span>
+        <span class="c1"># Generate a batch of images
+</span>        <span class="n">gen_imgs</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">zn</span><span class="p">,</span> <span class="n">zc</span><span class="p">)</span>        
+
+        <span class="c1"># -----------------------
+</span>        <span class="c1">#  Train Discriminator
+</span>        <span class="c1"># -----------------------
+</span>        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+
+        <span class="c1"># Discriminator output from real and generated samples
+</span>        <span class="n">D_gen</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">.</span><span class="n">detach</span><span class="p">())</span>
+        <span class="n">D_real</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">)</span>
+
+        <span class="n">real_loss</span> <span class="o">=</span> <span class="n">bce_loss</span><span class="p">(</span><span class="n">D_real</span><span class="p">,</span> <span class="n">valid</span><span class="p">)</span>
+        <span class="n">fake_loss</span> <span class="o">=</span> <span class="n">bce_loss</span><span class="p">(</span><span class="n">D_gen</span><span class="p">,</span> <span class="n">fake</span><span class="p">)</span>
+        <span class="n">d_loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">real_loss</span> <span class="o">+</span> <span class="n">fake_loss</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">d_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="c1"># -------------------------------
+</span>        <span class="c1">#  Train Generator and Encoder
+</span>        <span class="c1"># -------------------------------
+</span>        <span class="n">optimizer_G</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">enc_gen_zn</span><span class="p">,</span> <span class="n">enc_gen_zc</span><span class="p">,</span> <span class="n">enc_gen_zc_logits</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">)</span>
+
+        <span class="c1"># Calculate losses for z_n, z_c
+</span>        <span class="n">zn_loss</span> <span class="o">=</span> <span class="n">mse_loss</span><span class="p">(</span><span class="n">enc_gen_zn</span><span class="p">,</span> <span class="n">zn</span><span class="p">)</span>
+        <span class="n">zc_loss</span> <span class="o">=</span> <span class="n">xe_loss</span><span class="p">(</span><span class="n">enc_gen_zc_logits</span><span class="p">,</span> <span class="n">zc_idx</span><span class="p">)</span>
+
+        <span class="n">D_gen</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">)</span>
+        <span class="n">gan_loss</span> <span class="o">=</span> <span class="n">bce_loss</span><span class="p">(</span><span class="n">D_gen</span><span class="p">,</span> <span class="n">valid</span><span class="p">)</span>
+        <span class="n">g_loss</span> <span class="o">=</span> <span class="n">gan_loss</span> <span class="o">+</span> <span class="n">betan</span> <span class="o">*</span> <span class="n">zn_loss</span> <span class="o">+</span> <span class="n">betac</span> <span class="o">*</span> <span class="n">zc_loss</span>
+        <span class="n">g_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer_G</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/06/14/ssgan.html" class="read-next-link"></a>
+        <section>
+          <span>Semi-Supervised Learning with Generative Adversarial Networks</span>
+          <p>  通过生成对抗网络进行半监督学习.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63a2bfa6b1fccdcd3695ee12.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/06/12/sequence.html" class="read-next-link"></a>
+          <section>
+            <span>Deep Symbolic Regression for Recurrent Sequences</span>
+            <p>  递归序列的深度符号回归.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62a5cc4d09475431294ab939.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

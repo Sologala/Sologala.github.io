@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连接时序分类 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="连接时序分类">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="连接时序分类 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/06/11/ctc.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>连接时序分类</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-06-11"><i class="iconfont icon-date"></i>11 Jun 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ee1deb2c2a9a83be55894f1.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Connectionist Temporal Classification.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://www.researchgate.net/publication/221346365_Connectionist_temporal_classification_Labelling_unsegmented_sequence_data_with_recurrent_neural_'networks">Connectionist temporal classification: Labelling unsegmented sequence data with recurrent neural networks</a></li>
+</ul>
+
+<p>在文本识别、语音识别等任务中，输入和输出可能不是对齐的，而是受不同人的书写习惯和说话速度影响：</p>
+
+<p><img src="https://pic.downk.cc/item/5ee2026fc2a9a83be590257d.jpg" alt="" /></p>
+
+<p><strong>Connectionist Temporal Classification (CTC)</strong>正适合这种不知道输入输出是否对齐的情况使用的算法。</p>
+
+<p>为了方便描述，做如下定义，输入(如音频信号)用符号序列$X=[x_1,x_2,…,x_T]$表示，对应的输出(如对应的标注文本)用符号序列$Y=[y_1,y_2,…,y_U]$表示，为了方便训练这些数据,希望能够找到输入$X$与输出$Y$之间精确的映射关系。</p>
+
+<p>输入和输出的特点：</p>
+<ul>
+  <li>$X$和$Y$都是变长的；</li>
+  <li>$X$和$Y$的长度比也是变化的；</li>
+  <li>$X$和$Y$相应元素之间没有严格的对齐（即$x_t$和$y_u$不一定对齐）。</li>
+</ul>
+
+<p>需要明确的是，<strong>CTC</strong>常用的场景是<strong>RNN</strong>后接<strong>CTC</strong>算法，（以语音识别为例）<strong>RNN</strong>模型输入是划分后的$T$个音频片段，输出$T$个概率向量，每个向量又由字典个数$N$的概率组成，则<strong>RNN</strong>输出的维度为$T×N$。根据这个概率输出分布，就能得到最可能的输出结果。</p>
+
+<h1 id="1-对齐">1. 对齐</h1>
+<p><strong>CTC</strong>算法对于输入$X$能给出非常多不同的$Y$(<strong>RNN</strong>输出概率分布矩阵，所以通过矩阵中元素的组合可以得到很多$Y$值作为最终输出)，在计算输出过程的一个关键问题就是<strong>CTC</strong>算法如何将输入和输出进行<strong>对齐</strong>。</p>
+
+<p><strong>CTC</strong>算法并不要求输入输出是严格对齐的。引入的一个新的占位符用于输出对齐的结果。这个占位符称为<strong>空白占位符</strong>，通常使用符号$ε$，这个符号在对齐结果中输出，但是在最后的去重操作会将所有的$ε$删除得到最终的输出。利用这个占位符，可以对输入与输出建立非常合理的对应关系，如下图所示：</p>
+
+<p><img src="https://pic.downk.cc/item/5ee20284c2a9a83be5903ddc.jpg" alt="" /></p>
+
+<p>在这个映射方式中，如果在标定文本中有重复的字符，对齐过程中会在两个重复的字符当中插入$ε$占位符。利用这个规则，上面的“hello”就不会变成“helo”了。</p>
+
+<p><strong>CTC</strong>算法的对齐方式有下列属性：</p>
+<ul>
+  <li>输入与输出的对齐方式是单调的，即如果输入下一片段时输出会保持不变或者也会移动到下一个时间片段</li>
+  <li>输入与输出是多对一的关系</li>
+  <li>输出的长度小于等于输入</li>
+</ul>
+
+<h1 id="2-目标函数">2. 目标函数</h1>
+<p><strong>CTC</strong>算法的目标函数如下：</p>
+
+\[p(Y \mid X) = \sum_{A \in A_{X,Y}}^{} {\prod_{t=1}^{T} {p_t(a_t \mid X)}}\]
+
+<p><strong>RNN</strong>输出的就是概率$p_t$，$t$表示时间步。乘法表示一条路径的所有字符概率相乘，加法表示多条路径对应同一个序列。因为<strong>CTC</strong>对齐输入输出是多对一的，例如$heεlεloε$和$heeεlεlo$对应的都是$hello$，这就是同一个输出的其中两条路径，要将所有的路径相加才是输出的条件概率。</p>
+
+<p>对于一个输出，路径会非常的多，这样直接计算概率是不现实的，<strong>CTC</strong>算法采用<strong>动态规划</strong>的思想来求解输出的条件概率。</p>
+
+<p>假设输入音频$X$对应的标签输出$Y$为单词“ZOO”，为了方便解释下面动态规划的思想，现在每个字符之间还有字符串的首末位插入空白占位符$ε$，得到序列$Z= [ ε,Z,ε,O,ε,O,ε ]$，则输出$zoo$对应所有可能的合法路径为：</p>
+
+<p><img src="https://pic.downk.cc/item/5ee1eb3bc2a9a83be56af02b.jpg" alt="" /></p>
+
+<p>上图横轴$X$对应时间步$T$，假设有$9$个时间步；纵轴$Z$为序列可取的值。</p>
+
+<p>直观解释：寻找所有合法的对应输出为$zoo$的长度为$9$的路径。</p>
+
+<p>从图中可以看到合法路径由两个起始点（$ε$或$z$），输出两个终止点（$ε$或$o$），最后输出的条件概率为所有合法路径出现概率的和。使用这种计算方法就能高效的计算损失函数。</p>
+
+<p>记$p_{s,t}$表示第$t$个时间步输出为字符$s$($s$按构造序列$Z$的位置)的概率，$α_{s,t}$表示上图中路径到达坐标为$(s,t)$节点的概率（即生成长度为$t$且最后一位为$s$的未化简序列的概率）。</p>
+
+<p><strong>情况1：</strong></p>
+
+<p>第$t$个时间步输出的字符$s$是空白字符$ε$或输出序列中连续重复的字符（如$zoo$中的第二个$o$），则其前一个字符可能是空白字符$ε$（对应$s-1$）或本字符（对应$s$）：</p>
+
+\[α_{s,t} = (α_{s-1,t-1}+α_{s,t-1})p_{s,t}\]
+
+<p><strong>情况2：</strong></p>
+
+<p>第$t$个时间步输出的字符$s$是输出序列中不连续首字符（如$zoo$中的第一个$o$），则其前一个字符可能是空白字符$ε$（对应$s-1$）或本字符（对应$s$）或上一个字符（对应$s-2$）：</p>
+
+\[α_{s,t} = (α_{s-1,t-1}+α_{s,t-1}+α_{s-2,t-1})p_{s,t}\]
+
+<p>下一步的工作是计算<strong>梯度</strong>用于训练模型。由于$p(Y \mid X)$的计算只涉及加法和乘法，因此是可导的。对于训练集$D$，模型优化的目标是最小化负对数似然函数:</p>
+
+\[\sum_{(X,Y) \in D}^{} {-log(p(Y \mid X))}\]
+
+<h1 id="3-预测">3. 预测</h1>
+<p>当训练好一个模型后，输入$X$，目标是计算下式得到输出：</p>
+
+\[Y^* = \mathop{\arg\max}_{Y} p(Y \mid X)\]
+
+<p>可以采用：</p>
+<ol>
+  <li>贪婪算法</li>
+  <li>Beam search</li>
+</ol>
+
+<h3 id="1贪婪算法">（1）贪婪算法</h3>
+<p><strong>贪婪算法</strong>取<strong>RNN</strong>每次输出概率最大的节点，然后通过去重得到输出结果:</p>
+
+\[A^* = \mathop{\arg\max}_{A} \prod^{T}_{t=1}p_{t}(a_{t}|X)\]
+
+<p>通常这种启发式的算法很有效，但是这种方法忽略了一个输出可能对应多个对齐结果。例如\([a,a,\epsilon]\)和\([a,a,a]\)各自的概率均小于\([b,b,b]\)的概率，但是他们相加的概率比\([b,b,b]\)概率高。</p>
+
+<h3 id="2beam-search">（2）Beam search</h3>
+
+<p><img src="https://pic.downk.cc/item/5ee2029ac2a9a83be59068bc.jpg" alt="" /></p>
+
+<p><strong>Beam search</strong>算法设置了参数<strong>宽度</strong>，假设宽度为$3$，在<strong>RNN</strong>的输出中，该算法每个时间$t$输出时，寻找最高的三个概率作为下一次的输入，依次迭代，如上图所示。每次$t$时间都是基于$t-1$输出的最高三个查找当前概率最高的三个(当宽度设置为$1$时就是贪婪算法)。</p>
+
+<p>由于想要结合多个对齐能够映射到同一输出的这种情况，这时每次$t$时间的输出为去重后以及移除$\epsilon$的结果:</p>
+
+<p><img src="https://pic.downk.cc/item/5ee202aec2a9a83be5907cac.jpg" alt="" /></p>
+
+<h1 id="4-代码实现">4. 代码实现</h1>
+<p>Pytorch中有现成的<strong>CTC</strong>接口：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>torch.nn.CTCLoss(blank=0,reduction='mean',zero_infinity=False）
+</code></pre></div></div>
+
+<p>Tensorflow中也有现成的<strong>CTC</strong>接口：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tf.nn.ctc_loss(
+    labels,
+    inputs,
+    sequence_length,
+    preprocess_collapse_repeated=False,
+    ctc_merge_repeated=True,
+    ignore_longer_outputs_than_inputs=False,
+    time_major=True
+)
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/06/13/yolov4.html" class="read-next-link"></a>
+        <section>
+          <span>YOLOv4: Optimal Speed and Accuracy of Object Detection</span>
+          <p>  YOLOv4：优化目标检测的速度和精度.  paper：YOLOv4: Optimal Speed and A...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ea3eea1c2a9a83be5996f6b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/06/02/morphology.html" class="read-next-link"></a>
+          <section>
+            <span>英语构词法</span>
+            <p>  Word Formation, the English Morphology.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

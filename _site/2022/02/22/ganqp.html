@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAN-QP: A Novel GAN Framework without Gradient Vanishing and Lipschitz Constraint - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="GAN-QP: A Novel GAN Framework without Gradient Vanishing and Lipschitz Constraint">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="GAN-QP: A Novel GAN Framework without Gradient Vanishing and Lipschitz Constraint - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/02/22/ganqp.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>GAN-QP: A Novel GAN Framework without Gradient Vanishing and Lipschitz Constraint</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-02-22"><i class="iconfont icon-date"></i>22 Feb 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic1.imgdb.cn/item/634d054d16f2c2beb1dd5e83.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>GAN-QP：在对偶空间定义没有梯度消失且满足Lipschitz约束的目标.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1811.07296">GAN-QP: A Novel GAN Framework without Gradient Vanishing and Lipschitz Constraint</a></li>
+</ul>
+
+<p>一般地，<strong>GAN</strong>的目标函数的构造思路为：</p>
+<ol>
+  <li>寻找一种性质良好的概率散度；</li>
+  <li>找出它的对偶形式；</li>
+  <li>构建极小极大博弈。</li>
+</ol>
+
+<p>在原空间中直接定义一个散度比较困难，且不能保证该散度容易转换为对偶形式。本文作者直接在对偶空间定义了满足散度的目标函数，并且验证该目标不会出现梯度消失现象，且满足<strong>Lipschitz</strong>约束。</p>
+
+<h1 id="1-平方势散度">1. 平方势散度</h1>
+
+<p>一般地，$p(x)$和$q(x)$之间的<strong>平方势散度 (QP-div，quadratic potential divergence)</strong>定义为：</p>
+
+\[\begin{aligned} D_{QP}[p || q] &amp;= \mathop{ \max}_{f} \Bbb{E}_{(x_r,x_f) \text{~} p(x_r)q(x_f)}[f(x_r,x_f)-f(x_f,x_r) -\frac{(f(x_r,x_f)-f(x_f,x_r))^2}{2 \lambda d(x_r,x_f)} ] \\ &amp;= \mathop{ \max}_{f} \iint_{x_r,x_f} p(x_r)q(x_f)[f(x_r,x_f)-f(x_f,x_r) -\frac{(f(x_r,x_f)-f(x_f,x_r))^2}{2 \lambda d(x_r,x_f)} ]dx_rdx_f \end{aligned}\]
+
+<p>其中$\lambda &gt; 0$，$d(x_r,x_f)$是任意距离。</p>
+
+<h3 id="-性质无梯度消失">⚪ 性质：无梯度消失</h3>
+
+<p>不妨假设$p(x) = \delta(x-\alpha)$，$q(x) = \delta(x-\beta)$，即分布$p(x)$和$q(x)$没有重叠。此时平方势散度为：</p>
+
+\[D_{QP}[p(x),q(x)]  = \mathop{ \max}_{f}  \{ f(\alpha,\beta)-f(\beta,\alpha) - \frac{(f(\alpha,\beta)-f(\beta,\alpha))^2}{2 \lambda d(\alpha,\beta)} \}\]
+
+<p>令$g=f(\alpha,\beta)-f(\beta,\alpha)$，则上式转换为二次函数的最大值问题，对应的最大值为：</p>
+
+\[D_{QP}[p(x),q(x)]  =  \frac{1}{2 }\lambda d(\alpha,\beta)\]
+
+<p>由此可知，即使分布不重叠，平方势散度仍然是有意义的，并且取值是光滑的，从而在优化时不会有梯度消失的风险。</p>
+
+<h3 id="-性质lipschitz连续">⚪ 性质：Lipschitz连续</h3>
+
+<p>下面求平方势散度表达式的最优值：</p>
+
+\[\begin{aligned} &amp;\nabla_f p(x_r)q(x_f)[f(x_r,x_f)-f(x_f,x_r) -\frac{(f(x_r,x_f)-f(x_f,x_r))^2}{2 \lambda d(x_r,x_f)} ]  \\ &amp;=  p(x_r)q(x_f)[\nabla_ff(x_r,x_f)-\nabla_ff(x_f,x_r) \\&amp; \quad -\frac{(f(x_r,x_f)-f(x_f,x_r))(\nabla_ff(x_r,x_f)-\nabla_ff(x_f,x_r))}{ \lambda d(x_r,x_f)} ] \\ &amp;=  p(x_r)q(x_f)\nabla_ff(x_r,x_f)-p(x_r)q(x_f)\nabla_ff(x_f,x_r) \\&amp; \quad -p(x_r)q(x_f)\frac{f(x_r,x_f)-f(x_f,x_r)}{ \lambda d(x_r,x_f)}\nabla_ff(x_r,x_f) \\ &amp;\quad +p(x_r)q(x_f)\frac{f(x_r,x_f)-f(x_f,x_r)}{ \lambda d(x_r,x_f)}\nabla_ff(x_f,x_r)  \\ &amp;=  p(x_r)q(x_f)\nabla_ff(x_r,x_f)-p(x_f)q(x_r)\nabla_ff(x_r,x_f) \\&amp; \quad -p(x_r)q(x_f)\frac{f(x_r,x_f)-f(x_f,x_r)}{ \lambda d(x_r,x_f)}\nabla_ff(x_r,x_f) \\ &amp;\quad -p(x_f)q(x_r)\frac{f(x_r,x_f)-f(x_f,x_r)}{ \lambda d(x_r,x_f)}\nabla_ff(x_r,x_f) \end{aligned}\]
+
+<p>令上式为零得：</p>
+
+\[\frac{p(x_r)q(x_f)-p(x_f)q(x_r)}{p(x_r)q(x_f)+p(x_f)q(x_r)} = \frac{f(x_r,x_f)-f(x_f,x_r)}{ \lambda d(x_r,x_f)}\]
+
+<p>注意到上式满足：</p>
+
+\[-1 \leq \frac{f(x_r,x_f)-f(x_f,x_r)}{ \lambda d(x_r,x_f)} \leq 1\]
+
+<p>因此最优值满足<strong>Lipschitz</strong>连续条件。</p>
+
+<h1 id="2-gan-qp">2. GAN-QP</h1>
+
+<p>基于平方势散度，作者构造了<strong>GAN-QP</strong>，目标函数如下：</p>
+
+\[\begin{aligned} D^* &amp;\leftarrow \mathop{ \max}_{D} \Bbb{E}_{x_r \text{~} P_{data}(x), x_f \text{~} P_{G}(x)}[D(x_r,x_f)-D(x_f,x_r) -\frac{(D(x_r,x_f)-D(x_f,x_r))^2}{2 \lambda d(x_r,x_f)} ]  \\ G^* &amp; \leftarrow \mathop{ \min}_{G}\Bbb{E}_{x_r \text{~} P_{data}(x), x_f \text{~} P_{G}(x)}[D(x_r,x_f)-D(x_f,x_r)] \end{aligned}\]
+
+<p>作者指出，二元函数$D(x_r,x_f)$取简单的一元特例$D(x_r,x_f)=D(x_r)$即可：</p>
+
+\[\begin{aligned} D^* &amp;\leftarrow \mathop{ \max}_{D} \Bbb{E}_{x_r \text{~} P_{data}(x), x_f \text{~} P_{G}(x)}[D(x_r)-D(x_f) -\frac{(D(x_r)-D(x_f))^2}{2 \lambda d(x_r,x_f)} ]  \\ G^* &amp; \leftarrow \mathop{ \min}_{G}\Bbb{E}_{x_r \text{~} P_{data}(x), x_f \text{~} P_{G}(x)}[D(x_r)-D(x_f)] \end{aligned}\]
+
+<p>作者报告了<strong>GAN-QP</strong>的性能：</p>
+
+<p><img src="https://pic1.imgdb.cn/item/634d1d5b16f2c2beb103b9f3.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/02/23/meg.html" class="read-next-link"></a>
+        <section>
+          <span>Maximum Entropy Generators for Energy-Based Models</span>
+          <p>  MEG：基于能量模型的最大熵生成器.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic1.imgdb.cn/item/634e03cb16f2c2beb1a3bf95.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/02/21/rgan.html" class="read-next-link"></a>
+          <section>
+            <span>The relativistic discriminator: a key element missing from standard GAN</span>
+            <p>  RGAN：GAN中的相对判别器.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/634cad5116f2c2beb15b87e1.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

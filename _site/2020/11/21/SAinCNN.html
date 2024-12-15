@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卷积神经网络中的自注意力机制(Self-Attention Mechanism) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="卷积神经网络中的自注意力机制(Self-Attention Mechanism)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="卷积神经网络中的自注意力机制(Self-Attention Mechanism) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/11/21/SAinCNN.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>卷积神经网络中的自注意力机制(Self-Attention Mechanism)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-11-21"><i class="iconfont icon-date"></i>21 Nov 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63b80741be43e0d30edb9553.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Self-Attention Mechanism in Convolutional Neural Networks.</p>
+</blockquote>
+
+<p>卷积神经网络中的<strong>自注意力(Self-Attention)</strong>机制表现为<strong>非局部滤波(non-local filtering)</strong>操作，其实现过程与<a href="https://0809zheng.github.io/2020/04/24/self-attention.html"><font color="Blue">Seq2Seq模型的自注意力机制</font></a>类似。</p>
+
+<p>标准的卷积层是一种局部滤波操作，其输出特征上的任意位置是由对应输入特征的一个邻域构造的，只能捕捉局部特征之间的关系。而自注意力机制通过计算任意两个位置之间的关系直接捕捉远程依赖，而不用局限于相邻点，相当于构造了一个<strong>和特征图尺寸一样大</strong>的卷积核，从而可以捕捉更多信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b808dabe43e0d30edf6519.jpg" alt="" /></p>
+
+<p>在卷积网络的自注意力机制中，首先构造输入特征$x$的键特征$f(x)$, 查询特征$g(x)$和值特征$h(x)$；然后应用点积注意力构造自注意力特征图：</p>
+
+\[\alpha_{i} = \text{softmax}\left(f(x_i)^Tg(x_j)\right) =\frac{e^{f(x_i)^Tg(x_j)}}{\sum_j e^{f(x_i)^Tg(x_j)}}\]
+
+<p>在计算输出位置$i$的响应$y_i$时，考虑所有输入值特征$h(x_j)$的加权：</p>
+
+\[y_i=  \sum_{j}^{} \alpha_{j}h(x_j) =  \sum_{j}^{} \frac{e^{f(x_i)^Tg(x_j)}}{\sum_k e^{f(x_i)^Tg(x_k)}} h(x_j)\]
+
+<p>上式可以被写作更一般的形式：</p>
+
+\[y_i=\frac{1}{C\left(x_i\right)} \sum_j f\left(x_i, x_j\right) h\left(x_j\right)\]
+
+<p>其中相似度函数$f(\cdot,\cdot)$计算两个特征位置$x_i,x_j$的相似程度，输出被权重因子$C(x_i)$归一化。注意到当相似度函数取<strong>Embedded Gaussian</strong>函数：</p>
+
+\[f\left(\mathbf{x}_i, \mathbf{x}_j\right)=e^{\theta\left(\mathbf{x}_i\right)^T \phi\left(\mathbf{x}_j\right)}\]
+
+<p>此时自注意力机制等价于上述<strong>query-key-value</strong>形式。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b80c02be43e0d30ee766fd.jpg" alt="" /></p>
+
+<p>自注意力机制的实现可参考：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SelfAttention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SelfAttention</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">o</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">fx</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># [b, c, hw]
+</span>        <span class="n">fx</span> <span class="o">=</span> <span class="n">fx</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># [b, hw, c]
+</span>        <span class="n">gx</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">g</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># [b, c, hw]
+</span>        <span class="n">attn</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">fx</span><span class="p">,</span> <span class="n">gx</span><span class="p">)</span> <span class="c1"># [b, hw, hw]
+</span>        <span class="n">attn</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">attn</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># 按行归一化
+</span>
+        <span class="n">hx</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">h</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># [b, c, hw]
+</span>        <span class="n">hx</span> <span class="o">=</span> <span class="n">hx</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># [b, hw, c]
+</span>        <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">attn</span><span class="p">,</span> <span class="n">hx</span><span class="p">)</span> <span class="c1"># [b, hw, c]
+</span>        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">contiguous</span><span class="p">()</span> <span class="c1"># [b, c, hw]
+</span>        <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">o</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>卷积神经网络中的自注意力机制包括：</p>
+<ul>
+  <li>增强特征提取能力：<strong>Non-local Net</strong>, <strong>DANet</strong>, <strong>A^2-Net</strong>, <strong>RNL</strong>, <strong>DMSANet</strong>, <strong>SAN</strong>, <strong>PSA</strong>,</li>
+  <li>降低计算复杂度：<strong>CCNet</strong>, <strong>GCNet</strong>, <strong>EMANet</strong>, <strong>ISANet</strong>, <strong>ANNNet</strong>, <strong>LightNL</strong>, <strong>NLSA</strong></li>
+</ul>
+
+<h1 id="1增强特征提取能力">（1）增强特征提取能力</h1>
+
+<h2 id="-non-local-net">⚪ <a href="https://0809zheng.github.io/2020/11/06/nonlocal.html"><font color="blue">Non-local Net</font></a></h2>
+
+<p><strong>Non-Local Net</strong>设计了卷积网络中自注意力机制的基本结构。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fc1688f144a010074cf050.jpg" alt="" /></p>
+
+<h2 id="-dual-attention-network-danet">⚪ <a href="https://0809zheng.github.io/2020/11/13/danet.html"><font color="blue">Dual Attention Network (DANet)</font></a></h2>
+
+<p><strong>DANet</strong>设计了<strong>Dual Attention</strong>，同时引入了沿空间维度和和通道维度的自注意力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64099facf144a010078cd559.jpg" alt="" /></p>
+
+<h2 id="-double-attention-network-a2-net">⚪ <a href="https://0809zheng.github.io/2020/11/25/a2net.html"><font color="blue">Double Attention Network (A^2-Net)</font></a></h2>
+
+<p>$A^2$<strong>-Net</strong>首先使用双线性池化提取特征的一系列描述子，然后使用注意力机制将这些特征描述子分配给特征的每个位置。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64352bd60d2dde57778be5d6.jpg" alt="" /></p>
+
+<h2 id="-region-based-non-local-rnl">⚪ <a href="https://0809zheng.github.io/2021/10/07/rnl.html"><font color="blue">Region-based Non-local (RNL)</font></a></h2>
+
+<p>基于区域的<strong>non-local</strong>计算两个特征位置$x_i,x_j$的相似程度时，不仅仅与这两个点本身有关，还与其周边<strong>region</strong>有关。
+\(y_i=\frac{1}{C\left(x_i\right)} \sum_j f\left( \theta(\mathcal{N}_i),\theta(\mathcal{N}_j)\right) x_j\)</p>
+
+<p><img src="https://pic.imgdb.cn/item/643fad670d2dde5777fa6e62.jpg" alt="" /></p>
+
+<h2 id="-dual-multi-scale-attention-network-dmsanet">⚪ <a href="https://0809zheng.github.io/2021/10/03/dmsanet.html"><font color="blue">Dual Multi Scale Attention Network (DMSANet)</font></a></h2>
+
+<p><strong>DMSANet</strong>首先把特征按通道进行分组，并行地应用空间和特征自注意力机制，再通过注意力机制聚合特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643689320d2dde5777651994.jpg" alt="" /></p>
+
+<h2 id="-self-attention-network-san">⚪ <a href="https://0809zheng.github.io/2021/10/06/san.html"><font color="blue">Self-attention Network (SAN)</font></a></h2>
+
+<p>作者设计了两种<strong>self-attention</strong>形式：<strong>pairwise self-attention</strong>和<strong>patchwise self-attention</strong>。</p>
+
+\[\mathbf y_i = \sum\limits_{j\in \mathcal{R}(i)}\alpha(\mathbf x_i,\mathbf x_j) \odot \beta(\mathbf x_j) \\ \mathbf y_i = \sum\limits_{j\in \mathcal{R}(i)}\alpha(\mathbf{x}_{\mathcal{R}_{(i)}})_j \odot \beta(\mathbf x_j)\]
+
+<p><img src="https://pic.imgdb.cn/item/643e565d0d2dde577785fd2a.jpg" alt="" /></p>
+
+<h2 id="-polarized-self-attention-psa">⚪ <a href="https://0809zheng.github.io/2021/10/04/polarized.html"><font color="blue">Polarized Self-Attention (PSA)</font></a></h2>
+
+<p>极化自注意力基于摄影中的极化滤波原理。先在某个方向（通道维度或空间维度）上对特征进行压缩，然后对损失的强度范围进行增强或者抑制。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643fa55c0d2dde5777ee0c52.jpg" alt="" /></p>
+
+<h1 id="2降低计算复杂度">（2）降低计算复杂度</h1>
+
+<h2 id="-criss-cross-attention-ccnet">⚪ <a href="https://0809zheng.github.io/2020/11/08/ccnet.html"><font color="blue">Criss-Cross Attention (CCNet)</font></a></h2>
+
+<p><strong>CCNet</strong>设计了<strong>Criss-Cross Attention</strong>，计算一个点的横纵位置的<strong>attention</strong>信息，通过串行两个<strong>Criss-Cross attention</strong>模块间接与全图位置内的任意点进行注意力计算。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64099a43f144a0100782dc4c.jpg" alt="" /></p>
+
+<h2 id="-global-context-network-gcnet">⚪ <a href="https://0809zheng.github.io/2020/11/07/gcnet.html"><font color="blue">Global Context Network (GCNet)</font></a></h2>
+
+<p><strong>GCNet</strong>设计了<strong>Global Context Block</strong>，通过<strong>query</strong>和<strong>key</strong>权重共享简化了<strong>attention map</strong>的构造，并且引入了通道注意力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fd6c84f144a010075c40f9.jpg" alt="" /></p>
+
+<h2 id="-expectation-maximization-attention-network-emanet">⚪ <a href="https://0809zheng.github.io/2020/11/14/emanet.html"><font color="blue">Expectation-Maximization Attention Network (EMANet)</font></a></h2>
+
+<p><strong>EMANet</strong>通过期望最大化（<strong>EM</strong>）算法迭代出一组紧凑的基，在这组基上运行注意力机制。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640addbef144a010079cef75.jpg" alt="" /></p>
+
+<h2 id="-interlaced-sparse-self-attention-isanet">⚪ <a href="https://0809zheng.github.io/2020/11/22/isanet.html"><font color="blue">Interlaced Sparse Self-Attention (ISANet)</font></a></h2>
+
+<p><strong>ISANet</strong>把特征图进行分块，先进行块内的<strong>self attention</strong>计算得到<strong>Long-range</strong>的<strong>attention</strong>；然后进行块之间计算<strong>self attention</strong>得到<strong>Short-range</strong>的<strong>attention</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640c52fff144a0100720a61f.jpg" alt="" /></p>
+
+<h2 id="-asymmetric-non-local-neural-network-annnet">⚪ <a href="https://0809zheng.github.io/2020/11/15/annnet.html"><font color="blue">Asymmetric Non-local Neural Network (ANNNet)</font></a></h2>
+
+<p><strong>ANNNet</strong>通过<strong>Pyramid Pooling</strong>对<strong>Non-Local</strong>中的<strong>Key</strong>和<strong>Value</strong>进行采样以减少计算量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640c3ab2f144a01007ef66a3.jpg" alt="" /></p>
+
+<h2 id="-lightweight-non-local-network-lightnl">⚪ <a href="https://0809zheng.github.io/2020/11/24/lightnl.html"><font color="blue">Lightweight Non-Local Network (LightNL)</font></a></h2>
+
+<p><strong>LightNL</strong>是为神经结构搜索设计的轻量级<strong>Non-Local</strong>模块，主要有三点差异：$Q,K,V$的生成去掉了$1\times 1$卷积、输出卷积替换为深度卷积、使用更小的特征图计算相关性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6433eb340d2dde5777fb6a43.jpg" alt="" /></p>
+
+<h2 id="-non-local-sparse-attention-nlsa">⚪ <a href="https://0809zheng.github.io/2021/10/05/nlsa.html"><font color="blue">Non-Local Sparse Attention (NLSA)</font></a></h2>
+
+<p><strong>NLSA</strong>通过局部敏感哈希构造<strong>attention bucket</strong>，只对同一个<strong>attention bucket</strong>内的特征进行自注意力计算。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643d1bdc0d2dde57773338ab.jpg" alt="" /></p>
+
+<h2 id="-参考文献">⭐ 参考文献</h2>
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/11/06/nonlocal.html"><font color="blue">Non-local Neural Networks</font></a>：(arXiv1711)非局部神经网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/13/danet.html"><font color="blue">Dual Attention Network for Scene Segmentation</font></a>：(arXiv1809)场景分割的对偶注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/25/a2net.html"><font color="blue">A^2-Nets: Double Attention Networks</font></a>：(arXiv1810)A^2-Net：双重注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/08/ccnet.html"><font color="blue">CCNet: Criss-Cross Attention for Semantic Segmentation</font></a>：(arXiv1811)CCNet：语义分割中的交叉注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/07/gcnet.html"><font color="blue">GCNet: Non-local Networks Meet Squeeze-Excitation Networks and Beyond</font></a>：(arXiv1904)GCNet：结合非局部神经网络和通道注意力。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/14/emanet.html"><font color="blue">Expectation-Maximization Attention Networks for Semantic Segmentation</font></a>：(arXiv1907)EMANet: 语义分割的期望最大化注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/22/isanet.html"><font color="blue">Interlaced Sparse Self-Attention for Semantic Segmentation</font></a>：(arXiv1907)ISANet：语义分割的交错稀疏自注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/15/annnet.html"><font color="blue">Asymmetric Non-local Neural Networks for Semantic Segmentation</font></a>：(arXiv1908)ANNNet：语义分割的非对称非局部神经网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/24/lightnl.html"><font color="blue">Neural Architecture Search for Lightweight Non-Local Networks</font></a>：(arXiv2004)轻量级非局部网络的神经结构搜索。</li>
+  <li><a href="https://0809zheng.github.io/2021/10/06/san.html"><font color="blue">Exploring Self-attention for Image Recognition</font></a>：(arXiv2004)探索图像识别的自注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2021/10/07/rnl.html"><font color="blue">Region-based Non-local Operation for Video Classification</font></a>：(arXiv2007)为视频分类设计的基于区域的非局部网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/10/03/dmsanet.html"><font color="blue">DMSANet: Dual Multi Scale Attention Network</font></a>：(arXiv2106)DMSANet: 对偶多尺度注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/10/04/polarized.html"><font color="blue">Polarized Self-Attention: Towards High-quality Pixel-wise Regression</font></a>：(arXiv2107)极化自注意力: 面向高质量像素级回归。</li>
+  <li><a href="https://0809zheng.github.io/2021/10/05/nlsa.html"><font color="blue">Image Super-Resolution with Non-Local Sparse Attention</font></a>：(CVPR2021)通过非局部稀疏注意力实现图像超分辨率。</li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/11/22/isanet.html" class="read-next-link"></a>
+        <section>
+          <span>Interlaced Sparse Self-Attention for Semantic Segmentation</span>
+          <p>  ISANet：语义分割的交错稀疏自注意力网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/640c75d8f144a01007667e00.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/11/20/rfavatar.html" class="read-next-link"></a>
+          <section>
+            <span>Through-Wall Human Mesh Recovery Using Radio Signals</span>
+            <p>  RF-Avatar：使用射频信号进行3D人体网格估计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fbb6494b18d627113e49156.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

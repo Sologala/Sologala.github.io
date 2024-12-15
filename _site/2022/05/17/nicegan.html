@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reusing Discriminators for Encoding: Towards Unsupervised Image-to-Image Translation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Reusing Discriminators for Encoding: Towards Unsupervised Image-to-Image Translation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Reusing Discriminators for Encoding: Towards Unsupervised Image-to-Image Translation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/05/17/nicegan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Reusing Discriminators for Encoding: Towards Unsupervised Image-to-Image Translation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-05-17"><i class="iconfont icon-date"></i>17 May 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63998a90b1fccdcd3646f49c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>NICE-GAN: 把判别器重用为编码器的图像翻译模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2003.00273">Reusing Discriminators for Encoding: Towards Unsupervised Image-to-Image Translation</a></li>
+</ul>
+
+<p>无监督图像翻译是指学习多个图像域之间的映射关系，即给定边缘分布$p(X)$和$p(Y)$，学习条件映射$f_{x \to y}=p(Y|X)$和$f_{y \to x}=p(X|Y)$。目前常见的模型架构是通过编码器$E_x$和生成器$G_{x \to y}$实现图像的生成：</p>
+
+\[f_{x \to y}(x)= G_{x \to y} (E_x(x))\]
+
+<p>为了训练模型，引入判别器$D_x$区分真实图像和生成图像，以此构造对抗损失。</p>
+
+<p>有一些方法是把编码器和生成器分开构造的，比如<strong>UNIT</strong>系列；而有一些方法是把生成器设计为编码器-解码器结构，比如<strong>CycleGAN</strong>系列。这些模型在训练完成后会丢弃判别器；而本文作者提出将判别器的一部分用作编码器，从而实现更紧凑的网络结构设计。</p>
+
+<p>把判别器$D_x$拆分成编码器$E_x^D$和分类器$C_x^D$，则图像生成过程为：</p>
+
+\[f_{x \to y}(x)= G_{x \to y} (E_x^D(x))\]
+
+<p><img src="https://pic.imgdb.cn/item/63998f25b1fccdcd364ecf5b.jpg" alt="" /></p>
+
+<p><strong>NICE-GAN</strong>的训练流程与<strong>CycleGAN</strong>类似，训练两个生成器，\(G_{X→Y}\)实现从类型$X$转换成类型$Y$，\(G_{Y→X}\)实现从类型$Y$转换成类型$X$。训练两个判别器，\(D_{X}\)判断图像是否属于类型$X$；\(D_{Y}\)判断图像是否属于类型$Y$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63999009b1fccdcd3650c09a.jpg" alt="" /></p>
+
+<p><strong>NICE-GAN</strong>的判别器采用多尺度形式，除了编码器结构外，还应用了多个尺度的分类器做了多层特征的判别。</p>
+
+<p><strong>NICE-GAN</strong>的生成器损失函数包括对抗损失(<strong>LSGAN</strong>)、<strong>L1</strong>循环一致性损失和<strong>L1</strong>重构损失；判别器的损失函数为对抗损失(<strong>LSGAN</strong>)。作者采用了解耦的训练过程，由于编码器是判别器的一部分，因此在训练生成损失时，不更新编码器的参数。</p>
+
+\[\begin{aligned}  \mathop{\min}_{D_X=E_X\circ C_X,D_Y=E_Y\circ C_Y} &amp; \Bbb{E}_{y \text{~} P_{data}(y)}[(D_Y(y)-1)^2] + \Bbb{E}_{x \text{~} P_{data}(x)}[(D_Y(G_{X \to Y}(E_X(x))))^2] \\ &amp;+  \Bbb{E}_{x \text{~} P_{data}(x)}[(D_X(x)-1)^2] + \Bbb{E}_{y \text{~} P_{data}(y)}[(D_X(G_{Y \to X}(E_Y(y))))^2] \\ \mathop{ \min}_{G_{X \to Y},G_{Y \to X}} &amp; \Bbb{E}_{x \text{~} P_{data}(x)}[(D_Y(G_{X \to Y}(E_X(x)))-1)^2]+\Bbb{E}_{y \text{~} P_{data}(y)}[(D_X(G_{Y \to X}(E_Y(y)))-1)^2] \\ &amp;+ \Bbb{E}_{x \text{~} P_{data}(x)}[||G_{Y \to X}(E_Y(G_{X \to Y}(E_X(x))))-x||_1] \\ &amp;+ \Bbb{E}_{y \text{~} P_{data}(y)}[||G_{X \to Y}(E_X(G_{Y \to X}(E_Y(y))))-y||_1] \\ &amp;+ \Bbb{E}_{x \text{~} P_{data}(x)}[||G_{Y \to X}(E_X(x))-x||_1] \\ &amp;+ \Bbb{E}_{y \text{~} P_{data}(y)}[||G_{X \to Y}(E_Y(y))-y||_1] \end{aligned}\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/05/18/gaugan.html" class="read-next-link"></a>
+        <section>
+          <span>Semantic Image Synthesis with Spatially-Adaptive Normalization</span>
+          <p>  通过空间自适应归一化进行语义图像合成.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/639a86b7b1fccdcd36cedb2b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/05/16/Wasserstein.html" class="read-next-link"></a>
+          <section>
+            <span>最优传输(Optimal Transport)问题与Wasserstein距离</span>
+            <p>  Wasserstein Distance.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

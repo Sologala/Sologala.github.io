@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>词嵌入 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="词嵌入">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="词嵌入 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/29/word-embedding.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>词嵌入</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-29"><i class="iconfont icon-date"></i>29 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ea917bbc2a9a83be5f8a32b.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Word Embedding.</p>
+</blockquote>
+
+<p><strong>词嵌入Word Embedding</strong>是一种<strong>unsupervised learning</strong>的方法，让机器阅读大量<strong>文档documents</strong>从而学习到<strong>单词words</strong>的意思。</p>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>背景</li>
+  <li>Count based</li>
+  <li>Perdition based</li>
+</ol>
+
+<h1 id="1-背景">1. 背景</h1>
+<p>在自然语言处理任务中，对于每一个单词（或字符）的表示可以使用<strong>One-hot编码</strong>，即<strong>1-of-N encoding</strong>：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea830c6c2a9a83be513750f.jpg" alt="" /></p>
+
+<p>这种方法每一个单词是独立的，没有考虑到单词之间的相关性。</p>
+
+<p>进一步提出了<strong>word class</strong>，把语义相近的单词分为一类：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea83138c2a9a83be514034e.jpg" alt="" /></p>
+
+<p>此方法对同一类的单词仍然没有很好的区分。为此，提出了<strong>词嵌入Word Embedding</strong>的概念：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea83164c2a9a83be5143a5e.jpg" alt="" /></p>
+
+<p>词嵌入是把单词映射到一个$k$维的向量空间，每一个单词用一个$k$维向量表示。</p>
+
+<h1 id="2-count-based">2. Count based</h1>
+<p><strong>Count based Embedding</strong>是指在一个文档中若两个单词同时出现的频率很高，那么两个单词的向量非常接近。</p>
+
+<p><img src="https://pic.downk.cc/item/5ea838cac2a9a83be51dedc7.jpg" alt="" /></p>
+
+<p><strong>Glove Vector</strong></p>
+<ul>
+  <li>project：<a href="http://nlp.stanford.edu/projects/glove/">glove</a></li>
+</ul>
+
+<h1 id="3-perdition-based">3. Perdition based</h1>
+<p><strong>Perdition based Embedding</strong>是与<strong>downstream</strong>任务一起训练的。</p>
+
+<p>使用一层<strong>共享参数</strong>的神经网络作为词嵌入层，把输入单词仿射变换为词嵌入向量。</p>
+
+<ol>
+  <li><strong>Language Modeling</strong>：词嵌入与语言模型一起训练<img src="https://pic.downk.cc/item/5ea83c7ec2a9a83be522d13c.jpg" alt="" /></li>
+  <li><strong>Continuous bag of word (CBOW) model</strong>：根据上下文预测单词<img src="https://pic.downk.cc/item/5ea83cbcc2a9a83be523234a.jpg" alt="" /></li>
+  <li><strong>Skip-gram</strong>：根据单词预测上下文<img src="https://pic.downk.cc/item/5ea83cd1c2a9a83be5233faf.jpg" alt="" /></li>
+</ol>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/05/01/network-compression.html" class="read-next-link"></a>
+        <section>
+          <span>网络压缩</span>
+          <p>  Network Compression.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/28/explainable-DL.html" class="read-next-link"></a>
+          <section>
+            <span>深度学习的可解释性</span>
+            <p>  Explainable Deep Learning.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

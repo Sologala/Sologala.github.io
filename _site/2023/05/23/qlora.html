@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QLoRA: Efficient Finetuning of Quantized LLMs - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="QLoRA: Efficient Finetuning of Quantized LLMs">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="QLoRA: Efficient Finetuning of Quantized LLMs - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/05/23/qlora.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>QLoRA: Efficient Finetuning of Quantized LLMs</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-05-23"><i class="iconfont icon-date"></i>23 May 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648e96141ddac507cc561090.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>QLoRA：量化大型语言模型的高效微调.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2305.14314">QLoRA: Efficient Finetuning of Quantized LLMs</a></li>
+</ul>
+
+<p>微调大型语言模型 (<strong>LLM</strong>) 是提高其性能以及添加所需或删除不需要的行为的一种非常有效的方法。然而微调非常大的模型非常昂贵；以 <strong>LLaMA 65B</strong> 参数模型为例，常规的 <strong>16 bit</strong>微调需要超过 <strong>780 GB</strong> 的 <strong>GPU</strong> 内存。虽然最近的量化方法可以减少 <strong>LLM</strong> 的内存占用，但此类技术仅适用于推理场景。基于此作者提出了<strong>QLoRA</strong>，并首次证明了可以在不降低任何性能的情况下微调量化为 <strong>4 bit</strong>的模型。</p>
+
+<p><strong>QLoRA</strong>使用一种新颖的高精度技术将预训练模型量化为 <strong>4 bit</strong>，然后添加一小组可学习的低秩适配器权重，这些权重通过量化权重的反向传播梯度进行微调。<strong>QLORA</strong> 有一种低精度存储数据类型（<strong>4 bit</strong>），还有一种计算数据类型（<strong>BFloat16</strong>）。实际上无论何时使用 <strong>QLoRA</strong> 权重张量，都会将张量反量化为 <strong>BFloat16</strong>，然后执行 <strong>16</strong> 位矩阵乘法。</p>
+
+<p><strong>QLoRA</strong>提出了两种技术实现高保真 <strong>4 bit</strong>微调——<strong>4 bit NormalFloat(NF4)</strong> 量化和双量化。此外，还引入了分页优化器，以防止梯度检查点期间的内存峰值，从而导致内存不足的错误，这些错误在过去使得大型模型难以在单台机器上进行微调。具体说明如下：</p>
+<ul>
+  <li><strong>4bit NormalFloat（NF4）</strong>：对于正态分布权重而言，一种信息理论上最优的新数据类型，该数据类型对正态分布数据产生比 <strong>4 bit</strong>整数和 <strong>4bit</strong> 浮点数更好的实证结果。</li>
+  <li>双量化（<strong>Double Quantization</strong>）：对第一次量化后的那些常量再进行一次量化，减少存储空间。</li>
+  <li>分页优化器：使用<strong>NVIDIA</strong>统一内存特性，该特性可以在<strong>GPU</strong>偶尔<strong>OOM</strong>的情况下，进行<strong>CPU</strong>和<strong>GPU</strong>之间自动分页到分页的传输，以实现无错误的 <strong>GPU</strong> 处理。该功能的工作方式类似于 <strong>CPU</strong> 内存和磁盘之间的常规内存分页。使用此功能为优化器状态（<strong>Optimizer</strong>）分配分页内存，然后在 <strong>GPU</strong> 内存不足时将其自动卸载到 <strong>CPU</strong> 内存，并在优化器更新步骤需要时将其加载回 <strong>GPU</strong> 内存。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/648e97f41ddac507cc58b740.jpg" alt="" /></p>
+
+<p>实验证明，无论是使用<strong>16bit</strong>、<strong>8bit</strong>还是<strong>4bit</strong>的适配器方法，都能够复制<strong>16bit</strong>全参数微调的基准性能。这说明，尽管量化过程中会存在性能损失，但通过适配器微调，完全可以恢复这些性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e98821ddac507cc5970fc.jpg" alt="" /></p>
+
+<p>实验还比较了不同的<strong>4bit</strong>数据类型对效果（<strong>zero-shot</strong>均值）的影响，其中，<strong>NFloat</strong> 显著优于<strong>Float</strong>，而<strong>NFloat + DQ</strong>略微优于<strong>NFloat</strong>；虽然<strong>DQ</strong>对精度提升不大，但是对于内存控制效果更好。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e99201ddac507cc5a4c70.jpg" alt="" /></p>
+
+<p>除此之外，论文中还对不同大小模型、不同数据类型、在 <strong>MMLU</strong>数据集上的微调效果进行了对比。使用<strong>QLoRA（NFloat4 + DQ）</strong>可以和<strong>Lora(BFloat16)</strong>持平，同时使用<strong>QLORA（ FP4）</strong>的模型效果落后于前两者一个百分点。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e99661ddac507cc5aa003.jpg" alt="" /></p>
+
+<p>作者在实验中也发现了一些有趣的点，比如：指令调优虽然效果比较好，但只适用于指令相关的任务，在聊天机器人上效果并不佳，而聊天机器人更适合用<strong>Open Assistant</strong>数据集去进行微调。通过指令类数据集的调优更像是提升大模型的推理能力，并不是为聊天而生的。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/05/24/dsaac.html" class="read-next-link"></a>
+        <section>
+          <span>Dilated-Scale-Aware Attention ConvNet For Multi-Class Object Counting</span>
+          <p>  多类别目标计数的扩张尺度感知注意力卷积网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6684b0bbd9c307b7e94ea30b.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/05/22/clipcounting.html" class="read-next-link"></a>
+          <section>
+            <span>Zero-shot Improvement of Object Counting with CLIP</span>
+            <p>  CLIP模型目标计数的零样本改进.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6683b1d9d9c307b7e99c9368.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

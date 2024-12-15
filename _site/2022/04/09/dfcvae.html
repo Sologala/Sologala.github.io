@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Feature Consistent Variational Autoencoder - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Deep Feature Consistent Variational Autoencoder">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Deep Feature Consistent Variational Autoencoder - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/09/dfcvae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Deep Feature Consistent Variational Autoencoder</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-09"><i class="iconfont icon-date"></i>09 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6285f9590947543129794614.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DFCVAE：使用特征感知损失约束深度特征一致性.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1610.00291">Deep Feature Consistent Variational Autoencoder</a></li>
+</ul>
+
+<p>作者将<strong>VAE</strong>中逐像素的重构损失替换为深度特征的一致性损失，从而使得重构图像具有更自然的视觉外观和更高的感知质量。特征感知损失是通过预训练的深度卷积神经网络的隐藏层特征构造的。</p>
+
+<h1 id="1-特征感知损失-feature-perceptual-loss">1. 特征感知损失 Feature Perceptual Loss</h1>
+
+<p>逐像素的重构损失（如<strong>L2</strong>损失）用于测量重建图像和原始图像之间的差异。然而生成的图像往往非常模糊，这是因为逐像素损失无法捕获两幅图像之间的感知差异和空间相关性。比如两幅图像只有几个像素的不同，对人类的视觉感知差异很小，但可能具有非常高的逐像素损失。</p>
+
+<p><strong>特征感知</strong>损失是指从预训练的深层卷积神经网络中提取的两幅图像的隐藏层特征表示之间的差异，能够通过确保输入和输出图像的隐藏层特征的一致性来提高<strong>VAE</strong>生成图像的质量。</p>
+
+<p>特征感知损失并不是直接在像素空间中比较输入图像和生成图像，而是将它们分别送入到预训练的深度卷积网络，然后测量隐藏层特征表示之间的差异：</p>
+
+<p><img src="https://pic.imgdb.cn/item/62861fc709475431299dce66.jpg" alt="" /></p>
+
+<p>实验使用<strong>VGGNet</strong>作为预训练模型，第$l$层的特征感知损失定义为输入图像与重构图像在第$l$层隐藏层特征的均方误差：</p>
+
+\[\mathcal{L}_{rec}^{l} = \frac{1}{2C^lH^lW^l}\sum_{c=1}^{C^l}\sum_{h=1}^{H^l}\sum_{w=1}^{W^l}(\Phi(x)_{c,h,w}^l-\Phi(\hat{x})_{c,h,w}^l)^2\]
+
+<p>则网络总损失为特征感知损失与<strong>KL</strong>散度之和：</p>
+
+\[\mathcal{L}_{total} = \alpha \mathcal{L}_{KL} + \beta \sum_{l=1}^{L} \mathcal{L}_{rec}^{l}\]
+
+<h1 id="2-dfcvae的pytorch实现">2. DFCVAE的pytorch实现</h1>
+
+<p>所提<strong>DFCVAE</strong>的网络结构如图所示：</p>
+
+<p><img src="https://pic.imgdb.cn/item/6286219d09475431299f62d3.jpg" alt="" /></p>
+
+<p><strong>DFCVAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/dfcvae.py">PyTorch-VAE</a>，下面进行分析。</p>
+
+<p>预训练网络设置为<strong>VGGNet</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">torchvision.models</span> <span class="kn">import</span> <span class="n">vgg19_bn</span>
+<span class="bp">self</span><span class="p">.</span><span class="n">feature_network</span> <span class="o">=</span> <span class="n">vgg19_bn</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c1"># Freeze the pretrained feature network
+</span><span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">feature_network</span><span class="p">.</span><span class="n">parameters</span><span class="p">():</span>
+    <span class="n">param</span><span class="p">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="bp">self</span><span class="p">.</span><span class="n">feature_network</span><span class="p">.</span><span class="nb">eval</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>分别提取输入图像和重构图像的预训练网络隐藏层特征：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">extract_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+                     <span class="n">feature_layers</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+    <span class="s">"""
+    Extracts the features from the pretrained model
+    at the layers indicated by feature_layers.
+    :param input: (Tensor) [B x C x H x W]
+    :param feature_layers: List of string of IDs
+    :return: List of the extracted features
+    """</span>
+    <span class="k">if</span> <span class="n">feature_layers</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">feature_layers</span> <span class="o">=</span> <span class="p">[</span><span class="s">'14'</span><span class="p">,</span> <span class="s">'24'</span><span class="p">,</span> <span class="s">'34'</span><span class="p">,</span> <span class="s">'43'</span><span class="p">]</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="nb">input</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">feature_network</span><span class="p">.</span><span class="n">features</span><span class="p">.</span><span class="n">_modules</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">module</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">feature_layers</span><span class="p">):</span>
+            <span class="n">features</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> 
+
+<span class="n">recons_features</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">extract_features</span><span class="p">(</span><span class="n">recons</span><span class="p">)</span>
+<span class="n">input_features</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">extract_features</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>构造损失函数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span><span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+<span class="n">feature_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">recons_features</span><span class="p">,</span> <span class="n">input_features</span><span class="p">):</span>
+    <span class="n">feature_loss</span> <span class="o">+=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+<span class="n">kld_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="n">exp</span><span class="p">(),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">beta</span> <span class="o">*</span> <span class="p">(</span><span class="n">recons_loss</span> <span class="o">+</span> <span class="n">feature_loss</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">kld_loss</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/10/catevae.html" class="read-next-link"></a>
+        <section>
+          <span>Categorical Reparameterization with Gumbel-Softmax</span>
+          <p>  使用Gumble-Softmax实现离散类别隐变量的重参数化.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62874a8a0947543129406841.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/08/miwae.html" class="read-next-link"></a>
+          <section>
+            <span>Tighter Variational Bounds are Not Necessarily Better</span>
+            <p>  MIWAE：紧凑的变分下界阻碍推理网络训练.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6285d75709475431296381b6.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

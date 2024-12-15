@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adam: A Method for Stochastic Optimization - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Adam: A Method for Stochastic Optimization">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Adam: A Method for Stochastic Optimization - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/09/adam.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Adam: A Method for Stochastic Optimization</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-09"><i class="iconfont icon-date"></i>09 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/620089762ab3f51d917ee290.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Adam：自适应矩估计.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1412.6980">Adam: A Method for Stochastic Optimization</a></li>
+</ul>
+
+<p>本文提出了<strong>Adam</strong>，即<strong>自适应矩估计(adaptive moment estimation)</strong>，是一种基于低阶矩估计的一阶随机优化方法。</p>
+
+<h2 id="1-adam的算法流程">1. Adam的算法流程</h2>
+
+<p><strong>Adam</strong>是<strong>momentum</strong>和<strong>RMSProp</strong>这两种优化算法的结合。<strong>momentum</strong>使用了梯度的一阶矩估计，适用于在线学习和非平稳环境；<strong>RMSProp</strong>使用了梯度的二阶矩估计，适用于稀疏梯度的情况。</p>
+
+<p>记更新参数为$\theta$，目标函数为$f(\theta)$，在第$t$轮更新中计算梯度值$g_t = \nabla_{\theta}f_t(\theta)$。
+<strong>Adam</strong>在更新过程中计算梯度和平方梯度的指数滑动平均值：</p>
+
+\[m_t = \beta_1 \cdot m_{t-1} + (1-\beta_1) \cdot g_t\]
+
+\[v_t = \beta_2 \cdot v_{t-1} + (1-\beta_2) \cdot g_t^2\]
+
+<p>其中$m_t$是一阶矩(均值)的估计，$v_t$是二阶矩(未中心化的方差)的估计。由于这些滑动平均值初始化为$0$，因此矩估计是有偏的，在训练的初始阶段尤其是衰减率$\beta_1,\beta_2$接近$1$时矩估计接近$0$，会使更新步长很小。因此进行偏差修正：</p>
+
+\[\hat{m}_t = \frac{m_t}{1-\beta_1^t}\]
+
+\[\hat{v}_t = \frac{v_t}{1-\beta_2^t}\]
+
+<p>参数的更新步骤为：</p>
+
+\[\theta_t = \theta_{t-1} - \alpha \cdot \frac{\hat{m}_t}{\sqrt{\hat{v}_t}+\epsilon}\]
+
+<p>该算法的计算效率可以通过改变计算顺序来提高：</p>
+
+\[\alpha_t = \alpha \cdot \frac{\sqrt{1-\beta_2^t}}{1-\beta_1^t}\]
+
+\[\theta_t = \theta_{t-1} - \alpha_t \cdot \frac{m_t}{\sqrt{v_t}+\hat{\epsilon}}\]
+
+<p><strong>Adam</strong>的算法流程如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/6200911a2ab3f51d9185e997.jpg" alt="" /></p>
+
+<h2 id="2-adam的性质">2. Adam的性质</h2>
+
+<h3 id="--初始化偏差修正--initialization-bias-correction">①  初始化偏差修正  Initialization Bias Correction</h3>
+
+<p><strong>Adam</strong>对梯度和平方梯度的指数滑动平均值$m_t$和$v_t$进行了偏差修正。下面以二阶矩估计$v_t$的修正为例。</p>
+
+<p>假设训练过程中的梯度序列为$g_1,…,g_T$，对平方梯度的指数滑动平均值初始化为$v_0=0$，根据$v_t$的更新规则：</p>
+
+\[v_t = \beta_2 \cdot v_{t-1} + (1-\beta_2) \cdot g_t^2 \\ = \beta_2 \cdot (\beta_2 \cdot v_{t-2} + (1-\beta_2) \cdot g_{t-1}^2) + (1-\beta_2) \cdot g_t^2 \\ = \beta_2^tv_0 + \beta_2^{t-1} (1-\beta_2)  g_{1}^2 + ... + \beta_2 (1-\beta_2)  g_{t-1}^2 +  (1-\beta_2)  g_t^2 \\ = (1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}g_{i}^2\]
+
+<p>我们用指数滑动平均的期望值$\Bbb{E}[v_t]$估计真实的二阶矩$\Bbb{E}[g_t^2]$，两者的差异如下：</p>
+
+\[\Bbb{E}[v_t] = \Bbb{E}[(1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}g_{i}^2] \\ =\Bbb{E}[g_{t}^2] \cdot (1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}+\zeta \\ = \Bbb{E}[g_{t}^2] \cdot (1-\beta_2^t)+\zeta\]
+
+<p>当真实的二阶矩$\Bbb{E}[g_t^2]$是固定值时$\zeta=0$，否则可以通过选择合适的$\beta_1$使其保持较小的值。因此$\Bbb{E}[v_t]$和$\Bbb{E}[g_t^2]$之间存在$(1-\beta_2^t)$倍数的差异，进行修正：</p>
+
+\[\hat{v}_t = \frac{v_t}{1-\beta_2^t}\]
+
+<h3 id="-收敛性分析--convergence-analysis">② 收敛性分析  Convergence Analysis</h3>
+
+<p>给定一个未知的凸代价函数序列$f_1(\theta),f_2(\theta),…,f_T(\theta)$，在$t$时刻的目标是预测参数$\theta_t$，并在代价函数$f_t$上评估。由于代价函数序列是未知的，因此使用<strong>regret</strong>进行评估，即每一轮的在线预测结果$f_t(\theta_t)$与理论最佳参数结果$f_t(\theta^*)$的差值之和：</p>
+
+\[R(T) = \sum_{t=1}^{T} [f_t(\theta_t)-f_t(\theta^*)]\]
+
+<p>对于<strong>Adam</strong>算法，有如下结论：</p>
+
+\[\frac{R(T)}{T} = O(\frac{1}{\sqrt{T}})\]
+
+<p>因此<strong>Adam</strong>算法具有遗憾上界$O(\sqrt{T})$。当$T \to ∞$时，$R(T) \to 0$。</p>
+
+<h2 id="3-实验结果">3. 实验结果</h2>
+
+<p>作者展示了在逻辑回归模型、多层感知机和卷积神经网络这三个模型上使用不同优化器的损失曲线。实验证明<strong>Adam</strong>具有和带动量的<strong>SGD</strong>相似的收敛速度，能实现更高的精度。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6200cee92ab3f51d91c7920b.jpg" alt="" /></p>
+
+<p>作者比较了不进行偏差修正(绿色曲线)和进行偏差修正(红色曲线)后损失函数的变化情况。实验证明使用偏差修正能够使训练更稳定。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6200ce0c2ab3f51d91c69277.jpg" alt="" /></p>
+
+<h2 id="4-扩展adamax">4. 扩展：Adamax</h2>
+
+<p><strong>Adam</strong>算法使用梯度的<strong>L2</strong>范数缩放梯度。作者将其推广到<strong>Lp</strong>范数，特别地，当$p \to ∞$时得到一个简单而稳定的算法，称之为<strong>Adamax</strong>。</p>
+
+<p><strong>Lp</strong>范数梯度的指数滑动平均值计算为：</p>
+
+\[v_t = \beta_2^p \cdot v_{t-1} + (1-\beta_2^p) \cdot |g_t|^p \\ = (1-\beta_2^p)\sum_{i=1}^{t}\beta_2^{p(t-i)}|g_i|^p\]
+
+<p>注意衰减率使用的是$\beta_2^p$。当$p \to ∞$时：</p>
+
+\[u_t = \mathop{\lim}_{p \to ∞} (v_t)^{1/p} = \mathop{\lim}_{p \to ∞} ((1-\beta_2^p)\sum_{i=1}^{t}\beta_2^{p(t-i)}|g_i|^p)^{1/p} \\ = \mathop{\lim}_{p \to ∞} (1-\beta_2^p)^{1/p}(\sum_{i=1}^{t}\beta_2^{p(t-i)}|g_i|^p)^{1/p} \\ = \mathop{\lim}_{p \to ∞} (\sum_{i=1}^{t}(\beta_2^{(t-i)}|g_i|)^p)^{1/p} \\= \max(\beta_2^{(t-1)}|g_1|,\beta_2^{(t-2)}|g_2|,...,\beta_2 |g_{t-1}|,|g_t|)\]
+
+<p>上式也可以写成递归的形式：</p>
+
+\[u_t = \max(\beta_2 \cdot u_{t-1},|g_t|)\]
+
+<p><img src="https://pic.imgdb.cn/item/6200d9252ab3f51d91d2b5f3.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/10/amsgrad.html" class="read-next-link"></a>
+        <section>
+          <span>On the Convergence of Adam and Beyond</span>
+          <p>  AMSGrad：改进Adam算法的收敛性.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/620089762ab3f51d917ee290.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/08/nesterov.html" class="read-next-link"></a>
+          <section>
+            <span>On the importance of initialization and momentum in deep learning</span>
+            <p>  Nesterov Momentum：一种动量梯度更新方法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/61f50c0e2ab3f51d913fcb3b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linformer: Self-Attention with Linear Complexity - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Linformer: Self-Attention with Linear Complexity">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Linformer: Self-Attention with Linear Complexity - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/08/13/linformer.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Linformer: Self-Attention with Linear Complexity</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-08-13"><i class="iconfont icon-date"></i>13 Aug 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6114c5e15132923bf88f2f23.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Linformer: 线性复杂度的自注意力机制.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Linformer: Self-Attention with Linear Complexity</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2006.04768">link</a></li>
+</ul>
+
+<p>作者通过实验发现<strong>Transformer</strong>中的自注意力矩阵大多是低秩的。实验对<strong>RoBERTa</strong>预训练模型不同层的自注意力矩阵进行奇异值分解，并绘制奇异值的累积分布曲线，如下图所示。</p>
+<ul>
+  <li>图中奇异值分布呈长尾分布，即只有一小部分奇异值具有较大的值，大部分奇异值具有较小的数值；这表明自注意力矩阵的大部分信息都可以通过少量奇异值进行恢复。</li>
+  <li>下图中的奇异值热图显示了不同层的最大相对奇异值分布。图中表示更高的层中会有更多信息集中在少量最大的奇异值中，即自注意力矩阵的秩是更低的。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6114c60c5132923bf88f8303.jpg" alt="" /></p>
+
+<p>本文中作者提出了<strong>Linformer</strong>，在自注意力的计算过程中引入低秩分解，从而实现近似线性的计算复杂度。</p>
+
+<p>若记$Q,K,V \in \Bbb{R}^{n \times d}$，则标准的<strong>Attention</strong>计算为:</p>
+
+\[\text{Attention}(Q,K,V)=\text{softmax}(\frac{QK^T}{\sqrt{d}})V\]
+
+<p>其中矩阵乘法$QK^T$的计算复杂度为$O(n^2d)=O(n^2)$。作者为$K$和$V$引入了低秩映射$E,F \in \Bbb{R}^{k \times n}$，使得注意力计算变为：</p>
+
+\[\text{Attention}(Q,K,V)=\text{softmax}(\frac{Q(EK)^T}{\sqrt{d}})(FV)\]
+
+<p>从而使得矩阵乘法的计算复杂度降低为$O(kn)$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6114c6365132923bf88fcfc9.jpg" alt="" /></p>
+
+<p>作者还为<strong>Linformer</strong>设计了一些参数共享方法以提升模型的效率和表现。实验设置了三种层级的参数共享：</p>
+<ol>
+  <li><strong>Headwise</strong>：多头自注意力中每一层的所有自注意力头分别共享$E$和$F$的参数。</li>
+  <li><strong>Key-Value</strong>：每一层的所有自注意力头的$E$和$F$共享同一参数$E=F$。</li>
+  <li><strong>Layerwise</strong>：所有层共享投影矩阵$E$。</li>
+</ol>
+
+<p>模型使用<strong>RoBERTa</strong>结构，训练使用<strong>BookCorpus</strong>和英文维基百科(共约$3300$M单词)作为预训练语料库，采用<strong>mask</strong>语言模型作为预训练任务。实验结果如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/6114c6b65132923bf890be77.jpg" alt="" /></p>
+
+<p>实验使用<strong>困惑度</strong>作为模型评估指标。困惑度越低，则模型表现越好。实验分析如下：</p>
+<ul>
+  <li>图(a)和(b)显示，随着投影维度$d$增加，模型的困惑度越低，模型表现越好。</li>
+  <li>图(c)显示，不同的参数共享结果接近，因此可以使用<strong>Layerwise</strong>的共享参数设置降低参数量。</li>
+  <li>图(d)显示，随着输入序列长度增大，训练前期困惑度较大，但收敛后不同序列长度的困惑度接近，说明模型对于输入序列长度近似线性复杂度。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6114cecf5132923bf8a139ca.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/08/14/longformer.html" class="read-next-link"></a>
+        <section>
+          <span>Longformer: The Long-Document Transformer</span>
+          <p>  Longformer: 适用于长文本的Transformer.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/61179b1b5132923bf808f170.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/08/12/performer.html" class="read-next-link"></a>
+          <section>
+            <span>Rethinking Attention with Performers</span>
+            <p>  Performer: 通过随机投影将Attention的复杂度线性化.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/61136ff95132923bf8281465.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

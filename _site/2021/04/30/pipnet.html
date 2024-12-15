@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel-in-Pixel Net: Towards Efficient Facial Landmark Detection in the Wild - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Pixel-in-Pixel Net: Towards Efficient Facial Landmark Detection in the Wild">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Pixel-in-Pixel Net: Towards Efficient Facial Landmark Detection in the Wild - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/04/30/pipnet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Pixel-in-Pixel Net: Towards Efficient Facial Landmark Detection in the Wild</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-04-30"><i class="iconfont icon-date"></i>30 Apr 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/64d078471ddac507cc7c8cc9.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>PIP-Net：面向高效人脸关键点检测.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2003.03771">Pixel-in-Pixel Net: Towards Efficient Facial Landmark Detection in the Wild</a></li>
+</ul>
+
+<p>人体姿态估计、手部姿态估计和人脸关键点检测，都可以看成是一种关键点定位任务。对于这一类任务，目前主流做法大致上可分为<strong>Heapmap-based</strong>和<strong>Regression-Based</strong>两派。</p>
+
+<p>本文立足于人脸关键点检测任务，由于人脸近似于刚体这样的性质，要求网络保证所有关键点的排布尽量连续，全局形状尽量稳定，不要有太大的变形。作者在<strong>Heatmap</strong>和<strong>Regression</strong>在全局形状保持能力上进行了实验，分析了两种方法优劣产生的原因。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d0792c1ddac507cc7e9178.jpg" alt="" /></p>
+
+<p>通过对比可以发现，<strong>Regression</strong>方法存在着大量点位不够贴合，对于眨眼、咧嘴等细微动作反馈不到位的问题。尽管在平均误差指标上，<strong>Heatmap</strong>方法比起<strong>Regression</strong>方法有优势，但对于关键点的连续性、相对位置的稳定性，表现却是不如<strong>Regression</strong>方法的，尤其是在一些比较极端的视角或遮挡下，关键点之间出现了明显的不连续；而<strong>Regression</strong>依然能保持一个较好的整体形状，具有更好的鲁棒性。</p>
+
+<p><strong>Heatmap</strong>方法实际上是在空间维度上做特征匹配，是卷积核在特征图平面上“滑动”，更多地关注和利用的是局部信息，每一个关键点的计算是独立的。而<strong>Regression</strong>方法则不同，所有的关键点计算是同时完成的，共享了同一份特征信息。本文作者认为，这是影响定位点鲁棒性的关键。</p>
+
+<p>作者在纯黑图片与非人脸图片上进行实验。<strong>Heatmap</strong>方法在纯黑图片上同样能输出具有正常轮廓的人脸形状，这说明模型确实记住了关键点之间的位置关系；但在非人脸图像上，<strong>Heatmap</strong>方法预测的关键点形状明显崩坏了不少，这表明特征匹配的特性会破坏形状的连续。<strong>Regression</strong>方法的结果在非人脸图像上依然能保持较好的人脸形状，这说明<strong>Regression</strong>具有更好的鲁棒性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d07ade1ddac507cc8283bf.jpg" alt="" /></p>
+
+<p>作者希望能同时从<strong>Heatmap</strong>和<strong>Regression</strong>方法中获益，提出<strong>Pixel-in-Pixel (PIP)</strong>模块，特征图上的每一格都同时预测关键点的存在性得分和关键点相对于本格左上角的偏移。模型相当于同时在做<strong>Heatmap</strong>和<strong>Regression</strong>，靠<strong>Heatmap</strong>特征匹配来确定关键点的粗略位置，再在小范围内依靠<strong>Regression</strong>补充出精确位置。</p>
+
+<p>由于下采样得到的特征图分辨率是小于输入图片的，因此不可避免地会有一些关键点落在<strong>Heatmap</strong>的同一格里，这使得这些点在<strong>Regression</strong>时依赖了同一块区域特征，从而获得了形状的鲁棒。<strong>Heatmap</strong>在做特征匹配时有可能相邻的点匹配到了相隔较远的地方，于是作者又提出<strong>Neighbor Regression Module (NRM)</strong>模块，让原本每一格除了预测一个关键点，还要预测周围最近的关键点。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d07c601ddac507cc86380f.jpg" alt="" /></p>
+
+<p><strong>PIP+NRM</strong>实际上是对<strong>Heatmap</strong>和<strong>Regression</strong>两种形式的统一。随着下采样率的提升，分辨率会越来越小，分类任务的难度会降低，回归任务的难度在提升。在极端情况下，输入图片可以被下采样成一个像素，在这个情况下，分类任务退化成了一个<strong>0-1</strong>分类问题，彻底丧失了空间信息；回归头变成了标准<strong>Regression</strong>方法的形式，在整张图片尺度上预测关键点坐标。在另一种极端情况下，输入图片不进行任何下采样，此时分类头退化成标准<strong>Heatmap</strong>方法的形式，而回归头失去了意义。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d07d3d1ddac507cc88e369.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/05/01/litepose.html" class="read-next-link"></a>
+        <section>
+          <span>Lite Pose: Efficient Architecture Design for 2D Human Pose Estimation</span>
+          <p>  Lite Pose：2D人体姿态估计中的高效结构设计.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64d0a07c1ddac507cce10d30.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/04/29/nystromformer.html" class="read-next-link"></a>
+          <section>
+            <span>Nyströmformer: A Nyström-Based Algorithm for Approximating Self-Attention</span>
+            <p>  Nyströmformer：使用Nyström方法近似自注意力运算.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://img.imgdb.cn/item/608a52c6d1a9ae528f8e6415.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

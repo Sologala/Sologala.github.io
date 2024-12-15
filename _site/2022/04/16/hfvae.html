@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structured Disentangled Representations - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Structured Disentangled Representations">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Structured Disentangled Representations - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/16/hfvae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Structured Disentangled Representations</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-16"><i class="iconfont icon-date"></i>16 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/628de7850947543129610380.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>HFVAE：通过层级分解VAE实现结构化解耦表示.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1804.02086">Structured Disentangled Representations</a></li>
+</ul>
+
+<h1 id="1-分解vae的目标函数">1. 分解VAE的目标函数</h1>
+
+<p><strong>VAE</strong>优化<strong>对数似然的变分下界ELBO</strong>:</p>
+
+\[\log p(x)  = \log \Bbb{E}_{q(z|x)}[\frac{p(x,z)}{q(z|x)}] \geq \Bbb{E}_{q(z|x)}[\log \frac{p(x,z)}{q(z|x)}]\]
+
+<p><strong>ELBO</strong>又可以写作：</p>
+
+\[\Bbb{E}_{q(z|x)}[\log \frac{p(x,z)}{q(z|x)}] = \Bbb{E}_{q(z|x)}[\log \frac{p(x,z)}{q(x,z)}+\log q(x)]\]
+
+<p>在实际中，<strong>VAE</strong>的目标定义为在有限数据点集的经验分布$q(x)$上每个数据点<strong>ELBO</strong>的期望：</p>
+
+\[\Bbb{E}_{q(x)} [\Bbb{E}_{q(z|x)}[\log \frac{p(x,z)}{q(x,z)}+\log q(x)]] = \Bbb{E}_{q(x,z)}[\log \frac{p(x,z)}{q(x,z)}]+\Bbb{E}_{q(x)}[\log q(x)]\]
+
+<p>其中$\Bbb{E}_{q(x)}[\log q(x)]$不包含可优化参数，则<strong>VAE</strong>的主要优化目标实际上为联合分布$q(x,z)$和$p(x,z)$的<strong>KL</strong>散度。作者对其进行进一步分解：</p>
+
+\[\begin{aligned} \Bbb{E}_{q(x,z)}[\log \frac{p(x,z)}{q(x,z)}] &amp;= \Bbb{E}_{q(x,z)}[\log \frac{p(x,z)}{q(x,z)} \frac{p(x)}{p(x)} \frac{p(z)}{p(z)} \frac{q(x)}{q(x)} \frac{q(z)}{q(z)}] \\ &amp;= \Bbb{E}_{q(x,z)}[\log \frac{p(x,z)}{p(x)p(z)}+\log \frac{q(z)q(x)}{q(x,z)} + \log \frac{p(x)}{q(x)}+\log \frac{p(z)}{q(z)}] \\ &amp;=  \Bbb{E}_{q(x,z)}[\log \frac{p(x,z)}{p(x)p(z)}] +  \Bbb{E}_{q(x,z)}[\log \frac{q(z)q(x)}{q(x,z)}]+  \Bbb{E}_{q(x,z)}[\log \frac{p(x)}{q(x)}]+  \Bbb{E}_{q(x,z)}[\log \frac{p(z)}{q(z)}] \\ &amp;= \Bbb{E}_{q(x,z)}[\log \frac{p(x|z)}{p(x)}] +  \Bbb{E}_{q(x,z)}[\log \frac{q(z)}{q(z|x)}]+  \Bbb{E}_{q(x)}[\log \frac{p(x)}{q(x)}]+  \Bbb{E}_{q(z)}[\log \frac{p(z)}{q(z)}] \\ &amp;= \Bbb{E}_{q(x,z)}[\log \frac{p(x|z)}{p(x)}] -  \Bbb{E}_{q(x,z)}[\log \frac{q(z|x)}{q(z)}]-  \Bbb{E}_{q(x)}[\log \frac{q(x)}{p(x)}]-  \Bbb{E}_{q(z)}[\log \frac{q(z)}{p(z)}] \end{aligned}\]
+
+<p><strong>VAE</strong>的<strong>ELBO</strong>最终可以分解为以下四项：</p>
+
+<p><img src="https://pic.imgdb.cn/item/628df15309475431296eff33.jpg" alt="" /></p>
+
+<p>第①项和第②项增强条件分布之间的一致性。第①项\(\Bbb{E}_{q(x,z)}\) $[\log p(x|z)/p(x)]$衡量重构结果的唯一性，最大化生成每个样本$x$的隐变量$z$的可识别性；第②项\(\Bbb{E}_{q(x,z)}\) $[\log q(z|x)/q(z)]$衡量编码的唯一性，通过最小化互信息$I(z,x)$进行正则化，削弱隐变量$z$的可识别性。</p>
+
+<p>第③项和第④项增强边际分布之间的一致性。第③项$KL[q(x)||p(x)]$匹配样本分布，等价于最大化对数似然$\Bbb{E}_{q(x)}[\log p(x)]$；第④项$KL[q(z)||p(z)]$匹配先验分布。</p>
+
+<p>第①项在实践中很难处理，因为$p(x)$无法直接获取。通过结合第①项和第③项能够避免这种困难：</p>
+
+\[\Bbb{E}_{q(x,z)}[\log \frac{p(x|z)}{p(x)}] + \Bbb{E}_{q(x,z)}[\log \frac{p(x)}{q(x)}] = \Bbb{E}_{q(x,z)}[\log \frac{p(x|z)}{q(x)}]\]
+
+<p>为了研究每一项的影响，下图展示了从目标函数中去除每一项得到的结果。当去掉第③项或第④项时，可能会学习到$p(x)$偏离$q(x)$或$q(z)$偏离$p(z)$的模型。去掉第①项意味着不需要每个样本$x$对应唯一的隐变量$z$。去掉第②项意味着不限制互信息$I(z,x)$，将每个样本$x$映射到隐空间中的唯一区域。</p>
+
+<p><img src="https://pic.imgdb.cn/item/628e018209475431298513e2.jpg" alt="" /></p>
+
+<h1 id="2-hierarchically-factorized-vae">2. Hierarchically Factorized VAE</h1>
+<p>作者旨在增强<strong>VAE</strong>学习特征之间的统计独立性，目标函数中的第④项$KL[q(z)||p(z)]$是实现特征解耦的关键，若预先指定先验分布$p(z)$的各维度之间是独立的，则学习到的隐变量特征分布$q(z)$也会倾向于特征独立。对第④项进行进一步分解：</p>
+
+\[\begin{aligned} -  \Bbb{E}_{q(z)}[\log \frac{q(z)}{p(z)}] &amp;= -  \Bbb{E}_{q(z)}[\log \frac{q(z)}{p(z)} \frac{\prod_{d}p(z_d)}{\prod_{d}p(z_d)}\frac{\prod_{d}q(z_d)}{\prod_{d}q(z_d)}] \\ &amp;= -  \Bbb{E}_{q(z)}[\log \frac{q(z)}{\prod_{d}q(z_d)} + \log \frac{\prod_{d}q(z_d)}{\prod_{d}p(z_d)}  + \log \frac{\prod_{d}p(z_d)}{p(z)}]\\ &amp;=  \Bbb{E}_{q(z)}[\log \frac{p(z)}{\prod_{d}p(z_d)}]-  \Bbb{E}_{q(z)}[\log \frac{q(z)}{\prod_{d}q(z_d)}]-  \Bbb{E}_{q(z)}[\log \frac{\prod_{d}q(z_d)}{\prod_{d}p(z_d)}] \end{aligned}\]
+
+<p>其中前两项为<strong>全相关(Total Correlation)</strong>项，合计为第A项；第三项衡量隐变量的每一个边际分布。如果$z_d$本身代表一组变量，可以继续将其分解为全相关项i和边际分布项ii，从而提供了归纳分离特征层次的机会。</p>
+
+<p><img src="https://pic.imgdb.cn/item/628e081e09475431298e2c51.jpg" alt="" /></p>
+
+<p>原则上，可以在任何级别上继续此分解，从而构造<strong>HFVAE</strong>的目标函数$①+③+ii+\alpha ②+\beta A+\gamma i$。</p>
+
+\[\begin{aligned} &amp; \Bbb{E}_{q(x,z)}[\log \frac{p(x|z)}{p(x)}] -KL[q(x)||p(x)]  - \sum_{d,e}KL[q(z_{d,e})||p(z_{d,e})] \\ &amp;- \alpha \Bbb{E}_{q(x,z)}[\log \frac{q(z|x)}{q(z)}] +\beta \Bbb{E}_{q(z)}[\log \frac{p(z)}{\prod_{d}p(z_d)}-\log \frac{q(z)}{\prod_{d}q(z_d)}] \\&amp; + \gamma \sum_{d} \Bbb{E}_{q(z_d)}[\log \frac{p(z_d)}{\prod_{e}p(z_{d,e})}-\log \frac{q(z_d)}{\prod_{e}q(z_{d,e})}] \end{aligned}\]
+
+<p>对于该目标，前两项等价于重构损失，第三项衡量隐变量每个元素的<strong>KL</strong>散度，第四项通过$\alpha$控制互信息$I(z,x)$，第五项通过$\beta$控制变量组之间的全相关正则化，第六项通过$\gamma$控制组内的全相关正则化。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/17/dipvae.html" class="read-next-link"></a>
+        <section>
+          <span>Variational Inference of Disentangled Latent Concepts from Unlabeled Observations</span>
+          <p>  DIP-VAE: 分离推断先验VAE.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/628ee54909475431298ce103.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/15/factorvae.html" class="read-next-link"></a>
+          <section>
+            <span>Disentangling by Factorising</span>
+            <p>  FactorVAE：通过分解特征表示的分布进行解耦.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/628dc6be09475431292effbe.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

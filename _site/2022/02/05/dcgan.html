@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/02/05/dcgan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-02-05"><i class="iconfont icon-date"></i>05 Feb 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic1.imgdb.cn/item/634272f816f2c2beb164f55f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DCGAN：使用深度卷积神经网络构造GAN.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1511.06434">Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks</a></li>
+</ul>
+
+<p>本文作者设计了<strong>DCGAN（Deep Convolutional GAN）</strong>，即用卷积神经网络构造生成对抗网络，并用于图像生成任务。</p>
+
+<p>为了稳定<strong>DCGAN</strong>的训练过程，作者提出了以下几点设计思路：</p>
+<ol>
+  <li>去掉网络中的<strong>pooling</strong>层，在判别器中使用<strong>Strided convolution</strong> (步幅卷积)进行下采样，在生成器中使用<strong>transposed convolution</strong>（转置卷积）进行上采样；</li>
+  <li>在判别器和生成器中使用<strong>batch norm</strong>；</li>
+  <li>移除网络中的所有全连接层；</li>
+  <li>生成器的输出层使用<strong>Tanh</strong>激活函数，其他层使用<strong>ReLU</strong>激活函数；</li>
+  <li>判别器的所有层使用<strong>LeakyReLU</strong>激活函数.</li>
+</ol>
+
+<p><img src="https://pic1.imgdb.cn/item/6343747916f2c2beb122d53e.jpg" alt="" /></p>
+
+<p><strong>DCGAN</strong>的结构如图所示。在实际实现时有以下几点需要注意：</p>
+<ol>
+  <li>卷积和转置卷积的卷积核大小为$4\times 4$或$5\times 5$；</li>
+  <li>卷积和转置卷积的步长一般都取$2$；</li>
+  <li>对于判别器，第一层卷积后一般不用<strong>batch norm</strong>，之后采用”<strong>Conv2D+BN+LeakyReLU</strong>“的组合，直至特征图的大小下采样到$4\times 4$；</li>
+  <li>对于生成器，噪声通过全连接层后大小调整为$4\times 4$，之后采用”<strong>DeConv2D+BN+ReLU</strong>“的组合；</li>
+  <li>生成器输出采用<strong>Tanh</strong>激活，对应输入图像的范围$[-1,1]$。</li>
+</ol>
+
+<p><strong>DCGAN</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/eriklindernoren/PyTorch-GAN/tree/master/implementations/dcgan">PyTorch-GAN</a>，下面介绍判别器和生成器的结构。</p>
+
+<h3 id="-dcgan的判别器">⚪ DCGAN的判别器</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Discriminator</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Discriminator</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">discriminator_block</span><span class="p">(</span><span class="n">in_filters</span><span class="p">,</span> <span class="n">out_filters</span><span class="p">,</span> <span class="n">bn</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="n">block</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_filters</span><span class="p">,</span> <span class="n">out_filters</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">bn</span><span class="p">:</span>
+                <span class="n">block</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_filters</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
+            <span class="n">block</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">LeakyReLU</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">block</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">discriminator_block</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="n">bn</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">discriminator_block</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">discriminator_block</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">discriminator_block</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># The height and width of downsampled image
+</span>        <span class="n">ds_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">img_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">4</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">adv_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span> <span class="o">*</span> <span class="n">ds_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sigmoid</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">out</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">validity</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">adv_layer</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">validity</span>
+</code></pre></div></div>
+
+<h3 id="-dcgan的生成器">⚪ DCGAN的生成器</h3>
+
+<p><img src="https://pic1.imgdb.cn/item/634274e316f2c2beb16825a9.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Generator</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Generator</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">init_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">img_size</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">l1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">latent_dim</span><span class="p">,</span> <span class="mi">128</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">init_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="k">def</span> <span class="nf">generator_block</span><span class="p">(</span><span class="n">in_filters</span><span class="p">,</span> <span class="n">out_filters</span><span class="p">):</span>
+            <span class="n">block</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">in_filters</span><span class="p">)]</span>
+            <span class="n">block</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+            <span class="n">block</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">in_filters</span><span class="p">,</span> <span class="n">out_filters</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">block</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">generator_block</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">generator_block</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">generator_block</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
+            <span class="o">*</span><span class="n">generator_block</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">opt</span><span class="p">.</span><span class="n">channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Tanh</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">l1</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">out</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">128</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">init_size</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">init_size</span><span class="p">)</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">img</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/02/06/wgangp.html" class="read-next-link"></a>
+        <section>
+          <span>Improved Training of Wasserstein GANs</span>
+          <p>  WGAN-GP：在WGAN中引入梯度惩罚.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic1.imgdb.cn/item/634405b216f2c2beb151bbad.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/02/04/wgan.html" class="read-next-link"></a>
+          <section>
+            <span>Wasserstein GAN</span>
+            <p>  WGAN：使用Wasserstein距离构造GAN.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/63315e6e16f2c2beb1a585f9.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

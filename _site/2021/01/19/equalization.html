@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equalization Loss for Long-Tailed Object Recognition - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Equalization Loss for Long-Tailed Object Recognition">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Equalization Loss for Long-Tailed Object Recognition - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/01/19/equalization.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Equalization Loss for Long-Tailed Object Recognition</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-01-19"><i class="iconfont icon-date"></i>19 Jan 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60ee8ac45132923bf81348e7.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Equalization Loss：长尾目标检测中的均衡损失.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2003.05176">Equalization Loss for Long-Tailed Object Recognition</a></li>
+  <li>code：<a href="https://github.com/tztztztztz/eql.detectron2">github</a></li>
+</ul>
+
+<h3 id="sigmoid交叉熵损失函数形式的equalization-loss">Sigmoid交叉熵损失函数形式的Equalization Loss</h3>
+
+<p>在标准的<strong>Sigmoid</strong>交叉熵损失函数中，模型的对于真实类别的预测概率会接近$1$，其他类别的预测概率会接近$0$，但预测不同类别的结果之间并没有相关性：</p>
+
+\[\mathcal{L}_{\text{CE}}(\hat{y},y) = - \sum_{j=1}^{C} log(\hat{p}_{j}) \\ \hat{p}_{j} = \begin{cases} \hat{y}_{j}, \quad y_j=1 \\ 1-\hat{y}_{j}, \quad \text{others} \end{cases}\]
+
+<p>而预测类别是由<strong>Sigmoid</strong>函数计算的：$\hat{y}_{j}=\sigma (z_j)$。由此计算损失函数对于模型<strong>logit</strong>输出$z_j$的梯度值：</p>
+
+\[\frac{\partial \mathcal{L}_{\text{CE}}}{\partial z_j} = \frac{\partial \mathcal{L}_{\text{CE}}}{\partial \hat{y}_{j}} \frac{\partial \hat{y}_{j}}{\partial z_j} = \begin{cases} \hat{y}_{j}-1, \quad y_j=1 \\ \hat{y}_{j}, \quad \text{others} \end{cases}\]
+
+<p>由上式可知，当预测类别是真实类别(对应$y_j=1$)时，梯度值会促进模型预测正确的类别；而对于其他类别(对应$y_j=0$)，梯度值会抑制模型对这些类别的预测。</p>
+
+<p>对某一个类别预测时，该类别被看作是前景，其余类别都被看作背景。对<strong>tail class</strong>对应的类别，只有当预测该类别时(数据占比很小)模型的训练才会促进该类别的预测；大多数情况下(即处理其他类别的数据时)模型预测该类别的能力会被抑制。</p>
+
+<p><strong>Equalization Loss</strong>通过对交叉熵损失函数增加一个权重，减小对<strong>tail class</strong>类别的抑制情况。损失函数计算如下：</p>
+
+\[\mathcal{L}_{\text{EQ}}(\hat{y},y) = - \sum_{j=1}^{C} w_j \cdot log(\hat{p}_{j})\]
+
+<p>其中权重设置如下：</p>
+
+\[w_j = 1-E(r)T_{\lambda}(f_j)(1-y_j)\]
+
+<p>$r$是目标检测提出的一个<strong>proposal region</strong>，当$r$是前景时$E(r)=1$，当$r$是背景时$E(r)=0$。$f_j$是类别$j$出现在数据集中的频率$\frac{n_j}{n}$。$T_{\lambda}(\cdot)$是一个门限函数，$\lambda$是人为选定的阈值，用于区分该类别是<strong>head</strong>还是<strong>tail</strong>类：</p>
+
+\[T_{\lambda}(x) = \begin{cases} 1, \quad x&lt; \lambda \\ 0, \quad \text{others} \end{cases}\]
+
+<p>对该权重的理解如下。</p>
+<ul>
+  <li>如果当前<strong>proposal region</strong>是背景，则$w_j=1$，此时损失函数退化为<strong>Sigmoid</strong>交叉熵损失；</li>
+  <li>如果当前<strong>proposal region</strong>是前景，且类别为<strong>head class</strong>，则$T_{\lambda}(f_j)=0$，$w_j=1$，此时损失函数也退化为<strong>Sigmoid</strong>交叉熵损失；</li>
+  <li>如果当前<strong>proposal region</strong>是前景，且类别为<strong>tail class</strong>，则$T_{\lambda}(f_j)=1$，$w_j=y_j$，即只有该<strong>tail</strong>类别(对应$y_j=1$的情况)会产生对应的损失并求得梯度，对于其他类别(对应$y_j=0$的情况)则不考虑对该<strong>tail</strong>类别产生的负梯度。</li>
+</ul>
+
+<h3 id="softmax交叉熵损失函数形式的equalization-loss">Softmax交叉熵损失函数形式的Equalization Loss</h3>
+<p>在标准的<strong>Softmax</strong>交叉熵损失函数中，模型的类别预测概率是通过<strong>Softmax</strong>进行归一化计算得到的，不同类别的预测结果之间具有相关性：</p>
+
+\[\mathcal{L}_{\text{CE}}(\hat{y},y) = - \sum_{j=1}^{C} y_jlog(\hat{p}_{j}) \\ \hat{p}_{j} = \frac{e^{z_j}}{\sum_{k=1}^{C}e^{z_k}}\]
+
+<p>此时的<strong>Equalization Loss</strong>计算如下：</p>
+
+\[\mathcal{L}_{\text{EQ}}(\hat{y},y) = - \sum_{j=1}^{C} y_jlog(\tilde{p}_{j}) \\ \tilde{p}_{j} = \frac{e^{z_j}}{\sum_{k=1}^{C} \tilde{w}_k e^{z_k}}\]
+
+<p>其中权重设置如下：</p>
+
+\[\tilde{w}_k= 1-\beta T_{\lambda}(f_k)(1-y_k)\]
+
+<p>其中$\beta$是额外引入的超参数。由于使用<strong>Softmax</strong>函数，不再考虑背景这一类，因此没有使用$E(r)$函数。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/01/20/seesaw.html" class="read-next-link"></a>
+        <section>
+          <span>Seesaw Loss for Long-Tailed Instance Segmentation</span>
+          <p>  Seesaw Loss：长尾实例分割中的平衡损失.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60ee8b0c5132923bf81635ec.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/01/18/classbalanced.html" class="read-next-link"></a>
+          <section>
+            <span>Class-Balanced Loss Based on Effective Number of Samples</span>
+            <p>  Class-balanced Loss：基于有效样本数的类别平衡损失.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60ee896a5132923bf8057881.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

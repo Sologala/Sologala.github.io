@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual Contrastive Learning for Unsupervised Image-to-Image Translation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Dual Contrastive Learning for Unsupervised Image-to-Image Translation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Dual Contrastive Learning for Unsupervised Image-to-Image Translation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/06/30/simdcl.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Dual Contrastive Learning for Unsupervised Image-to-Image Translation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-06-30"><i class="iconfont icon-date"></i>30 Jun 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63e457634757feff33828227.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SimDCL：无监督图像到图像翻译的对偶对比学习.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2104.07689">Dual Contrastive Learning for Unsupervised Image-to-Image Translation</a></li>
+</ul>
+
+<p>本文作者使用两个<a href="https://0809zheng.github.io/2022/05/10/cut.html"><font color="Blue">CUT</font></a>模型构造了对偶结构的图像到图像翻译模型<strong>SimDCL</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63e457cb4757feff33833266.jpg" alt="" /></p>
+
+<p><strong>SimDCL</strong>训练了两个<strong>CUT</strong>模型（包括两个生成器和两个判别器）。\(G_{X→Y}\)实现从类型$X$转换成类型$Y$，\(G_{Y→X}\)实现从类型$Y$转换成类型$X$；\(D_{X}\)判断图像是否属于类型$X$；\(D_{Y}\)判断图像是否属于类型$Y$。</p>
+
+<p>生成器的损失函数采用基于对比学习的<strong>PatchNCE</strong>损失。把输入图像$X$和生成图像$Y$通过生成器\(G_{X→Y}\)的编码部分提取特征，然后使用多层感知机$H_X,H_Y$对特征进行变换。此时特征的每个像素位置对应原始图像的一个图像块；则两个图像相同位置的图像块对应的特征向量为正样本对，其余位置的特征向量为负样本。基于此可以构造对比损失：</p>
+
+\[\mathcal{L}(v,v^+,v^-) = -\log [\frac{\exp(v \cdot v^+/ \tau)}{\exp(v \cdot v^+/ \tau)+
+\sum_{n=1}^N \exp(v \cdot v^-_n/ \tau)}]\]
+
+<p>在此基础上引入恒等损失(<strong>identity loss</strong>)，即目标域图像$Y$经过生成器\(G_{X→Y}\)后图像风格应该保持不变。在实践中通过构造目标域图像$Y$与其生成图像\(G_{X→Y}(Y)\)之间的<strong>L1</strong>损失实现。</p>
+
+\[\mathcal{L}_{identity}(G_{X→Y},G_{Y→X}) = \Bbb{E}_{x \text{~} X}[||G_{Y→X}(x)-x||_1] +  \Bbb{E}_{y \text{~} Y}[||G_{X→Y}(y)-y||_1]\]
+
+<p>为了缓解训练过程中的模式崩溃问题，额外引入相似度损失(<strong>similarity loss</strong>)。对于属于同一数据模态的样本$X_1,X_2$，经过上述特征嵌入后再应用多层感知机$H_{X1},H_{X2}$对特征进行变换，并构造两个特征之间的<strong>L1</strong>损失。</p>
+
+\[\begin{aligned} &amp;\mathcal{L}_{sim}(G_{X→Y},G_{Y→X},H_X,H_Y,H_{X1},H_{X2},H_{Y1},H_{Y2}) \\ =&amp; \Bbb{E}_{x \text{~} X,y \text{~} Y}[||H_{X1}(H_X(G_{X→Y}^{Enc}(x)))-H_{X2}(H_X(G_{X→Y}^{Enc}(G_{Y→X}(y))))||_1] \\ +&amp;  \Bbb{E}_{x \text{~} X,y \text{~} Y}[||H_{Y1}(H_Y(G_{Y→X}^{Enc}(y)))-H_{Y2}(H_Y(G_{Y→X}^{Enc}(G_{X→Y}(x))))||_1] \end{aligned}\]
+
+<p>作者进行了一系列消融实验：</p>
+<ul>
+  <li><strong>Ⅰ</strong>：在<strong>PatchNCE</strong>损失中加入<strong>RGB</strong>图像(即输入层特征)，该层特征仅对应一个像素，缺乏局部语义信息；</li>
+  <li><strong>Ⅱ</strong>：不使用额外的负样本，即<strong>PatchNCE</strong>损失中负样本只取输入图像的特征；</li>
+  <li><strong>Ⅲ</strong>：使用共享的编码器部分和嵌入层；</li>
+  <li><strong>Ⅳ</strong>：加入循环一致性损失；</li>
+  <li><strong>Ⅴ</strong>：移除对偶设置。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/63e460594757feff33926881.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/07/01/posencode.html" class="read-next-link"></a>
+        <section>
+          <span>Transformer中的位置编码(Position Encoding)</span>
+          <p>  Position Encoding in Transformer.Transformer中的自注意力机制无法捕...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62c6a361f54cd3f937923083.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/06/29/rfaction.html" class="read-next-link"></a>
+          <section>
+            <span>Making the Invisible Visible: Action Recognition Through Walls and Occlusions</span>
+            <p>  RF-Action：使用射频信号进行多人动作识别.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62bbb8e51d64b07066cf0dfc.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

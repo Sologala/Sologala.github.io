@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>感知机(Perceptron) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="感知机(Perceptron)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="感知机(Perceptron) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/11/perceptron.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>感知机(Perceptron)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-11"><i class="iconfont icon-date"></i>11 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5eca7715c2a9a83be521b412.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Perceptron.</p>
+</blockquote>
+
+<p>本文目录：</p>
+<ol>
+  <li>感知机模型</li>
+  <li>感知机学习算法（PLA）</li>
+  <li>算法的对偶形式</li>
+  <li>算法的收敛性</li>
+  <li>口袋算法</li>
+  <li>异或问题</li>
+</ol>
+
+<h1 id="1-感知机模型">1. 感知机模型</h1>
+<p><strong>感知机(perceptron)</strong>是一类简单的二分类模型。</p>
+
+<p>给定数据集\(\{(x_1,y_1),(x_2,y_2),...,(x_N,y_N)\}\)，其中$x_i \in \Bbb{R^d}$，\(y_i \in \{-1,+1\}\)。</p>
+
+<p>感知机模型是对数据点的每一维特征进行线性加权求和，并与阈值进行比较，可表示为：</p>
+
+\[f(x) = \text{sign}(w^Tx+b)\]
+
+<p>该模型的<strong>几何意义</strong>：寻找数据的特征空间中的一个<strong>分离超平面(separable hyperplane)</strong>。</p>
+
+<p><img src="https://pic.downk.cc/item/5eca5f20c2a9a83be50895dd.jpg" alt="" /></p>
+
+<p>有时也对参数$w$和数据$x$扩充第零维($w_0=b,x_0=1$)，称为<strong>哑结点(dummy node)</strong>，以简化表示：</p>
+
+\[f(x) = \text{sign}(w^Tx)\]
+
+<h1 id="2-感知机学习算法">2. 感知机学习算法</h1>
+<p><strong>感知机学习算法(perceptron learning algorithm,PLA)</strong>的思想是<strong>错误驱动</strong>。</p>
+
+<p>感知机的损失函数定义为<strong>错误分类样本的个数</strong>：</p>
+
+\[L(w,b) = \sum_{i=1}^{N} {[y_i ≠ \text{sign}(w^Tx_i+b)]}\]
+
+<p>上述损失函数不是连续函数，优化困难。进一步，使用<strong>分类错误点的函数间隔</strong>：</p>
+
+\[L(w,b) = \sum_{y_i ≠ \text{sign}(w^Tx_i+b)}^{} {-y_i(w^Tx_i+b)}\]
+
+<p>则可得优化问题：</p>
+
+\[\mathop{\min}_{w,b} \quad \sum_{y_i ≠ \text{sign}(w^Tx_i+b)}^{} {-y_i(w^Tx_i+b)}\]
+
+<p>对目标函数求梯度，得：</p>
+
+\[\begin{aligned} \frac{\partial L(w,b)}{\partial w} &amp;= \sum_{y_i ≠ \text{sign}(w^Tx_i+b)}^{} {-y_ix_i} \\ \frac{\partial L(w,b)}{\partial b} &amp;= \sum_{y_i ≠ \text{sign}(w^Tx_i+b)}^{} {-y_i} \end{aligned}\]
+
+<p>使用随机梯度下降的方法（设学习率为$1$），每次选择一个被错误分类的点$(x_i,y_i)$，可得参数更新公式：</p>
+
+\[\begin{aligned} w^{(t+1)} &amp;= w^{(t)} + y_ix_i \\ b^{(t+1)} &amp;= b^{(t)} + y_i \end{aligned}\]
+
+<p>参数更新的<strong>几何解释</strong>：对于被错误分类的点，</p>
+<ul>
+  <li>若为正样本，则参数$w$和数据$x$夹角大于90°（内积为负），此时对$w$加上$x$来更新参数；</li>
+  <li>若为负样本，则参数$w$和数据$x$夹角小于90°（内积为正），此时对$w$减去$x$来更新参数；</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/5eca636fc2a9a83be50d0ea7.jpg" alt="" /></p>
+
+<p>在实践中遍历样本集，发现错误的点就进行修正，直至（线性可分的）样本集被完全分类正确，这种方法称为<strong>cycle PLA</strong>。</p>
+
+<h1 id="3-算法的对偶形式">3. 算法的对偶形式</h1>
+<p>若假设PLA算法的初值选择$w^{(0)}=0$，$b^{(0)}=0$，经过循环后参数更新为：</p>
+
+\[\begin{aligned} w &amp;= \sum_{i=1}^{N} {α_iy_ix_i} \\ b &amp;= \sum_{i=1}^{N} {α_iy_i} \end{aligned}\]
+
+<p>其中$α_i$表示第$i$个样本点在更新中被错误分类的次数。</p>
+
+<p>由于在训练中，对于样本点$(x_j,y_j)$，需要判断其是否被分类错误，即计算：</p>
+
+\[\text{sign}(w^Tx_j+b) = \text{sign}(\sum_{i=1}^{N} {α_iy_ix_i^Tx_j} + \sum_{i=1}^{N} {α_iy_i})\]
+
+<p>在训练前可以预先存储数据集的<strong>Gram矩阵</strong>\(G=[x_i^Tx_j]_{N×N}\)，从而减少不必要的重复计算。</p>
+
+<h1 id="4-算法的收敛性">4. 算法的收敛性</h1>
+<p>当样本集<strong>线性可分（linear separable）</strong>时，感知机学习算法收敛。但解不唯一，取决于初值的选择和错误分类点的选择顺序。</p>
+
+<p>⚪ <strong>Novikoff定理</strong>：若训练集线性可分，则：</p>
+<ol>
+  <li>存在一个超平面${\hat{w}}^Tx=0$能将正负样本完全分开；</li>
+  <li>若记$R=\max || x_i ||$,$ρ=\min y_i{\hat{w}}^Tx_i$,则算法的迭代次数$T$满足：</li>
+</ol>
+
+\[T ≤ \frac{R^2}{ρ^2}\]
+
+<p><strong>证明：</strong></p>
+
+<p>记第$t$次更新时参数为$w^{(t)}$，选择被错误分类的点$(x_i,y_i)$更新参数：</p>
+
+\[w^{(t+1)} = w^{(t)} + y_ix_i\]
+
+<p>我们想要证明在更新中$w^{(t+1)}$与最优值$\hat{w}$越来越接近，从两个方面出发：</p>
+<ul>
+  <li>两者的内积越来越大；</li>
+  <li>$w^{(t+1)}$的长度增长较慢；</li>
+</ul>
+
+<p>不妨取\(\| \hat{w} \| = 1\)，不影响分类的结果;</p>
+
+<p>计算更新后参数$w^{(t+1)}$与最优值$\hat{w}$的内积：</p>
+
+\[\begin{aligned} \hat{w}^Tw^{(t+1)} &amp;= \hat{w}^T(w^{(t)} + y_ix_i) \\ &amp;= \hat{w}^Tw^{(t)} + y_i\hat{w}^Tx_i \\ &amp;≥ \hat{w}^Tw^{(t)} + \min y_i{\hat{w}}^Tx_i \\ &amp;= \hat{w}^Tw^{(t)} + ρ \end{aligned}\]
+
+<p>计算$w^{(t+1)}$的长度：</p>
+
+\[\begin{aligned} || w^{(t+1)} ||^2 &amp;= || w^{(t)} + y_ix_i ||^2 \\ &amp;= || w^{(t)} ||^2 + 2y_iw^{(t)}x_i + || y_ix_i ||^2 \\ &amp;≤ || w^{(t)} ||^2 + || x_i ||^2 \\ &amp;≤ || w^{(t)} ||^2 + \max || x_i ||^2 \\&amp; = || w^{(t)} ||^2 + R^2 \end{aligned}\]
+
+<p>若经过$T$次迭代，由上面两式可以得到：</p>
+
+\[\hat{w}^Tw^{(T)} ≥ \hat{w}^Tw^{(T-1)} + ρ≥ \hat{w}^Tw^{(T-2)} + 2ρ≥... ≥ Tρ\]
+
+\[|| w^{(T)} ||^2 ≤ || w^{(T-1)} ||^2 + R^2≤ || w^{(T-2)} ||^2 + 2R^2≤... ≤ TR^2\]
+
+<p>则计算参数$w^{(T)}$与最优值$\hat{w}$归一化后的内积：</p>
+
+\[\frac{w^{(T)}}{|| w^{(T)} ||} · \frac{\hat{w}}{|| \hat{w} ||} ≥ \frac{Tρ}{\sqrt{TR^2} · || \hat{w} ||^2} = \sqrt{T}\frac{ρ}{R}\]
+
+<p>即在更新时随$T$的增大参数$w^{(T)}$与最优值$\hat{w}$归一化后的内积不断增大，注意到这个值具有上限$1$,因此更新过程使得参数逐步趋近于最优值，这个算法是收敛的。</p>
+
+<p>则可由下面的不等式：</p>
+
+\[Tρ ≤ \hat{w}^Tw^{(T)} ≤ || \hat{w} || · || w^{(T)} || = || w^{(T)} || ≤ \sqrt{TR^2}\]
+
+<p>得到算法迭代次数的上界：</p>
+
+\[T ≤ \frac{R^2}{ρ^2}\]
+
+<h1 id="5-口袋算法">5. 口袋算法</h1>
+<p>当样本集线性不可分时，感知机是不收敛的。<strong>口袋算法(pocket algorithm)</strong>用来解决这种情况。</p>
+
+<p>口袋算法的思想是，在感知机学习算法中，仍然每次选择一个错误分类的点更新参数；</p>
+
+<p>参数更新后，如果此时分类错误的点数比之前记录的最优参数所分类错误的点数还要少，则把这个参数放入口袋中，作为最优参数的备选参数；</p>
+
+<p>由于样本集线性不可分，这个循环过程是无限进行的，人为设置最大的循环次数，将最终存在于口袋中的参数作为算法得到的最优参数。</p>
+
+<p>口袋算法相比于普通的感知机学习算法的速度要慢，原因在于：</p>
+<ul>
+  <li>需要格外的空间存储备选的最优参数；</li>
+  <li>需要额外的计算判断本次更新的参数是否是最优参数.</li>
+</ul>
+
+<h1 id="6-异或问题">6. 异或问题</h1>
+<p>由于感知机无法对线性不可分样本集进行正确分类，因此感知机无法解决<strong>异或</strong>问题，如下图所示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/611dea604907e2d39c3daaf5.jpg" alt="" /></p>
+
+<p>由<strong>Cover</strong>定理，高维空间比低维空间更容易线性可分。因此引入高维线性变换$z=\phi(x)$，可将非线性问题转化为线性问题：</p>
+
+\[x=(x_1,x_2)→z=(x_1,x_2,(x_1-x_2)^2)\]
+
+<p><a href="(https://0809zheng.github.io/2020/04/17/feedforward-neural-network.html)">多层感知机</a>则通过引入非线性函数解决非线性问题。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/12/regression.html" class="read-next-link"></a>
+        <section>
+          <span>线性回归(Linear Regression)</span>
+          <p>  Linear Regression.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ed758f4c2a9a83be54c0e00.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/09/graph-neural-network.html" class="read-next-link"></a>
+          <section>
+            <span>图神经网络(Graph Neural Network)</span>
+            <p>  Graph Neural Networks.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ea59bbdc2a9a83be5281d20.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

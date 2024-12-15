@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adafactor: Adaptive Learning Rates with Sublinear Memory Cost - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Adafactor: Adaptive Learning Rates with Sublinear Memory Cost">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Adafactor: Adaptive Learning Rates with Sublinear Memory Cost - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/20/adafactor.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Adafactor: Adaptive Learning Rates with Sublinear Memory Cost</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-20"><i class="iconfont icon-date"></i>20 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/620ef63c2ab3f51d913d2a05.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Adafactor：减少Adam的显存占用.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1804.04235">Adafactor: Adaptive Learning Rates with Sublinear Memory Cost</a></li>
+</ul>
+
+<h1 id="1-adam的显存问题">1. Adam的显存问题</h1>
+
+<p><strong>Adam</strong>优化器的更新过程如下：</p>
+
+\[\begin{align} m_t &amp;= β_1m_{t-1} + (1-β_1)g_t \\ v_t &amp;= β_2v_{t-1} + (1-β_2)g_t^2 \\\hat{m}_t &amp;= \frac{m_t}{1-β_1^t} \\ \hat{v}_t &amp;= \frac{v_t}{1-β_2^t} \\ θ_t&amp;=θ_{t-1}-\gamma \frac{\hat{m}_t}{\sqrt{\hat{v}_t}+ε} \end{align}\]
+
+<p>在<strong>Adam</strong>优化器中，计算梯度$g_t$是最占用显存和计算量的操作。除此之外，<strong>Adam</strong>维护两组缓存变量$m_t$和$v_t$，用于滑动计算梯度的低阶矩估计。这两个缓存变量和参数本身一样大，因此对于参数比较多的模型，缓存变量也消耗比较多的显存。</p>
+
+<h1 id="2-改进adam">2. 改进Adam</h1>
+
+<h2 id="1-移除动量">(1) 移除动量</h2>
+
+<p>在计算机视觉模型中，动量方法通常能获得更好的精度，自适应学习率方法的效果相对较差。但对于自然语言处理中的模型，自适应学习率通常更重要。</p>
+
+<p>由于本文主要针对具有较多参数的大规模预训练模型，因此可以移除<strong>Adam</strong>中维护的动量参数，从而减少一半的缓存参数：</p>
+
+\[\begin{align}  v_t &amp;= β_2v_{t-1} + (1-β_2)g_t^2 \\ \hat{v}_t &amp;= \frac{v_t}{1-β_2^t} \\ θ_t&amp;=θ_{t-1}-\gamma \frac{g_t}{\sqrt{\hat{v}_t}+ε} \end{align}\]
+
+<p>上式相当于<strong>RmSProp</strong>算法的变种，增加了偏差修正步骤。</p>
+
+<h2 id="2-低秩分解">(2) 低秩分解</h2>
+<p>维护变量$v_t$也需要比较多的显存。若将$v_t$看作一个$m \times n$的矩阵$C$，则可以对该矩阵进行低秩分解，寻找$m \times k$的矩阵$A$和$k \times n$的矩阵$B$，且满足$AB=C$，则能够有效降低参数量。</p>
+
+<p>最理想的情况下，令$k=1$，则相当于寻找两组向量\(\{a_i\}_{i=1}^{m}\)和\(\{b_j\}_{j=1}^{n}\)，使得：</p>
+
+\[a_ib_j ≈ c_{i,j}\]
+
+<p>求解上述方程可以使用<strong>广义KL散度</strong>（也称<strong>I散度</strong>）。广义<strong>KL</strong>散度衡量两组变量的相似程度，而不需要对两组变量归一化为概率分布，仅需要变量取值非负即可。</p>
+
+<p>广义<strong>KL</strong>散度的出发点为不等式$x \log x \geq x-1$ ($x&gt;0$)，令$x=\frac{p}{q}$，且两端乘以$q$，则有：</p>
+
+\[p \log \frac{p}{q} -p +q \geq 0\]
+
+<p>在该问题中，令$p=c_{i,j}$，$q=a_ib_j$，则有：</p>
+
+\[l = \sum_{i,j}^{}( c_{i,j} \log \frac{c_{i,j}}{a_ib_j} -c_{i,j} + a_ib_j )\]
+
+<p>对上式求偏导数：</p>
+
+\[\frac{\partial l}{\partial a_i} = \sum_{j}^{}( -\frac{c_{i,j}}{a_i}+b_j) \\ \frac{\partial l}{\partial b_j} = \sum_{i}^{} (-\frac{c_{i,j}}{b_j}+a_i)\]
+
+<p>令偏导数为$0$，则有：</p>
+
+\[a_i \sum_{j}^{}b_j = \sum_{j}^{}c_{i,j} \\ b_j  \sum_{j}^{}a_i = \sum_{i}^{}c_{i,j}\]
+
+<p>注意到若$(a_i,b_j)$是一组解，则$(\lambda a_i,b_j / \lambda)$也是一组解。因此不妨令$\sum_{j}^{}b_j =1$，则得到一组解：</p>
+
+\[a_i = \sum_{j}^{}c_{i,j} \\ b_j   = \frac{\sum_{i}^{}c_{i,j}}{\sum_{i,j}^{}c_{i,j}}\]
+
+<p>上式表明对矩阵$C$的低秩分解可以分别按行求和与按列求和，相乘后再除以全体的和。这种分解方式类似于求联合分布的两个边缘分布。</p>
+
+<p>对于本文的优化算法，则相当于对$v_t$做低秩分解，用两组缓存变量$v_{i;t}^{(r)}$和$v_{j;t}^{(c)}$代替：</p>
+
+\[\begin{align}  v_{i;t}^{(r)}  &amp;= β_2v_{i;t-1}^{(r)} + (1-β_2)\sum_{j}^{} (g_{i,j;t}^2+\epsilon) \\ v_{j;t}^{(c)}  &amp;= β_2v_{j;t-1}^{(c)} + (1-β_2)\sum_{i}^{} (g_{i,j;t}^2+\epsilon) \\ v_{i,j;t} &amp;= \frac{v_{i;t}^{(r)} v_{j;t}^{(c)} }{\sum_{j}^{} v_{j;t}^{(c)} } \\ \hat{v}_t &amp;= \frac{v_t}{1-β_2^t} \\ θ_t&amp;=θ_{t-1}-\gamma \frac{g_t}{\sqrt{\hat{v}_t}} \end{align}\]
+
+<h2 id="3-滑动权重">(3) 滑动权重</h2>
+
+<p>滑动平均权重$\beta_2$通常设置为常数，在这种情况下$\hat{v}_t$的更新过程为：</p>
+
+\[\hat{v}_t = \frac{v_t}{1-β_2^t} = \frac{\beta_2 v_{t-1}+(1-\beta_2)g_t^2}{1-β_2^t} \\ = \frac{\beta_2 \hat{v}_{t-1}(1-β_2^{t-1})+(1-\beta_2)g_t^2}{1-β_2^t} \\ = \beta_2\frac{1-β_2^{t-1}}{1-β_2^t}\hat{v}_{t-1} + \frac{1-\beta_2}{1-β_2^t}g_t^2 \\ = \beta_2\frac{1-β_2^{t-1}}{1-β_2^t}\hat{v}_{t-1} +(1-\beta_2\frac{1-β_2^{t-1}}{1-β_2^t})g_t^2\]
+
+<p>若记$\hat{\beta}_{2,t}=\beta_2\frac{1-β_2^{t-1}}{1-β_2^t}$，则$\hat{v}_t$的更新过程为：</p>
+
+\[\hat{v}_t = \hat{\beta}_{2,t}\hat{v}_{t-1} +(1-\hat{\beta}_{2,t})g_t^2\]
+
+<p>当$t=1$时，\(\hat{\beta}_{2,t}=0\)，此时\(\hat{v}_t=g_t^2\)，使用实时梯度校正学习率；当\(t \to ∞\)时，\(\hat{\beta}_{2,t}=\beta_2\)，训练后期梯度变小，仍然校正学习率可能会导致梯度方向的改变，从而导致训练不稳定。因此希望训练后期算法退化为<strong>SGD</strong>，即\(\hat{\beta}_{2,t}\to 1\)。不妨设置为：</p>
+
+\[\hat{\beta}_{2,t} = 1-\frac{1}{t^c}\]
+
+<p>当$c=1$时，$\hat{v}_t$的更新过程为：</p>
+
+\[\hat{v}_t = (\frac{t-1}{t})\hat{v}_{t-1} +\frac{1}{t}g_t^2 \\ = (\frac{t-1}{t})((\frac{t-2}{t-1})\hat{v}_{t-2} +\frac{1}{t-1}g_{t-1}^2) +\frac{1}{t}g_t^2 \\ = \frac{1}{t} \sum_{i=1}^{t}g_i^2\]
+
+<p>上式表示为所有梯度平方的平均。通常希望越久远的梯度重要性越低，因此取$c&lt;1$，即历史权重$1-\frac{1}{t^c}&lt;1-\frac{1}{t}$。实验中取$c=0.8$。</p>
+
+<p>此时更新过程为：</p>
+
+\[\begin{align} \hat{\beta}_{2,t} &amp;= 1-\frac{1}{t^c} \\ v_{i;t}^{(r)}  &amp;= \hat{\beta}_{2,t}v_{i;t-1}^{(r)} + (1-\hat{\beta}_{2,t})\sum_{j}^{} (g_{i,j;t}^2+\epsilon) \\ v_{j;t}^{(c)}  &amp;= \hat{\beta}_{2,t}v_{j;t-1}^{(c)} + (1-\hat{\beta}_{2,t})\sum_{i}^{} (g_{i,j;t}^2+\epsilon) \\ \hat{v}_{i,j;t} &amp;= \frac{v_{i;t}^{(r)} v_{j;t}^{(c)} }{\sum_{j}^{} v_{j;t}^{(c)} } \\  θ_t&amp;=θ_{t-1}-\gamma \frac{g_t}{\sqrt{\hat{v}_t}} \end{align}\]
+
+<h2 id="4-层自适应">(4) 层自适应</h2>
+
+<p>当模型参数量较大、使用较大批量进行训练时，可以采用如<strong>LARS</strong>一样的层自适应方法。即将参数的更新量进行标准化，然后乘以参数的模长。此时参数更新的方向与梯度大小无关，只由参数本身的大小以及全局学习率共同决定，此时模型所有层的参数更新程度相对一致。</p>
+
+<p>层自适应的更新过程可以表示为：</p>
+
+\[u_t= \frac{g_t}{\sqrt{\hat{v}_t}} \\ \hat{u}_t = u_t \times\frac{\max(\epsilon_2,\sqrt{\frac{1}{n}\sum_{i=1}^{n}\theta_i^2})}{\max(1,\sqrt{\sum_{i=1}^{n}u_i^2} /d)} \\ θ_t=θ_{t-1}-\gamma \hat{u}_t\]
+
+<p>其中$\max(1,\sqrt{\sum_{i=1}^{n}u_i^2} /d)$表示当更新量$u_t$的模长超过$d$时才进行归一化。</p>
+
+<h2 id="5-adafactor">(5) Adafactor</h2>
+
+<p>综上所述，对<strong>Adam</strong>改进后作者提出了<strong>Adafactor</strong>：</p>
+
+\[\begin{align} \hat{\beta}_{2,t} &amp;= 1-\frac{1}{t^c} \\ v_{i;t}^{(r)}  &amp;= \hat{\beta}_{2,t}v_{i;t-1}^{(r)} + (1-\hat{\beta}_{2,t})\sum_{j}^{} (g_{i,j;t}^2+\epsilon_1) \\ v_{j;t}^{(c)}  &amp;= \hat{\beta}_{2,t}v_{j;t-1}^{(c)} + (1-\hat{\beta}_{2,t})\sum_{i}^{} (g_{i,j;t}^2+\epsilon_1) \\ \hat{v}_{i,j;t} &amp;= \frac{v_{i;t}^{(r)} v_{j;t}^{(c)} }{\sum_{j}^{} v_{j;t}^{(c)} } \\ u_t &amp;= \frac{g_t}{\sqrt{\hat{v}_t}} \\ \hat{u}_t &amp;= u_t \frac{\max(\epsilon_2,|\theta_{t-1}|)}{\max(1,|u_t| /d)} \\  θ_t&amp;=θ_{t-1}-\gamma \hat{u}_t \end{align}\]
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/21/adax.html" class="read-next-link"></a>
+        <section>
+          <span>AdaX: Adaptive Gradient Descent with Exponential Long Term Memory</span>
+          <p>  AdaX：基于指数长期记忆的自适应梯度下降.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62148f172ab3f51d91b542c2.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/19/novograd.html" class="read-next-link"></a>
+          <section>
+            <span>Stochastic Gradient Methods with Layer-wise Adaptive Moments for Training of Deep Networks</span>
+            <p>  NovoGrad：使用层级自适应二阶矩进行梯度归一化.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/621339102ab3f51d919b9eb4.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

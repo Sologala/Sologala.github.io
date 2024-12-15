@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generating Long Sequences with Sparse Transformers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Generating Long Sequences with Sparse Transformers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Generating Long Sequences with Sparse Transformers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/07/13/sparsetransformer.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Generating Long Sequences with Sparse Transformers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-07-13"><i class="iconfont icon-date"></i>13 Jul 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60ed15cd5132923bf8e08880.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Sparse Transformer：使用稀疏注意力的Transformer.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Generating Long Sequences with Sparse Transformers</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1904.10509">link</a></li>
+</ul>
+
+<p>在标准的<strong>Transformer</strong>中，自注意力机制的整体运算复杂度为$O(N^2)$，这是因为对于长度为$N$的输入序列，其每一个位置都会和该序列的所有位置进行交互并计算注意力(相关度)，从而得到$N^2$大小的注意力矩阵。该矩阵的第$i$列代表第$i$个输出位置与所有输入位置的(未归一化)相关性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed16a45132923bf8e602d3.jpg" alt="" /></p>
+
+<p>作者提出了<strong>Sparse Transformer</strong>，将<strong>Transformer</strong>中自注意力矩阵稀疏化，假设序列具有<strong>局部紧密相关</strong>和<strong>远程稀疏相关</strong>性，即在每个序列位置上只保留相对距离不超过$k$以及相对距离为$k,2k,3k,…$的自注意力运算：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed16c85132923bf8e6e8ad.jpg" alt="" /></p>
+
+<p>上述稀疏注意力可以被进一步拆分成两部分。第一部分是一种局部的自注意力，即每个序列位置只于其一个邻域内的位置进行交互。这种做法类似于卷积神经网络中的普通卷积，若保留相对距离不超过$k$的位置，则每个位置只跟其邻域内的$2k+1$个位置(包括其自身)计算相关性，使得运算复杂度降低为$O((2k+1)N)$。但这种注意力失去了长程关联性，只能捕捉局部相关性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed17095132923bf8e886a0.jpg" alt="" /></p>
+
+<p>另外一部分做法则类似于卷积神经网络中的<strong>空洞(Atrous)</strong>卷积。即每个序列位置只跟与其相对距离为$k,2k,3k,…$的位置进行自注意力运算，使得运算复杂度降低为$O(N^2/k)$。这种注意力机制能够捕捉全局的稀疏关联性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed16ea5132923bf8e7c320.jpg" alt="" /></p>
+
+<p>这种稀疏自注意力也可以被用于图像生成任务中(对于序列生成任务，需要对注意力矩阵的一半进行<strong>mask</strong>，即每个输出位置只能从之前的输入位置处获取信息)。对于普通的自注意力，每个输出位置和之前所有输入位置计算相关性；对于<strong>Sparse Transformer</strong>提出的<strong>strided</strong>注意力，每个输出位置只与之前输入的一部分进行相关性计算；作者还额外提出了一种<strong>fixed</strong>注意力，即预先指定与每个输出位置进行相关性计算的位置。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed1c745132923bf80f980e.jpg" alt="" /></p>
+
+<p>实验表明该稀疏注意力机制在多种任务上都取得不错的结果：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed1cfd5132923bf813b71f.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/07/14/eqlossv2.html" class="read-next-link"></a>
+        <section>
+          <span>Equalization Loss v2: A New Gradient Balance Approach for Long-tailed Object Detection</span>
+          <p>  Equalization Loss v2：通过梯度引导重加权机制解决目标检测的正负梯度不平衡问题.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60eea1685132923bf8d8caa4.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/07/12/efficienttransformer.html" class="read-next-link"></a>
+          <section>
+            <span>降低Transformer的计算复杂度</span>
+            <p>  Efficient Transformers.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60ebbe525132923bf878e6c3.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

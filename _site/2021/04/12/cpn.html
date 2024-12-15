@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cascaded Pyramid Network for Multi-Person Pose Estimation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Cascaded Pyramid Network for Multi-Person Pose Estimation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Cascaded Pyramid Network for Multi-Person Pose Estimation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/04/12/cpn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Cascaded Pyramid Network for Multi-Person Pose Estimation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-04-12"><i class="iconfont icon-date"></i>12 Apr 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/64a4d7ae1ddac507ccb293ec.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>多人姿态估计的级联金字塔网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1711.07319">Cascaded Pyramid Network for Multi-Person Pose Estimation</a></li>
+</ul>
+
+<p>本文提出了一种金字塔型的串接模型，即<strong>CPN（cascaded pyramid network）</strong>，这个模型是<strong>top-down</strong>的多人检测模型，即先在图片中检测人体，再做单人姿态估计。<strong>CPN</strong>能够同时兼顾人体关节点的局部信息以及全局信息，优化对于难以检测的点（关键点遮挡，关键点不可见，复杂背景）的预测。</p>
+
+<p>人体检测使用的是<strong>FPN</strong>进行边界框定位，并应用了<strong>ROIAlign</strong>。然后使用<strong>CPN</strong>检测关键点，<strong>CPN</strong>本体由两部分组成：<strong>GlobalNet</strong>和<strong>RefineNet</strong>，流程如下图所示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a4db461ddac507ccb950e1.jpg" alt="" /></p>
+
+<p><strong>GlobalNet</strong>对关键点进行粗提取（用<strong>ResNet</strong>的网络架构回归<strong>heatmap</strong>），<strong>RefineNet</strong>对不同层信息进行了融合，可以更好的综合特征定位关键点。首先对于可以看见的关键点直接预测得到，对于不可见的关键点，使用增大感受野来获得关键点位置，对于还未检测出的点，使用上下文<strong>context</strong>进行预测（即融合多个感受野信息，最后<strong>concatenate</strong>所有的同一尺寸特征图进一步回归关键点位置）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a4dfcb1ddac507ccc3c281.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CPN</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resnet</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">,</span> <span class="n">num_class</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CPN</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">channel_settings</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">resnet</span> <span class="o">=</span> <span class="n">resnet</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">global_net</span> <span class="o">=</span> <span class="n">globalNet</span><span class="p">(</span><span class="n">channel_settings</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">,</span> <span class="n">num_class</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">refine_net</span> <span class="o">=</span> <span class="n">refineNet</span><span class="p">(</span><span class="n">channel_settings</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">output_shape</span><span class="p">,</span> <span class="n">num_class</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">res_out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">resnet</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">global_fms</span><span class="p">,</span> <span class="n">global_outs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">global_net</span><span class="p">(</span><span class="n">res_out</span><span class="p">)</span>
+        <span class="n">refine_out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">refine_net</span><span class="p">(</span><span class="n">global_fms</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">global_outs</span><span class="p">,</span> <span class="n">refine_out</span>
+
+<span class="k">def</span> <span class="nf">CPN50</span><span class="p">(</span><span class="n">out_size</span><span class="p">,</span><span class="n">num_class</span><span class="p">,</span><span class="n">pretrained</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="n">res50</span> <span class="o">=</span> <span class="n">resnet50</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">CPN</span><span class="p">(</span><span class="n">res50</span><span class="p">,</span> <span class="n">output_shape</span><span class="o">=</span><span class="n">out_size</span><span class="p">,</span><span class="n">num_class</span><span class="o">=</span><span class="n">num_class</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+</code></pre></div></div>
+
+<p><strong>GlobalNet</strong>采用类似于<strong>FPN</strong>的特征金字塔结构，并在每个<strong>elem-sum</strong>前添加了<strong>1x1</strong>卷积，负责所有关键点的检测，重点是对比较容易检测的眼睛、胳膊等部位的关键点。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">globalNet</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel_settings</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">,</span> <span class="n">num_class</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">globalNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">channel_settings</span> <span class="o">=</span> <span class="n">channel_settings</span>
+        <span class="n">laterals</span><span class="p">,</span> <span class="n">upsamples</span><span class="p">,</span> <span class="n">predict</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">channel_settings</span><span class="p">)):</span>
+            <span class="n">laterals</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">_lateral</span><span class="p">(</span><span class="n">channel_settings</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="n">predict</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">_predict</span><span class="p">(</span><span class="n">output_shape</span><span class="p">,</span> <span class="n">num_class</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">channel_settings</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">upsamples</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">_upsample</span><span class="p">())</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">laterals</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">laterals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">upsamples</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">upsamples</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">predict</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">predict</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_lateral</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">):</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">input_size</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">256</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_upsample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'bilinear'</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">256</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">,</span> <span class="n">num_class</span><span class="p">):</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="mi">256</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">num_class</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">output_shape</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'bilinear'</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">num_class</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">global_fms</span><span class="p">,</span> <span class="n">global_outs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channel_settings</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">feature</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">laterals</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">feature</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">laterals</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="n">up</span>
+            <span class="n">global_fms</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channel_settings</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">up</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">upsamples</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">feature</span><span class="p">)</span>
+            <span class="n">feature</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">predict</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">feature</span><span class="p">)</span>
+            <span class="n">global_outs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">global_fms</span><span class="p">,</span> <span class="n">global_outs</span>
+</code></pre></div></div>
+
+<p><strong>GolbalNet</strong>对身体部位遮挡或者有复杂背景的关键点预测误差较大，<strong>RefineNet</strong>基于<strong>GlobalNet</strong>生成的特征金字塔，其链接了所有层的金字塔特征用于定位不容易检测的关键点。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Bottleneck</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="n">expansion</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplanes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Bottleneck</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inplanes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">planes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">planes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span>
+                               <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">planes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">planes</span><span class="p">,</span> <span class="n">planes</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">planes</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">downsample</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inplanes</span><span class="p">,</span> <span class="n">planes</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span>
+                          <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">planes</span> <span class="o">*</span> <span class="mi">2</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv3</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn3</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">downsample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">downsample</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="n">residual</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<span class="k">class</span> <span class="nc">refineNet</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lateral_channel</span><span class="p">,</span> <span class="n">out_shape</span><span class="p">,</span> <span class="n">num_class</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">refineNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">cascade</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">num_cascade</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_cascade</span><span class="p">):</span>
+            <span class="n">cascade</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">_make_layer</span><span class="p">(</span><span class="n">lateral_channel</span><span class="p">,</span> <span class="n">num_cascade</span><span class="o">-</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">out_shape</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">cascade</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">cascade</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">final_predict</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_predict</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">lateral_channel</span><span class="p">,</span> <span class="n">num_class</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_make_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_channel</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">output_shape</span><span class="p">):</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+            <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">Bottleneck</span><span class="p">(</span><span class="n">input_channel</span><span class="p">,</span> <span class="mi">128</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">output_shape</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'bilinear'</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_channel</span><span class="p">,</span> <span class="n">num_class</span><span class="p">):</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">Bottleneck</span><span class="p">(</span><span class="n">input_channel</span><span class="p">,</span> <span class="mi">128</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">num_class</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">num_class</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">refine_fms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">refine_fms</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cascade</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">(</span><span class="n">refine_fms</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">final_predict</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+</code></pre></div></div>
+
+<p>在该阶段的训练中，还使用了<strong>online hard keypoints mining</strong>难例挖掘策略。在<strong>coco</strong>数据集中有<strong>17</strong>个关键点需要预测，<strong>GolbalNet</strong>预测所有的<strong>17</strong>个点，并计算所有<strong>17</strong>个点的<strong>loss</strong>；<strong>RefineNet</strong>也预测所有的<strong>17</strong>个点，但是只有最难的<strong>8</strong>个点的<strong>loss</strong>贡献给总<strong>loss</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a4de731ddac507ccc0cb0e.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/04/13/mspn.html" class="read-next-link"></a>
+        <section>
+          <span>Rethinking on Multi-Stage Networks for Human Pose Estimation</span>
+          <p>  重新思考人体姿态估计的多阶段网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64a4e49b1ddac507cccd144b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/04/11/deepcut.html" class="read-next-link"></a>
+          <section>
+            <span>DeepCut: Joint Subset Partition and Labeling for Multi Person Pose Estimation</span>
+            <p>  DeepCut：多人姿态估计的联合子集划分与标注.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64a4caa01ddac507cc995342.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

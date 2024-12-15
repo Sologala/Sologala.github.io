@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDXL: Improving Latent Diffusion Models for High-Resolution Image Synthesis - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="SDXL: Improving Latent Diffusion Models for High-Resolution Image Synthesis">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="SDXL: Improving Latent Diffusion Models for High-Resolution Image Synthesis - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/07/04/sdxl.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>SDXL: Improving Latent Diffusion Models for High-Resolution Image Synthesis</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-07-04"><i class="iconfont icon-date"></i>04 Jul 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6672b769d9c307b7e9a0af2f.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SDXL：改进高分辨率图像合成的隐扩散模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2307.01952">SDXL: Improving Latent Diffusion Models for High-Resolution Image Synthesis</a></li>
+</ul>
+
+<p><strong>SDXL</strong>模型是对<a href="https://0809zheng.github.io/2022/06/18/ldm.html"><font color="Blue">Stable Diffusion</font></a>模型的官方改进，相比于<strong>SDv1.5</strong>模型的<strong>0.98B</strong>参数，<strong>SDXL</strong>模型的参数提高到<strong>6.6B</strong>。<strong>SDXL</strong>模型的改进主要在以下几个方面：</p>
+<ul>
+  <li>文本编码器结合了<strong>OpenClip ViT-G/14</strong>与<strong>CLIP ViT-L</strong>；</li>
+  <li>引入图像尺寸条件，允许尺寸小于$256\times 256$的图像参与训练；</li>
+  <li><strong>UNet</strong>模型的大小提高3倍；</li>
+  <li>默认图像尺寸调整为$1024\times 1024$。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6672b92ed9c307b7e9a39be9.png" alt="" /></p>
+
+<p><strong>SDXL</strong>模型是一个二阶段的级联扩散模型，包括<strong>Base</strong>模型和<strong>Refiner</strong>模型。其中<strong>Base</strong>模型是基本的文生图模型；在<strong>Base</strong>模型之后级联的<strong>Refiner</strong>模型是图生图模型，用于对<strong>Base</strong>模型生成的图像隐特征进行精细化。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6672baa1d9c307b7e9a72c4a.png" alt="" /></p>
+
+<p><strong>Base</strong>模型由<strong>U-Net</strong>、<strong>VAE</strong>和两个<strong>CLIP Text Encoder</strong>组成。<strong>Refiner</strong>模型采用独立的<strong>U-Net</strong>，而<strong>VAE</strong>和一个<strong>CLIP Text Encoder</strong>与<strong>Base</strong>模型共用（<strong>Refiner</strong>模型的<strong>Text Encoder</strong>只使用了<strong>OpenCLIP ViT-bigG</strong>）。</p>
+
+<p><strong>SDXL</strong>模型输入的最大<strong>Token</strong>数是77，当输入文本的<strong>Token</strong>数量超过77后，将通过<strong>Clip</strong>操作拉回77；如果Token数不足77则会<strong>padding</strong>操作。</p>
+
+<p><strong>SDXL</strong>模型分别提取两个<strong>CLIP Text Encoder</strong>的倒数第二层特征，并进行连接操作作为文本条件。其中<strong>OpenCLIP ViT-bigG</strong>的特征维度为77x1280，而<strong>CLIP ViT-L</strong>的特征维度是77x768，所以输入总的特征维度是77x2048（77是最大的<strong>token</strong>数）。</p>
+
+<h3 id="-训练技巧图像尺寸条件化">⚪ 训练技巧：图像尺寸条件化</h3>
+
+<p><strong>Stable Diffusion</strong>的训练过程主要分成两个阶段，一个是在256x256的图像尺寸上进行预训练，然后在512x512的图像尺寸上继续训练。这两个阶段的训练过程都要对最小图像尺寸进行约束。第一阶段会将尺寸小于256x256的图像舍弃；第二阶段会将尺寸小于512x512的图像舍弃。这样的约束会导致训练数据中的大量数据被丢弃。</p>
+
+<p>下图展示了如果将尺寸小于256x256的图像筛除，整个数据集将减少39\%的数据。如果加上尺寸小于512x512的图像，未利用数据占整个数据集的百分比将更大。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6672bd69d9c307b7e9ac4ad9.png" alt="" /></p>
+
+<p><strong>SDXL</strong>模型为了在解决数据集利用率问题的同时不引入噪声伪影，将<strong>U-Net（Base）</strong>模型与原始图像分辨率相关联，核心思想是将输入图像的原始高度和宽度作为额外的条件嵌入<strong>U-Net</strong>模型中。图像高度和宽度都使用傅里叶特征编码进行独立嵌入，然后将特征连接到时序特征后。</p>
+
+<p>结果表明，引入图像尺寸条件后，模型在训练过程中能够学习到图像的原始分辨率信息，从而在推理生成阶段更好地适应不同尺寸的图像生成，而不会产生噪声伪影的问题；在不断增大分辨率条件时，生成的图像质量不断提升。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6672be15d9c307b7e9ade778.png" alt="" /></p>
+
+<h3 id="-训练技巧图像裁剪参数条件化">⚪ 训练技巧：图像裁剪参数条件化</h3>
+
+<p>由于需要输入固定的图像尺寸用作训练，很多数据在预处理阶段会被裁剪。典型预处理方式是先调整图像尺寸，使得最短边与目标尺寸匹配，然后再沿较长边对图像进行随机裁剪或者中心裁剪。虽然裁剪是一种数据增强方法，但是训练中对图像裁剪导致的图像特征丢失，可能会导致模型在图像生成阶段出现不符合训练数据分布的特征。</p>
+
+<p><strong>SDXL</strong>模型引入了图像裁剪参数条件化策略。其主要思想是在加载数据时，将左上角的裁剪坐标通过傅里叶编码并嵌入<strong>U-Net（Base）</strong>模型中，并与原始图像尺寸一起作为额外的条件嵌入<strong>U-Net</strong>模型，从而在训练过程中让模型学习到对“图像裁剪”的认识。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6672bee6d9c307b7e9afd798.png" alt="" /></p>
+
+<h3 id="-训练技巧多尺度训练">⚪ 训练技巧：多尺度训练</h3>
+
+<p><strong>SDXL</strong>模型首先在256x256和512x512的图像尺寸上分别预训练600000步和200000步（<strong>batch size</strong> = 2048），总的数据量 600000 x 2000000 x 2048 约等于16亿。</p>
+
+<p>接着在1024x1024的图像尺寸上采用多尺度方案来进行微调，并将数据分成不同纵横比的<strong>bucket</strong>，并且尽可能保持每个<strong>bucket</strong>的像素数接近1024×1024，同时相邻的<strong>bucket</strong>之间高度或宽度一般相差64像素左右：</p>
+
+<p><img src="https://pic.imgdb.cn/item/6672bf8ad9c307b7e9b15a0b.png" alt="" /></p>
+
+<p>在训练过程中，一个<strong>Batch</strong>从一个<strong>bucket</strong>里的图像采样，并且在每个训练步骤中在不同的<strong>bucket</strong>大小之间交替切换。除此之外，<strong>aspect ratio</strong>也会作为条件嵌入到<strong>U-Net（Base）</strong>模型中，让模型能够更好地学习到“多尺度特征”。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/07/14/mpdiou.html" class="read-next-link"></a>
+        <section>
+          <span>MPDIoU: A Loss for Efficient and Accurate Bounding Box Regression</span>
+          <p>  MPDIoU：一种高效且准确的边界框回归损失.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64c07c2d1ddac507cc468797.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/06/30/countx.html" class="read-next-link"></a>
+          <section>
+            <span>Open-world Text-specified Object Counting</span>
+            <p>  开放世界文本指定目标计数.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/667e79d4d9c307b7e9760915.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

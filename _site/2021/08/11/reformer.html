@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reformer: The Efficient Transformer - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Reformer: The Efficient Transformer">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Reformer: The Efficient Transformer - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/08/11/reformer.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Reformer: The Efficient Transformer</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-08-11"><i class="iconfont icon-date"></i>11 Aug 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61136f275132923bf8265b88.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Reformer: 使用局部敏感哈希和可逆FFN实现高效Transformer.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Reformer: The Efficient Transformer</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2001.04451">link</a></li>
+</ul>
+
+<p>本文提出了<strong>Reformer</strong>，将<strong>Transformer</strong>的计算复杂度从$O(N^2)$降低为$O(N\log N)$，从而使得输入序列长度$N$较长时的也具有较快的处理速度。</p>
+
+<p><img src="https://pic.imgdb.cn/item/611607db5132923bf8a44f18.jpg" alt="" /></p>
+
+<p>标准的<strong>Transformer</strong>计算复杂度较高主要有两个原因。</p>
+<ol>
+  <li>自注意力机制需要两两计算相似度得分，具有序列长度平方的计算复杂度；</li>
+  <li><strong>FFN</strong>层通常是两层全连接网络，其中间层特征较大，需要存储层内的连接参数(<strong>activations</strong>)用于反向传播，占据更多内存。</li>
+</ol>
+
+<p>为此，作者使用了一些方法以降低计算复杂度：</p>
+<ol>
+  <li><strong>局部敏感哈希</strong>(<strong>Local Sensitive Hashing</strong>)：将注意力得分相似的<strong>key</strong>分到同一个<strong>bucket</strong>中，使得每个<strong>query</strong>只与较高相似度的几个<strong>key</strong>计算注意力得分。</li>
+  <li><strong>可逆层</strong>(<strong>Reversible Layer</strong>)：网络需要存储每一层的<strong>activations</strong>用于反向传播，导致内存消耗较大。作者将模型的特定结构设计成可逆的形式，只需要存储最后一层的输出，便可以反推出中间层的结果。</li>
+  <li><strong>分段FFN</strong>(<strong>Chunking FFN Layers</strong>)：由于全连接层的输入之间是独立的，因此将全连接层分段处理，降低空间消耗。</li>
+</ol>
+
+<h2 id="1-locality-sensitive-hashing">1. Locality Sensitive Hashing</h2>
+<p>自注意力矩阵的计算是稀疏的，即对于输入序列的每一个<strong>token</strong>的查询向量$q_i$，并不需要与所有的<strong>token</strong>对应的键向量$k$进行计算，因为经过<strong>softmax</strong>后较小的值会接近$0$。因此对于每个$q_i$只需要考虑方向上与其最接近的一些$k$即可，寻找过程是通过<strong>局部敏感哈希</strong>(<strong>Local Sensitive Hashing</strong>)实现的。</p>
+
+<p>通常的<strong>Hash</strong>函数是指使用一个<strong>hash</strong>表，把特定的值映射到不同的<strong>bucket</strong>中，不同的<strong>bucket</strong>具有不同的哈希值，根据哈希值可以在$O(1)$复杂度下获得特定的值。局部敏感哈希函数是指将相近的值映射到同一个<strong>bucket</strong>中，赋予相同的哈希值；不相近的值映射到不同的<strong>bucket</strong>中。</p>
+
+<p>本文使用<strong>随机投影</strong>(<strong>random projection</strong>)的方法构造哈希函数。即对于维度是$d$的输入向量$x$，将其数值标准化(即投影到单位圆上)，预先设定$b$个哈希<strong>bucket</strong>(即把空间等分成$b$个区域)。构造随机矩阵$R \in \Bbb{R}^{d \times \frac{b}{2}}$，则哈希值计算为：</p>
+
+\[h(x) = \arg\max [xR;-xR]\]
+
+<p>上式即把向量$xR$和$-xR$连接后选择最大值所在的索引。
+如下图所示，空间中更接近的向量往往会被划分给相同的哈希值，即落入同一个子空间中。
+注意到不能保证相似的输入总在同一个<strong>bucket</strong>中，因此采用多轮局部敏感哈希函数，然后将相同<strong>bucket</strong>中的向量取并集。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6115ed1f5132923bf873009e.jpg" alt="" /></p>
+
+<p>作者把上述局部敏感哈希函数引入<strong>Attention</strong>的计算中，构造了局部敏感哈希注意力(<strong>LSH Attention</strong>)。把输入序列的所有<strong>token</strong>映射到不同的<strong>bucket</strong>中，对于每一个<strong>token</strong>的查询向量$q_i$，只与其在同一个<strong>hash bucket</strong>中的键向量进行注意力得分计算。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6115e64d5132923bf86784a5.jpg" alt="" /></p>
+
+<p><strong>LSH Attention</strong>的计算过程如下：</p>
+<ol>
+  <li>设置<strong>share-QK</strong>注意力，即$k_i=\frac{q_i}{|q_i|}$，能够降低参数量，并且减小后续哈希<strong>bucket</strong>中的$q$和$k$数量不均衡问题(如上图b所示)。注意到$Q=K$会使每个<strong>token</strong>与自身得分最高，因此当<strong>bucket</strong>中有其余<strong>token</strong>时，忽略该<strong>token</strong>与自身的交互。</li>
+  <li>对调整后的键序列应用局部敏感哈希函数，为每个$k_i$赋予一个哈希值；将不同哈希值对应的不同<strong>bucket</strong>排序，对每个<strong>bucket</strong>内按照原本的位置进行排序。</li>
+  <li>注意到不同的<strong>bucket</strong>内得分数量是不同的，因此进行分组截断(<strong>chunked</strong>)。将每个<strong>bucket</strong>内的元素数量设置为$m=\frac{2n_{\text{query}}}{n_{\text{bucket}}}$，对于<strong>bucket</strong>中的每一个向量，都可以与当前<strong>bucket</strong>以及前一个<strong>bucket</strong>中具有相同哈希值的向量进行交互。</li>
+</ol>
+
+<h2 id="2-reversible-transformer">2. Reversible Transformer</h2>
+<p><strong>Transformer</strong>中的自注意力层和全连接层在计算时需要保存层内的连接参数(<strong>activations</strong>)用于反向传播，消耗大量内存。作者设计了一种可逆的<strong>Transformer</strong>，只需要保存最后输出层的结果，通过特殊的网络结构可以反推出中间层的参数，从而减少内存的消耗。</p>
+
+<p>作者将输入$x$拆分成两部分$x_1$和$x_2$，计算如下：</p>
+
+\[y_1 = x_1 + \text{Attention}(x_2)\]
+
+\[y_2 = x_2 + \text{FFN}(y_1)\]
+
+<p>则可以反向推出：</p>
+
+\[x_2 = y_2 - \text{FFN}(y_1)\]
+
+\[x_1 = y_1 - \text{Attention}(x_2)\]
+
+<p>因此只需要保存输入与输出，而不需要保存中间结果。在计算全连接层时，通常中间隐藏层的维度比较大，一次性计算需要比较大的内存占用。由于全连接层的输入是独立的，为了降低内存使用，可以进行拆分计算, 即分成若干组进行计算，通过时间成本换取空间成本：</p>
+
+\[y_2 = x_2 + \text{FFN}(y_1)=[x_2^{(1)} + \text{FFN}(y_1^{(1)});...;x_2^{(c)} + \text{FFN}(y_1^{(c)})]\]
+
+<h2 id="3-实验分析">3. 实验分析</h2>
+<p>实验验证了<strong>shared-QK</strong>和可逆结构对模型准确率几乎没有影响，但提高了模型速度，降低了参数量和内存占用。</p>
+
+<p><img src="https://pic.imgdb.cn/item/611628805132923bf8e99d9e.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/08/12/performer.html" class="read-next-link"></a>
+        <section>
+          <span>Rethinking Attention with Performers</span>
+          <p>  Performer: 通过随机投影将Attention的复杂度线性化.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/61136ff95132923bf8281465.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/08/10/linear.html" class="read-next-link"></a>
+          <section>
+            <span>Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention</span>
+            <p>  Linear Transformer: 使用线性注意力实现快速自回归的Transformer.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/611281935132923bf8da0262.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

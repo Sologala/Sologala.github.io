@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Task Learning Using Uncertainty to Weigh Losses for Scene Geometry and Semantics - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Multi-Task Learning Using Uncertainty to Weigh Losses for Scene Geometry and Semantics">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Multi-Task Learning Using Uncertainty to Weigh Losses for Scene Geometry and Semantics - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/09/05/uncertainty.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Multi-Task Learning Using Uncertainty to Weigh Losses for Scene Geometry and Semantics</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-09-05"><i class="iconfont icon-date"></i>05 Sep 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6131858844eaada73984a589.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>使用同方差不确定性调整多任务损失权重.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1705.07115v3">Multi-Task Learning Using Uncertainty to Weigh Losses for Scene Geometry and Semantics</a></li>
+</ul>
+
+<p>多任务学习的优化目标是多个任务目标的组合，通常使用对各个目标损失加权求和的方式构造总损失：</p>
+
+\[L_{total} = \sum_{i}^{} w_iL_i\]
+
+<p>然而任务权重$w_i$通常需要人工选择，且不同权重的选择对结果的影响是显著的。下图展示了作者同时学习一个分类任务和一个回归任务的结果。实验表明同时学习两个任务有时能获得比单独学习某个任务更好的表现，但是合适的权重很难人工选择。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61318aae44eaada7398e6ccc.jpg" alt="" /></p>
+
+<p>作者从<strong>不确定性</strong>(<strong>uncertainty</strong>)的角度出发，设计了一种自动设置任务权重的方法。在深度学习建模中，通常会引入两种形式的<a href="https://0809zheng.github.io/2022/08/02/uncertainty.html"><font color="blue">不确定性</font></a>：</p>
+<ul>
+  <li><strong>认知不确定性</strong>(<strong>epistemic uncertainty</strong>)：模型本身的不确定性，表示由于缺乏训练数据导致模型认知不足，可以通过增加训练数据来降低。</li>
+  <li><strong>偶然不确定性</strong>(<strong>aleatoric uncertainty</strong>)：表示由数据无法解释的信息导致的不确定性，可以通过增强观察所有解释变量的能力来降低。</li>
+</ul>
+
+<p>偶然不确定性又可以分成两个子类：</p>
+<ul>
+  <li><strong>异方差不确定性</strong>(<strong>heteroscedastic uncertainty</strong>)：又叫<strong>数据依赖</strong>(<strong>data-dependent</strong>)的不确定性，依赖于输入数据的不确定性，表现在模型的输出上。</li>
+  <li><strong>同方差不确定性</strong>(<strong>homoscedastic uncertainty</strong>)：又叫<strong>任务依赖</strong>(<strong>task-dependent</strong>)的不确定性，不依赖于输入数据，而是依赖于任务的不确定性，该不确定性对所有输入数据保持不变，但在不同任务之间变化。</li>
+</ul>
+
+<p>对于多任务学习，通常是对于同样的输入数据集，产生不同任务的输出结果。如本文中作者研究的是给定一张单目图像，同时进行语义分割、实例分割和深度估计任务。因此可以用同方差不确定性作为多任务学习中不同人物的权重指标。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6131e4c244eaada7397b379e.jpg" alt="" /></p>
+
+<p>对于具有参数$W$的模型$f^W(x)$，下面从回归任务和分类任务的角度分别推导考虑同方差不确定性时的损失函数。</p>
+
+<p>对于回归任务，将模型输出建模为具有观测噪声$\sigma$的<strong>Gaussian</strong>分布：</p>
+
+\[p(y|f^W(x)) = \mathcal{N}(f^W(x),\sigma^2)\]
+
+<p>在极大似然推断中，最大化概率模型的对数似然，写作：</p>
+
+\[\begin{aligned} \log p(y|f^W(x)) &amp;= \log \mathcal{N}(f^W(x),\sigma^2) \\ &amp;= \log (\frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{||y-f^W(x)||^2}{2\sigma^2}} ) \\ &amp;∝ -\frac{1}{2\sigma^2}||y-f^W(x)||^2-\log \sigma \end{aligned}\]
+
+<p>假设模型同时预测两个回归任务，则可以建模为：</p>
+
+\[\begin{aligned} p(y_1,y_2|f^W(x)) &amp;= p(y_1|f^W(x))\cdot p(y_2|f^W(x)) \\ &amp;=  \mathcal{N}(y_1;f^W(x),\sigma_1^2) \cdot \mathcal{N}(y_2;f^W(x),\sigma_2^2) \end{aligned}\]
+
+<p>最大化上述概率模型的对数似然，等价于最小化以下目标函数：</p>
+
+\[\begin{aligned} \mathcal{L}(W,\sigma_1,\sigma_2) &amp;= -\log(p(y_1,y_2|f^W(x))) \\ &amp;∝ \frac{1}{2\sigma_1^2}||y-f^W(x)||^2+\log \sigma_1+\frac{1}{2\sigma_2^2}||y-f^W(x)||^2+\log \sigma_2 \\&amp;= \frac{1}{2\sigma_1^2}\mathcal{L}_1(W) +\log \sigma_1+\frac{1}{2\sigma_2^2}\mathcal{L}_2(W) +\log \sigma_2 \end{aligned}\]
+
+<p>注意到上式中$\sigma$相当于任务损失的相对权重。噪声$\sigma$越小，表明同方差不确定度越小，则任务损失权重较高。$\log \sigma$相当于正则化项，防止噪声$\sigma$过大。</p>
+
+<p>对于分类任务，输出通过经过<strong>softmax</strong>函数进行归一化：</p>
+
+\[p(y|f^W(x)) = \text{softmax}(f^W(x)))\]
+
+<p>为了便于讨论，采用一种缩放的形式，引入温度系数$\sigma$用于衡量分布的平坦程度，将分类模型建模成<strong>Boltzmann</strong>分布(也称<strong>Gibbs</strong>分布)：</p>
+
+\[p(y|f^W(x)) = \text{softmax}(\frac{1}{\sigma^2}f^W(x)))\]
+
+<p>上述分类模型的对数似然表示为：</p>
+
+\[\begin{aligned} \log p(y|f^W(x)) &amp;= \log \text{softmax}(\frac{1}{\sigma^2}f^W(x)))  = \log \frac{\exp(\frac{1}{\sigma^2}f_c^W(x))}{\sum_{c}^{}\exp(\frac{1}{\sigma^2}f_c^W(x))} \\ &amp;= \frac{1}{\sigma^2}f_c^W(x)-\log \sum_{c}^{}\exp(\frac{1}{\sigma^2}f_c^W(x)) \\ &amp;= \frac{1}{\sigma^2}(f_c^W(x)-\log \sum_{c}^{}\exp(f_c^W(x))) + \frac{1}{\sigma^2}\log \sum_{c}^{}\exp(f_c^W(x))-\log \sum_{c}^{}\exp(\frac{1}{\sigma^2}f_c^W(x)) \\ &amp;= \frac{1}{\sigma^2}(\log \frac{\exp(f_c^W(x))}{\sum_{c}^{}\exp(f_c^W(x))}) + \log (\sum_{c}^{}\exp(f_c^W(x)))^{\frac{1}{\sigma^2}}-\log \sum_{c}^{}\exp(\frac{1}{\sigma^2}f_c^W(x))  \\ &amp;= \frac{1}{\sigma^2}(\log \frac{\exp(f_c^W(x))}{\sum_{c}^{}\exp(f_c^W(x))}) + \log (\sum_{c}^{}\exp(f_c^W(x)))^{\frac{1}{\sigma^2}}-\log \sum_{c}^{}\exp(\frac{1}{\sigma^2}f_c^W(x)) \\ &amp;= \frac{1}{\sigma^2}(\log \text{softmax}(f^W(x))) + \log \frac{(\sum_{c}^{}\exp(f_c^W(x)))^{\frac{1}{\sigma^2}}}{ \sum_{c}^{}\exp(\frac{1}{\sigma^2}f_c^W(x))} \end{aligned}\]
+
+<p>如果模型同时执行回归($y_1$是连续输出)和分类($y_2$是离散输出)任务，则目标函数可以表示为：</p>
+
+\[\begin{aligned} \mathcal{L}(W,\sigma_1,\sigma_2) &amp;= -\log(p(y_1,y_2=c|f^W(x))) \\ &amp;= -\log \mathcal{N}(y_1;f^W(x),\sigma_1^2)\cdot \text{softmax}(y_2=c;f^W(x),\sigma_2^2) \\ &amp;=  \frac{1}{2\sigma_1^2}||y-f^W(x)||^2+\log \sigma_1-\log p(y_2=c;f^W(x),\sigma_2^2) \\ &amp;= \frac{1}{2\sigma_1^2}||y-f^W(x)||^2+\log \sigma_1 - \frac{1}{\sigma_2^2}(\log \text{softmax}(f^W(x))) - \log \frac{(\sum_{c}^{}\exp(f_c^W(x)))^{\frac{1}{\sigma_2^2}}}{ \sum_{c}^{}\exp(\frac{1}{\sigma_2^2}f_c^W(x))} \\ &amp;= \frac{1}{2\sigma_1^2}||y-f^W(x)||^2+\log \sigma_1 + \frac{1}{\sigma_2^2}(-\log \text{softmax}(f^W(x))) + \log \frac{ \sum_{c}^{}\exp(\frac{1}{\sigma_2^2}f_c^W(x))}{(\sum_{c}^{}\exp(f_c^W(x)))^{\frac{1}{\sigma_2^2}}} \end{aligned}\]
+
+<p>若记回归损失\(\mathcal{L}_1(W)=\|y-f^W(x)\|^2\)，分类损失$\mathcal{L}_2(W)=-\log \text{softmax}(f^W(x))$，则总目标函数表示为：</p>
+
+\[\mathcal{L}(W,\sigma_1,\sigma_2) = \frac{1}{2\sigma_1^2}\mathcal{L}_1(W)+\log \sigma_1+\frac{1}{\sigma_2^2}\mathcal{L}_2(W)+\log \frac{\sum_{c}^{}\exp(\frac{1}{\sigma_2^2}f_c^W(x))}{(\sum_{c}^{}\exp(f_c^W(x)))^{\frac{1}{\sigma_2^2}}}\]
+
+<p>做近似$\frac{1}{\sigma_2}\sum_{c}^{}\exp(\frac{1}{\sigma_2^2}f_c^W(x))≈(\sum_{c}^{}\exp(f_c^W(x)))^{\frac{1}{\sigma_2^2}}$，则目标函数近似为：</p>
+
+\[\mathcal{L}(W,\sigma_1,\sigma_2) = \frac{1}{2\sigma_1^2}\mathcal{L}_1(W)+\log \sigma_1+\frac{1}{\sigma_2^2}\mathcal{L}_2(W)+\log \sigma_2\]
+
+<p>综上所述，可以将多任务损失建模为以下形式，对于第$k$个任务，引入观测噪声$\sigma_k$，则损失函数表现为：</p>
+
+\[\mathcal{L}(W,\sigma_1,...,\sigma_K) = \sum_{k=1}^{K}\frac{1}{2\sigma_k^2}\mathcal{L}_k(W)+\log \sigma_k\]
+
+<p>在实际实现时，为了提升数值稳定性，回归方差的对数$s=\log \sigma^2$，一方面是为了防止分母为$0$，另一方面是为了回归无范围约束的结果。</p>
+
+<p>作者通过实验验证，所提自动设置损失权重的方法能够使单个任务上具有最好的表现：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61320e4644eaada739c071ef.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/09/06/dwa.html" class="read-next-link"></a>
+        <section>
+          <span>End-to-End Multi-Task Learning with Attention</span>
+          <p>  多任务注意力网络与动态权重平均.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6136d64d44eaada7390856d5.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/09/04/swish.html" class="read-next-link"></a>
+          <section>
+            <span>Searching for Activation Functions</span>
+            <p>  Swish：自动搜索得到的一种自门控的激活函数.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/613080ac44eaada739a7b3b9.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

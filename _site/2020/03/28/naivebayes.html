@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>朴素贝叶斯(Naive Bayes) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="朴素贝叶斯(Naive Bayes)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="朴素贝叶斯(Naive Bayes) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/28/naivebayes.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>朴素贝叶斯(Naive Bayes)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-28"><i class="iconfont icon-date"></i>28 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63a1c411b1fccdcd362183e2.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Naive Bayes.</p>
+</blockquote>
+
+<p><strong>朴素贝叶斯(Naive Bayes)</strong>是一种软分类方法，它要求输入数据$X$的特征取值是离散的，给出可能属于每一个类别$Y$的概率值。</p>
+
+<p>对于二分类问题，每个样本的类别随机变量$y$服从伯努利(<strong>Bernoulli</strong>)分布，所有样本的类别变量$Y$服从二项(<strong>Binormial</strong>)分布；对于多分类问题，每个样本的类别随机变量$y$服从类别(<strong>Categorial</strong>或<strong>Multinoulli</strong>)分布，所有样本的类别变量$Y$服从多项(<strong>Multinormial</strong>)分布。对于输入数据$X$的每个特征$x_d$，也服从类别分布。</p>
+
+<p>给定数据集$(X,Y)$，朴素贝叶斯把分类模型建模为后验概率$P(Y|X)$：</p>
+
+\[P(Y|X) = \frac{P(X,Y)}{P(X)}= \frac{P(X|Y)P(Y)}{P(X)}\]
+
+<p>其中先验概率$P(Y)$可以通过类别$Y$求得；对条件概率$P(X|Y)$引入<strong>条件独立性假设</strong>，假设数据$X$的特征之间是独立的：</p>
+
+\[\begin{aligned} P(X=x|Y=c) &amp;= P(X_1=x_1,...,X_d=x_d|Y=c) \\ &amp; = \prod_d P(X_d=x_d|Y=c) \end{aligned}\]
+
+<p>根据训练数据集学习先验概率和条件概率。训练完成后，对于测试数据$X$，通过<strong>后验概率最大化</strong>判断其所属的类别：</p>
+
+\[\begin{aligned} c^* &amp;= \mathcal{\arg \max}_{c} P(Y=c|X) = \mathcal{\arg \max}_{c} \frac{P(X|Y=c)P(Y=c)}{P(X)} \\ &amp; \propto  \mathcal{\arg \max}_{c} P(X|Y=c)P(Y=c) \\ &amp; =  \mathcal{\arg \max}_{c} \prod_d P(X_d=x_d|Y=c)P(Y=c) \end{aligned}\]
+
+<p>在实践中，概率的连乘会导致较小的数值；为了提高方法的稳定性，计算上式的对数似然：</p>
+
+\[\sum_d \log P(X_d=x_d|Y=c) + \log P(Y=c)\]
+
+<h3 id="-讨论后验概率最大化等价于0-1损失的期望风险最小化">⚪ 讨论：后验概率最大化等价于0-1损失的期望风险最小化</h3>
+
+<p>定义分类的<strong>0-1</strong>损失：</p>
+
+\[L(Y, f(X)) = \begin{cases} 0, &amp; Y=f(X) \\ 1, &amp; Y\neq f(X) \end{cases}\]
+
+<p>则模型$f(x)$的期望风险为：</p>
+
+\[\begin{aligned} \Bbb{E}_{P(X,Y)}[L(Y, f(X))] &amp;= \sum_X \sum_Y L(Y, f(X))P(X,Y) \\ &amp; = \sum_X \sum_Y L(Y, f(X))P(Y|X)P(X)\\ &amp; = \sum_X \sum_c L(Y=c, f(X))P(Y=c|X)P(X) \\ &amp; = \Bbb{E}_{P(X)} [\sum_c L(Y=c, f(X))P(Y=c|X)] \end{aligned}\]
+
+<p>模型$f(x)$的最优值通过期望风险最小化寻找：</p>
+
+\[\begin{aligned} f(x)&amp; = \mathcal{\arg \min}_{f} \Bbb{E}_{P(X)} [\sum_c L(Y=c, f(X))P(Y=c|X)] \\ &amp; = \mathcal{\arg \min}_{y}  [\sum_c L(Y=c, y)P(Y=c|X=x)] \\ &amp; = \mathcal{\arg \min}_{y}  [\sum_c P(y \neq c|X=x)] \\ &amp; = \mathcal{\arg \min}_{y}  [1- P(y = c|X=x)] \\ &amp; = \mathcal{\arg \max}_{y}  [P(y = c|X=x)] \end{aligned}\]
+
+<p>因此<strong>0-1</strong>损失的期望风险最小化等价于后验概率最大化。</p>
+
+<h3 id="-朴素贝叶斯方法的贝叶斯估计">⚪ 朴素贝叶斯方法的贝叶斯估计</h3>
+
+<p>条件概率$P(X_d=x_d | Y=c)$的估计值可能为$0$，会影响到后验概率的计算。条件概率的贝叶斯估计为：</p>
+
+\[P(X_d=x_d | Y=c) = \frac{\sum_i I(X^i_d = x_d,Y^i=c)+\lambda}{\sum_iI(Y^i=c)+S_d \lambda}\]
+
+<p>上式相当于在随机变量各个取值的频数上增加一个正数$\lambda$。当$\lambda=0$时等价于极大似然估计；当$\lambda=1$时称为<strong>拉普拉斯平滑(Laplace smoothing)</strong>。</p>
+
+<h3 id="-实现朴素贝叶斯">⚪ 实现朴素贝叶斯</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NaiveBayes</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datas</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="c1"># 获取分类的类别, 输入np.array格式, 尺寸为[N, D], [N]
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">.</span><span class="n">tolist</span><span class="p">())</span>        
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">keys</span><span class="p">:</span>
+            <span class="c1"># 计算P(Y)
+</span>            <span class="n">PY</span> <span class="o">=</span> <span class="n">labels</span><span class="p">.</span><span class="n">tolist</span><span class="p">().</span><span class="n">count</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+            <span class="c1"># 收集标签为Y的数据
+</span>            <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span><span class="o">==</span><span class="n">key</span><span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="n">data_Y</span> <span class="o">=</span> <span class="n">datas</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="c1"># 计算P(X|Y)
+</span>            <span class="n">PX_Y</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">datas</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">data_Y</span><span class="p">[:,</span><span class="n">d</span><span class="p">].</span><span class="n">tolist</span><span class="p">()</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">PX_Y</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+                    <span class="n">PX_Y</span><span class="p">[</span><span class="n">d</span><span class="p">][</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">/</span><span class="n">N</span><span class="p">)</span>
+            <span class="c1"># 模型保存
+</span>            <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">"PY"</span><span class="p">]</span> <span class="o">=</span> <span class="n">PY</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">[</span><span class="n">key</span><span class="p">][</span><span class="s">"PX_Y"</span><span class="p">]</span> <span class="o">=</span> <span class="n">PX_Y</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="c1"># 预测一个数据的类别，尺寸为[D]
+</span>        <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="mf">0.00001</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">keys</span><span class="p">:</span>
+            <span class="c1"># 获取P(Y)
+</span>            <span class="n">PY</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">eps</span><span class="p">).</span><span class="n">get</span><span class="p">(</span><span class="s">"PY"</span><span class="p">)</span>
+            <span class="c1"># 分别获取P(X|Y)
+</span>            <span class="n">model_X</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">eps</span><span class="p">).</span><span class="n">get</span><span class="p">(</span><span class="s">"PX_Y"</span><span class="p">)</span>
+            <span class="n">PX_Y</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+                <span class="n">pb</span> <span class="o">=</span> <span class="n">model_X</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">eps</span><span class="p">).</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">d</span><span class="p">],</span><span class="n">eps</span><span class="p">)</span>
+                <span class="n">PX_Y</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">pb</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">PY</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">PX_Y</span><span class="p">))</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="n">results</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/29/tube.html" class="read-next-link"></a>
+        <section>
+          <span>Tube回归(Tube Regression)</span>
+          <p>  Tube Regression.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ed5f015c2a9a83be552b8e9.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/27/recommender-system.html" class="read-next-link"></a>
+          <section>
+            <span>Recommender System：推荐系统</span>
+            <p>  Recommender System.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ee37639c2a9a83be5987fba.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Normalizing Neural Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Self-Normalizing Neural Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Self-Normalizing Neural Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/09/02/selu.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Self-Normalizing Neural Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-09-02"><i class="iconfont icon-date"></i>02 Sep 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/612ddfcc44eaada739490630.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SELU：自标准化的指数线性单元.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Self-Normalizing Neural Networks</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1706.02515">link</a></li>
+</ul>
+
+<p><strong>SELU</strong>全称是<strong>scaled exponential linear unit</strong>，是对<strong>ELU (exponential linear unit)</strong>的改进。</p>
+
+<p><strong>SELU</strong>激活函数的设计思路是若激活函数的输入是均值为$0$,方差为$1$的<strong>i.i.d.</strong>随机变量，则通过激活函数后仍然保持均值为$0$,方差为$1$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/612decc544eaada7396536f2.jpg" alt="" /></p>
+
+<p>激活函数处的数据流如上图所示。记$a_1,…,a_K$为网络上一层的输出，假设它们是独立同分布的随机变量(不一定服从<strong>Gaussian</strong>)，求和后得到$z=\sum_{k=1}^{K}a_kw_k$；由中心极限定理$z$近似服从<strong>Gaussian</strong>。通过设计<strong>SELU</strong>激活函数使得本层输出$a=f(z)$仍然服从<strong>Gaussian</strong>，则实际上一层的输出(若也使用<strong>SELU</strong>)也是服从<strong>Gaussian</strong>的。</p>
+
+<p>通过合适的激活函数参数设计，可以使得<strong>SELU</strong>激活函数的输出服从$\mathcal{N}(0,1)$。通过合适的参数初始化方法，可以使得激活函数的输入也近似服从$\mathcal{N}(0,1)$。</p>
+
+<h1 id="1-selu的表达式">1. SELU的表达式</h1>
+
+<p><strong>ELU</strong>的表达式为：</p>
+
+\[\text{ELU}(x) =
+        \begin{cases}
+         x,  &amp; \text{if $x≥0$} \\
+        α(e^x-1), &amp; \text{if $x&lt;0$}
+        \end{cases}\]
+
+<p><strong>SELU</strong>在<strong>ELU</strong>的基础上额外增加了一个缩放因子：</p>
+
+\[\text{SELU}(x) =
+        \begin{cases}
+        \lambda x,  &amp; \text{if $x≥0$} \\
+        \lambda α(e^x-1), &amp; \text{if $x&lt;0$}
+        \end{cases}\]
+
+<p>其中：</p>
+
+\[α=1.6732632423543772848170429916717\]
+
+\[\lambda=1.0507009873554804934193349852946\]
+
+<h1 id="2-输出均值为0方差为1">2. 输出均值为0,方差为1</h1>
+<p><strong>SELU</strong>激活函数通过选择合适的参数$\alpha,\lambda$，使得输出服从$\mathcal{N}(0,1)$。参数的取值可以通过求解方程得到。</p>
+
+<p>给出输出应满足的一阶统计量(均值$=0$)对应的积分方程：</p>
+
+\[\int_{-∞}^{+∞} \frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}} \cdot \text{SELU}(x)dx = 0\]
+
+<p>及二阶统计量(方差$=1$)对应的积分方程：</p>
+
+\[\int_{-∞}^{+∞} \frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}} \cdot (\text{SELU}(x))^2dx = 1\]
+
+<p>整理得到方程组：</p>
+
+\[\int_{-∞}^{0} \frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}} \cdot \lambda α(e^x-1)dx + \int_{0}^{+∞} \frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}} \cdot \lambda xdx = 0\]
+
+\[\int_{-∞}^{0} \frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}} \cdot \lambda^2 α^2(e^x-1)^2dx + \int_{0}^{+∞} \frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}} \cdot \lambda^2 x^2dx = 1\]
+
+<p>使用<a href="https://0809zheng.github.io/2021/09/01/solve.html">sympy</a>库可以快速求解上述方程组：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">sympy</span>
+<span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">Symbol</span><span class="p">,</span> <span class="n">nsolve</span><span class="p">,</span> <span class="n">integrate</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="s">'x'</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="s">'a'</span><span class="p">)</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="s">'l'</span><span class="p">)</span>
+<span class="n">int1</span> <span class="o">=</span> <span class="n">integrate</span><span class="p">(</span><span class="n">sympy</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">sympy</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="o">-</span><span class="n">sympy</span><span class="p">.</span><span class="n">oo</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">int2</span> <span class="o">=</span> <span class="n">integrate</span><span class="p">(</span><span class="n">sympy</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">sympy</span><span class="p">.</span><span class="n">oo</span><span class="p">))</span>
+<span class="n">fn1</span> <span class="o">=</span> <span class="n">a</span><span class="o">*</span><span class="n">l</span><span class="o">/</span><span class="n">sympy</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sympy</span><span class="p">.</span><span class="n">pi</span><span class="p">)</span><span class="o">*</span><span class="n">int1</span> <span class="o">+</span> <span class="n">l</span><span class="o">/</span><span class="n">sympy</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sympy</span><span class="p">.</span><span class="n">pi</span><span class="p">)</span><span class="o">*</span><span class="n">int2</span> <span class="o">-</span> <span class="mi">0</span>
+<span class="n">int3</span> <span class="o">=</span> <span class="n">integrate</span><span class="p">(</span><span class="n">sympy</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">sympy</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="o">-</span><span class="n">sympy</span><span class="p">.</span><span class="n">oo</span><span class="p">,</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">int4</span> <span class="o">=</span> <span class="n">integrate</span><span class="p">(</span><span class="n">sympy</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">sympy</span><span class="p">.</span><span class="n">oo</span><span class="p">))</span>
+<span class="n">fn2</span> <span class="o">=</span> <span class="n">a</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">sympy</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sympy</span><span class="p">.</span><span class="n">pi</span><span class="p">)</span><span class="o">*</span><span class="n">int3</span> <span class="o">+</span> <span class="n">l</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">sympy</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">sympy</span><span class="p">.</span><span class="n">pi</span><span class="p">)</span><span class="o">*</span><span class="n">int4</span> <span class="o">-</span> <span class="mi">1</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">nsolve</span><span class="p">([</span><span class="n">fn1</span><span class="p">,</span><span class="n">fn2</span><span class="p">],</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">l</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="c1"># Matrix([[1.67326324235438], [1.05070098735548]])
+</span></code></pre></div></div>
+
+<p>求解得到：</p>
+
+\[α=1.67326324235438\]
+
+\[\lambda=1.05070098735548\]
+
+<h1 id="3-输入均值为0方差为1">3. 输入均值为0,方差为1</h1>
+<p><strong>SELU</strong>有效的前提是输入激活函数的变量应近似服从$\mathcal{N}(0,1)$，下面讨论如何实现。</p>
+
+<p>激活函数的输入表示为$z=\sum_{k=1}^{K}a_kw_k$，
+其中$a_1,…,a_K$为网络上一层的输出，$w_1,…,w_K$为网络参数。</p>
+
+<p>计算输入$z$的均值：</p>
+
+\[E[z] = E[\sum_{k=1}^{K}a_kw_k]\]
+
+<p>假设网络上一层的输出为独立同分布的随机变量，且均值为$E[a_k]=0$；则：</p>
+
+\[E[z] = E[\sum_{k=1}^{K}a_kw_k] = \sum_{k=1}^{K}w_kE[a_k] = 0\]
+
+<p>计算输入$z$的方差：</p>
+
+\[D[z] = E[(\sum_{k=1}^{K}a_kw_k)^2]-E^2[\sum_{k=1}^{K}a_kw_k]= E[(\sum_{k=1}^{K}a_kw_k)^2] \\ = E[\sum_{k=1}^{K}(a_kw_k)^2+\sum_{i=1}^{K}\sum_{j=1}^{K}a_iw_ia_jw_j]= E[\sum_{k=1}^{K}(a_kw_k)^2] = \sum_{k=1}^{K}w_k^2E[a_k^2]\]
+
+<p>假设网络上一层输出的方差为$D[a_k]=E[a_k^2]=1$；则：</p>
+
+\[D[z] = \sum_{k=1}^{K}w_k^2E[a_k^2] = \sum_{k=1}^{K}w_k^2 = \sum_{k=1}^{K}D[w] =K \cdot D[w]\]
+
+<p>不妨取$E[w]=0$，$D[w]=\frac{1}{K}$，则有：</p>
+
+\[D[z] = \sum_{k=1}^{K}w_k^2 = \sum_{k=1}^{K}(w_k-E[w])^2 = \sum_{k=1}^{K}D[w] =K \cdot D[w] = 1\]
+
+<p>综上所述，若希望激活函数的输入近似服从$\mathcal{N}(0,1)$，则需要上一层的输出独立同分布于$\mathcal{N}(0,1)$，且该层参数服从$\mathcal{N}(0,\frac{1}{K})$。</p>
+
+<p>在实践中，若所有隐藏层都使用<strong>SELU</strong>激活函数，则隐藏层的输入自动满足近似服从$\mathcal{N}(0,1)$；对于输入层只需对数据进行归一化即可；对于每一层的参数则可以从$\mathcal{N}(0,\frac{1}{K})$中采样进行随机初始化。</p>
+
+<h1 id="4-实验分析">4. 实验分析</h1>
+<p>作者对比了使用<strong>BatchNorm</strong>和<strong>SELU</strong>激活函数的效果。实验表明<strong>SELU</strong>激活函数具有类似于<strong>BatchNorm</strong>的对隐藏层自动进行归一化的效果，且提供了更稳定的训练过程和更好的模型表现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/612ddff244eaada739495b65.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/09/03/elish.html" class="read-next-link"></a>
+        <section>
+          <span>The Quest for the Golden Activation Function</span>
+          <p>  ELiSH：使用遗传算法寻找最优激活函数.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/612f2f0f44eaada7399b134b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/09/01/solve.html" class="read-next-link"></a>
+          <section>
+            <span>使用sympy.solve求解方程</span>
+            <p>  sympy.solve.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

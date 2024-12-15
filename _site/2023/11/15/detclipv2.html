@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DetCLIPv2: Scalable Open-Vocabulary Object Detection Pre-training via Word-Region Alignment - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="DetCLIPv2: Scalable Open-Vocabulary Object Detection Pre-training via Word-Region Alignment">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="DetCLIPv2: Scalable Open-Vocabulary Object Detection Pre-training via Word-Region Alignment - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/11/15/detclipv2.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>DetCLIPv2: Scalable Open-Vocabulary Object Detection Pre-training via Word-Region Alignment</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-11-15"><i class="iconfont icon-date"></i>15 Nov 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/658bde38c458853aef139aca.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DetCLIPv2：通过词汇-区域对齐实现可扩展开放词汇目标检测预训练.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2304.04514">DetCLIPv2: Scalable Open-Vocabulary Object Detection Pre-training via Word-Region Alignment</a></li>
+</ul>
+
+<p>本文引入了<strong>DetCLIPv2</strong>，一个端到端的开放词汇目标检测预训练框架。这个框架允许模型识别未知类别的目标，而无需预定义的目标类别列表，从而满足了多种实际应用场景的需求。</p>
+<ul>
+  <li><strong>DetCLIPv2</strong>不依赖教师模型来提供伪标签或引导训练过程。它通过联合训练多源数据，包括检测、定位和图像文本对，从而同时学习了定位能力和广泛概念的知识。</li>
+  <li>为了有效地利用图像文本对数据进行检测学习，<strong>DetCLIPv2</strong>采用了一种基于最优匹配的集合相似度方法，以指导对比学习，从而提高性能。</li>
+  <li>为了减轻大规模图像文本对数据带来的计算负担，<strong>DetCLIPv2</strong>采用了低分辨率输入，从而提高了训练效率。</li>
+</ul>
+
+<p><strong>DetCLIPv2</strong>以端到端的方式执行检测、定位和图像对数据的联合训练。为构建一个强大的开放世界目标检测系统，<strong>DetCLIPv2</strong>将来自不同数据源的数据，即检测、定位和图像文本对用于预训练。该架构包括以下主要组件：</p>
+<ul>
+  <li>图像编码器：用于从输入图像中提取区域嵌入（<strong>region embeddings</strong>）$f^P$。这个组件有助于模型理解图像中的视觉信息。</li>
+  <li>文本编码器：用于计算输入名词短语的单词嵌入（<strong>word embeddings</strong>）$f^T$。这个组件有助于模型理解文本信息。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/658be095c458853aef1b3bf3.jpg" alt="" /></p>
+
+<h2 id="1-统一数据定制-a-unified-data-formulation">1. 统一数据定制 A Unified Data Formulation</h2>
+
+<p><strong>DetCLIPv2</strong>使用了一个并行的<strong>formulation</strong>来统一来自不同来源的数据格式，该格式是一个三元组的形式：</p>
+
+\[\left( x^I, \{b_i\}_{i=1}^N, \{t_j\}_{j=1}^M \right)\]
+
+<p>其中 $x$ 是图像，$b_i$ 和 $t_j$ 分别表示一组边界框注释和概念名称。这个三元组的构建方式因不同类型的数据而异：</p>
+<ul>
+  <li>检测数据（<strong>Detection</strong>）：$T$是由数据集中采样的类别名称构建的，由图像中出现的类别和其他随机采样的负例类别组成。为了明确提供各种概念之间的关系，在训练和测试阶段都应用了概念丰富化技术，即每个$t_j$通过将其类别名称与相应的定义进行连接而获得。</li>
+  <li>定位数据（<strong>Grounding</strong>）：首先从原始标题中提取名词短语（提供在注释中）形成一个正概念集$T_{pos}$，为了提供足够多的负概念用于学习，还从构建的概念字典中随机采样一个不包含在标题中的负概念集$T_{neg}$。最终的类别名称集合由$T=T_{pos}∪ T_{neg}$组成。</li>
+  <li>图像文本对数据（<strong>Image-text pairs</strong>）：由于不存在实例级别的注释，因此$b_i=\phi$。$T$由原始标题和从标题中提取的名词短语组成。</li>
+</ul>
+
+<h2 id="2-对比学习">2. 对比学习</h2>
+
+<p><strong>DetCLIPv2</strong>从大规模图像文本对数据中学习，以实现细粒度的词-区域对应，而不依赖于实例级别的注释。</p>
+
+<p>给定一个图像文本对$(x^I,x^T)$，从$x^T$中提取一组名词短语，并将\(\left( x^I, \{t_j\}_{j=1}^M \right)\)作为模型的输入。</p>
+
+<p>图像编码器生成一组<strong>proposal</strong> \(\{p_k\}_{k=1}^K\)，文本编码器提取名词短语\(\{t_j\}_{j=1}^M\)的文本嵌入$f^T$。词-区域对齐的对比学习是基于$P$和$T$之间的集合相似性构建的。通过计算以下公式来找到最佳匹配：</p>
+
+\[m_j = {\arg\max}_{0&lt;k\leq K} [f^T]_j^T[f^P]_k\]
+
+<p>然后通过聚合所有词-区域相似性来计算文本与图像之间的相似性:</p>
+
+\[s^T(x^I,x^T) = {1\over M} \sum_{j=1}^M [f^T]_j^T[f^P]_{m_j}\]
+
+<p>此外每个文本概念都应该对应于多个区域。这种设计可以通过使用文本概念和所有视觉区域之间的软最大加权和相似度来建模:</p>
+
+\[s^{T}(x^{I},x^{T})=\frac{1}{M}\sum_{j=1}^{M}\sum_{k=1}^{P}\frac{\exp(s_{j,k}/\tau_{t})}{\sum_{i=1}^{P}\exp(s_{j,i}/\tau_{t})}s_{j,k}\]
+
+<p>基于引入的词-区域对齐相似性，可以执行图像-文本对之间的标准对比学习。具体来说，对于一个批次$B$的图像-文本对\(\{(x_i^I,x_i^T)\}_{i=1}^B\)，对比损失可以表示为:</p>
+
+\[\mathcal{L}_{c t s}=\mathcal{L}_{T\rightarrow I}=-\frac{1}{B}\log\frac{\exp(s^{T}(x_{i}^{I},x_{i}^{T})/\tau)}{\sum_{j=1}^{B}\exp(s^{T}(x_{j}^{I},x_{i}^{T})/\tau)}\]
+
+<p><strong>DetCLIPv2</strong>只考虑了文本到图像的对比损失，而不考虑图像到文本的对比损失，因为从互联网爬取的图像文本对数据存在着部分标记的问题，大多数情况下，文本只描述了图像中出现的物体的一小部分，即大多数区域建议无法在标题文本中找到它们的对应匹配。因此使用图像到文本的匹配可能会导致明显的性能下降。</p>
+
+<p>为了选择与文本描述最相关的图像区域，以便模型能够更好地学习文本和图像之间的关联，<strong>DetCLIPv2</strong>采用了一种 <strong>Proposal</strong> 选择策略。对于每个候选区域，模型计算其与批次中所有文本概念的相似性，并使用最大相似性作为其 <strong>objectness score</strong>。根据 <strong>objectness score</strong> ，<strong>DetCLIPv2</strong>在<strong>NMS</strong>操作后选择了前<strong>k</strong>个<strong>Proposal</strong> 。</p>
+
+<h2 id="3-模型结构与训练目标">3. 模型结构与训练目标</h2>
+
+<p><strong>DetCLIPv2</strong>使用了基于<strong>vanilla ATSS</strong>检测器的架构，同时配备了基于<strong>Transformer</strong>的文本编码器。<strong>DetCLIPv2</strong> 的一个特殊的设计是在分类头部的开头插入了轻量级的可变形卷积。</p>
+
+<p>通过在分类头中引入可变形卷积层，模型的分类头和回归头之间建立了一种关联，使得梯度信号能够从分类头流回回归头。这样，即使在没有监督信号的情况下进行训练（如图像-文本对训练），模型的回归头也可以从大规模图像-文本对的训练中受益。这种设计的关键在于，通过学习更好的骨干特征的空间聚合，回归头能够获得更好的目标定位能力，从而提高了整个模型在目标检测任务中的性能。</p>
+
+<p><strong>DetCLIPv2</strong>的总体目标包括：</p>
+<ul>
+  <li>$L_{align}$：对齐损失，用于衡量模型的对齐能力。</li>
+  <li>$L_{cts}$：对比损失，用于学习图像和文本之间的关联。</li>
+  <li>$L_{reg}$：回归损失，用于定位目标。</li>
+  <li>$L_{center}$：中心度损失，用于帮助模型更好地定位目标中心。</li>
+</ul>
+
+\[L=
+\begin{cases}
+L_{align} + \alpha L_{reg} + \beta L_{center} &amp; \text{for detection} \\
+L_{align} &amp; \text{for grounding} \\
+\lambda L_{cts} &amp; \text{for image-text pairs} \\
+\end{cases}\]
+
+<h2 id="4-联合训练-joint-training">4. 联合训练 Joint Training</h2>
+
+<p><strong>DetCLIPv2</strong>在训练过程中执行与异构数据集的联合训练。在训练期间，将属于同一类型的数据分组为一个全局批次。在每次迭代中，选择一种类型的数据进行训练。不同类型的数据使用不同的输入分辨率和批次大小进行训练。具体来说：</p>
+<ul>
+  <li>对于检测（<strong>detection</strong>）和定位（<strong>grounding</strong>）数据，使用高分辨率的输入和较小的批次大小进行训练。这有助于提高对目标的精确定位。</li>
+  <li>对于图像-文本对数据（<strong>image-text pairs</strong>），采用低分辨率的输入和较大的批次大小。这有助于增加对比学习中的负样本数量，并显著降低大规模图像-文本对的训练成本。</li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/11/28/semaug.html" class="read-next-link"></a>
+        <section>
+          <span>Semantic Generative Augmentations for Few-Shot Counting</span>
+          <p>  少样本计数的语义生成增强.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/66864476d9c307b7e91d5d77.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/11/14/detclip.html" class="read-next-link"></a>
+          <section>
+            <span>DetCLIP: Dictionary-Enriched Visual-Concept Paralleled Pre-training for Open-world Detection</span>
+            <p>  DetCLIP：用于开放世界检测的字典增强视觉概念并行预训练.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/658b9cfac458853aef30f798.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

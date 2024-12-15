@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parameter-Efficient Transfer Learning with Diff Pruning - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Parameter-Efficient Transfer Learning with Diff Pruning">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Parameter-Efficient Transfer Learning with Diff Pruning - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/02/12/diff.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Parameter-Efficient Transfer Learning with Diff Pruning</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-02-12"><i class="iconfont icon-date"></i>12 Feb 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648e9be61ddac507cc5db84e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>通过Diff Pruning实现参数高效的迁移学习.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2012.07463">Parameter-Efficient Transfer Learning with Diff Pruning</a></li>
+</ul>
+
+<p>针对特定任务对预训练的模型进行微调是当代<strong>NLP</strong>的主流模式，在一系列自然语言理解任务中取得了最先进的结果。虽然这种方法简单明了，在经验上也很有效，但很难扩展到多任务、内存受限的情况下，因为它需要为每个任务存储一整套模型参数。</p>
+
+<p>本文提出<strong>Diff pruning</strong>，通过一个特定任务的 <strong>diff</strong> 向量扩展基础模型。只需要微调$0.5\%$的预训练参数。为了学习这个向量，将特定任务的模型参数重参数化为$\theta_{task}=\theta_{pretrained}+\delta_{task}$，其中预训练的参数向量$\theta_{pretrained}$是固定的，特定任务的 <strong>diff</strong> 向量$\delta_{task}$是需要微调的，进而构造以下经验风险最小化：</p>
+
+\[\min_{\delta} L(\theta+\delta) + \lambda R(\theta+\delta)\]
+
+<p>微调模型的成本是<strong>diff</strong> 向量$\delta$。如果能将$\delta$正则化，使其稀疏，从而使\(\|\delta_0\|\leq \|\theta\|\)，那么随着任务数量的增加，这种方法可以变得更具有参数效率。可以用$\delta$的<strong>L0-norm</strong>惩罚来指定这一目标:</p>
+
+\[R(\theta+\delta) = ||\delta||_0\]
+
+<p>考虑到<strong>L0-norm</strong>的计算是不可微的，为了近似这个<strong>L0</strong>目标，作者采用了一种基于梯度的学习方法，即使用一个宽松的掩码向量进行<strong>L0</strong>稀疏度学习。这种方法将<strong>binary vector</strong>放宽到连续空间，然后与密集的权重向量相乘，以确定在训练中应用多少权重向量。为了应用这种方法，将$\delta$分解成一个二进制掩码向量$z$乘以一个密集向量$w$:</p>
+
+\[\delta = z \odot w, z\in \{0,1\},w\in R^d\]
+
+<p>把$z$初始化为参数$\alpha$控制的伯努利分布$p(z;\alpha)$，则目标函数可以写作$z$的期望形式：</p>
+
+\[\min_{\alpha,w} \mathbb{E}_{z \sim p(z;\alpha)}\left[ L(\theta+\delta) + \lambda ||\delta||_0 \right]\]
+
+<p>在上述目标中，$z$仍然是离散的。将$z$放宽到连续空间$[0,1]^d$，并采用拉伸的<strong>Hard-Concrete</strong>分布，这样就可以使用路径梯度估计器。具体来说，$z$被定义为来自均匀分布的样本$u$的一个确定性和可微函数。</p>
+
+\[\begin{aligned}
+u &amp; \sim U[0,1] \\ 
+s &amp;= \sigma(\log(u) - \log(1-u)+\alpha) \\
+\hat{s} &amp;= s\times(r-l) + l \\
+z &amp;= \min(1, \max(0, \hat{s}))
+\end{aligned}\]
+
+<p>此处$l&lt;0,r&gt;1$是两个常数，用来将$s$拉伸到区间$(l,r)^d$，然后用<strong>min-max</strong>操作将它夹在$[0,1]^d$中。此时得到一个<strong>L0-norm</strong>的可微闭式表达：</p>
+
+\[\mathbb{E}\left[  ||\delta||_0 \right] = \sum_{i=1}^d \sigma\left( \alpha_{i}-\log\frac{-l}{r} \right)\]
+
+<p>最终的优化问题可以表示为：</p>
+
+\[\min_{\alpha,w} \mathbb{E}_{u \sim U[0,1]}\left[ L(\theta+z \odot w)\right] + \lambda \sum_{i=1}^d \sigma\left( \alpha_{i}-\log\frac{-l}{r} \right)\]
+
+<p>作者对不同任务设置了不同的<strong>diff</strong> 向量进行微调。下图显示了每个任务中不同层的非零 <strong>diff</strong> 参数的百分比。结果表明不同任务的微调确实修改了网络的不同部分，尽管有些任务之间存在一些质量上的相似性，例如<strong>QNLI</strong>和<strong>QQP</strong>（都必须对问题进行编码），以及<strong>MRPC</strong>和<strong>STS-B</strong>（都必须预测句子间的相似性）。嵌入层（最上面一层）在所有任务中的修改都很稀疏。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648eaa301ddac507cc72bd85.jpg" alt="" /></p>
+
+<p>为了实现设置一个精确的稀疏率，作者对 <strong>diff</strong> 向量$\delta$使用幅度修剪(<strong>magnitude pruning</strong>)，通过在$\delta$中只保留前$t\% \times d$的值来达到稀疏率$t\%$。结果表明，应用幅度修剪来投影到<strong>L0-ball</strong>上能够实现精确的稀疏目标（稀疏率设置为$0.5\%$），并且在性能上几乎没有损失。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ea9a71ddac507cc71f886.jpg" alt="" /></p>
+
+<p>为了使<strong>diff pruning</strong>能够适应模型结构，考虑对其进行结构化的扩展。<strong>structured diff pruning</strong>可以让模型学会在局部区域修改参数，而不是独立处理每个参数。首先将参数索引分为$G$组$g(1),…,g(G)$，然后为每个组$g(j)$引入二进制掩码向量$z^j$，则把增量参数分解为：</p>
+
+\[\delta^j_i = z_i \cdot z^j \cdot w\]
+
+<p>对应的<strong>L0-norm</strong>的可微闭式表达：</p>
+
+\[\mathbb{E}\left[  ||\delta||_0 \right] = \sum_{j=1}^G\sum_{i=1}^d\mathbb{E}[1\{z_i\cdot z^j &gt; 0\}] \\
+= \sum_{j=1}^G\sum_{i=1}^d \sigma\left( \alpha_{i}-\log\frac{-l}{r} \right) \cdot \sigma\left( \alpha^j-\log\frac{-l}{r} \right)\]
+
+<p>结构化<strong>Diff Pruning</strong> 为每个组引入了一个额外的掩码，这鼓励了对整个组进行 <strong>pruning</strong>。结果发现结构化<strong>Diff Pruning</strong>导致的微调模型更有可能使整个组与它们的预训练值（零差异）没有变化。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648eacd51ddac507cc776fb7.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/02/13/mam.html" class="read-next-link"></a>
+        <section>
+          <span>Towards a Unified View of Parameter-Efficient Transfer Learning</span>
+          <p>  参数高效迁移学习的统一视角.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/648eaec71ddac507cc7a386f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/02/11/wifidensepose.html" class="read-next-link"></a>
+          <section>
+            <span>DensePose From WiFi</span>
+            <p>  通过WiFi信号实现密集的人体姿态估计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63e6e3464757feff339444f9.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

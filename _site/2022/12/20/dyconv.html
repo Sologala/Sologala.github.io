@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DyNet: Dynamic Convolution for Accelerating Convolutional Neural Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="DyNet: Dynamic Convolution for Accelerating Convolutional Neural Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="DyNet: Dynamic Convolution for Accelerating Convolutional Neural Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/12/20/dyconv.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>DyNet: Dynamic Convolution for Accelerating Convolutional Neural Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-12-20"><i class="iconfont icon-date"></i>20 Dec 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63b132a62bbf0e799406db2c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DyNet：加速卷积神经网络的动态卷积.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2004.10694">DyNet: Dynamic Convolution for Accelerating Convolutional Neural Networks</a></li>
+</ul>
+
+<p>正如已有网络剪枝技术所提，<strong>CNN</strong>中的卷积核存在相关性。本文作者首先对现有网络的卷积核进行了相关性分析和可视化：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b1335f2bbf0e79940da56c.jpg" alt="" /></p>
+
+<p>结果表明大部分网络的输出激活有较强的相关性。作者提出可以通过多个卷积核的动态融合来替代多个相关卷积核的协同组合，因此设计了如下动态卷积。</p>
+
+<p>动态卷积的目标是学习一组核系数并用于融合多个卷积核为一个动态核。作者采用可训练的系数预测模块预测系数，然后采用动态生成模块进行卷积核融合。</p>
+
+<p>系数预测模块可以基于图像内容预测融合系数。该模块由全局平均池化与全连接层构成。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b134d92bbf0e79941b4828.jpg" alt="" /></p>
+
+<p>动态生成模块根据预测的系数对固定的卷积核进行融合。融合过程是分别在每个输出通道上进行的，若应用$K$个固定卷积核，特征的输出通道数为$C_{out}$，则权重向量的长度为$KC_{out}$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b135b92bbf0e7994235144.jpg" alt="" /></p>
+
+<p>在训练过程中，由于每张输入图像的动态卷积核都是不一样的，所以在一个<strong>batch</strong>里并行计算是困难的。因此作者提出在训练阶段基于预测的系数融合特征，而不是融合卷积核，而这两种方式是等价的：</p>
+
+\[\begin{aligned} y(p_0) &amp;= \sum_{p_n \in \mathcal{R}} (\sum_{k=1}^K \pi_k(x)w_k(p_n)) \cdot x(p_0+p_n)  \\ &amp;= \sum_{k=1}^K \pi_k(x)(\sum_{p_n \in \mathcal{R}} w_k(p_n)\cdot x(p_0+p_n) ) \\ &amp;= \sum_{k=1}^K \pi_k(x)y_k(p_0) \end{aligned}\]
+
+<p>作者给出了<strong>mobileNet、shuffleNet、resnet18、resnet50</strong>上增加动态卷积的方式：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b138f32bbf0e799440c50e.jpg" alt="" /></p>
+
+<p>实验结果表明，在相近的计算量下，<strong>Dy-MobileNetv3-small</strong>的性能更高；在性能接近的情况下，<strong>Dy-ResNet50</strong>的计算量减少了三分之二。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b139252bbf0e79944294b9.jpg" alt="" /></p>
+
+<p>相关性的可视化也表明，引入动态卷积后卷积核之间的相关性减少。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b139662bbf0e799444ec52.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="n">F</span>
+<span class="kn">from</span> <span class="nn">torch.nn.modules.conv</span> <span class="kn">import</span> <span class="n">_ConvNd</span>
+<span class="kn">from</span> <span class="nn">torch.nn.modules.utils</span> <span class="kn">import</span> <span class="n">_pair</span>
+<span class="kn">from</span> <span class="nn">torch.nn.parameter</span> <span class="kn">import</span> <span class="n">Parameter</span>
+
+
+<span class="k">class</span> <span class="nc">_coefficient</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">num_experts</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_coefficient</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_experts</span> <span class="o">=</span> <span class="n">num_experts</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout_rate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">num_experts</span><span class="o">*</span><span class="n">out_channels</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_experts</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    
+    
+<span class="k">class</span> <span class="nc">DyNet2D</span><span class="p">(</span><span class="n">_ConvNd</span><span class="p">):</span>
+    <span class="sa">r</span><span class="s">"""
+    in_channels (int): Number of channels in the input image
+    out_channels (int): Number of channels produced by the convolution
+    kernel_size (int or tuple): Size of the convolving kernel
+    stride (int or tuple, optional): Stride of the convolution. Default: 1
+    padding (int or tuple, optional): Zero-padding added to both sides of the input. Default: 0
+    padding_mode (string, optional): ``'zeros'``, ``'reflect'``, ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
+    dilation (int or tuple, optional): Spacing between kernel elements. Default: 1
+    groups (int, optional): Number of blocked connections from input channels to output channels. Default: 1
+    bias (bool, optional): If ``True``, adds a learnable bias to the output. Default: ``True``
+    num_experts (int): Number of experts per layer 
+    """</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">bias</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">padding_mode</span><span class="o">=</span><span class="s">'zeros'</span><span class="p">,</span> <span class="n">num_experts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+        <span class="n">kernel_size</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">)</span>
+        <span class="n">stride</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span>
+        <span class="n">dilation</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">dilation</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DyNet2D</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span>
+            <span class="bp">False</span><span class="p">,</span> <span class="n">_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">padding_mode</span><span class="p">)</span>
+
+        <span class="c1"># 全局平均池化
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">_avg_pooling</span> <span class="o">=</span> <span class="n">functools</span><span class="p">.</span><span class="n">partial</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="n">adaptive_avg_pool2d</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># 注意力全连接层
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">_coefficient_fn</span> <span class="o">=</span> <span class="n">_coefficient</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">num_experts</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="p">)</span>
+        <span class="c1"># 多套卷积层的权重
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span>
+            <span class="n">num_experts</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">in_channels</span> <span class="o">//</span> <span class="n">groups</span><span class="p">,</span> <span class="o">*</span><span class="n">kernel_size</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">reset_parameters</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_conv_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">padding_mode</span> <span class="o">!=</span> <span class="s">'zeros'</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="n">pad</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">_padding_repeated_twice</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">padding_mode</span><span class="p">),</span>
+                            <span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">bias</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">stride</span><span class="p">,</span>
+                            <span class="n">_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="p">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">groups</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">bias</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">stride</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="p">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">groups</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span> <span class="c1"># [b, c, h, w]
+</span>        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+            <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># [1, c, h, w]
+</span>            <span class="n">pooled_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_avg_pooling</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="c1"># [1, c, 1, 1]
+</span>            <span class="n">routing_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_coefficient_fn</span><span class="p">(</span><span class="n">pooled_inputs</span><span class="p">)</span> <span class="c1"># [k,]
+</span>            <span class="n">kernels</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">routing_weights</span><span class="p">[:</span> <span class="p">,</span> <span class="p">:,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_conv_forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">kernels</span><span class="p">)</span>
+            <span class="n">res</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/12/21/dynamicconv.html" class="read-next-link"></a>
+        <section>
+          <span>Dynamic Convolution: Attention over Convolution Kernels</span>
+          <p>  DynamicConv：卷积核上的注意力.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63b0f93a2bbf0e799406a2d3.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/12/19/odconv.html" class="read-next-link"></a>
+          <section>
+            <span>Omni-Dimensional Dynamic Convolution</span>
+            <p>  ODConv：全维动态卷积.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63b1478f2bbf0e7994c72248.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

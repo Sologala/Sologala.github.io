@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度学习中的优化算法(Optimization) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="深度学习中的优化算法(Optimization)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="深度学习中的优化算法(Optimization) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/02/optimization.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>深度学习中的优化算法(Optimization)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-02"><i class="iconfont icon-date"></i>02 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e7ee115504f4bcb04298afb.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Optimization in Deep Learning.</p>
+</blockquote>
+
+<p>本文目录：</p>
+<ol>
+  <li>深度学习中的优化问题</li>
+  <li>基于梯度的优化算法</li>
+  <li>常用的梯度下降算法</li>
+  <li>其他优化算法</li>
+</ol>
+
+<h1 id="1-深度学习中的优化问题">1. 深度学习中的优化问题</h1>
+<p>深度学习中的<strong>优化</strong>(<strong>optimization</strong>)问题通常是指在已有的数据集上实现最小的训练误差(<strong>training error</strong>)。记深度网络的待优化参数为$\theta$，包含$N$个训练样本$x$的数据集为$X$，损失度量为$l(x;\theta)$；则损失函数定义为：</p>
+
+\[L(\theta)= \frac{1}{N}\sum_{x \in X}^{}l(x;\theta)\]
+
+<p>优化问题建模为寻找使得损失函数为<strong>全局最小(global minima)</strong>的参数$\theta^*$:</p>
+
+\[\theta^*=\mathcal{\arg \min}_{\theta} L(\theta)\]
+
+<p>在实践中，优化深度网络存在以下困难：</p>
+<ol>
+  <li><strong>网络结构多样性</strong>：深度网络是高度非线性的模型，网络结构的多样性阻碍了构造通用的优化方法；网络通常含有比较多的参数，难以优化。</li>
+  <li><strong>非凸优化</strong>：深度网络的损失函数是高维空间的非凸函数，其损失曲面存在大量<strong>局部极小(local minima)</strong>和<strong>鞍点(saddle point)</strong>，这些点也满足梯度为$0$。
+目前常用的优化方法大多数是基于梯度的，因此在寻找损失函数的全局最小值点的过程中，有可能会落入局部极小值点或鞍点上。</li>
+</ol>
+
+<p>注：鞍点是指梯度为$0$但是<strong>Hessian</strong>矩阵不是半正定的点。
+<img src="https://pic.imgdb.cn/item/61ef7aec2ab3f51d912a465c.jpg" alt="" /></p>
+
+<p>目前深度学习中的优化问题尚没有通用的解决方法，有许多工作尝试给出优化过程和损失函数的直觉解释：</p>
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/07/12/deep-ensemble.html"><font color="Blue">Deep Ensembles: A Loss Landscape Perspective</font></a>：通过随机初始化训练一系列模型，使每个模型都收敛到不同的局部极小值，将这些模型集成起来对最终的结果有很大的提升。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/25/igr.html"><font color="Blue">Implicit Gradient Regularization</font></a>：梯度下降过程会在损失函数中隐式地引入损失梯度的梯度惩罚项，具有正则化模型的效果。</li>
+  <li><a href="https://0809zheng.github.io/2021/05/19/kernalmachine.html"><font color="Blue">Every Model Learned by Gradient Descent Is Approximately a Kernel Machine</font></a>：使用梯度下降优化的深度学习模型近似于使用路径核的核方法构造的模型。</li>
+  <li><a href="https://arxiv.org/abs/1406.2572">Identifying and attacking the saddle point problem in high-dimensional non-convex optimization</a>：极小值点要求在特征的每个维度上都是极小点，这种情况概率比较低。在实践中，损失曲面上大部分梯度为零的点都是鞍点。</li>
+  <li><a href="https://arxiv.org/abs/1412.0233v3">The Loss Surfaces of Multilayer Networks</a>：在非常大的神经网络中，大部分局部极小点和全局最小点是近似的；因此在训练神经网络时，通常没有必要找全局最小点，这反而可能过拟合。</li>
+  <li><a href="https://arxiv.org/abs/1712.09913">Visualizing the Loss Landscape of Neural Nets</a>：由于深度网络的参数非常多且有一定的冗余性，每个参数对总损失的影响非常小。这使得损失函数在局部极小点附近通常是一个平坦的区域，即<strong>平坦最小值(flat minima)</strong>而不是<strong>尖锐最小值(sharp minima)</strong>，如下图所示。这使得模型收敛于局部极小值时更加<strong>robust</strong>，即微小的参数变动不会剧烈地影响模型能力。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/61ef7c112ab3f51d912b2ade.jpg" alt="" /></p>
+
+<h1 id="2-基于梯度的优化算法">2. 基于梯度的优化算法</h1>
+<p>深度学习中的优化问题通常用<strong>梯度下降(Gradient Descent, GD)</strong>算法求解，它是一种一阶近似方法。将神经网络的参数为$θ$初始化为$θ_0$，对损失函数$l(θ)$在$θ_0$处进行一阶<strong>Taylor</strong>展开：</p>
+
+\[l(θ)=l(θ_0)+\nabla_{\theta} l(θ_0)(θ-θ_0)+o(θ-θ_0)^2\]
+
+<p>注意到若使损失函数$l(θ)$减小，需要满足：</p>
+
+\[\nabla_{\theta} l(θ_0)(θ-θ_0)&lt;0\]
+
+<p>当梯度$\nabla_{\theta} l(θ_0)$大于零时，应该减小$\theta$；当梯度$\nabla_{\theta} l(θ_0)$小于零时，应该增大$\theta$。综上所述，应该沿梯度$\nabla_{\theta}$的负方向更新参数。</p>
+
+<p>在执行梯度下降时需要指定每次计算梯度时所使用数据的<strong>批量(batch)</strong> $\mathcal{B}$ 和<strong>学习率(learning rate)</strong> $\gamma$。若记第$t$次参数更新时的梯度为$g_t=\frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{}\nabla_{\theta} l(θ_{t-1})$，则参数更新公式：</p>
+
+\[θ_t=θ_{t-1}-\gamma g_t\]
+
+<h2 id="1-超参数的选择">(1) 超参数的选择</h2>
+<h3 id="-超参数-batch-size">① 超参数 batch size</h3>
+
+<p>损失函数$L(\theta)$是在整个训练集上定义的，因此计算更新梯度时需要考虑所有训练数据。这种方法称为<strong>全量梯度下降</strong>，此时<strong>batch size</strong>为整个训练集大小：$|\mathcal{B}|=N$。</p>
+
+<p>通常训练数据的规模比较大，如果梯度下降在整个训练集上进行，需要比较多的计算资源；此外大规模训练集中的数据通常非常冗余。因此在实践中，把训练集分成若干<strong>批次</strong>(<strong>batch</strong>)的互补的子集，每次在一个子集上计算梯度并更新参数。这种方法称为<strong>小批量梯度下降</strong>(<strong>mini batch gradient descent</strong>)，此时$|\mathcal{B}|&lt;N$。</p>
+
+<p>特别地，把每个数据看作一个批次，对应<strong>batch size=1</strong>时，称为<strong>随机梯度下降(stochastic gradient descent, SGD)</strong>，此时$|\mathcal{B}|=1$。</p>
+
+<p>每一批量数据的梯度都是总体数据梯度的近似，由于<strong>mini batch</strong>的数据分布和总体的分布有所差异，并且<strong>batch size</strong>越小这种差异越大；因此<strong>batch size</strong>越小，则梯度近似误差的方差越大，引入的噪声就越大，可能导致训练不稳定。</p>
+
+<h3 id="-超参数-learning-rate">② 超参数 learning rate</h3>
+
+<p>学习率$\gamma$决定了梯度下降时的更新步长。学习率太大，可能会使梯度更新不收敛甚至发散(<strong>diverge</strong>)；学习率太小，导致收敛速度慢。</p>
+
+<h3 id="-选择超参数">③ 选择超参数</h3>
+
+<p>学习率$\gamma$和批量大小$|\mathcal{B}|$的选择可以参考以下工作：</p>
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/12/05/increasebatch.html"><font color="Blue">Don't Decay the Learning Rate, Increase the Batch Size</font></a>：在训练模型时通过增加批量大小替代学习率衰减，在相同的训练轮数下能够取得相似的测试精度，但前者所进行的参数更新次数更少，并行性更好，缩短了训练时间。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/24/linearrate.html"><font color="Blue">Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour</font></a>：学习率的<strong>线性缩放规则</strong>(<strong>linear scaling rule</strong>)：当批量大小增大$k$倍时，学习率也增大$k$倍，并保持其它超参数不变。学习率的<strong>warmup</strong>：训练开始时使用较小的学习率。</li>
+  <li><a href="https://arxiv.org/abs/1609.04836v1">On Large-Batch Training for Deep Learning: Generalization Gap and Sharp Minima</a>：较大的批量使网络倾向于收敛到尖锐极小值(<strong>sharp minima</strong>)，从而导致较差的泛化性。</li>
+</ul>
+
+<h2 id="2-从不同角度理解梯度下降">(2) 从不同角度理解梯度下降</h2>
+
+<h3 id="-动力学角度">① 动力学角度</h3>
+
+<p>把神经网络建模为一个动力系统(<strong>dynamical system</strong>)，则梯度下降算法描述了参数$\theta$随时间(即梯度更新轮数)的演化情况。该动力系统的规则是参数$\theta$的变化率为损失函数的梯度$g=\nabla_{\theta}l(θ)$的负值：</p>
+
+\[\dot θ =-g\]
+
+<p>该动力系统是一个<strong>保守</strong>动力系统，因此它最终可以收敛到一个不动点($\dot \theta = 0$)，并可以进一步证明该稳定的不动点是一个极小值点。求解上述常微分方程<strong>ODE</strong>可以采用<strong>欧拉解法</strong>（该方法是指将方程$dy/dx=f(x,y)$转化为$y_{n+1}-y_n≈f(x_n,y_n)h$）。因此有：</p>
+
+\[θ_t-θ_{t-1}=-\gamma g\]
+
+<p>上式即为梯度下降算法的更新公式。对于小批量梯度下降，其每一批量上损失函数的梯度是总损失函数的梯度的近似估计，假设梯度估计的误差服从方差为$\sigma^2$的正态分布，则相当于在动力系统中引入高斯噪声：</p>
+
+\[\dot θ =-g+\sigma \xi\]
+
+<p>该系统用随机微分方程<strong>SDE</strong>描述，称为<strong>朗之万方程</strong>。该方程的解可以用平衡状态下的概率分布描述：</p>
+
+\[P(\theta) \sim \exp(-\frac{l(\theta)}{\sigma^2})\]
+
+<p>从上式中可以看出，当$\sigma^2$越大时，$P(\theta)$越接近均匀分布，此时参数$\theta$可能的取值范围也越大，允许探索更大比例的参数空间。当$\sigma^2$越小时，$P(\theta)$的极大值点(对应$l(\theta)$的极小值点)附近的区域越突出，则参数$\theta$落入极值点附近。在实践中，<strong>batch size</strong>越小，则参数$\sigma^2$越大。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61f0098c2ab3f51d91b25d4d.jpg" alt="" /></p>
+
+<h3 id="-逼近角度">② 逼近角度</h3>
+
+<p>深度学习问题的优化函数$f(x)$通常是复杂的非线性函数，优化的目的是求其全局最小值。根据逼近理论，在函数$f(x)$上的任意一点$x_n$，可以用一条近似的曲线逼近原函数。如果近似的曲线容易求得最小值，则可以用该最小值近似替代原函数的最小值。</p>
+
+<p><img src="https://pic.imgdb.cn/item/623449855baa1a80ab1828f5.jpg" alt="" /></p>
+
+<p>注意到所求极值为最小值，因此在$x_n$处采用一个开口向上的抛物线$g(x)$近似替代原函数曲线$f(x)$：</p>
+
+\[g(x) = f(x_n) + f'(x_n)(x-x_n) + \frac{1}{2h}(x-x_n)^2\]
+
+<p>该抛物线$g(x)$具有如下特点：</p>
+<ol>
+  <li>$g(x)$与原曲线$f(x)$在$x_n$处具有一阶近似，即具有相同的数值和一阶导数。</li>
+  <li>$g(x)$具有容易求得的极小值点$x_n - hf’(x_n)$。</li>
+</ol>
+
+<p>使用$g(x)$的极小值点近似替代原函数$f(x)$的极小值点，即为梯度下降算法的基本形式：</p>
+
+\[x_{n+1} = x_n - hf'(x_n)\]
+
+<h3 id="-概率角度">③ 概率角度</h3>
+<p>从概率视角建模优化问题，记模型当前参数为$\theta$，优化目标为$l(\theta)$，将下一步的更新量$\Delta \theta$看作随机变量。则使得$l(\theta+\Delta \theta)$的数值越小的$\Delta \theta$出现的概率越大，用下面的分布表示：</p>
+
+\[p(\Delta \theta | \theta) =\frac{e^{-[l(\theta+\Delta \theta)-l(\theta)] / \alpha}}{Z(\theta)}, Z(\theta)=\int_{}^{} e^{-[l(\theta+\Delta \theta)-l(\theta)] / \alpha}d(\Delta \theta)\]
+
+<p>式中$Z(\theta)$是归一化因子。参数$\alpha&gt;0$调整分布的形状；当$\alpha \to ∞$时，$p(\Delta \theta | \theta)$趋近于均匀分布，参数可以向任意方向变化；当$\alpha \to 0$时，只有使得$l(\theta+\Delta \theta)$最小的$\Delta \theta$对应的概率$p(\Delta \theta | \theta)$不为$0$，因此$\Delta \theta$将选择损失下降最快的方向。</p>
+
+<p>参数的实际更新量可以选择上式的期望：</p>
+
+\[\Delta \theta^* = \Bbb{E}_{\Delta \theta\text{~}p(\Delta \theta | \theta)}[\Delta \theta] = \int_{}^{} p(\Delta \theta | \theta) \Delta \theta d (\Delta \theta)\]
+
+<p>通常$p(\Delta \theta | \theta)$很难直接求得。假设$l(\theta)$是一阶可导的，由<strong>Taylor</strong>展开得：</p>
+
+\[l(\theta+\Delta \theta) - l(\theta) ≈ \Delta \theta^Tg\]
+
+<p>其中梯度$g=\nabla_\theta l(\theta)$。若约束参数更新的步长不超过$\epsilon$，即$||\Delta \theta|| \leq \epsilon$，则概率$p(\Delta \theta | \theta)$表示为：</p>
+
+\[p(\Delta \theta | \theta) =\frac{e^{-\Delta \theta^Tg / \alpha}}{Z(g)}, Z(g)=\int_{||\Delta \theta|| \leq \epsilon}^{} e^{-\Delta \theta^Tg / \alpha}d(\Delta \theta)\]
+
+<p>概率的期望表示为：</p>
+
+\[\Delta \theta^* = \int_{||\Delta \theta|| \leq \epsilon}^{} \frac{e^{-\Delta \theta^Tg / \alpha}}{Z(g)} \Delta \theta d (\Delta \theta) = -\nabla_g \ln Z(g)\]
+
+<p>假设更新量$\Delta \theta$与梯度$g$的夹角为$\eta$，则$Z(g)$表示为：</p>
+
+\[Z(g)=\int_{||\Delta \theta|| \leq \epsilon}^{} e^{-||\Delta \theta|| \times ||g|| \times \cos \eta / \alpha}d(\Delta \theta)\]
+
+<p>上式表示一个高维球体内的积分，由于积分空间具有各向同性，因此该积分只和梯度的模长$||g||$有关，因此将积分$Z(g)$记为$Z(||g||)$，则有：</p>
+
+\[\Delta \theta^* = -\nabla_g \ln Z(||g||) = -\frac{Z'(||g||)}{Z(||g||)} \nabla_g ||g|| = -\frac{Z'(||g||)}{Z(||g||)} \frac{g}{||g||}\]
+
+<p>上式表示参数更新的最佳方向与梯度方向相反，即为梯度下降算法。</p>
+
+<h1 id="3-常用的梯度下降算法">3. 常用的梯度下降算法</h1>
+
+<p>标准的批量梯度下降方法存在一些缺陷：</p>
+<ul>
+  <li>更新过程中容易陷入局部极小值或鞍点(这些点处的梯度也为$0$)；常见解决措施是在梯度更新中引入<strong>动量</strong>(如<strong>momentum</strong>, <strong>NAG</strong>, <strong>Funnelled SGDM</strong>)。</li>
+  <li>参数的不同维度的梯度大小不同，导致参数更新时在梯度大的方向震荡，在梯度小的方向收敛较慢；损失函数的<strong>条件数(Condition number</strong>，指损失函数的<strong>Hessian</strong>矩阵最大奇异值与最小奇异值之比)越大，这一现象越严重。常见解决措施是为每个特征设置<strong>自适应</strong>学习率(如<strong>RProp</strong>, <strong>AdaGrad</strong>, <strong>RMSprop</strong>, <strong>AdaDelta</strong>)。这类算法的缺点是改变了梯度更新的方向，一定程度上造成精度损失。<img src="https://pic.downk.cc/item/5e902a62504f4bcb04758232.jpg" alt="" /></li>
+  <li>可以结合基于动量的方法和基于自适应学习率的方法，如<strong>Adam</strong>, <strong>AdamW</strong>, <strong>Adamax</strong>, <strong>Nadam</strong>, <strong>AMSGRad</strong>, <strong>Radam</strong>, <strong>AdaX</strong>, <strong>Amos</strong>, <strong>Lion</strong>。这类方法需要同时存储与模型参数具有相同尺寸的动量和方差，通常会占用较多内存，一些减少内存占用的优化算法包括<strong>Adafactor</strong>, <strong>SM3</strong>。</li>
+  <li>批量大小难以选择。批量较小时，引入较大的梯度噪声；批量较大时，内存负担较大。在分布式训练大规模神经网络时，整体批量通常较大，训练的模型精度会剧烈降低。这是因为总训练轮数保持不变时，批量增大意味着权重更新的次数减少。常见解决措施是通过<strong>层级自适应</strong>实现每一层的梯度归一化(如<strong>LARS</strong>, <strong>LAMB</strong>, <strong>NovoGrad</strong>)，从而使得更新步长依赖于参数的数值大小而不是梯度的大小。</li>
+</ul>
+
+<p>在实际应用梯度下降算法时，可以根据截止到当前步$t$的历史梯度信息\(\{g_{1},...,g_{t}\}\)计算修正的参数更新量$h_t$（比如累积动量、累积二阶矩校正学习率等），从而弥补上述缺陷。因此梯度下降算法的一般形式可以表示为：</p>
+
+\[\begin{align} g_t&amp;=\frac{1}{\|\mathcal{B}\|}\sum_{x \in \mathcal{B}}^{}\nabla_{\theta} l(θ_{t-1}) \\ h_t &amp;= f(g_{1},...,g_{t}) \\ θ_t&amp;=θ_{t-1}-\gamma h_t \end{align}\]
+
+<p>下面介绍一些常见的基于梯度的优化算法，部分算法的代码实现可参考<a href="https://pytorch.org/docs/stable/optim.html#algorithms">Pytorch文档</a>。在选择合适的优化器时可参考<a href="https://0809zheng.github.io/2021/07/08/optimizer.html">Descending through a Crowded Valley - Benchmarking Deep Learning Optimizers</a>。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>优化算法</th>
+      <th>参数定义(缺省值/初始值)</th>
+      <th>更新形式</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>SGD</td>
+      <td>\(g_t\text{: 梯度} \\ \gamma\text{: 学习率}\)</td>
+      <td>\(\begin{align} g_t&amp;=\nabla_{\theta} l(θ_{t-1}) \\ θ_t&amp;=θ_{t-1}-\gamma g_t \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/07/rprop.html"><font color="Blue">RProp</font></a>：根据梯度符号更新参数</td>
+      <td>\(\eta_t\text{: 弹性步长} \\ \eta_+\text{: 步长增加值}(1.2) \\ \eta_{\_}\text{: 步长减小值}(0.5) \\ \Gamma_{max} \text{: 最大步长} \\ \Gamma_{min} \text{: 最小步长}\)</td>
+      <td>\(\begin{align} \eta_t &amp;= \begin{cases} \min(\eta_{t-1}\eta_+,\Gamma_{max}) &amp; g_{t-1}g_t&gt;0 \\ \max(\eta_{t-1}\eta_{\_},\Gamma_{min}) &amp; g_{t-1}g_t&lt;0  \\ \eta_{t-1}&amp; g_{t-1}g_t=0  \end{cases} \\θ_{t} &amp;= θ_{t-1} -\eta_t \text{sign}(g_t) \end{align}\)</td>
+    </tr>
+    <tr>
+      <td>momentum：引入动量(梯度累计值)</td>
+      <td>\(m_t\text{: 动量}(0) \\ \gamma\text{: 学习率} \\ \mu \text{: 衰减率}(0.9)\)</td>
+      <td>\(\begin{align} m_t &amp;= \mu m_{t-1} + g_t \\ θ_t&amp;=θ_{t-1}-\gamma m_t \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/08/nesterov.html"><font color="Blue">NAG</font></a>：引入Nesterov动量</td>
+      <td>\(m_t\text{: 动量}(0) \\ \gamma\text{: 学习率} \\ \mu \text{: 衰减率}(0.9)\)</td>
+      <td>\(\begin{align}  m_t &amp;= \mu m_{t-1} + \nabla_{\theta} l(θ_{t-1}-\mu m_{t-1}) \\ θ_t&amp;=θ_{t-1}-\gamma m_t \\-&amp;-------------\\ m_t &amp; = \mu m_{t-1} +  g_t \\ θ_t &amp; =θ_{t-1}-\gamma(\mu m_t + g_t) \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="http://jmlr.org/papers/v12/duchi11a.html">AdaGrad</a>：使用平方梯度累计调整学习率</td>
+      <td>\(v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ \epsilon \text{: 小值}(1e-10)\)</td>
+      <td>\(\begin{align} v_t &amp;=  v_{t-1} + g_t^2 \\ θ_{t} &amp;= θ_{t-1} -\gamma \frac{g_t}{\sqrt{v_t}+\epsilon} \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf">RMSProp</a>：使用指数滑动平均调整学习率</td>
+      <td>\(v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ \rho \text{: 衰减率}(0.99) \\ \epsilon \text{: 小值}(1e-8)\)</td>
+      <td>\(\begin{align} v_t &amp;= \rho v_{t-1} + (1-\rho)g_t^2 \\θ_{t} &amp;= θ_{t-1} -\gamma \frac{g_t}{\sqrt{v_t}+\epsilon} \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/06/adadelta.html"><font color="Blue">Adadelta</font></a>：校正RMSProp的参数更新单位</td>
+      <td>\(v_t\text{: 平方梯度}(0) \\ X_t\text{: 平方参数更新量}(0) \\ \rho \text{: 衰减率}(0.9) \\ \epsilon \text{: 小值}(1e-6)\)</td>
+      <td>\(\begin{align} v_t &amp;= \rho v_{t-1} + (1-\rho)g_t^2 \\ X_{t-1} &amp;= \rho X_{t-2} + (1-\rho)\Delta θ_{t-1}^2 \\ Δθ_t &amp;= -\frac{\sqrt{X_{t-1}+\epsilon}}{\sqrt{v_t+\epsilon}} g_t \\θ_{t} &amp;= θ_{t-1} +Δθ_t \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/09/adam.html"><font color="Blue">Adam</font></a>：结合动量与RMSProp</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ \beta_1 \text{: 衰减率}(0.9)  \\ \beta_2 \text{: 衰减率}(0.999) \\ \epsilon \text{: 小值}(1e-8)\)</td>
+      <td>\(\begin{align} m_t &amp;= β_1m_{t-1} + (1-β_1)g_t \\ v_t &amp;= β_2v_{t-1} + (1-β_2)g_t^2 \\\hat{m}_t &amp;= \frac{m_t}{1-β_1^t} \\ \hat{v}_t &amp;= \frac{v_t}{1-β_2^t} \\ θ_t&amp;=θ_{t-1}-\gamma \frac{\hat{m}_t}{\sqrt{\hat{v}_t}+ε} \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/11/28/adamw.html"><font color="Blue">AdamW</font></a>：解耦权重衰减正则化</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ \beta_1 \text{: 衰减率}(0.9)  \\ \beta_2 \text{: 衰减率}(0.999) \\ \lambda \text{: 权重衰减率}(0.01) \\ \epsilon \text{: 小值}(1e-8)\)</td>
+      <td>\(\begin{align} m_t &amp;= β_1m_{t-1} + (1-β_1)g_t \\ v_t &amp;= β_2v_{t-1} + (1-β_2)g_t^2 \\\hat{m}_t &amp;= \frac{m_t}{1-β_1^t} \\ \hat{v}_t &amp;= \frac{v_t}{1-β_2^t} \\ θ_t&amp;=θ_{t-1}-\gamma (\frac{\hat{m}_t}{\sqrt{\hat{v}_t}+ε}+\lambda θ_{t-1}) \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/09/adam.html"><font color="Blue">Adamax</font></a>：使用L-∞范数调整学习率</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: L-∞范数梯度}(0) \\ \gamma\text{: 学习率} \\ \beta_1 \text{: 衰减率}(0.9)  \\ \beta_2 \text{: 衰减率}(0.999) \\ \epsilon \text{: 小值}(1e-8)\)</td>
+      <td>\(\begin{align} m_t &amp;= β_1m_{t-1} + (1-β_1)g_t \\ v_t &amp;= \max(\beta_2 v_{t-1}, |g_t|+\epsilon) \\\hat{m}_t &amp;= \frac{m_t}{1-β_1^t}  \\ θ_t&amp;=θ_{t-1}-\gamma \frac{\hat{m}_t}{v_t} \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/12/nadam.html"><font color="Blue">Nadam</font></a>：将Nesterov动量引入Adam</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ \beta_1 \text{: 衰减率}(0.9)  \\ \beta_2 \text{: 衰减率}(0.999) \\ \psi \text{: 衰减率}(0.004) \\ \epsilon \text{: 小值}(1e-8)\)</td>
+      <td>\(\begin{align} \mu_t &amp;= \beta_1(1-\frac{1}{2}0.96^{t\psi}) \\ \mu_{t+1} &amp;= \beta_1(1-\frac{1}{2}0.96^{(t+1)\psi}) \\ m_t &amp;= β_1m_{t-1} + (1-β_1)g_t \\ v_t &amp;= β_2v_{t-1} + (1-β_2)g_t^2 \\\hat{m}_t &amp;= \frac{\mu_{t+1} m_{t}}{1-\prod_{i=1}^{t}\mu_i}+\frac{(1-\mu_t) g_t}{1-\prod_{i=1}^{t}\mu_i} \\ \hat{v}_t &amp;= \frac{v_t}{1-β_2^t} \\ θ_t&amp;=θ_{t-1}-\gamma \frac{\hat{m}_t}{\sqrt{\hat{v}_t}+ε} \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/10/amsgrad.html"><font color="Blue">AMSGrad</font></a>：改善Adam的收敛性</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ \beta_1 \text{: 衰减率}(0.9)  \\ \beta_2 \text{: 衰减率}(0.999) \\ \epsilon \text{: 小值}(1e-8)\)</td>
+      <td>\(\begin{align} m_t &amp;= β_1m_{t-1} + (1-β_1)g_t \\ v_t &amp;= β_2v_{t-1} + (1-β_2)g_t^2 \\\hat{m}_t &amp;= \frac{m_t}{1-β_1^t} \\ \hat{v}_t &amp;= \frac{v_t}{1-β_2^t} \\ \hat{v}_t^{max} &amp;= \max(\hat{v}_{t-1}^{max},\hat{v}_t) \\ θ_t&amp;=θ_{t-1}-\gamma \frac{\hat{m}_t}{\sqrt{\hat{v}_t^{max}}+ε} \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/13/radam.html"><font color="Blue">Radam</font></a>：减小Adam中自适应学习率的早期方差</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ \beta_1 \text{: 衰减率}(0.9)  \\ \beta_2 \text{: 衰减率}(0.999) \\ \epsilon \text{: 小值}(1e-8)\)</td>
+      <td>\(\begin{align} \rho_∞ &amp;= \frac{2}{1-\beta_2} - 1 \\ m_t &amp;= β_1m_{t-1} + (1-β_1)g_t \\ v_t &amp;= β_2v_{t-1} + (1-β_2)g_t^2 \\ \hat{m}_t &amp;= \frac{m_t}{1-β_1^t} \\ \rho_t &amp;= \rho_∞ -  \frac{2t\beta_2^t}{1-\beta_2^t} \\ \text{if } \rho_t &amp;&gt; 4: \\ \hat{v}_t &amp;= \frac{v_t}{1-β_2^t} \\ r_t &amp;= \sqrt{\frac{(\rho_t-4)(\rho_t-2)\rho_∞}{(\rho_∞-4)(\rho_∞-2)\rho_t}} \\ θ_t&amp;=θ_{t-1}-\gamma r_t \frac{\hat{m}_t}{\sqrt{\hat{v}_t}+ε} \\ \text{else} &amp; :\\ θ_t&amp;=θ_{t-1}-\gamma \hat{m}_t \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/20/adafactor.html"><font color="Blue">Adafactor</font></a>：减少Adam的显存占用</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ c \text{: 衰减系数}(0.8) \\ d \text{: 截断系数}(1) \\ \epsilon_1 \text{: 小值}(1e-30) \\ \epsilon_2 \text{: 小值}(1e-3)\)</td>
+      <td>\(\begin{align} \hat{\beta}_{2,t} &amp;= 1-\frac{1}{t^c} \\ v_{i;t}^{(r)}  &amp;= \hat{\beta}_{2,t}v_{i;t-1}^{(r)} + (1-\hat{\beta}_{2,t})\sum_{j}^{} (g_{i,j;t}^2+\epsilon_1) \\ v_{j;t}^{(c)}  &amp;= \hat{\beta}_{2,t}v_{j;t-1}^{(c)} + (1-\hat{\beta}_{2,t})\sum_{i}^{} (g_{i,j;t}^2+\epsilon_1) \\ \hat{v}_{i,j;t} &amp;= \frac{v_{i;t}^{(r)} v_{j;t}^{(c)} }{\sum_{j}^{} v_{j;t}^{(c)} } \\ u_t &amp;= \frac{g_t}{\sqrt{\hat{v}_t}} \\ \hat{u}_t &amp;= u_t \frac{\max(\epsilon_2,|\theta_{t-1}|)}{\max(1,|u_t| /d)} \\  θ_t&amp;=θ_{t-1}-\gamma \hat{u}_t \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/11/30/sm3.html"><font color="Blue">SM3</font></a>：减少AdaGrad的显存占用</td>
+      <td>\(v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ N \text{: 总参数量}\)</td>
+      <td>\(\begin{align} v_{t}^{(i)} &amp;= v_{t-1}^{(i)}+\mathop{\max}_{j \in S_i}{g_t^{(j)}}^2 \\ \nu_t^{(i)} &amp;= \mathop{\min}_{j: S_j\ni i} v_{t}^{(j)} \\ \theta_t^{(i)} &amp;= \theta_{t-1}^{(i)} - \gamma \frac{g_t^{(i)}}{\sqrt{\nu_t^{(i)}}},  \text{for all }i \in [N] \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/21/adax.html"><font color="Blue">AdaX</font></a>：引入二阶矩的指数长期记忆</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: 平方梯度}(0) \\ \gamma\text{: 学习率} \\ \beta_1 \text{: 衰减率}(0.9)  \\ \beta_2 \text{: 衰减率}(0.0001) \\ \epsilon \text{: 小值}(1e-8)\)</td>
+      <td>\(\begin{align} m_t &amp;= β_1m_{t-1} + (1-β_1)g_t \\ v_t &amp;= (1+\beta_2)v_{t-1}+\beta_2 g_t^2 \\ \hat{v}_t &amp;= \frac{v_t}{(1+\beta_2)^t-1} \\ θ_t&amp;=θ_{t-1}-\gamma \frac{m_t}{\sqrt{\hat{v}_t}+ε} \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2022/03/04/stepadap.html"><font color="Blue">Funnelled SGDM</font></a>：指数梯度更新自适应学习率</td>
+      <td>\(m_t\text{: 动量}(0) \\ p_t\text{: 坐标增益向量} \\ s_t\text{: 步长尺度} \\ \eta\text{: 学习率} \\ \beta \text{: 衰减率}\)</td>
+      <td>\(\begin{align} p_{t} &amp;= p_{t-1} \odot \exp(\gamma_p m_{t-1} \odot g_t) \\ s_{t} &amp;= s_{t-1} \cdot \exp(\gamma_s u_{t-1} \cdot g_t) \\ m_{t} &amp;= \beta m_{t-1}+(1-\beta)g_t  \\ u_{t} &amp;= \mu u_{t-1}+\eta(p_{t}\odot g_t) \\ \theta_{t} &amp;=  \theta_{t-1}-s_{t} u_{t} \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/15/lars.html"><font color="Blue">LARS</font></a>：层级自适应学习率+momentum</td>
+      <td>\(m_t\text{: 动量}(0) \\ \gamma\text{: 全局学习率} \\ \mu \text{: 衰减率}(0.9) \\ L \text{: 网络层数}\)</td>
+      <td>\(\begin{align}  m_t &amp;= \mu m_{t-1} + g_t \\ θ_t^{(i)}&amp;=θ_{t-1}^{(i)}-\gamma \frac{| θ_{t-1}^{(i)} |}{| m_t^{(i)} |} m_t^{(i)}, \text{for all }i \in [L] \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/17/lamb.html"><font color="Blue">LAMB</font></a>：层级自适应学习率+Adam</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: 平方梯度}(0) \\ \gamma\text{: 全局学习率} \\ \beta_1 \text{: 衰减率}(0.9)  \\ \beta_2 \text{: 衰减率}(0.999) \\ \epsilon \text{: 小值}(1e-8) \\ L \text{: 网络层数}\)</td>
+      <td>\(\begin{align} m_t &amp;= β_1m_{t-1} + (1-β_1)g_t \\ v_t &amp;= β_2v_{t-1} + (1-β_2)g_t^2 \\\hat{m}_t &amp;= \frac{m_t}{1-β_1^t} \\ \hat{v}_t &amp;= \frac{v_t}{1-β_2^t} \\ θ_t^{(i)}&amp;=θ_{t-1}^{(i)}-\gamma \frac{| θ_{t-1}^{(i)} |}{|\frac{\hat{m}_t^{(i)}}{\sqrt{\hat{v}_t^{(i)}}+ε}|} \frac{\hat{m}_t^{(i)}}{\sqrt{\hat{v}_t^{(i)}}+ε} , \text{for all }i \in [L]  \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/19/novograd.html"><font color="Blue">NovoGrad</font></a>：使用层级自适应二阶矩进行梯度归一化</td>
+      <td>\(m_t\text{: 动量}(0) \\ v_t\text{: 平方梯度}(0) \\ \gamma\text{: 全局学习率} \\ \lambda\text{: 权重衰减率} \\ \beta_1 \text{: 衰减率}(0.9)  \\ \beta_2 \text{: 衰减率}(0.25) \\ \epsilon \text{: 小值}(1e-8) \\ L \text{: 网络层数}\)</td>
+      <td>\(\begin{align} v_1^{(i)}&amp;=|g_1^{(i)}|^2, m_1^{(i)}=\frac{g_1^{(i)}}{\sqrt{v_1^{(i)}}}+\lambda w_1^l \\ v_t^{(i)} &amp;= \beta_2 \cdot v_{t-1}^{(i)} + (1-\beta_2) \cdot |g_t^{(i)}|^2 \\  m_t^{(i)} &amp;= \beta_1 \cdot m_{t-1}^{(i)} + (\frac{g_t^{(i)}}{\sqrt{v_t^{(i)}}+\epsilon}+\lambda \theta_t^{(i)})  \\ θ_t^{(i)}&amp;=θ_{t-1}^{(i)}-\gamma m_t^{(i)} , \text{for all }i \in [L] \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2022/12/02/amos.html"><font color="Blue">Amos</font></a>：自适应设置学习率和权重衰减项</td>
+      <td>\(h_t\text{: 参数更新量} \\ \alpha_t\text{: 自适应学习率} \\ \rho_t \text{: 自适应权重衰减率}\)</td>
+      <td>\(\begin{align} \theta_{t+1} &amp;= \theta_t - (\alpha_th_t+\rho_t\theta_t) \\ \alpha_t &amp;\approx  \frac{\alpha_0 ||\epsilon_0||}{||h_t||} \frac{1}{2 \alpha_0 p_0 t+1} \\ \rho_t  &amp;\approx  \frac{\alpha_0^2}{2q} \frac{1}{2 \alpha_0 p_0 t+1} \end{align}\)</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2023/02/21/lion.html"><font color="Blue">Lion</font></a>：自动搜索优化器</td>
+      <td>\(m_t\text{: 动量}(0) \\ \gamma\text{: 学习率} \\ \lambda \text{: 权重衰减率}(1.0) \\ \beta_1 \text{: 衰减率}(0.9)\\ \beta_2 \text{: 衰减率}(0.99)\)</td>
+      <td>\(\begin{align} u_t &amp;= \text{sign}( \beta_1m_{t-1}+(1-\beta_1)g_t ) + \lambda\theta_{t} \\ θ_t&amp;=θ_{t-1}-\gamma u_t \\ m_t &amp;= \beta_2m_{t-1}+(1-\beta_2)g_t \end{align}\)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="4-其他优化算法">4. 其他优化算法</h1>
+
+<h3 id="-averaging-weights-leads-to-wider-optima-and-better-generalization随机权重平均-swa">⚪ <a href="https://0809zheng.github.io/2020/11/29/swa.html"><font color="Blue">Averaging Weights Leads to Wider Optima and Better Generalization</font></a>：随机权重平均 SWA</h3>
+
+<p>随机权重平均是指在梯度下降过程中累积历史权重的平均值，通常与周期或恒定学习率一起使用。
+若学习率变化周期为$c$(对于恒定学习率$c=1$)，当训练轮数$i$每完成一个周期时($\text{mod}(i,c)=0$)，通过已累积的模型数量$n_{\text{model}} = i/c$累积平均权重$w_{\text{SWA}}$：</p>
+
+\[w_{\text{SWA}} = \frac{n_{\text{model}} \cdot w_{\text{SWA}}+w_i}{n_{\text{model}}+1}\]
+
+<p>如果网络存在<strong>BatchNorm</strong>，则应在训练结束后使用平均权重$w_{\text{SWA}}$对数据额外进行一次前向传播，从而计算每一层神经元的相关统计量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/623a898127f86abb2a3008ca.jpg" alt="" /></p>
+
+<p>使用<a href="https://pytorch.org/docs/stable/optim.html#stochastic-weight-averaging"><strong>Pytorch</strong></a>实现<strong>SWA</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dataloader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">loss_fn</span> <span class="o">=</span> <span class="p">...</span>
+<span class="n">swa_model</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">optim</span><span class="p">.</span><span class="n">swa_utils</span><span class="p">.</span><span class="n">AveragedModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">optim</span><span class="p">.</span><span class="n">lr_scheduler</span><span class="p">.</span><span class="n">CosineAnnealingLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="n">swa_start</span> <span class="o">=</span> <span class="mi">160</span>  <span class="c1"># 从160轮开始累积权重
+</span><span class="n">swa_scheduler</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">optim</span><span class="p">.</span><span class="n">swa_utils</span><span class="p">.</span><span class="n">SWALR</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="p">,</span> <span class="n">anneal_strategy</span><span class="o">=</span><span class="s">"linear"</span><span class="p">,</span> <span class="n">anneal_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">swa_lr</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="c1"># SWALR在每轮的前5次更新内将学习率线性退火到0.05并保持恒定
+</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">300</span><span class="p">):</span>
+    <span class="k">for</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+        <span class="n">optimizer</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">loss_fn</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">),</span> <span class="n">target</span><span class="p">).</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">epoch</span> <span class="o">&gt;</span> <span class="n">swa_start</span><span class="p">:</span>
+        <span class="n">swa_model</span><span class="p">.</span><span class="n">update_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">swa_scheduler</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">scheduler</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+    
+<span class="n">torch</span><span class="p">.</span><span class="n">optim</span><span class="p">.</span><span class="n">swa_utils</span><span class="p">.</span><span class="n">update_bn</span><span class="p">(</span><span class="n">dataloader</span><span class="p">,</span> <span class="n">swa_model</span><span class="p">)</span>  <span class="c1"># 更新bn参数
+</span><span class="n">preds</span> <span class="o">=</span> <span class="n">swa_model</span><span class="p">(</span><span class="n">test_input</span><span class="p">)</span>  <span class="c1"># 测试数据
+</span></code></pre></div></div>
+
+<p>在实践中，也可以累积权重的指数滑动平均值(<strong>exponential moving average, EMA</strong>, 也称<strong>Polyak averaging</strong>):</p>
+
+\[w_{\text{EMA}} = \beta w_{\text{EMA}} +(1-\beta) w_i\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ema_avg</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">averaged_model_parameter</span><span class="p">,</span> <span class="n">model_parameter</span><span class="p">,</span> <span class="n">num_averaged</span><span class="p">:</span>\
+        <span class="mf">0.1</span> <span class="o">*</span> <span class="n">averaged_model_parameter</span> <span class="o">+</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">model_parameter</span>
+<span class="n">ema_model</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">optim</span><span class="p">.</span><span class="n">swa_utils</span><span class="p">.</span><span class="n">AveragedModel</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">avg_fn</span><span class="o">=</span><span class="n">ema_avg</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-gradientless-descent-high-dimensional-zeroth-order-optimization不计算梯度的零阶优化方法">⚪ <a href="https://0809zheng.github.io/2022/03/09/gradientless.html"><font color="Blue">Gradientless Descent: High-Dimensional Zeroth-Order Optimization</font></a>：不计算梯度的零阶优化方法</h3>
+
+<p>零阶优化泛指不需要梯度信息的优化方法。可以通过采样和差分这两种方法来估计参数更新的方向，从而省略梯度的计算。</p>
+
+<p>基于差分的零阶优化是指通过采样求得梯度的近似表示：</p>
+
+\[\tilde{\nabla}_xf(x) = \Bbb{E}_{u\text{~}p(u)}[\frac{f(x+\epsilon u)-f(x)}{\epsilon} u]\]
+
+<p>其中$\epsilon$是小正数；$p(u)$是具有零均值和单位协方差矩阵的分布，通常用标准正态分布。通过上述估计梯度可以更新参数。</p>
+
+<p>基于采样的零阶优化是一种参数搜索方法。其基本思路是给定采样分布$\mathcal{D}$和参数初始值$x_0$，在第$t$轮循环中设置一个标量半径$r_t$，从以$x_t$为中心的分布$r_t\mathcal{D}$中采样$y_t$。如果$f(y_t)&lt;f(x_t)$，则更新$x_{t+1}=y_t$；否则$x_{t+1}=x_t$。</p>
+
+<p>尽管零阶优化中的采样分布是固定的(通常选择均匀分布)，可以在算法的每次迭代中选择采样半径$r_t$。如简单地通过二分搜索设置一系列半径：</p>
+
+<p><img src="https://pic.imgdb.cn/item/623473e49fc7fcef118b0306.jpg" alt="" /></p>
+
+<h3 id="-gradients-without-backpropagation使用前向梯度代替反向传播梯度">⚪ <a href="https://0809zheng.github.io/2022/02/19/fgradient.html"><font color="Blue">Gradients without Backpropagation</font></a>：使用前向梯度代替反向传播梯度</h3>
+
+<p>本文提出了一种基于方向导数的梯度计算方法，通关单次前向传播同时计算损失函数值和<strong>前向梯度(forward gradient)</strong>。前向梯度 $g:\Bbb{R}^{n} \to \Bbb{R}^{n}$定义为：</p>
+
+\[g(\theta) = (\nabla f(\theta)\cdot v) v\]
+
+<p>其中$\theta \in \Bbb{R}^{n}$是计算梯度的参数点，$v \in \Bbb{R}^{n}$是从多元标准正态分布中采样的干扰向量$v\text{~}\mathcal{N}(0,I)$，$\nabla f(\theta)\cdot v \in \Bbb{R}$表示在$\theta$点指向$v$的方向导数，可以在单次前向传播中计算得到。</p>
+
+<p>前向梯度$g(\theta)$是真实梯度$\nabla f(\theta)$的无偏估计。使用前向梯度代替反向传播计算的梯度，可以实现仅依赖单次前向传播的<strong>前向梯度下降(forward gradient descent, FGD)</strong>算法，从而省去反向传播过程。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6210a6302ab3f51d9160d8c5.jpg" alt="" /></p>
+
+<h3 id="-lookahead-快权重更新k次慢权重更新1次">⚪ <a href="https://0809zheng.github.io/2020/12/14/lookahead.html"><font color="Blue">Lookahead</font></a>: 快权重更新k次,慢权重更新1次</h3>
+
+<p><strong>lookahead</strong>迭代地更新两组权重：<strong>慢权重</strong> $\phi$ 和<strong>快权重</strong> $\theta$。<strong>快权重</strong> $\theta$是通过任意一种标准优化算法$A$进行更新的；<strong>慢权重</strong> $\phi$是通过在参数空间$\theta-\phi$中进行线性插值得到的；快权重每经过$k$次更新后，慢权重更新$1$次。</p>
+
+\[\begin{aligned} h_t &amp;= f(g_{1},...,g_{t}) \\ θ_t&amp;=θ_{t-1}-\gamma h_t \\ \text{if } t \text{ m}&amp;\text{od }k =0: \\ \phi_{t} &amp;= \phi_{t-1} +\alpha(\theta_{t}-\phi_{t-1}) \\ \theta_t &amp;= \phi_t \end{aligned}\]
+
+<p><strong>lookahead</strong>算法相比于直接使用优化器更新$k$次，运算操作数变为$O(\frac{k+1}{k})$倍。当快权重沿低曲率方向进行更新时，慢权重通过参数插值平滑振荡，实现快速收敛。当快权重在极小值附近探索时，慢权重更新将推向一个测试精度更高的区域。</p>
+
+<h3 id="-data-echoing-通过buffer加速模型训练">⚪ <a href="https://0809zheng.github.io/2020/07/06/dataecho.html"><font color="Blue">Data Echoing</font></a>: 通过buffer加速模型训练</h3>
+
+<p>在深度学习模型流水线中，通常上游任务（数据预处理）是在<strong>CPU</strong>上进行的，而下游任务（深度学习任务）是在<strong>GPU</strong>上进行的；模型对一批数据进行预处理的时间要长于使用数据进行学习的时间；</p>
+
+<p><strong>data echoing</strong>将预处理的数据放入一个<strong>buffer</strong>中，使用数据更新参数时从这个<strong>buffer</strong>直接或再进行一些处理来获得一个批量的数据；不断从<strong>buffer</strong>中采样直到<strong>upstream</strong>处理好了一批新的数据，更新<strong>buffer</strong>。</p>
+
+<p><img src="https://pic.downk.cc/item/5f02b93e14195aa594dc3048.jpg" alt="" /></p>
+
+<h1 id="-参考文献">⚪ 参考文献</h1>
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/12/07/rprop.html"><font color="Blue">A Direct Adaptive Method for Faster Backpropagation Learning: The RPROP Algorithm</font></a>：(ICNN 1993)RProp：一种快速反向传播学习的直接自适应方法。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/06/adadelta.html"><font color="Blue">ADADELTA: An Adaptive Learning Rate Method</font></a>：(arXiv1212)Adadelta：一种自适应学习率方法。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/08/nesterov.html"><font color="Blue">On the importance of initialization and momentum in deep learning</font></a>：(ICML 2013)Nesterov Momentum：一种动量梯度更新方法。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/09/adam.html"><font color="Blue">Adam: A Method for Stochastic Optimization</font></a>：(arXiv1412)Adam：自适应矩估计。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/12/nadam.html"><font color="Blue">Incorporating Nesterov Momentum into Adam</font></a>：(ICLR 2016)Nadam：将Nesterov动量引入Adam算法。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/24/linearrate.html"><font color="Blue">Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour</font></a>：(arXiv1706)大批量分布式训练的线性缩放规则和warmup。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/15/lars.html"><font color="Blue">Large Batch Training of Convolutional Networks</font></a>：(arXiv1708)LARS：层级自适应学习率缩放。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/05/increasebatch.html"><font color="Blue">Don't Decay the Learning Rate, Increase the Batch Size</font></a>：(arXiv1711)通过增加批量大小代替学习率衰减。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/29/swa.html"><font color="Blue">Averaging Weights Leads to Wider Optima and Better Generalization</font></a>：(arXiv1803)SWA：通过随机权重平均寻找更宽的极小值。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/20/adafactor.html"><font color="Blue">Adafactor: Adaptive Learning Rates with Sublinear Memory Cost</font></a>：(arXiv1804)Adafactor：减少Adam的显存占用。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/30/sm3.html"><font color="Blue">Memory-Efficient Adaptive Optimization</font></a>：(arXiv1901)SM3：内存高效的自适应优化算法。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/10/amsgrad.html"><font color="Blue">On the Convergence of Adam and Beyond</font></a>：(arXiv1904)AMSGrad：改进Adam算法的收敛性。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/17/lamb.html"><font color="Blue">Large Batch Optimization for Deep Learning: Training BERT in 76 minutes</font></a>：(arXiv1904)LAMB：结合层级自适应学习率与Adam。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/19/novograd.html"><font color="Blue">Stochastic Gradient Methods with Layer-wise Adaptive Moments for Training of Deep Networks</font></a>：(arXiv1905)NovoGrad：使用层级自适应二阶矩进行梯度归一化。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/14/lookahead.html"><font color="Blue">Lookahead Optimizer: k steps forward, 1 step back</font></a>：(arXiv1907)Lookahead：快权重更新k次，慢权重更新1次。</li>
+  <li><a href="https://0809zheng.github.io/2020/07/06/dataecho.html"><font color="Blue">Faster Neural Network Training with Data Echoing</font></a>：(arXiv1907)Data Echoing：一种加速模型训练的方法。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/13/radam.html"><font color="Blue">On the Variance of the Adaptive Learning Rate and Beyond</font></a>：(arXiv1908)Radam：修正Adam算法中自适应学习率的早期方差。</li>
+  <li><a href="https://0809zheng.github.io/2022/03/09/gradientless.html"><font color="Blue">Gradientless Descent: High-Dimensional Zeroth-Order Optimization</font></a>：(arXiv1911)高维参数空间中的零阶优化方法。</li>
+  <li><a href="https://0809zheng.github.io/2020/07/12/deep-ensemble.html"><font color="Blue">Deep Ensembles: A Loss Landscape Perspective</font></a>：(arXiv1912)探讨深度集成学习的损失曲面。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/21/adax.html"><font color="Blue">AdaX: Adaptive Gradient Descent with Exponential Long Term Memory</font></a>：(arXiv2004)AdaX：基于指数长期记忆的自适应梯度下降。</li>
+  <li><a href="https://0809zheng.github.io/2021/07/08/optimizer.html"><font color="Blue">Descending through a Crowded Valley - Benchmarking Deep Learning Optimizers</font></a>：(arXiv2007)对不同深度学习优化器的基准测试。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/25/igr.html"><font color="Blue">Implicit Gradient Regularization</font></a>：(arXiv2009)隐式梯度正则化。</li>
+  <li><a href="https://0809zheng.github.io/2021/05/19/kernalmachine.html"><font color="Blue">Every Model Learned by Gradient Descent Is Approximately a Kernel Machine</font></a>：(arXiv2012)使用梯度下降优化的深度学习模型近似于核方法。</li>
+  <li><a href="https://0809zheng.github.io/2022/03/04/stepadap.html"><font color="Blue">Step-size Adaptation Using Exponentiated Gradient Updates</font></a>：(arXiv2202)基于指数梯度更新的步长自适应学习率。</li>
+  <li><a href="https://0809zheng.github.io/2022/02/19/fgradient.html"><font color="Blue">Gradients without Backpropagation</font></a>：(arXiv2202)使用前向梯度代替反向传播。</li>
+  <li><a href="https://0809zheng.github.io/2022/12/02/amos.html"><font color="Blue">Amos: An Adam-style Optimizer with Adaptive Weight Decay towards Model-Oriented Scale</font></a>：(arXiv2210)Amos：一种面向模型的自适应权重衰减的Adam风格优化器。</li>
+  <li><a href="https://0809zheng.github.io/2023/02/21/lion.html"><font color="Blue">Symbolic Discovery of Optimization Algorithms</font></a>：(arXiv2302)优化算法的符号发现。</li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/03/regularization.html" class="read-next-link"></a>
+        <section>
+          <span>深度学习中的正则化方法(Regularization)</span>
+          <p>  Regularization in Deep Learning.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="http://p0.ifengimg.com/pmop/2018/0117/FF63C065C57341C7727412791090885E7EB230BD_size23_w900_h375.jpeg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/01/activation.html" class="read-next-link"></a>
+          <section>
+            <span>深度学习中的激活函数(Activation Function)</span>
+            <p>  Activation Functions in Deep Learning.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/5e7b4db6504f4bcb040071f1.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

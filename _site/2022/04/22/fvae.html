@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>f-VAEs: Improve VAEs with Conditional Flows - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="f-VAEs: Improve VAEs with Conditional Flows">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="f-VAEs: Improve VAEs with Conditional Flows - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/22/fvae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>f-VAEs: Improve VAEs with Conditional Flows</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-22"><i class="iconfont icon-date"></i>22 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/62d5fe3bf54cd3f937d8c754.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>f-VAE: 基于流的变分自编码器.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1809.05861">f-VAEs: Improve VAEs with Conditional Flows</a></li>
+</ul>
+
+<h1 id="1-生成模型概述">1. 生成模型概述</h1>
+
+<p>对于随机变量$x$，假设其固有分布为$p(x)$，由已有数据集可构造的证据分布为$q(x)$。生成模型的基本思路是希望用如下的分布形式来拟合给定数据集的分布$p(x)$：</p>
+
+\[p(x) = \int p(z)p(x|z)dz\]
+
+<p>其中先验分布$p(z)$一般取标准高斯分布，而生成分布$p(x|z)$一般取高斯分布（<strong>VAE</strong>）或者狄拉克分布（<strong>GAN</strong>和流模型）。理想情况下，优化方式是最大化似然函数$\Bbb{E}[\log p(x)]$，或者等价地最小化$KL(q(x)||p(x))$。</p>
+
+<p>由于$p(x)$表达式中的积分可能难以显式计算，所以需要一些特殊的求解技巧，这导致了不同的生成模型。</p>
+
+<h3 id="-vae">⚪ VAE</h3>
+
+<p><strong>VAE</strong>引入了后验分布$q(z|x)$，将优化目标更改为更容易计算的上界$KL(q(x)q(z|x)||p(z)p(x|z))$。<strong>VAE</strong>收敛快、训练稳定，但一般情况下生成图像存在模糊。</p>
+
+<h3 id="-flow-based-model">⚪ Flow-based Model</h3>
+
+<p>在流模型中生成模型设置为狄拉克分布$p(x|z) = \delta(x-G(z))$，通过精心设计$G(z)$直接把$p(x)$表达式中的积分计算出来，从而可以直接完成最大似然优化。其主要组件是耦合层，即将输入$x$划分为两部分$x_1,x_2$，然后构造可逆变换：</p>
+
+\[\begin{aligned} y_1&amp;=x_1 \\ y_2&amp;= s(x_1) \otimes x_2+ t(x_1) \end{aligned}\]
+
+<p>耦合层需要保证其雅可比行列式容易计算，因此单个耦合层的设计比较简单，只能带来非常弱的非线性能力；通过大量耦合层的组合可以得到复杂的非线性变换。这导致流模型通常相当庞大，训练时间长。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62d653b6f54cd3f937129999.jpg" alt="" /></p>
+
+<h1 id="2-f-vae">2. f-VAE</h1>
+
+<p>作者提出将流模型引入<strong>VAE</strong>中，即用流模型拟合更一般的后验分布$q(z|x)$，而不是简单地设为高斯分布。该模型称为基于流的变分自编码器（<strong>Flow-based Variational Autoencoders, f-VAEs</strong>）。</p>
+
+<p>相比于标准的<strong>VAEs</strong>，<strong>f-VAEs</strong>跳出了关于后验分布为高斯分布的局限，能够生成更清晰的图像；相比于标准的流模型，<strong>f-VAEs</strong>的编码器给模型带来了更强的非线性能力，从而可以减少对耦合层的依赖，通过更小的模型规模来达到同样的生成效果。</p>
+
+<h3 id="-目标函数">⚪ 目标函数</h3>
+
+<p>从<strong>VAEs</strong>的目标函数出发：</p>
+
+\[KL(q(x)q(z|x))||p(z)p(x|z) = \int \int q(x) q(z|x)\log \frac{q(x)q(z|x)}{p(z)p(x|z)}dzdx\]
+
+<p>与标准<strong>VAEs</strong>不同的是，后验概率$q(z|x)$不再假设为高斯分布，而是通过流模型构建：</p>
+
+\[q(z|x) = \int \delta(z-F_x(u))q(u)du\]
+
+<p>其中$q(u)$是标准高斯分布，$F_x(u)$是关于$u$的流模型，其参数与$x$有关，称为条件流。将流模型带入目标函数有：</p>
+
+\[\int \int \int  q(x) \delta(z-F_x(u))q(u)\log \frac{q(x)\int \delta(z-F_x(v))q(v)dv}{p(z)p(x|z)}dzdudx \\ = \int \int   q(x) q(u)\log \frac{q(x)\int \delta(F_x(u)-F_x(v))q(v)dv}{p(F_x(u))p(x|F_x(u))}dudx\]
+
+<p>记$v’=F_x(v)$, $v=H_x(v’)$，则有如下关系：</p>
+
+\[\det[\frac{\partial v}{\partial v'}] = \frac{1}{\det[\frac{\partial v'}{\partial v}]} = \frac{1}{\det[\frac{\partial F_x(v)}{\partial v}]}\]
+
+<p>则目标函数进一步写作：</p>
+
+\[\begin{aligned} &amp; \int \int   q(x) q(u)\log \frac{q(x)\int \delta(F_x(u)-F_x(v))q(v)dv}{p(F_x(u))p(x|F_x(u))}dudx \\ &amp;=  \int \int   q(x) q(u)\log \frac{q(x)\int \delta(F_x(u)-v')q(H_x(v'))dH_x(v')}{p(F_x(u))p(x|F_x(u))}dudx \\ &amp;=  \int \int   q(x) q(u)\log \frac{q(x)\int \delta(F_x(u)-v')q(H_x(v'))|\det[\frac{\partial v}{\partial v'}]|dv'}{p(F_x(u))p(x|F_x(u))}dudx \\ &amp;=  \int \int   q(x) q(u)\log \frac{q(x)\int \delta(F_x(u)-v')q(H_x(v'))|\frac{1}{\det[\frac{\partial F_x(v)}{\partial v}]}|dv'}{p(F_x(u))p(x|F_x(u))}dudx \\ &amp;=  \int \int   q(x) q(u)\log \frac{q(x)q(H_x(F_x(u)))|\frac{1}{\det[\frac{\partial F_x(v)}{\partial v}]}|_{v'=F_x(u)}}{p(F_x(u))p(x|F_x(u))}dudx \\ &amp;=  \int \int   q(x) q(u)\log \frac{q(x)q(u)}{p(F_x(u))p(x|F_x(u))|\det[\frac{\partial F_x(u)}{\partial u}]|}dudx \end{aligned}\]
+
+<p>上式给出了一般化的<strong>f-VAE</strong>框架，通过选择不同的$F_x(u)$对应于不同的生成模型。注意到$q(x)$是未知但固定的常数，因此上述目标函数等价于：</p>
+
+\[\begin{aligned}  &amp;\int \int   q(x) q(u)\log \frac{q(x)q(u)}{p(F_x(u))p(x|F_x(u))|\det[\frac{\partial F_x(u)}{\partial u}]|}dudx \\ &amp;\to \int \int   q(x) q(u)\log \frac{q(u)}{p(F_x(u))p(x|F_x(u))|\det[\frac{\partial F_x(u)}{\partial u}]|}dudx \\ &amp;= \int q(x) [ \int  q(u)\log \frac{q(u)}{p(F_x(u))p(x|F_x(u))|\det[\frac{\partial F_x(u)}{\partial u}]|}du]dx \\ &amp;= \int q(x) [ \int  q(u)[\log \frac{q(u)}{p(F_x(u))}-\log |\det[\frac{\partial F_x(u)}{\partial u}]|-\log p(x|F_x(u))]du]dx \end{aligned}\]
+
+<h3 id="-例子1退化为vae">⚪ 例子1：退化为VAE</h3>
+
+<p>如果设置：</p>
+
+\[F_x(u) = \sigma(x) \otimes u +\mu(x)\]
+
+<p>此时目标函数中存在：</p>
+
+\[\begin{aligned} &amp;\int  q(u)\log \frac{q(u)}{p(F_x(u))}du = \frac{1}{2} \sum_{i=1}^{d} (\mu_i^2(x)+\sigma_i^2(x)-1) \\ &amp;\int - q(u)\log |\det[\frac{\partial F_x(u)}{\partial u}]|du = -\sum_{i} \log \sigma_i(x) \end{aligned}\]
+
+<p>上述两式的组合恰好是后验分布和先验分布的<strong>KL</strong>散度；代入到目标函数中恰好是标准的<strong>VAE</strong>损失。值得一提的是，该结果自动包含了重参数的过程。</p>
+
+<h3 id="-例子2退化为流模型">⚪ 例子2：退化为流模型</h3>
+
+<p>如果设置：</p>
+
+\[F_x(u) = F(\sigma u + x), p(x|z) = \mathcal{N}(x;F^{-1}(z),\sigma)\]
+
+<p>此时目标函数中存在：</p>
+
+\[-\log p(x|F_x(u)) = -\log \mathcal{N}(x;F^{-1}(F(\sigma u + x)),\sigma) \\ = -\log \mathcal{N}(x;\sigma u + x,\sigma) = \frac{d}{2}\log 2\pi \sigma^2 + \frac{1}{2}||u||^2\]
+
+<p>此时该目标项未包含训练参数。则原目标函数进一步写作：</p>
+
+\[\begin{aligned} &amp; \int q(x) [ \int  q(u)[\log \frac{q(u)}{p(F_x(u))}-\log |\det[\frac{\partial F_x(u)}{\partial u}]|-\log p(x|F_x(u))]du]dx  \\ &amp;\to \int q(x) [ \int  q(u)[\log \frac{q(u)}{p(F_x(u))}-\log |\det[\frac{\partial F_x(u)}{\partial u}]|]du]dx  \\ &amp;\to - \int q(x) [ \int  q(u)[\log p(F_x(u))|\det[\frac{\partial F_x(u)}{\partial u}]|]du]dx \\ &amp;= - \int q(x) [ \int  q(u)[\log p(F(\sigma u + x))|\det[\frac{\partial F(\sigma u + x)}{\partial u}]|]du]dx \end{aligned}\]
+
+<p>上式等价于在标准的流模型输入中增加方差为$σ^2$的高斯噪声。在常用的流模型(如<strong>Glow</strong>模型)中确实都会在训练的时候给输入图像加入一定量的噪声。</p>
+
+<h3 id="-例子3最终设置">⚪ 例子3：最终设置</h3>
+
+<p>作者设置：</p>
+
+\[F_x(u) = F(\sigma_1 u + E(x)), p(x|z) = \mathcal{N}(x;G(F^{-1}(z)),\sigma_2)\]
+
+<p>其中$\sigma_1,\sigma_2$是可训练参数，$E(\cdot),D(\cdot)$是编码器和解码器，$F(\cdot)$是参数与$x$无关的流模型。目标函数等价于：</p>
+
+\[\begin{aligned}  &amp; \int q(x) [ \int  q(u)[\log \frac{q(u)}{p(F_x(u))}-\log |\det[\frac{\partial F_x(u)}{\partial u}]|-\log p(x|F_x(u))]du]dx \\ &amp; \to \int q(x) [ \int  q(u)[\frac{1}{2}F^2(\sigma_1u+E(x))-\log |\det[\frac{\partial F(\sigma_1 u + E(x))}{\partial u}]| \\ &amp; \qquad \qquad \qquad \qquad + \frac{1}{2\sigma_2^2}||G(\sigma_1u+E(x))-x||^2]du]dx \end{aligned}\]
+
+<p>模型的生成采样过程为：</p>
+
+\[u \text{~} q(u), z = F^{-1}(u) , x=G(z)\]
+
+<h1 id="3-实验分析">3. 实验分析</h1>
+
+<p>作者对比了<strong>VAE</strong>、流模型以及<strong>f-VAE</strong>的实验结果，在同样的复杂度和同样的训练时间下，<strong>f-VAEs</strong>有着更好的表现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62d6538cf54cd3f93711da8e.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/23/vmf.html" class="read-next-link"></a>
+        <section>
+          <span>超球面上的von Mises-Fisher(vMF)分布</span>
+          <p>  von Mises-Fisher distribution.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/21/tdvae.html" class="read-next-link"></a>
+          <section>
+            <span>Temporal Difference Variational Auto-Encoder</span>
+            <p>  TD-VAE: 时间差分变分自编码器.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62adb1ac09475431290cdc09.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

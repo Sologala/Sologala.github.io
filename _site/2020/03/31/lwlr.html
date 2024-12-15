@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>局部加权线性回归(Local Weighted Linear Regression) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="局部加权线性回归(Local Weighted Linear Regression)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="局部加权线性回归(Local Weighted Linear Regression) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/31/lwlr.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>局部加权线性回归(Local Weighted Linear Regression)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-31"><i class="iconfont icon-date"></i>31 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/639da58cb1fccdcd3679836d.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Local Weighted Linear Regression.</p>
+</blockquote>
+
+<p>在标准的线性回归中，所有参与训练的样本点权重都是相同的(视为$1$)。
+而<strong>局部加权线性回归(Local Weighted Linear Regression)</strong>是指根据实际提供的测试样本，为每个训练样本赋予不同的权重，然后再计算回归参数。</p>
+
+<p>局部加权线性回归模型的形式与线性回归相同，可以表示为矩阵形式：记样本矩阵$X \in \Bbb{R}^{N×d}$，标签向量$y\in \Bbb{R}^{N}$，待求解权重参数$w \in \Bbb{R}^{d}$，预测结果$\hat{y} \in \Bbb{R}^{N}$，则：</p>
+
+\[\hat{y} = Xw\]
+
+<p>若给定测试样本$x^{(j)}$，计算测试样本与每个训练样本$x_i$之间的相似性，然后构造权重矩阵：</p>
+
+\[C^{(j)} = \begin{bmatrix} c_1^{(j)} &amp; &amp; &amp; \\ &amp; c_2^{(j)} &amp; &amp; \\ &amp; &amp; \cdots &amp; \\ &amp; &amp; &amp; c_N^{(j)} \end{bmatrix}\]
+
+<p>其中$c_i^{(j)}$表示训练样本$x_i$和测试样本$x^{(j)}$之间的相似度，通过径向基函数构造：</p>
+
+\[c_i^{(j)} = \exp(-\frac{||x^{(j)}-x_i||_2^2}{2k^2})\]
+
+<p>其中超参数$k$越小，有效参与计算的训练样本越少；超参数$k$越大，有效参与计算的训练样本越多。</p>
+
+<p>局部加权线性回归将权重矩阵$C$加入到损失函数中，用于加权调整每个训练样本的损失：</p>
+
+\[L(w) = \sum_{i=1}^N c_i^{(j)}(\hat{y}_i-y_i)^2 = C^{(j)} (Xw-y)^T(Xw-y)\]
+
+<p>该目标函数是凸函数，可以直接求梯度令其为零，得到全局最小解：</p>
+
+\[\nabla_wL(w) = \nabla_w C^{(j)}  (Xw-y)^T(Xw-y) = 2 X^TC^{(j)}Xw - 2 XC^{(j)}y = 0\]
+
+<p>整理得到：</p>
+
+\[X^TC^{(j)}Xw =  XC^{(j)}y\]
+
+<p>可以得到权重参数的解析解：</p>
+
+\[w = (X^TC^{(j)}X)^{-1} XC^{(j)} y\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">local_weight_LR</span><span class="p">(</span><span class="n">test_point</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="c1"># 构建权重矩阵
+</span>    <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">test_point</span><span class="p">,</span> <span class="p">[</span><span class="n">N</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">X</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">diff</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+    <span class="n">XTCX</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">T</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">XCY</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">inv</span><span class="p">(</span><span class="n">XTCX</span><span class="p">),</span> <span class="n">XCY</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>下图给出了超参数$k$取值不同时，局部加权线性回归的拟合结果。如果$k$取值较大，则训练样本的权重分布越平均(当$k \to +\infty$退化为线性回归)，容易出现欠拟合；如果$k$取值较小，则仅有一小部分样本用于学习过程，容易出现过拟合。</p>
+
+<p><img src="https://pic.imgdb.cn/item/639da58cb1fccdcd3679836d.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/01/leetcode.html" class="read-next-link"></a>
+        <section>
+          <span>LeetCode刷题指南(Python)</span>
+          <p>  Leetcode Exercise Guidence via Python.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/30/ridge.html" class="read-next-link"></a>
+          <section>
+            <span>岭回归与LASSO回归(Ridge/LASSO Regression)</span>
+            <p>  Ridge Regression and LASSO Regression.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60e7fa3f5132923bf811b50d.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scale-Prior Deformable Convolution for Exemplar-Guided Class-Agnostic Counting - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Scale-Prior Deformable Convolution for Exemplar-Guided Class-Agnostic Counting">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Scale-Prior Deformable Convolution for Exemplar-Guided Class-Agnostic Counting - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/05/13/spdcn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Scale-Prior Deformable Convolution for Exemplar-Guided Class-Agnostic Counting</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-05-13"><i class="iconfont icon-date"></i>13 May 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/667e5aaad9c307b7e93ac19f.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>用于模板引导的类别无关计数的尺度先验可变形卷积.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://bmvc2022.mpi-inf.mpg.de/0313.pdf">Scale-Prior Deformable Convolution for Exemplar-Guided Class-Agnostic Counting</a></li>
+</ul>
+
+<p>类别无关计数任务是指预测查询图像中由几个目标模板所指示的类别目标的数量。在训练过程中，将图像和模板都输入到计数模型中，然后计算预测的密度图与人工标注的点图之间的损失。</p>
+
+<p>通常同一类别的目标在图像中具有相似的比例，而不同的目标类别可能具有截然不同的比例。本文提出了一个尺度先验的可变形卷积网络<strong>Scale-Prior Deformable Convolution Network (SPDCN)</strong>，将样本的尺度信息集成到计数网络主干中。所提出的计数网络可以提取与给定样本相似的目标的语义特征，并有效地过滤不相关的背景。作者进一步提出了一种尺度敏感的广义损失，该算法根据目标尺度自适应地调整损失函数。</p>
+
+<p><strong>SPDCN</strong>由尺度先验主干网络、计数目标分割模块和类别无关的密度预测模块构成。</p>
+<ul>
+  <li>尺度先验主干网络在<strong>ImageNet</strong>预训练的<strong>VGG-19</strong>网络基础上改进，保留了<strong>VGG-19</strong>的前十个卷积层和三个池化层，所有四个阶段的最后一个卷积层都被替换为尺度先验的可变形卷积。提取的特征用两个线性函数分别编码为分割信息$F_c$和密度信息$F_d$。</li>
+  <li>计数目标分割模块用<strong>ROI Align</strong>层从提取的特征中提取边界框的语义向量，平均后与分割信息$F_c$的每个局部特征向量之间计算余弦相似度。预测的相似性图$S$通过按空间顺序排列来指示哪些区域是前景或背景。</li>
+  <li>类别无关的密度预测模块在相似性图$S$和密度信息$F_d$之间采用逐元素乘法来生成与类无关的密度特征，并通过解码器生成密度图。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/667e5f68d9c307b7e9449e36.png" alt="" /></p>
+
+<h2 id="1-尺度先验的可变形卷积">1. 尺度先验的可变形卷积</h2>
+
+<p>尺度先验的可变形卷积使用给定样本的尺度来学习相应的尺度嵌入，然后根据这些嵌入向量调整可变形卷积的偏移量。偏移量由两部分组成，局部尺度嵌入$d_c$和全局尺度嵌入$d_g$。</p>
+
+<p>局部尺度嵌入$d_c$利用特征映射局部学习偏移量，是通过对之前的图像特征映射$x$应用一个非线性卷积块$C$得到的：$d_c = C(x)$。</p>
+
+<p>全局尺度嵌入$d_g$是由样本的尺度得到的，通过将样本的平均宽度w和高度h映射到一个向量来表示：$d_g = G(h,w)$。</p>
+
+<h2 id="2-尺度敏感的广义损失">2. 尺度敏感的广义损失</h2>
+
+<p>广义损失通过不平衡最优传输问题直接测量了预测密度图$a$和真实点图$b$之间的距离：
+UOT为</p>
+
+\[\mathcal{L}_{\mathbf{C}} = \min_{\mathbf{P}\in\mathbb{R}_+^{n\times m}} \left\langle \mathbf{C},\mathbf{P}\right\rangle -\epsilon H\left(\mathbf{P}\right) + \tau ||\mathbf{P}\mathbf{1}_m-\mathbf{a}||_2^2 +\tau |\mathbf{P}^T\mathbf{1}_n-\mathbf{b}|_1\]
+
+<p>其中\(\mathbf{C}\in\mathbb{R}_+^{n\times m}\)是传输代价矩阵,$C_{i,j}$为将密度图从\(\mathbf{x}_i\)搬运到\(\mathbf{y}_j\)的距离。\(\mathbf{P}\)为传输矩阵。令\(\hat{\mathbf{a}} = \mathbf{P}\mathbf{1}_m, \hat{\mathbf{b}}=\mathbf{P}^T\mathbf{1}_n\)。</p>
+
+<p>这个损失包括四部分：</p>
+<ol>
+  <li>传输损失，目的是将预测的密度图往真实标注靠拢；</li>
+  <li>熵正则化项，目的是控制密度图的稀疏程度；</li>
+  <li>希望\(\hat{\mathbf{a}}\)靠近\(\mathbf{a}\)；</li>
+  <li>希望\(\hat{\mathbf{b}}\)靠近\(\mathbf{b}\)。</li>
+</ol>
+
+<p>为了添加被计数对象的尺度信息，将代价矩阵定义为:</p>
+
+\[C_{i,j} = ||\hat{x}_{i,j}-\hat{y}_{i,j}||_2,  \\
+\begin{bmatrix}\hat{x}_{i,j}&amp;\hat{y}_{i,j}\end{bmatrix} = \begin{bmatrix}1/s_h&amp;0 \\ 0 &amp; 1/s_w \end{bmatrix} \begin{bmatrix}x_{i,j}&amp;y_{i,j}\end{bmatrix}\]
+
+<p>$s_h$和$s_w$是对齐两个坐标轴的比例因子。为了避免极值，采用一个修正的$S(·)$函数来限制这两个因子的取值范围:</p>
+
+\[S(k) = \frac{\alpha}{1+\exp(-(k-\mu)/\sigma)} + \beta\]
+
+<h2 id="3-实验分析">3. 实验分析</h2>
+
+<p><strong>SPDCN</strong>通过提出的尺度先验可变形卷积在简单的匹配网络中利用尺度信息，显著提高了计数性能。虽然被计数的目标在规模和数量上有所不同，但与其他模型相比，该模型获得了良好的紧凑预测。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667e6413d9c307b7e94da5e5.png" alt="" /></p>
+
+<p>下图给出了当模型遇到不同尺度的物体时输出特征图的感受野。尺度先验可变形卷积从局部特征和给定示例的尺度先验中学习偏移量，这允许网络捕获大规模计数目标的特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667e6481d9c307b7e94e6c4a.png" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/05/14/zsc.html" class="read-next-link"></a>
+        <section>
+          <span>Zero-shot Object Counting</span>
+          <p>  零样本目标计数.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/667e67e9d9c307b7e9543742.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/05/12/clipcount.html" class="read-next-link"></a>
+          <section>
+            <span>CLIP-Count: Towards Text-Guided Zero-Shot Object Counting</span>
+            <p>  CLIP-Count：文本引导的零样本目标计数.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/667bc72fd9c307b7e9469e73.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

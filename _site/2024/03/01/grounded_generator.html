@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>布局引导图像生成(Layout-to-Image Generation) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="布局引导图像生成(Layout-to-Image Generation)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="布局引导图像生成(Layout-to-Image Generation) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/03/01/grounded_generator.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>布局引导图像生成(Layout-to-Image Generation)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-03-01"><i class="iconfont icon-date"></i>01 Mar 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/66457c7dd9c307b7e9094560.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Layout-to-Image Generation.</p>
+</blockquote>
+
+<p><a href="https://paperswithcode.com/task/layout-to-image-generation"><strong>布局引导图像生成 (Layout-to-Image Generation)</strong></a>是图像感知任务（如目标检测、图像分割）的逆过程，即根据给定的布局生成对应的图像。</p>
+
+<p>布局描述了包含在图像中的目标信息，可以通过目标类别、边界框、分割<strong>mask</strong>、关键点、边缘图、深度图等来定义。布局引导的图像生成是指学习一个条件生成模型$\mathcal{G}$，在给定几何布局$L$的条件下生成图像$I$：</p>
+
+\[I = \mathcal{G}(L,z) , \quad z\sim \mathcal{N}(0,1)\]
+
+<p>根据布局控制条件的输入形式，布局引导的图像生成模型包括：</p>
+<ul>
+  <li>文本级<strong>L2I</strong>模型：通过将空间布局转换成文本<strong>token</strong>实现布局控制，如<strong>ReCo</strong>, <strong>LayoutDiffusion</strong>, <strong>GeoDiffusion</strong>, <strong>DetDiffusion</strong>。</li>
+  <li>像素级<strong>L2I</strong>模型：通过提供像素级空间对齐条件实现布局控制，如<strong>GLIGEN</strong>, <strong>LayoutDiffuse</strong>, <strong>ControlNet</strong>, <strong>InstanceDiffusion</strong>。</li>
+</ul>
+
+<h2 id="1-文本级l2i模型">1. 文本级L2I模型</h2>
+
+<h3 id="-reco">⚪ <a href="https://0809zheng.github.io/2024/03/04/reco.html"><font color="Blue">ReCo</font></a></h3>
+<ul>
+  <li>（arXiv2211）ReCo: Region-Controlled Text-to-Image Generation</li>
+</ul>
+
+<p><strong>ReCo</strong>的输入布局包括图像的文本描述和每个目标框的类别、位置、文本描述。<strong>ReCo</strong>在预训练文本词嵌入$T$的同时引入位置标记$P$，用四个浮点数表示每个区域的位置标记$P$，即边界框的左上坐标和右下坐标\(&lt;x_1&gt;,&lt;y_1&gt;,&lt;x_2&gt;,&lt;y_2&gt;\)。输入序列设计为图像描述+多个位置标记和相应的区域描述。预训练CLIP文本编码器将标记编码为序列嵌入。</p>
+
+<p><img src="https://pic.imgdb.cn/item/665d8eb75e6d1bfa05f3a4ea.png" alt="" /></p>
+
+<h3 id="-layoutdiffusion">⚪ <a href="https://0809zheng.github.io/2024/03/03/layoutdiffusion.html"><font color="Blue">LayoutDiffusion</font></a></h3>
+<ul>
+  <li>（arXiv2303）LayoutDiffusion: Controllable Diffusion Model for Layout-to-image Generation</li>
+</ul>
+
+<p><strong>LayoutDiffusion</strong>模型由布局融合模块(<strong>Layout Fusion Module, LFM</strong>)和目标感知交叉注意机制(<strong>object-aware Cross-Attention Mechanism, OaCA</strong>)组成。该模型的输入布局包括每个目标框的类别、位置。</p>
+<ul>
+  <li><strong>LFM</strong>融合了每个目标的信息，并对多个目标之间的关系进行建模，从而提供了整个布局的潜在表示。</li>
+  <li><strong>OaCA</strong>将图像<strong>patch</strong>特征与布局在统一的坐标空间中进行交叉注意力计算，将两者的位置表示为边界框，使模型更加关注与目标相关的信息。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6650509ed9c307b7e9623aba.png" alt="" /></p>
+
+<h3 id="-geodiffusion">⚪ <a href="https://0809zheng.github.io/2024/03/19/geodiffusion.html"><font color="Blue">GeoDiffusion</font></a></h3>
+<ul>
+  <li>（arXiv2306）GeoDiffusion: Text-Prompted Geometric Control for Object Detection Data Generation</li>
+</ul>
+
+<p><strong>GeoDiffusion</strong>可以灵活地将边界框或几何控制（例如自动驾驶场景中的相机视图）转换为文本提示，实现高质量的检测数据生成，有助于提高目标检测器的性能。该模型的输入布局包括与布局相关的几何条件和每个目标框的类别、位置。</p>
+
+<p><strong>GeoDiffusion</strong>进一步引入一个自适应重加权<strong>mask</strong>与重构损失相乘，使模型能够更加关注前景生成，解决前景与背景不平衡问题。</p>
+<ul>
+  <li><strong>Constant re-weighting</strong>：为了区分前景和背景区域，引入一种重加权策略，即为前景区域分配一个权重$w &gt; 1$，大于分配给背景区域的权重。</li>
+  <li><strong>Area re-weighting</strong>：面积重加权方法动态地为较小的目标框分配更高的权重。对于尺寸为$H\times W$的<strong>mask</strong>，像素$(i,j)$所属边界框的面积为$c_{ij}$，则为像素设置权重：</li>
+</ul>
+
+\[m_{ij}^\prime = \begin{cases}
+\frac{w}{c_{ij}^p}, &amp; (i,j) \in \text{foreground} \\
+\frac{1}{(HW)^p}, &amp; (i,j) \in \text{background}
+\end{cases}\]
+
+<p><img src="https://pic.imgdb.cn/item/6641d4ee0ea9cb1403dccfab.png" alt="" /></p>
+
+<h3 id="-detdiffusion">⚪ <a href="https://0809zheng.github.io/2024/03/20/detdiffusion.html"><font color="Blue">DetDiffusion</font></a></h3>
+<ul>
+  <li>（arXiv2403）DetDiffusion: Synergizing Generative and Perceptive Models for Enhanced Data Generation and Perception</li>
+</ul>
+
+<p><strong>DetDiffusion</strong>使用感知模型为生成模型提供信息，从而增强后者生成控制的能力。该模型的输入布局包括每个目标框的类别、位置和感知属性。</p>
+<ul>
+  <li>构造每个目标框的<strong>感知属性</strong>：使用预训练的目标检测器提取边界框$b=[b_1,…,b_n]$，感知属性定义为每个真值框$o=[o_1,…,o_m]$的检测难度。对于每个真值框$o_i$，通过与$n$个预测框的交集来评估其检测难度：</li>
+</ul>
+
+\[d_i = \begin{cases}
+[\text{easy}], &amp; \exists j, \text{IoU}(b_j, o_i) &gt; \beta \\
+[\text{hard}], &amp; \text{else}
+\end{cases}\]
+
+<ul>
+  <li>构造感知损失促进更细致的图像重建，并精确控制图像属性：使用预训练的图像分割模型提取多层次掩码伪标签$M=[m_1,…,m_k]$。在优化模型的高维特征空间时，引入掩码损失$\mathcal{L}_m$和<strong>Dice</strong>损失$\mathcal{L}_d$。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/664182350ea9cb14036385cc.png" alt="" /></p>
+
+<h2 id="2-像素级l2i模型">2. 像素级L2I模型</h2>
+
+<h3 id="-gligen">⚪ <a href="https://0809zheng.github.io/2024/03/02/gligen.html"><font color="Blue">GLIGEN</font></a></h3>
+<ul>
+  <li>（arXiv2301）GLIGEN: Open-Set Grounded Text-to-Image Generation</li>
+</ul>
+
+<p><strong>GLIGEN</strong>冻结原始模型的权重，并通过引入门控自注意力层来将输入布局信息引入模型。输入布局信息采用不同的方式进行编码：</p>
+<ul>
+  <li>图像的文本描述和目标实体的文本描述使用预训练文本编码器获得每个单词的上下文文本特征；</li>
+  <li>边界框、关键点等点坐标集合通过傅里叶嵌入提取每个点坐标特征；</li>
+  <li>输入条件图像使用图像编码器获得特征；</li>
+  <li>空间对齐条件（如边缘图、深度图、法线图和语义图）将<strong>UNet</strong>的第一个卷积层设置为可训练，将这类条件通过一个下采样网络并与输入图像连接后输入<strong>UNet</strong>。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6645cf7bd9c307b7e99083fd.png" alt="" /></p>
+
+<h3 id="-layoutdiffuse">⚪ <a href="https://0809zheng.github.io/2024/03/06/layoutdiffuse.html"><font color="Blue">LayoutDiffuse</font></a></h3>
+<ul>
+  <li>（arXiv2302）LayoutDiffuse: Adapting Foundational Diffusion Models for Layout-to-Image Generation</li>
+</ul>
+
+<p><strong>LayoutDiffuse</strong>通过微调预训练扩散模型实现了布局到图像的生成。<strong>LayoutDiffuse</strong>通过在<strong>U-Net</strong>的每一层之后添加布局注意力（<strong>layout attention</strong>）层来引入布局条件，布局注意力层为每个类别和背景特征引入可学习的<strong>token</strong>，并分别计算特征自注意力再融合；此外还添加了任务感知提示（<strong>task-aware prompt</strong>）来指示模型生成任务的更改，任务感知提示通过在预训练模型的输入前添加一个可学习的嵌入向量来实现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6736f7fad29ded1a8c64e438.png" alt="" /></p>
+
+<h3 id="-controlnet">⚪ <a href="https://0809zheng.github.io/2024/03/05/controlnet.html"><font color="Blue">ControlNet</font></a></h3>
+<ul>
+  <li>（arXiv2302）Adding Conditional Control to Text-to-Image Diffusion Models</li>
+</ul>
+
+<p><strong>ControlNet</strong>冻结神经网络原始模块的参数$\Theta$，并拷贝该模块为具有参数$\Theta_c$的可训练版本。将拷贝模块通过两个零卷积\(\mathcal{Z}\)（参数初始化为$0$的$1\times 1$卷积）连接到原模块，接收输入布局条件$c$作为输入。零卷积保证了训练的初始阶段不会引入有害的训练噪声，保留了大型预训练模型的生成能力。</p>
+
+\[y_c = \mathcal{F}(x; \Theta) + \mathcal{Z}(\mathcal{F}(x+\mathcal{Z}(c; \Theta_1); \Theta_c); \Theta_2)\]
+
+<p><strong>ControlNet</strong>接受边缘、<strong>Hough</strong>线、用户涂鸦、人体关键点、分割图、形状法线、深度图等形式的布局图像，使用由4 × 4卷积核、步长为2的4个卷积层组成的网络(由ReLU激活，分别使用16、32、64、128个通道，用高斯初始化并与完整模型联合训练)将图像编码为输入布局条件$c$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66a8aaf9d9c307b7e901e311.png" alt="" /></p>
+
+<h3 id="-instancediffusion">⚪ <a href="https://0809zheng.github.io/2024/03/07/instancediffusion.html"><font color="Blue">InstanceDiffusion</font></a></h3>
+<ul>
+  <li>（arXiv2402）InstanceDiffusion: Instance-level Control for Image Generation</li>
+</ul>
+
+<p><strong>InstanceDiffusion</strong>支持单点、涂鸦、边界框和实例分割掩码等输入布局，使用<strong>UniFusion</strong>、<strong>ScaleU</strong>和<strong>Multi-instance Sampler</strong>三大模块实现了对图像生成的精确控制。</p>
+<ul>
+  <li><strong>UniFusion</strong>模块将各种形式的实例级条件投影到相同的特征空间，并将实例级布局和文本描述融合到视觉<strong>token</strong>中。</li>
+  <li><strong>ScaleU</strong>模块通过重新校准<strong>UNet</strong>中的主路径特征和跳跃连接特征，增强了模型精确遵循指定布局条件的能力。</li>
+  <li><strong>Multi-instance Sampler</strong>模块采用多实例采样策略，确保每个实例在生成过程中都能保持其独特性和准确性，减少多个实例之间条件之间的信息泄露和混淆。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/673704acd29ded1a8c6ee9bc.png" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/03/02/gligen.html" class="read-next-link"></a>
+        <section>
+          <span>GLIGEN: Open-Set Grounded Text-to-Image Generation</span>
+          <p>  GLIGEN：开集接地文本到图像生成.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6603ddc09f345e8d034f08f1.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/02/21/yolov9.html" class="read-next-link"></a>
+          <section>
+            <span>YOLOv9: Learning What You Want to Learn Using Programmable Gradient Information</span>
+            <p>  YOLOv9：通过可编程梯度信息学习想学习的内容.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/668cde82d9c307b7e9ae7b43.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow++: Improving Flow-Based Generative Models with Variational Dequantization and Architecture Design - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Flow++: Improving Flow-Based Generative Models with Variational Dequantization and Architecture Design">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Flow++: Improving Flow-Based Generative Models with Variational Dequantization and Architecture Design - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/05/12/flowpp.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Flow++: Improving Flow-Based Generative Models with Variational Dequantization and Architecture Design</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-05-12"><i class="iconfont icon-date"></i>12 May 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/62a9b66d094754312936bb6f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Flow++：通过变分解量化和结构设计改进流模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1902.00275v2">Flow++: Improving Flow-Based Generative Models with Variational Dequantization and Architecture Design</a></li>
+</ul>
+
+<h1 id="1-流模型">1. 流模型</h1>
+<p><strong>流模型</strong>(<strong>flow-based model</strong>)是一种从观测变量$x$到简单隐变量$z$的可逆变换$z=f(x)$，该变换可以通过叠加多个简单的可逆变换构造$f(x) = f_1 ◦ \cdots ◦ f_L(x)$，由于每个变换$f_i$可逆且容易求<strong>Jacobian</strong>行列式，因此采样过程也容易实现$f^{-1}(z) = f^{-1}_L ◦ \cdots ◦ f^{-1}_1(z)$。</p>
+
+<p>根据<a href="https://0809zheng.github.io/2022/04/30/variable.html">概率密度的变量替换公式</a>和链式法则，观测变量$x$的分布为：</p>
+
+\[p(x) = p(z)\cdot |\det \prod_{i=1}^{L} \frac{\partial f_i}{\partial f_{i-1}}|\]
+
+<p>其对数似然函数为：</p>
+
+\[\log p(x) = \log  p(z) + \sum_{i=1}^{L} \log |\det  \frac{\partial f_i}{\partial f_{i-1}}|\]
+
+<p>此时不需要显式地计算分布$p(x)$的概率密度函数，而是通过初始分布$p(z)$的概率密度(常取标准正态分布)以及映射过程产生的<strong>Jacobian</strong>行列式计算即可。</p>
+
+<h1 id="2-flow">2. Flow++</h1>
+<p>作者认为，流模型的建模效率较低，主要存在三个问题：</p>
+<ol>
+  <li>为输入增加均匀噪声是次优的解量化选择，影响训练损失和泛化能力；</li>
+  <li>仿射耦合层的表达能力不足；</li>
+  <li>耦合层网络中的卷积层特征提取能力不强。</li>
+</ol>
+
+<p>针对这三点问题，作者设计了<strong>Flow++</strong>，进行了如下改进：</p>
+<ol>
+  <li>引入基于变分的解量化；</li>
+  <li>使用逻辑混合<strong>CDF</strong>耦合层；</li>
+  <li>耦合层网络中使用自注意力机制。</li>
+</ol>
+
+<h2 id="1-通过变分推断进行解量化">(1) 通过变分推断进行解量化</h2>
+
+<p>图像等数据是将连续信号<strong>量化(quantized)</strong>为离散的表示。若直接使用离散数据拟合连续密度模型会产生退化问题，即将所有概率集中在离散的数据点上。该问题的常见解决方案是<strong>解量化(dequantization)</strong>，即首先将离散数据分布转换为连续分布，然后使用连续密度模型对构造的连续分布进行建模。</p>
+
+<h3 id="-均匀解量化">⚪ 均匀解量化</h3>
+
+<p>之前的工作通过向离散数据添加均匀噪声来实现解量化：比如包含$D$个像素的图像数据$x$的每个分量取$(0,1,2,…,255)$中的值，则解量化数据为$y=x+u$，其中$u$~$[0,1)^D$。</p>
+
+\[P_{model}(x) = \int_{[0,1)^D} p_{model}(x+u)du\]
+
+<p>在解量化数据$y$上训练一个连续密度模型$p_{model}$相当于在离散数据$x$上最大化离散模型$P_{model}$的对数似然下界：</p>
+
+\[\begin{aligned} \Bbb{E}_{y \text{~} p_{data}} [\log p_{model}(y)] &amp;= \sum_{x} P_{data}(x) \int_{[0,1)^D} \log p_{model}(x+u)du \\ &amp;\leq  \sum_{x} P_{data}(x) \log \int_{[0,1)^D} p_{model}(x+u)du \\ &amp; =  \Bbb{E}_{x \text{~} p_{data}} [\log P_{model}(x)] \end{aligned}\]
+
+<p>均匀解量化能够防止连续密度模型$p_{model}$退化为离散数据点上的混合模型，因为最大化连续模型的对数自然会受到离散模型的对数似然的约束。</p>
+
+<h3 id="-变分解量化">⚪ 变分解量化</h3>
+
+<p>均匀解量化要求为数据$x$均匀地增加超立方体的噪声$[0,1)^D$，这对于神经网络等平滑函数近似器是不合适的。作者提出了一种通过变分推断进行解量化的方法。</p>
+
+<p>同样使用连续密度模型$p_{model}$近似离散数据$x$的离散模型$P_{model}$：</p>
+
+\[P_{model}(x) = \int_{[0,1)^D} p_{model}(x+u)du\]
+
+<p>引入解量化噪声分布$q(u|x)$，则有以下变分下界：</p>
+
+\[\begin{aligned} \Bbb{E}_{x \text{~} p_{data}} [\log P_{model}(x)] &amp;= \Bbb{E}_{x \text{~} p_{data}} [\log \int_{[0,1)^D} q(u|x) \frac{p_{model}(x+u)}{q(u|x)}du] \\ &amp;\geq  \Bbb{E}_{x \text{~} p_{data}} [\int_{[0,1)^D} q(u|x) \log \frac{p_{model}(x+u)}{q(u|x)}du]\\ &amp; =  \Bbb{E}_{x \text{~} p_{data}} \Bbb{E}_{u \text{~} q(\cdot | x)}[\log \frac{p_{model}(x+u)}{q(u|x)}] \end{aligned}\]
+
+<p>把噪声分布$q$本身建模为流模型$u=q_x(\epsilon)$，其中$\epsilon$~\(p(\epsilon)=\mathcal{N}(0,I)\)。则$q(u|x) = p(q_x^{-1}(u))\cdot |\partial q_x^{-1}/\partial u|$。此时目标函数为：</p>
+
+\[\Bbb{E}_{x \text{~} p_{data}} [\log P_{model}(x)] \geq \Bbb{E}_{x \text{~} p_{data},\epsilon \text{~} \mathcal{N}(0,I)} [\log \frac{p_{model}(x+q_x(\epsilon))}{p(\epsilon)\cdot |\partial q_x/\partial \epsilon|^{-1}}]\]
+
+<p>因此目标函数变为同时优化模型$p_{model}$和$q_x$，这两个模型都被设计为流模型。注意到当$q_x$为均匀分布时，上述目标退化为\(\Bbb{E}_{y \text{~} p_{data}} [\log p_{model}(y)]\)，即均匀解量化的情况。噪声分布$q(u|x)$允许为数据$x$更灵活地分布超立方体噪声$[0,1)^D$，从而改善模型的训练过程和泛化能力。</p>
+
+<h2 id="2-改进耦合层">(2) 改进耦合层</h2>
+
+<p>仿射耦合层是流模型中常用的可逆结构，并且具有容易计算的<strong>Jacobian</strong>行列式。该结构把输入$x$拆分成两部分$x_1$和$x_2$，然后分别计算$y_1$和$y_2$：</p>
+
+\[\begin{aligned}  y_1&amp;=x_1 \\ y_2 &amp;= x_2 \cdot \exp(a_{\theta}(x_1)) + b_{\theta}(x_1) \end{aligned}\]
+
+<p>其中$a_{\theta},b_{\theta}$是用神经网络实现的。仿射耦合层的逆变换及对数<strong>Jacobian</strong>行列式计算如下：</p>
+
+\[\begin{aligned}  x_1&amp;=y_1 \\ x_2 &amp;=   (y_2-b_{\theta}(y_1))\cdot \exp(-a_{\theta}(y_1)) \\ \log |\frac{\partial y}{\partial x}| &amp; = 1^Ta_{\theta}(x_1) \end{aligned}\]
+
+<p>作者认为对于$y_2=f(x_2)$通过使用更复杂的非线性变换可以提高模型的建模性能，具体地，通过使用$K$个<strong>logistic</strong>分布的累计分布函数(<strong>cumulative distribution function, CDF</strong>，由混合概率$\pi$,均值$\mu$,对数尺度$s$建模)，再应用逆<strong>sigmoid</strong>和仿射变换：</p>
+
+\[\begin{aligned} x \to \sigma^{-1}(\text{MixLogCDF}(x;\pi,\mu,s))\cdot \exp(a) + b \\ \text{MixLogCDF}(x;\pi,\mu,s) = \sum_{i=1}^{K} \pi_i \sigma((x-\mu_i)\cdot \exp(-s_i)) \end{aligned}\]
+
+<p>其中参数$\pi_{\theta},\mu_{\theta},s_{\theta},a_{\theta},b_{\theta}$均用神经网络建模，作者是通过卷积层和自注意力机制实现的。改进的耦合层表示为：</p>
+
+\[\begin{aligned}  y_1=&amp;x_1 \\ y_2 =&amp; \sigma^{-1}(\text{MixLogCDF}(x_2;\pi_{\theta}(x_1),\mu_{\theta}(x_1),s_{\theta}(x_1))) \\ &amp; \cdot \exp(a_{\theta}(x_1)) + b_{\theta}(x_1) \end{aligned}\]
+
+<h2 id="3-实验分析">(3) 实验分析</h2>
+
+<p>实验结果表明，<strong>Flow++</strong>在非自回归模型中实现了最先进的性能，并且与自回归模型相比也具有竞争力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62ab165209475431294a4a82.jpg" alt="" /></p>
+
+<p>作者对所提改进方法进行消融实验：</p>
+
+<p><img src="https://pic.imgdb.cn/item/62ab16d009475431294b6a46.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/05/13/iresnet.html" class="read-next-link"></a>
+        <section>
+          <span>Invertible Residual Networks</span>
+          <p>  i-ResNet：通过变分解量化和结构设计改进流模型.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62d4b978f54cd3f93779e457.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/05/11/iaf.html" class="read-next-link"></a>
+          <section>
+            <span>Improving Variational Inference with Inverse Autoregressive Flow</span>
+            <p>  IAF：使用逆自回归流改进变分推断.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/629c98a10947543129fe8359.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

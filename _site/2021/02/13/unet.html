@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>U-Net: Convolutional Networks for Biomedical Image Segmentation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="U-Net: Convolutional Networks for Biomedical Image Segmentation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="U-Net: Convolutional Networks for Biomedical Image Segmentation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/02/13/unet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>U-Net: Convolutional Networks for Biomedical Image Segmentation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-02-13"><i class="iconfont icon-date"></i>13 Feb 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63f32f0df144a01007721d32.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>U-Net: 用于医学图像分割的卷积网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1505.04597">U-Net: Convolutional Networks for Biomedical Image Segmentation</a></li>
+</ul>
+
+<p><strong>UNet</strong>最早应用于生物医学图像分割，采用一种对称的U型网络设计，主要包括下采样编码、上采样解码和跳跃连接。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f32f2ff144a01007724bfb.jpg" alt="" /></p>
+
+<p><strong>UNet</strong>的<strong>Encoder</strong>进行4次最大池化下采样，<strong>Decoder</strong>进行4次转置卷积上采样。每一个上采样层和下采样层之间都有一个跳跃连接，实现了不同尺度的特征融合，从而可以进行多尺度预测；4次上采样也使得分割图恢复边缘等信息更加精细；而每一层的特征融合后都会经过一系列的卷积层，以此来处理特征图中的细节。</p>
+
+<p>具体来说，高层（浅层）下采样倍数小，特征图具备更加细致的图特征；底层（深层）下采样倍数大，信息经过大量浓缩，空间损失大，但有助于目标区域（分类）判断；当两种特征进行融合时，分割效果往往会非常好。</p>
+
+<p>由于输入医学图像的分辨率过大，对显存占用较高，因此在预测时采用<strong>滑动窗口</strong>的预测方式。此外网络在设计时没用使用<strong>padding</strong>参数，因为使用<strong>padding</strong>会导致图像边缘的损失，但是不使用<strong>padding</strong>会导致卷积过程中图像的分辨率越来越小，使得最后上采样回去的特征图尺寸和原图不匹配。</p>
+
+<p>作者采用了一种重叠的切割策略(<strong>Overlap-tile strategy</strong>)，该策略允许通过重叠的方法对任意大的图像进行无缝分割。为了预测图像边界区域中的像素，通过镜像输入图像来推断缺失的上下文。这种平铺策略对于将网络应用于大型图像很重要。比如需要预测图中黄色框的信息，就将蓝色框的数据作为输入，如果蓝色框内有一部分图像缺失，就对图像做镜像处理，从而构造黄色框区域的上下文信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f86399f144a010071b9655.jpg" alt="" /></p>
+
+<p><strong>U-Net</strong>的简单实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 编码块
+</span><span class="k">class</span> <span class="nc">UNetEnc</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">dropout</span><span class="p">:</span>
+            <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(.</span><span class="mi">5</span><span class="p">)]</span>
+        <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ceil_mode</span><span class="o">=</span><span class="bp">True</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">down</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">down</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># 解码块		
+</span><span class="k">class</span> <span class="nc">UNetDec</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">up</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">up</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="c1"># U-Net
+</span><span class="k">class</span> <span class="nc">UNet</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">enc1</span> <span class="o">=</span> <span class="n">UNetEnc</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">enc2</span> <span class="o">=</span> <span class="n">UNetEnc</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">enc3</span> <span class="o">=</span> <span class="n">UNetEnc</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">enc4</span> <span class="o">=</span> <span class="n">UNetEnc</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">dropout</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">center</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dec4</span> <span class="o">=</span> <span class="n">UNetDec</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dec3</span> <span class="o">=</span> <span class="n">UNetDec</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dec2</span> <span class="o">=</span> <span class="n">UNetDec</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dec1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">final</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># 前向传播过程
+</span>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">enc1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">enc1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">enc2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">enc2</span><span class="p">(</span><span class="n">enc1</span><span class="p">)</span>
+        <span class="n">enc3</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">enc3</span><span class="p">(</span><span class="n">enc2</span><span class="p">)</span>
+        <span class="n">enc4</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">enc4</span><span class="p">(</span><span class="n">enc3</span><span class="p">)</span>
+        <span class="n">center</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">center</span><span class="p">(</span><span class="n">enc4</span><span class="p">)</span>
+        <span class="c1"># 包含了同层分辨率级联的解码块
+</span>        <span class="n">dec4</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dec4</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span>
+            <span class="n">center</span><span class="p">,</span> <span class="n">F</span><span class="p">.</span><span class="n">upsample_bilinear</span><span class="p">(</span><span class="n">enc4</span><span class="p">,</span> <span class="n">center</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:])],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">dec3</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dec3</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span>
+            <span class="n">dec4</span><span class="p">,</span> <span class="n">F</span><span class="p">.</span><span class="n">upsample_bilinear</span><span class="p">(</span><span class="n">enc3</span><span class="p">,</span> <span class="n">dec4</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:])],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">dec2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dec2</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span>
+            <span class="n">dec3</span><span class="p">,</span> <span class="n">F</span><span class="p">.</span><span class="n">upsample_bilinear</span><span class="p">(</span><span class="n">enc2</span><span class="p">,</span> <span class="n">dec3</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:])],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">dec1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dec1</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span>
+            <span class="n">dec2</span><span class="p">,</span> <span class="n">F</span><span class="p">.</span><span class="n">upsample_bilinear</span><span class="p">(</span><span class="n">enc1</span><span class="p">,</span> <span class="n">dec2</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:])],</span> <span class="mi">1</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="n">F</span><span class="p">.</span><span class="n">upsample_bilinear</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">final</span><span class="p">(</span><span class="n">dec1</span><span class="p">),</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:])</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/02/14/deeplab.html" class="read-next-link"></a>
+        <section>
+          <span>Semantic Image Segmentation with Deep Convolutional Nets and Fully Connected CRFs</span>
+          <p>  DeepLab: 通过深度卷积网络和全连接条件随机场实现图像语义分割.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63f333c4f144a0100779ec7c.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/02/12/rfpose3d.html" class="read-next-link"></a>
+          <section>
+            <span>RF-Based 3D Skeletons</span>
+            <p>  RF-Pose3D：使用射频信号构建3D人体骨骼.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://img.imgdb.cn/item/6025f28d3ffa7d37b3883e9e.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

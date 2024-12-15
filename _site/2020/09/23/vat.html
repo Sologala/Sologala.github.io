@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Adversarial Training: A Regularization Method for Supervised and Semi-Supervised Learning - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Virtual Adversarial Training: A Regularization Method for Supervised and Semi-Supervised Learning">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Virtual Adversarial Training: A Regularization Method for Supervised and Semi-Supervised Learning - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/23/vat.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Virtual Adversarial Training: A Regularization Method for Supervised and Semi-Supervised Learning</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-23"><i class="iconfont icon-date"></i>23 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic1.imgdb.cn/item/6471bd53f024cca173049fde.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>虚拟对抗训练：一种用于监督学习和半监督学习的正则化方法.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1704.03976">Virtual Adversarial Training: A Regularization Method for Supervised and Semi-Supervised Learning</a></li>
+</ul>
+
+<h1 id="1-对抗训练">1. 对抗训练</h1>
+
+<p><strong>对抗训练(Adversarial Training)</strong>是指通过构造对抗样本，对模型进行对抗攻击和防御来增强模型的稳健性。对抗样本通常是指具有小扰动的样本，对于人类来说“看起来”几乎一样，但对于模型来说预测结果却完全不一样：</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645df31c0d2dde5777312330.jpg" alt="" /></p>
+
+<p>对抗训练的一般形式：</p>
+
+\[\mathcal{\min}_{\theta} \mathbb{E}_{(x,y)\sim \mathcal{D}} \left[ \mathcal{\max}_{\Delta x \in \Omega}  \mathcal{L}(x+\Delta x,y;\theta) \right]\]
+
+<p>其中\(\mathcal{D}\)表示训练集，$x$表示输入样本，$y$表示样本标签，$\theta$表示模型参数，\(\mathcal{L}\)是损失函数，$\Delta x$是样本的对抗扰动，$\Omega$是扰动空间。</p>
+
+<p>完整的对抗训练步骤如下：</p>
+<ol>
+  <li>为输入样本$x$添加对抗扰动$\Delta x$，$\Delta x$的目标是使得损失\(\mathcal{L}(x+\Delta x,y;\theta)\)尽可能增大，即尽可能让现有模型的预测出错；</li>
+  <li>对抗扰动$\Delta x$要满足一定的约束，比如模长不超过一个常数$\epsilon$：\(\|\Delta x\| \leq \epsilon\)；</li>
+  <li>对每个样本$x$都构造一个对抗样本$x+\Delta x$，用样本对$(x+\Delta x,y)$最小化损失函数训练模型参数$\theta$。</li>
+</ol>
+
+<h1 id="2-虚拟对抗训练">2. 虚拟对抗训练</h1>
+
+<p><strong>虚拟对抗训练(Virtual Adversarial Training, VAT)</strong>是一种正则化方法。通过寻找使得损失$l(f(x+\epsilon),f(x))$尽可能大的扰动噪声$\epsilon$，并最小化该损失，从而增强网络对于扰动噪声的鲁棒性。</p>
+
+<p>对损失$l(f(x+\epsilon),f(x))$在$\epsilon$处进行泰勒展开：</p>
+
+\[l(f(x+\epsilon),f(x)) \approx l(f(x),f(x)) + \epsilon^T\nabla_xl(f(x),f_{sg}(x)) + \frac{1}{2}\epsilon^T\nabla_x^2l(f(x),f_{sg}(x))\epsilon\]
+
+<p>对于一般地损失函数$l(,)$，具有性质$l(x,x)=0$；因此上式简化为：</p>
+
+\[l(f(x+\epsilon),f(x)) \approx \frac{1}{2}\epsilon^T\nabla_x^2l(f(x),f_{sg}(x))\epsilon\]
+
+<p>寻找使得损失$l(f(x+\epsilon),f(x))$尽可能大的扰动噪声$\epsilon$，等价于首先计算<strong>Hessian</strong>矩阵\(\mathcal{H}=\nabla_x^2l(f(x),f_{sg}(x))\)，然后求解最大化\(\epsilon^T \mathcal{H} \epsilon\)的$\epsilon$。</p>
+
+<p>根据<a href="https://0809zheng.github.io/2021/06/22/rayleigh.html">瑞利商</a>的定义，最大化\(\epsilon^T \mathcal{H} \epsilon\)的$\epsilon$为\(\mathcal{H}\)的最大特征值对应的特征向量（主特征向量）。\(\mathcal{H}\)的主特征向量可以通过<strong>幂迭代(power iteration)</strong>方法求解。迭代格式：</p>
+
+\[u \leftarrow \frac{\mathcal{H}u}{||\mathcal{H}u||}\]
+
+<p>其中$u$随机初始化。下面简单证明迭代过程收敛，初始化$u^{(0)}$，若\(\mathcal{H}\)可对角化，则\(\mathcal{H}\)的特征向量\(\{v_1 v_2  \cdots v_n\}\)构成一组完备的基，$u^{(0)}$可由这组基表示：</p>
+
+\[u^{(0)} = c_1v_1+c_2v_2+\cdots c_nv_n\]
+
+<p>先不考虑迭代中分母的归一化，则迭代过程\(u \leftarrow \mathcal{H}u\)经过$t$次后为：</p>
+
+\[\mathcal{H}^tu^{(0)} = c_1\mathcal{H}^tv_1+c_2\mathcal{H}^tv_2+\cdots c_n\mathcal{H}^tv_n\]
+
+<p>注意到\(\mathcal{H}v=\lambda v\)，则有：</p>
+
+\[\mathcal{H}^tu^{(0)} = c_1\lambda_1^tv_1+c_2\lambda_2^tv_2+\cdots c_n\lambda_n^tv_n\]
+
+<p>不失一般性地假设$\lambda_1$为最大特征值，则有：</p>
+
+\[\frac{\mathcal{H}^tu^{(0)}}{\lambda_1^t} = c_1v_1+c_2(\frac{\lambda_2}{\lambda_1})^tv_2+\cdots c_n(\frac{\lambda_n}{\lambda_1})^tv_n\]
+
+<p>注意到当$t \to \infty$时，$(\frac{\lambda_2}{\lambda_1})^t,\cdots (\frac{\lambda_n}{\lambda_1})^t \to 0$。则有：</p>
+
+\[\frac{\mathcal{H}^tu^{(0)}}{\lambda_1^t} ≈ c_1v_1\]
+
+<p>上述结果表明当迭代次数$t$足够大时，\(\mathcal{H}^tu^{(0)}\)提供了最大特征根对应的特征向量的近似方向，对其归一化后相当于单位特征向量：</p>
+
+\[\begin{aligned} u &amp;= \frac{\mathcal{H}^tu^{(0)}}{||\mathcal{H}^tu^{(0)}||} \\ \mathcal{H} u &amp;≈ \lambda_1 u \end{aligned}\]
+
+<p>在幂迭代中，并不需要知道\(\mathcal{H}\)的具体值，而只需要计算\(\mathcal{H}u\)，这可以通过差分来近似计算：</p>
+
+\[\begin{aligned}
+\mathcal{H}u &amp;= \nabla_x^2l(f(x),f_{sg}(x))u \\
+&amp;= \nabla_x\left(u \cdot \nabla_xl(f(x),f_{sg}(x))\right) \\
+&amp;\approx \nabla_x\left( \frac{l(f(x+\xi u),f_{sg}(x))-l(f(x),f_{sg}(x))}{\xi} \right) \\
+&amp;= \frac{1}{\xi} \nabla_x l(f(x+\xi u),f_{sg}(x)) \\
+\end{aligned}\]
+
+<p><strong>VAT</strong>的完整流程如下：</p>
+<ol>
+  <li>初始化向量\(u\sim \mathcal{N}(0,1)\)、标量$\epsilon, \xi$；</li>
+  <li>迭代$r$次：\(\begin{aligned} u &amp;\leftarrow \frac{u}{\mid\mid u \mid\mid} \\ u &amp;\leftarrow  \nabla_x l(f(x+\xi u),f_{sg}(x))  \end{aligned}\)</li>
+  <li>$u \leftarrow \frac{u}{\mid\mid u \mid\mid}$</li>
+  <li>用$l(f(x+\epsilon u),f_{sg}(x))$作为损失函数执行梯度下降。</li>
+</ol>
+
+<p>注意到当$r=0$时相当于向输入增加高斯噪声，<strong>VAT</strong>通过迭代$r \geq 1$次来增加噪声的特异性。</p>
+
+<p>以分类任务为例，完整的<strong>VAT</strong>过程实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="o">@</span><span class="n">contextlib</span><span class="p">.</span><span class="n">contextmanager</span>
+<span class="k">def</span> <span class="nf">_disable_tracking_bn_stats</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">switch_attr</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">'track_running_stats'</span><span class="p">):</span>
+            <span class="n">m</span><span class="p">.</span><span class="n">track_running_stats</span> <span class="o">^=</span> <span class="bp">True</span>
+            
+    <span class="n">model</span><span class="p">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">switch_attr</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="n">model</span><span class="p">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">switch_attr</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_l2_normalize</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+    <span class="n">d_reshaped</span> <span class="o">=</span> <span class="n">d</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="n">d</span> <span class="o">/=</span> <span class="n">torch</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">d_reshaped</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-8</span>
+    <span class="k">return</span> <span class="n">d</span>
+
+
+<span class="k">class</span> <span class="nc">VATLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="s">"""VAT loss
+        :param xi: hyperparameter of VAT (default: 10.0)
+        :param eps: hyperparameter of VAT (default: 1.0)
+        :param ip: iteration times of computing adv noise (default: 1)
+        """</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VATLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">xi</span> <span class="o">=</span> <span class="n">xi</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">ip</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># prepare random unit tensor
+</span>        <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">).</span><span class="n">sub</span><span class="p">(</span><span class="mf">0.5</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">_l2_normalize</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">_disable_tracking_bn_stats</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="c1"># calc adversarial direction
+</span>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">ip</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">.</span><span class="n">requires_grad_</span><span class="p">()</span>
+                <span class="n">pred_hat</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">xi</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
+                <span class="n">logp_hat</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">pred_hat</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">adv_distance</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">logp_hat</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'batchmean'</span><span class="p">)</span>
+                <span class="n">adv_distance</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">_l2_normalize</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">grad</span><span class="p">)</span>
+                <span class="n">model</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    
+            <span class="c1"># calc LDS
+</span>            <span class="n">r_adv</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">eps</span>
+            <span class="n">pred_hat</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">r_adv</span><span class="p">)</span>
+            <span class="n">logp_hat</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">pred_hat</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">lds</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">logp_hat</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'batchmean'</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lds</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/24/vib.html" class="read-next-link"></a>
+        <section>
+          <span>Deep Variational Information Bottleneck</span>
+          <p>  深度变分信息瓶颈.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic1.imgdb.cn/item/64730d9ff024cca1737e2c0a.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/22/weissi.html" class="read-next-link"></a>
+          <section>
+            <span>Improve Generalization and Robustness of Neural Networks via Weight Scale Shifting Invariant Regularizations</span>
+            <p>  通过权重尺度偏移不变性正则化改善神经网络的泛化性和鲁棒性.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/64706468f024cca17340a396.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

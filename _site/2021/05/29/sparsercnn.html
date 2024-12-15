@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sparse R-CNN: End-to-End Object Detection with Learnable Proposals - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Sparse R-CNN: End-to-End Object Detection with Learnable Proposals">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Sparse R-CNN: End-to-End Object Detection with Learnable Proposals - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/05/29/sparsercnn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Sparse R-CNN: End-to-End Object Detection with Learnable Proposals</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-05-29"><i class="iconfont icon-date"></i>29 May 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6534b979c458853aef42cd2e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Sparse R-CNN：基于可学习提议的端到端目标检测.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2011.12450">Sparse R-CNN: End-to-End Object Detection with Learnable Proposals</a></li>
+</ul>
+
+<p>目标检测方法的稀疏性定义为最后的分类和回归分支面对的候选<strong>roi</strong>是密集还是稀疏的。<strong>one-stage</strong>算法将密集<strong>anchor</strong>认为是候选<strong>roi</strong>，故其属于<strong>dense</strong>做法，而<strong>faster rcnn</strong>由于有<strong>RPN</strong>来提取稀疏的<strong>roi</strong>，故属于<strong>dense-to-sparse</strong>类算法。本文直接定义$N$个稀疏的可学习的<strong>roi</strong>，然后直接通过<strong>fast rcnn</strong>进行端到端训练，故称为<strong>Sparse RCNN</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6534bc7dc458853aef4e9f0e.jpg" alt="" /></p>
+
+<p><strong>fast rcnn</strong>整体测试流程：</p>
+<ul>
+  <li>对原始图片使用<strong>SS</strong>或者<strong>RPN</strong>算法得到约<strong>2k</strong>候选<strong>roi</strong></li>
+  <li>将任意大小的图片输入<strong>CNN</strong>，得到输出特征图</li>
+  <li>在特征图中找到每一个<strong>roi</strong>对应的特征框，通过<strong>RoI pool</strong>将每个特征框池化到统一大小</li>
+  <li>统一大小的特征框经过全连接层得到固定大小的特征向量，分别进行<strong>softmax</strong>分类和<strong>bbox</strong>回归</li>
+</ul>
+
+<p><strong>Sparse RCNN</strong>通过网络联合直接学出来<strong>roi</strong>，不需要专门的<strong>RPN</strong>网络，不需要后处理和<strong>nms</strong>，并且省略了正负样本定义+正负样本采样过程。大概训练流程是:</p>
+<ul>
+  <li>通过嵌入指定的$N$个可学习候选框<strong>Proposal Boxes</strong>来提供<strong>roi</strong>坐标</li>
+  <li>通过嵌入指定的$N$个可学习实例级别特征<strong>Proposal Features</strong>来提供更多的物体相关信息，例如姿态和形状等等</li>
+  <li>将任意大小的图片输入<strong>CNN</strong>，得到输出特征图</li>
+  <li>在特征图中找到每一个<strong>roi</strong>对应的特征框，通过<strong>RoI pool</strong>将每个特征框池化到统一大小</li>
+  <li><strong>roi</strong>所提特征和<strong>Proposal Features</strong>计算交叉注意力，增强前景特征</li>
+  <li>统一大小的特征框经过全连接层得到固定大小的特征向量，输出$N$个无序集合，每个集合元素包括分类和<strong>bbox</strong>坐标信息</li>
+  <li>采用<strong>cascade rcnn</strong>级联思想，对输出的<strong>bbox</strong>进行<strong>refine</strong>，得到<strong>refine</strong>后的<strong>bbox</strong>坐标</li>
+  <li>每个级联阶段的输出信息都利用匈牙利双边匹配+分类回归<strong>loss</strong>进行训练</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6534be43c458853aef5545d0.jpg" alt="" /></p>
+
+<h2 id="1-proposal-boxes">1. Proposal Boxes</h2>
+
+<p>可学习<strong>Proposal Boxes</strong>维度是$(N,4)$，用于代替<strong>RPN</strong>层，$N$是每张图片中最多的物体总数(<strong>coco</strong>数据集中最多大概是$63$个物体)，$N$的取值对性能有一定影响，本文考虑计算效率设置的是$300$。</p>
+
+<p>其中<strong>4</strong>维含义表示<strong>roi</strong>框，表示方式有很多种，作者采用了图片尺度的归一化$c_xc_ywh$值，范围是$0-1$。具体实现上通过<strong>Embedding</strong>层实现：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#self.num_proposals为超参，默认是300，内部权重是(300,4)
+</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Embedding</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_proposals</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">constant_</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span><span class="p">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">constant_</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span><span class="p">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:],</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="c1"># 为啥用nn.Embedding，在本文中其实和以下语句是同一个意思
+</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_proposals</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>注意<code class="language-plaintext highlighter-rouge">self.init_proposal_boxes</code>不包括<strong>batch</strong>信息，也就是说这个$(N,4)$矩阵存储的不是当前一张图片信息，而是整个数据集相关的统计<strong>roi</strong>信息(非常类似注意力机制中的<strong>Keys</strong>作用)，然后通过后续可学习层能够提取出本图片中真正的$N$个<strong>roi</strong>区域。</p>
+
+<p>可学习<strong>Proposal Boxes</strong>主要用于提供粗糙<strong>roi</strong>表征，否则<strong>RCNN</strong>算法无法切割出<strong>roi</strong>特征图(<strong>two-stage</strong>算法必须要提供<strong>roi</strong>给<strong>rcnn</strong>部分进行<strong>refine</strong>)。 <strong>RPN</strong>输出的<strong>roi</strong>主要目的是提供丰富的候选框，保证召回率即可，<strong>roi</strong>不需要很准确，故作者觉得采用一个合理的和数据集相关的统计信息就可以提供足够的候选框，从而采用可学习的<strong>proposal boxes</strong>代替<strong>RPN</strong>是完全合理的。</p>
+
+<p><strong>proposal boxes</strong>初始化设置对最终结果影响很小:</p>
+<ul>
+  <li><strong>center</strong>初始化表示都定位到图片中心，<strong>wh</strong>全部设置为$0.1$，也就是全部初始化为$(0.5,0.5,0.1,0.1)$</li>
+  <li><strong>Image</strong>初始化表示所有<strong>roi</strong>都初始化为图像大小即$(0.5,0.5,1,1)$</li>
+  <li><strong>Grid</strong>初始化表示<strong>roi</strong>按照类似<strong>anchor</strong>一样密集排列在原图上</li>
+  <li><strong>Random</strong>初始化表示采用高斯分布随机初始化</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6534bff0c458853aef5b6bca.jpg" alt="" /></p>
+
+<h2 id="2-proposal-features">2. Proposal Features</h2>
+
+<p>可学习<strong>Proposal Features</strong>维度是$(N,256)$，$N$是每张图片中最多的物体总数，$256$是超参表示每个<strong>roi</strong>实例独有的嵌入信息，其实现和<strong>Proposal Boxes</strong>一致。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#(300,256)
+</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_features</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Embedding</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_proposals</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>仅仅靠<strong>4d</strong>的<strong>proposal boxes</strong>提供的<strong>roi</strong>太过粗糙，无法表征例如物体姿态和形状，为了提高精度很有必要额外输入一个高维度的<strong>proposal feature</strong>，其目的是希望通过可学习维度嵌入提供$N$个实例的独特统计信息。</p>
+
+<h2 id="3-dynamic-instance-interaction">3. Dynamic Instance Interaction</h2>
+
+<p><strong>rcnn head</strong>利用输入的<strong>proposal boxes</strong>在特征图上切割，然后采用<strong>RoI Align</strong>层统一输出大小，最后通过<strong>2</strong>个<strong>fc</strong>层进行分类和<strong>bbox</strong>回归。</p>
+
+<p><strong>rcnn head</strong>输入除了<strong>proposal boxes</strong>切割的输出特征图，还包括额外的<strong>proposal feature</strong>，故作者插入了一个新的模块：动态实例级可交互模块。该模块主要作用是将<strong>roi</strong>特征和<strong>proposal feature</strong>进行实例级的可交互计算，从而突出对前景贡献最大的若干个的输出值，从而最终影响物体的位置和分类预测；如果确实是背景，则相当于没有高输出值。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6534c527c458853aef6f3166.jpg" alt="" /></p>
+
+<p>暂时不考虑<strong>batch</strong>，假设<strong>RoI Align</strong>输出<strong>shape</strong>是$(300,7,7,256)$，$300$是<strong>proposal</strong>个数，$7\times 7$是切割后统一输出特征图大小，$256$是表示每个特征空间位置的表征向量，而<strong>proposal feature</strong>的<strong>shape</strong>是$(300,256)$。采用空间注意力机制，把$(300,7,7,256)$的<strong>roi</strong>特征和$(300,256,1)$的<strong>proposal feature</strong>进行矩阵乘法，输出是$(300,7\times 7,1)$，其表示将$256$维度的<strong>proposal feature</strong>向量和空间$7\times 7$的每个<strong>roi</strong>特征$256$维度向量计算相似性，得到相似性权重，该权重可以表征空间$7\times 7$个位置中哪些位置才是应该关心的，并该权重作用到原始的$(300,7,7,256)$上。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pro_features</span><span class="p">,</span> <span class="n">roi_features</span><span class="p">):</span>
+    <span class="s">'''
+    pro_features: (1,  N * nr_boxes, self.d_model)
+    roi_features: (49, N * nr_boxes, self.d_model)
+    '''</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">roi_features</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># (bxN,49,256)
+</span>    <span class="c1"># self.dynamic_layer就是fc层
+</span>    <span class="c1"># (1, b * N, 256)--&gt;(1, bxN, 2x64x256)--&gt;(bxN,1,2x64x512)
+</span>    <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dynamic_layer</span><span class="p">(</span><span class="n">pro_features</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># 切分数据
+</span>    <span class="c1"># (bxN,1,2x64x512)--&gt;(bxN,1,64x512)--&gt;(bxN,256,64)
+</span>    <span class="n">param1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="bp">self</span><span class="p">.</span><span class="n">num_params</span><span class="p">].</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">dim_dynamic</span><span class="p">)</span>
+    <span class="c1"># (bxN,1,2x64x512)--&gt;(bxN,1,64x512)--&gt;(bxN,64,256)
+</span>    <span class="n">param2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_params</span><span class="p">:].</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">dim_dynamic</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+    <span class="c1"># 实例级别(bxN)交叉注意力计算，计算roi特征和Proposal Features的空间注意力
+</span>    <span class="c1"># (bxN,49,256) x (bxN,256,64)--&gt;(bxN,49,64)  # 每个位置输出都是64维度
+</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">param1</span><span class="p">)</span>
+    <span class="p">...</span>
+    <span class="c1"># 实例级别交互，再算一遍，从而保存维度不变
+</span>    <span class="c1"># (bxN,49,64) x (bxN,64,256)--&gt;(bxN,49,256)
+</span>    <span class="c1"># 得到49个格子上不同的空间权重
+</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">param2</span><span class="p">)</span>
+    <span class="p">...</span>
+    <span class="c1"># (bxN,49x256)
+</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">features</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># fc层变成(bxN,256)输出
+</span>    <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">out_layer</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+    <span class="p">...</span>
+</code></pre></div></div>
+
+<h2 id="4-级联refine">4. 级联refine</h2>
+
+<p>为了进一步提高性能，作者还提出了<strong>cascade rcnn</strong>类似的<strong>refine</strong>回归思想，就是迭代运行<strong>n</strong>个<strong>stage</strong>，每个<strong>stage</strong>都是一个<strong>rcnn</strong>模块，参数是不共享的，下一个<strong>stage</strong>接受的是上一个<strong>stage</strong>输出的<strong>refine</strong>后的<strong>roi</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">init_bboxes</span><span class="p">,</span> <span class="n">init_features</span><span class="p">):</span>
+    <span class="n">inter_class_logits</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">inter_pred_bboxes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># 多尺度输出特征图
+</span>    <span class="n">bs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># 可学习roi (b,N,4) 其中所有batch维度初始化时候都是相同的
+</span>    <span class="n">bboxes</span> <span class="o">=</span> <span class="n">init_bboxes</span> <span class="c1"># 可学习的proposal boxes
+</span>    <span class="c1"># 可学习特征(N,256)--&gt;(N,b,256)
+</span>    <span class="n">init_features</span> <span class="o">=</span> <span class="n">init_features</span><span class="p">[</span><span class="bp">None</span><span class="p">].</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">bs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">proposal_features</span> <span class="o">=</span> <span class="n">init_features</span><span class="p">.</span><span class="n">clone</span><span class="p">()</span>
+    <span class="c1"># 迭代n次rcnn head
+</span>    <span class="k">for</span> <span class="n">rcnn_head</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">head_series</span><span class="p">:</span>
+        <span class="c1"># features是FPN输出特征，bboxes初始化时候是可学习的bbox，后面是预测的bbox
+</span>        <span class="c1"># proposal_features每次都会同一个输入，self.box_pooler是roialign层
+</span>        <span class="n">class_logits</span><span class="p">,</span> <span class="n">pred_bboxes</span><span class="p">,</span> <span class="n">proposal_features</span> <span class="o">=</span> <span class="n">rcnn_head</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span>  
+                                    <span class="n">proposal_features</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">box_pooler</span><span class="p">)</span>
+        <span class="c1"># 中继监督
+</span>        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">return_intermediate</span><span class="p">:</span>
+            <span class="n">inter_class_logits</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">class_logits</span><span class="p">)</span>
+            <span class="n">inter_pred_bboxes</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_bboxes</span><span class="p">)</span>
+        <span class="c1"># 不断更新roi,类似cascade rcnn思想
+</span>        <span class="c1"># 需要截断，和cascade rcnn一样
+</span>        <span class="n">bboxes</span> <span class="o">=</span> <span class="n">pred_bboxes</span><span class="p">.</span><span class="n">detach</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">return_intermediate</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">inter_class_logits</span><span class="p">),</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">inter_pred_bboxes</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><img src="https://pic.imgdb.cn/item/6534c43ec458853aef6bca08.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/05/30/dynamicrcnn.html" class="read-next-link"></a>
+        <section>
+          <span>Dynamic R-CNN: Towards High Quality Object Detection via Dynamic Training</span>
+          <p>  Dynamic R-CNN：通过动态训练实现高质量目标检测.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6534d72bc458853aefb01e8f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/05/28/reppoint.html" class="read-next-link"></a>
+          <section>
+            <span>RepPoints: Point Set Representation for Object Detection</span>
+            <p>  RepPoints：目标检测中的点集表示.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6534a37fc458853aeff6566e.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

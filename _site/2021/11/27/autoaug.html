@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoAugment: Learning Augmentation Policies from Data - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="AutoAugment: Learning Augmentation Policies from Data">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="AutoAugment: Learning Augmentation Policies from Data - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/11/27/autoaug.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>AutoAugment: Learning Augmentation Policies from Data</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-11-27"><i class="iconfont icon-date"></i>27 Nov 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61a1dc792ab3f51d9111e89d.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>AutoAugment: 从数据中学习增强策略.</p>
+</blockquote>
+
+<ul>
+  <li>paper：AutoAugment: Learning Augmentation Policies from Data</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1805.09501">link</a></li>
+</ul>
+
+<p>大多数数据增强是手工设计的。本文提出了一种自动搜索数据增强的策略<strong>AutoAugment</strong>，为网络处理每批图像时随机选择一种子策略。每个子策略包含两个操作，其中的每个操作都是一个图像处理函数。通过搜索可以在目标数据集上取得最佳策略，也可以将学习的策略迁移到其他数据集上。</p>
+
+<p>图像分类任务中的数据增强能够使得网络学习数据中潜在的不变性（如水平翻转或平移对目标类别没有影响），尽管卷积神经网络本身能够硬编码这种不变性，通过数据增强来学习不变性更容易。</p>
+
+<p>在<strong>MNIST</strong>数据集上，常用的手工策略包括弹性扭曲、缩放、平移和旋转。而在<strong>CIFAR-10</strong>或<strong>ImageNet</strong>等自然数据集上，随机裁剪、图像镜像和颜色漂移、白化更常用。不同数据集适用的增强策略理应是不同的。<strong>AutoAugment</strong>可以自动从数据集中搜索最佳增强策略。</p>
+
+<p>搜索最佳策略的问题可以被定义为一个离散搜索问题，包括一个搜索算法和一个搜索空间。搜索算法是通过<strong>RNN</strong>控制器实现的，它对数据增强策略$S$进行采样，并将该策略应用到固定结构的网络训练中，验证集准确率$R$传回控制器并通过策略梯度方法更新。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61a1e1ab2ab3f51d9113a29e.jpg" alt="" /></p>
+
+<p>搜索空间中的每个策略包含$5$个子策略，每个子策略包含两个顺序应用的图像操作，每个操作还包含应用该操作的概率和使用该操作的程度这两个超参数。在训练每个批量图像时随机选择一个子策略。
+下图展示了在<strong>SVHN</strong>数字数据集上搜索的一些子策略。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61a1e5452ab3f51d9114ea9f.jpg" alt="" /></p>
+
+<p>作者共选择了$16$种图像处理操作，如下表所示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61a1e6032ab3f51d911538db.jpg" alt="" /></p>
+
+<p>对于每种操作，将应用强度离散化为均匀的$10$个值，并将应用该操作的概率离散化为$11$个值，由于需要同时寻找$5$组子策略，每组子策略包含$2$个操作，因此搜索空间大小为$(16\times 10\times 11)^{10}≈2.9\times 10^{32}$。</p>
+
+<p><strong>RNN</strong>控制器循环产生$30$组<strong>softmax</strong>预测结果，分别对应$5$个子策略，每个子策略的$2$个操作，每个操作的类型、程度和概率。在训练模型时，每批次数据随机选择一个子策略增强，并在验证集上评估子模型的性能，验证准确率作为训练控制器的奖励信号，在每个数据集上控制器采样约$15000$个策略梯度。</p>
+
+<p><strong>AutoAugment</strong>在不同数据集上搜索后，应用数据增强训练模型能够有效地提高模型表现：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61a1f9e32ab3f51d911dbcf2.jpg" alt="" /></p>
+
+<p>使用<strong>AutoAugment</strong>在特定数据集上搜索通常耗费大量资源，作者验证了将搜索得到的增强方法迁移到另一个数据集上，进而验证寻找到的方法是否在原数据集上过拟合以及学习到通用的转换。作者将在<strong>ImageNet</strong>上寻找到的策略应用到其他几个大小相似的<strong>FGVC</strong>数据集上，均得到更好的表现：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61a2082b2ab3f51d9122fd54.jpg" alt="" /></p>
+
+<p>作者展示了在<strong>CIFAR-10</strong>、<strong>SVHN</strong>和<strong>ImageNet</strong>上搜索得到的最佳子策略。</p>
+
+<p>在<strong>CIFAR-10</strong>（一个小型自然图像数据集）上，<strong>AutoAugment</strong>主要选择了基于颜色的增强，如均衡化、自动对比度、颜色和亮度变化；而很少使用几何变换，如剪切；几乎不使用像素翻转。</p>
+
+<p>在<strong>SVHN</strong>（一个街景门牌号码数据集）上，<strong>AutoAugment</strong>主要选择了像素翻转、均衡化、剪切和旋转；其中几何变换<strong>ShearX/Y</strong>是最常用的两个变换，这是因为数据集中的门牌号通常是自然倾斜的。</p>
+
+<p>在<strong>ImageNet</strong>（一个大型自然图像数据集）上，<strong>AutoAugment</strong>也侧重于选择基于颜色的变换，也常用旋转几何变换。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61a209052ab3f51d912340fb.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/11/28/randaug.html" class="read-next-link"></a>
+        <section>
+          <span>RandAugment: Practical automated data augmentation with a reduced search space</span>
+          <p>  RandAugment: 通过减少搜索空间实现自动数据增强.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/61a43cbc2ab3f51d910e92a4.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/11/26/erasing.html" class="read-next-link"></a>
+          <section>
+            <span>Random Erasing Data Augmentation</span>
+            <p>  随机擦除数据增强.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/61d900662ab3f51d91b60da8.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

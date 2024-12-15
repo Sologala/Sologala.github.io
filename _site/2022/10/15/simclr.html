@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Simple Framework for Contrastive Learning of Visual Representations - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="A Simple Framework for Contrastive Learning of Visual Representations">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="A Simple Framework for Contrastive Learning of Visual Representations - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/10/15/simclr.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>A Simple Framework for Contrastive Learning of Visual Representations</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-10-15"><i class="iconfont icon-date"></i>15 Oct 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63d5e840face21e9efddae88.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SimCLR：一种视觉对比表示学习的简单框架.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2002.05709">A Simple Framework for Contrastive Learning of Visual Representations</a></li>
+</ul>
+
+<p><strong>SimCLR</strong>是一种视觉对比表示学习的简单框架，它通过最大化同一个样本的不同数据增强版本的一致性(即最小化特征隐空间中的对比损失)从视觉输入中学习特征表示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d5e959face21e9efe0214a.jpg" alt="" /></p>
+
+<p><strong>SimCLR</strong>的实现过程如下。首先随机采样$N$个数据样本，对每个样本应用两次同一类的不同数据增强，构造$2N$个增强样本：</p>
+
+\[\tilde{x}_i = t(x),\tilde{x}_j = t'(x),\quad t,t' \text{~} \mathcal{T}\]
+
+<p>数据增强选用随机裁剪、随机翻转和缩放、颜色变形和高斯模糊。对于任意样本\(\tilde{x}_i\)，\(\tilde{x}_j\)为正样本，其余$2(N-1)$个样本为负样本。通过编码网络$f(\cdot)$提取特征表示：</p>
+
+\[h_i = f(\tilde{x}_i),h_j=f(\tilde{x}_j)\]
+
+<p>进一步通过一个映射层$g(\cdot)$构造特征：</p>
+
+\[z_i = g(h_i),z_j=g(h_j)\]
+
+<p>其中特征$h$用于下游任务；特征$z$用于对比学习。对比损失通过余弦相似度\(\text{sim}(u,v)=u^Tv/\|u\|\|v\|\)定义，样本\(\tilde{x}_i\)的对比损失构造为：</p>
+
+\[\mathcal{L}^{(i,j)}_{\text{SimCLR}} =- \log \frac{\exp(\text{sim}(z_i,z_j)/\tau)}{\sum_{k=1,...,2N;k\neq i}\exp(\text{sim}(z_i,z_k)/\tau)}\]
+
+<p><img src="https://pic.imgdb.cn/item/63d5ebf2face21e9efe5be11.jpg" alt="" /></p>
+
+<p><strong>SimCLR</strong>的实验表明，数据增强策略对于对比学习任务非常重要。为此作者研究了大量常见的图像增强方法，包括裁剪、颜色变换、旋转、<strong>Cutout</strong>、高斯噪声和平滑、<strong>Sobel</strong>边缘检测算子等。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d5ee23face21e9efea3891.jpg" alt="" /></p>
+
+<p>作者对上述数据增强的两两组合分别进行实验，结果表明<strong>随机裁剪</strong>和<strong>随机颜色变换</strong>的组合对于学习较好的图像视觉表示至关重要，其他图像增强方法算是锦上添花。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d87c86face21e9ef90d043.jpg" alt="" /></p>
+
+<p><strong>SimCLR</strong>需要较大的批量大小以涵盖足够的负样本才能获得良好的性能，大批量的训练采用<a href="https://0809zheng.github.io/2020/12/15/lars.html"><strong>LARS</strong>优化器</a>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d5ed96face21e9efe92bbb.jpg" alt="" /></p>
+
+<p><strong>SimCLR</strong>使用的特征提取网络为<strong>ResNet50</strong>，因此构造的特征维度是$2048$；引入非线性映射头(单层<strong>MLP</strong>+<strong>ReLU</strong>)后把特征维度调整为$128$；实验结果表明加入非线性映射头后性能有比较明显的提升，并且模型对映射头的特征维度设置并不敏感。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d87ddcface21e9ef949fc4.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/10/16/barlow.html" class="read-next-link"></a>
+        <section>
+          <span>Barlow Twins: Self-Supervised Learning via Redundancy Reduction</span>
+          <p>  Barlow Twins：通过冗余度消除实现自监督学习.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63d7968fface21e9ef09ea56.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/10/14/hardnegtive.html" class="read-next-link"></a>
+          <section>
+            <span>Contrastive Learning with Hard Negative Samples</span>
+            <p>  使用难例负样本进行对比学习.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63d4e824face21e9eff3e3c9.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

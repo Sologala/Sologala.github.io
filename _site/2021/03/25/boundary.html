@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boundary loss for highly unbalanced segmentation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Boundary loss for highly unbalanced segmentation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Boundary loss for highly unbalanced segmentation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/03/25/boundary.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Boundary loss for highly unbalanced segmentation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-03-25"><i class="iconfont icon-date"></i>25 Mar 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/641abd05a682492fcc635a49.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>高度不平衡分割任务中的边界损失.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1812.07032">Boundary loss for highly unbalanced segmentation</a></li>
+</ul>
+
+<p>在医学图像分割任务中通常存在严重的类别不平衡问题，目标前景区域的大小常常比背景区域小几个数量级，比如下图中前景区域比背景区域小<strong>500</strong>倍以上。</p>
+
+<p><img src="https://pic.imgdb.cn/item/641abd56a682492fcc6421b5.jpg" alt="" /></p>
+
+<p>分割通常采用的交叉熵损失函数是一种基于分布的损失函数，在处理类别高度不平衡的问题上存在着众所周知的缺点。它假设所有样本类别的重要性相同，这通常会导致训练的不稳定，并导致决策边界偏向于数量多的类别。</p>
+
+<p>分割中另一种常见的损失函数<strong>dice loss</strong>是基于区域的损失函数，在不平衡的医学图像分割问题中通常效果好。但遇到非常小的区域时可能会遇到困难，错误分类的像素可能会导致<strong>loss</strong>的剧烈降低，从而导致优化的不稳定。此外，<strong>dice loss</strong>对应查准率和召回率的调和平均，当<strong>true positive</strong>不变时，该损失对待<strong>false postive</strong>和<strong>false negative</strong>的重要性相同，因此<strong>dice loss</strong>主要适用于这两种类型的误差数量差不多的情况。</p>
+
+<p>本文提出了一种基于边界的损失函数<strong>Boundary loss</strong>，它在轮廓空间而不是区域空间上采用距离度量的形式。边界损失计算的不是区域上积分，而是区域之间边界上积分，因此可以缓解高度不平衡分割问题中区域损失的相关问题。</p>
+
+<p>如何根据<strong>CNN</strong>的<strong>regional softmax</strong>输出来表示对应的<strong>boundary points</strong>是个很大的挑战，本文受到用离散基于图的优化方法来计算曲线演化梯度流的启发，采用积分方法来计算边界的变化，避免了轮廓点上的局部微分计算，最终的<strong>boundary loss</strong>是网络输出区域<strong>softmax</strong>概率的线性函数和，因此可以和现有的区域损失结合使用。</p>
+
+<h1 id="1-boundary-loss的形式">1. Boundary loss的形式</h1>
+
+<p><img src="https://pic.imgdb.cn/item/641abeafa682492fcc673cb8.jpg" alt="" /></p>
+
+<p>$I:Ω⊂R^{2,3}→R$ 表示空间域$Ω$中的一张图片，\(g:Ω→\{0,1\}\)是该图片的<strong>ground truth</strong>分割二值图，如果像素$p$属于目标区域 $G⊂Ω$ （前景区域），$g(p)=1$；否则为$0$，即$p∈Ω∖G$（背景区域）。$s_θ:Ω→[0,1]$表示分割网络的<strong>softmax</strong>概率输出，$S_θ⊂Ω$表示模型输出的对应前景区域，即\(S_θ=\{p∈Ω\) $|$ \(s_θ(p)⩾δ\}\)，其中$δ$是提前设定的阈值。</p>
+
+<p>我们的目的是构建一个边界损失函数$Dist(∂G,∂S_θ)$，它采用$Ω$中区域边界空间中距离度量的形式，其中$∂G$是<strong>ground truth</strong>区域$G$的边界的一种表示（比如边界上所有点的集和），$∂S_θ$是网络输出定义的分割区域的边界。考虑下面的形状空间上非对称<strong>L2 distance</strong>的表示，它评估的是两个临近边界$∂S$和$∂G$之间的距离变化:</p>
+
+\[\operatorname{Dist}(\partial G, \partial S)=\int_{\partial G}\left\|y_{\partial S}(p)-p\right\|^2 d p\]
+
+<p>其中$p∈Ω$是边界$∂G$上的一点，$y_{∂S}(p)$是边界$∂S$上对应的点，即$y_{∂S}(p)$是边界$∂G$上$p$处的法线与$∂S$的交点，如图(a)所示。上式中的微分边界变化可以用积分方法来近似，这就避免了涉及轮廓上点的微分计算，并用区域积分来表示边界变化，如下：</p>
+
+\[\operatorname{Dist}(\partial G, \partial S) \approx 2 \int_{\Delta S} D_G(q) d q\]
+
+<p>其中$△S$表示两个轮廓之间的区域，$D_G:Ω→R^+$是一个相对于边界$∂G$的<a href="https://0809zheng.github.io/2023/03/22/distancetransfrom.html">距离变换图</a>，即$D_G(q)$表示任意点$q∈Ω$与轮廓$∂G$上最近点$z_{∂G}(q)$之间的距离：$D_G(q)=||q−z_{∂G}(q)||$，如图(b)所示。</p>
+
+<p>为了证明这种近似，沿连接$∂G$上的一点$p$与$y_{∂S}(p)$之间的法线对距离图$2D_G(q)$进行积分可得：</p>
+
+\[\int_p^{y_{\partial S}(p)} 2 D_G(q) d q=\int_0^{\left\|y_{\partial S}(p)-p\right\|} 2 D_G d D_G=\left\|y_{\partial S}(p)-p\right\|^2\]
+
+<p>边界损失函数$Dist(∂G,∂S)$可以进一步表示为：</p>
+
+\[\begin{aligned}
+\frac{1}{2} \operatorname{Dist}(\partial G, \partial S)&amp;=\int_S \phi_G(q) d q-\int_G \phi_G(q) d q
+\\ &amp; =\int_{\Omega} \phi_G(q) s(q) d q-\int_{\Omega} \phi_G(q) g(q) d q
+\end{aligned}\]
+
+<p>其中\(s:Ω→\{0,1\}\)是区域$S$的二元指示函数：如果$q∈S$表示属于目标$s(q)=1$，否则为$0$。$ϕ_G:Ω→R$是边界$∂G$的水平集表示：如果$q∈G$则$ϕ_G(q)=−D_G(q)$否则$ϕ_G(q)=D_G(q)$。</p>
+
+<p>注意到上式第二项不包含模型参数，因此可以丢弃。对于$S=S_θ$，即用网络的<strong>softmax</strong>输出$s_θ(q)$替换式中的$s(q)$，可以得到如下所示的边界损失，其中水平集函数$ϕ_G$是直接根据区域$G$提前计算得到的。</p>
+
+\[\mathcal{L}_B(\theta) = \int_{\Omega} \phi_G(q) s_{\theta}(q) d q\]
+
+<p>在边界损失中，每个点$q$的<strong>softmax</strong>输出通过距离函数进行加权。而在基于区域的损失函数中，这种到边界距离的信息被忽略了，区域内每个点不管到边界距离大小都都按同样的权重进行处理。</p>
+
+<p>对于边界损失，当距离函数中所有的负值都保留（模型对<strong>gt</strong>区域中所有像素的<strong>softmax</strong>预测都为<strong>1</strong>）而所有的正值都舍去（即模型对背景的<strong>softmax</strong>预测都为<strong>0</strong>）时，边界损失到达全局最小，即模型的<strong>softmax</strong>预测正好输出<strong>ground truth</strong>时边界损失最小，这也验证了边界损失的有效性。</p>
+
+<p>在后续的实验中可以看到，通常要把边界损失和区域损失结合起来使用才能取得好的效果。</p>
+
+\[\mathcal{L}_R(\theta) + \alpha \mathcal{L}_B(\theta)\]
+
+<h1 id="2-boundary-loss的实现">2. Boundary loss的实现</h1>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
+
+
+<span class="k">class</span> <span class="nc">BDLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">"""
+        compute boudary loss
+        only compute the loss of foreground
+        """</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BDLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">one_hot2dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">posmask</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span>
+            <span class="k">if</span> <span class="n">posmask</span><span class="p">.</span><span class="nb">any</span><span class="p">():</span>
+                <span class="n">negmask</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">-</span><span class="n">posmask</span>
+                <span class="n">neg_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">negmask</span><span class="p">)</span>
+                <span class="n">pos_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">posmask</span><span class="p">)</span>
+                <span class="n">res</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span> <span class="o">=</span> <span class="n">neg_map</span> <span class="o">*</span> <span class="n">negmask</span> <span class="o">-</span> <span class="p">(</span><span class="n">pos_map</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">posmask</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="s">"""
+        result: (batch_size, class, h, w)
+        gt: (batch_size, h, w)
+        """</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 h w'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">bound</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())).</span><span class="nb">float</span><span class="p">()</span>
+        <span class="n">pc</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">...]</span>
+        <span class="n">dc</span> <span class="o">=</span> <span class="n">bound</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">...]</span>
+        <span class="n">multipled</span> <span class="o">=</span> <span class="n">pc</span> <span class="o">*</span> <span class="n">dc</span>
+        <span class="k">return</span> <span class="n">multipled</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+    
+<span class="n">seg_loss</span> <span class="o">=</span> <span class="n">BDLoss</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="n">gt</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">seg_loss</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/03/26/ocrnet.html" class="read-next-link"></a>
+        <section>
+          <span>Object-Contextual Representations for Semantic Segmentation</span>
+          <p>  OCRNet：语义分割中的目标上下文表示.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/642fd459a682492fcc5ab9ff.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/03/24/thop.html" class="read-next-link"></a>
+          <section>
+            <span>计算模型的参数量(Params)和运算量(FLOPs)</span>
+            <p>  Compute the parameters and FLOPs of the model using thop.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

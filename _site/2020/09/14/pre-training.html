@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rethinking ImageNet Pre-training - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Rethinking ImageNet Pre-training">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Rethinking ImageNet Pre-training - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/14/pre-training.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Rethinking ImageNet Pre-training</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-14"><i class="iconfont icon-date"></i>14 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f618e8f160a154a67641b9c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>对计算机视觉任务中预训练的一些讨论.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Rethinking ImageNet Pre-training</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1811.08883">link</a></li>
+</ul>
+
+<p>在目标检测，语义分割等视觉任务中通常使用在<strong>ImageNet</strong>数据集上预训练的模型作为<strong>backbone</strong>，通过微调来提升模型性能。作者认为，预训练的模型在<strong>ImageNet</strong>之类的大规模数据上确实提取到一些通用特征，但使用预训练模型并不是必须的。</p>
+
+<p>虽然在目标检测领域，也有一些论文（如<strong>ICCV2017</strong>的<strong>DSOD</strong>、<strong>ECCV2018</strong>的<strong>DetNet</strong>和<strong>CornerNet</strong>）提出不使用预训练模型，但它们都设计了一些特殊的结构加上各种<strong>tricks</strong>使得可以训练。作者从更广泛的角度讨论了这个问题。</p>
+
+<h1 id="实验设置">实验设置</h1>
+<p><strong>Batch Norm(BN)</strong>可以帮助模型更好的优化，但是依赖于<strong>batch</strong>的大小。目标检测任务的输入图像分辨率通常比分类任务大，导致<strong>batch size</strong>不能设置太大，而较小的<strong>batch size</strong>又会引入噪声，使训练不稳定。通常引入预训练模型时选择冻结<strong>BN</strong>的统计量，微调时直接使用其值。而重新训练的模型有两种引入<strong>Norm</strong>的方式：</p>
+<ol>
+  <li>使用<strong>Group Normalization(GN)</strong>。</li>
+  <li>使用<strong>synchronized batch normalization(SyncBN)</strong>。设置单卡的<strong>batch size</strong>后，传统的<strong>BN</strong>按照单卡样本计算统计值，而<strong>SyncBN</strong>按照多卡样本（单卡样本$×$<strong>GPU</strong>数）计算统计值。</li>
+</ol>
+
+<p>实验时每个模型都训练到收敛。</p>
+
+<h1 id="实验分析">实验分析</h1>
+<p>下图表明随着训练轮数的增加，预训练和重新训练的模型都达到了相同的表现，但使用预训练模型所需的轮数更少。<strong>AP</strong>突变的地方是使用了学习率衰减。</p>
+
+<p><img src="https://pic.downk.cc/item/5f61d1f8160a154a6773cf92.jpg" alt="" /></p>
+
+<p>在基础模型上，作者引入了新的技巧（使用数据增强、使用<strong>Cascade R-CNN</strong>模型），试验结果表明两种方式得到的最终结果仍然几乎一致。</p>
+
+<p><img src="https://pic.downk.cc/item/5f61d29f160a154a6773fc5e.jpg" alt="" /></p>
+
+<p>对于位置敏感的任务（人体关键点检测），重新训练的模型在很少的迭代次数下便达到了与预训练模型相当的结果。作者认为关键点检测对精细的空间位置有更高的要求，在这种情况下预训练模型的作用大打折扣，它并不能够提供丰富的定位信息来辅助关键点检测。</p>
+
+<p><img src="https://pic.downk.cc/item/5f61d329160a154a6774287f.jpg" alt="" /></p>
+
+<p>之前的实验使用了<strong>COCO</strong>的全部数据进行训练。作者通过实验表明，即使使用更少的数据训练，重新训练的模型仍然可以达到不低于预训练模型的效果：</p>
+
+<p><img src="https://pic.downk.cc/item/5f61d360160a154a67743e22.jpg" alt="" /></p>
+
+<p>通过实验作者得到如下结论：</p>
+<ol>
+  <li>针对目标任务重新训练网络模型是可行的；</li>
+  <li>重新训练网络模型需要更多的训练轮数才能收敛；</li>
+  <li>经过足够多的训练轮数，重新训练并不会比使用<strong>ImageNet</strong>预训练的模型表现差，即使训练集更小（<strong>10k COCO</strong>）；</li>
+  <li>使用<strong>ImageNet</strong>预训练的模型能够加速训练在目标任务上的收敛；</li>
+  <li>使用<strong>ImageNet</strong>预训练的模型并不能解决过拟合问题，除非数据集非常小；</li>
+  <li>如果目标任务相比于分类对位置更敏感，则使用<strong>ImageNet</strong>预训练的模型帮助非常小。</li>
+</ol>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/15/self-training.html" class="read-next-link"></a>
+        <section>
+          <span>Rethinking Pre-training and Self-training</span>
+          <p>  对计算机视觉任务中预训练和自训练的一些讨论.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f608568160a154a672bdad4.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/13/tqdm.html" class="read-next-link"></a>
+          <section>
+            <span>使用tqdm库绘制进度条</span>
+            <p>  tqdm makes your loops show a smart progress meter.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

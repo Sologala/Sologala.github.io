@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深度学习中的归一化方法(Normalization) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="深度学习中的归一化方法(Normalization)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="深度学习中的归一化方法(Normalization) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/04/normalization.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>深度学习中的归一化方法(Normalization)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-04"><i class="iconfont icon-date"></i>04 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e79ca179dbe9d88c5e2e0b0.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Normalization in Deep Learning.</p>
+</blockquote>
+
+<p>输入数据的特征通常具有不同的量纲和取值范围，使得不同特征的<strong>尺度（scale）</strong>差异很大。不同机器学习模型对数据特征尺度的敏感程度不同。如果一个机器学习算法在数据特征缩放前后不影响其学习和预测，则称该算法具有<strong>尺度不变性（scale invariance）</strong>，表示为$f(\lambda x)=f(x)$。理论上神经网络具有尺度不变性，但是输入特征的不同尺度会增加训练的困难：</p>
+<ol>
+  <li><strong>参数初始化困难</strong>：当使用具有饱和区的激活函数$a=f(WX)$时，若特征$X$的不同维度尺度不同，对参数$W$的初始化不合适容易使激活函数陷入饱和区，产生<strong>vanishing gradient</strong>现象。</li>
+  <li>梯度下降法的<strong>效率下降</strong>：如下图所示，左图是数据特征尺度不同的损失函数等高线，右图是数据特征尺度相同的损失函数等高线。由图可以看出，前者计算得到的梯度方向并不是最优的方向，需要迭代很多次才能收敛；后者的梯度方向近似于最优方向，大大提高了训练效率。<img src="https://pic.imgdb.cn/item/64167f52a682492fcc24777a.jpg" alt="" /></li>
+  <li><strong>内部协方差偏移</strong>(<strong>Internal Covariance Shift</strong>)：训练深度网络时，神经网络隐层参数更新会导致网络输出层输出数据的分布发生变化，而且随着层数的增加，这种偏移现象会逐渐被放大。神经网络本质学习的是数据分布，如果数据分布变化了，神经网络又不得不学习新的分布，当前后的要求不同时，可能会影响结果。</li>
+</ol>
+
+<p><img src="https://pic.downk.cc/item/5ea14edbc2a9a83be5cea36c.jpg" alt="" /></p>
+
+<p><strong>归一化（Normalization）</strong>泛指把数据特征的不同维度转换到相同尺度的方法。深度学习中常用的归一化方法包括：</p>
+<ol>
+  <li>基础归一化方法：最小-最大值归一化、标准化、白化、逐层归一化</li>
+  <li>深度学习中的特征归一化：局部响应归一化<strong>LRN</strong>、批归一化<strong>BN</strong>、层归一化<strong>LN</strong>、实例归一化<strong>IN</strong>、组归一化<strong>GN</strong>、切换归一化<strong>SN</strong></li>
+  <li>改进特征归一化：（改进<strong>BN</strong>）<strong>Batch Renormalization</strong>, <strong>AdaBN</strong>, <strong>L1-Norm BN</strong>, <strong>GBN</strong>, <strong>SPADE</strong>；（改进<strong>LN</strong>）<strong>RMS Norm</strong>；（改进<strong>IN</strong>）<strong>FRN</strong>, <strong>AdaIN</strong></li>
+  <li>深度学习中的参数归一化：权重归一化<strong>WN</strong>、余弦归一化<strong>CN</strong>、谱归一化<strong>SN</strong></li>
+</ol>
+
+<h1 id="1-基础归一化方法">1. 基础归一化方法</h1>
+
+<h2 id="1最小-最大值归一化-min-max-normalization">（1）最小-最大值归一化 Min-Max Normalization</h2>
+
+<p><strong>最小-最大值归一化</strong>是指将每个特征的取值范围归一到$[0,1]$之间。记共有$N$个样本，每个样本含有$D$个特征，其中第$n$个样本表示为$x_n=(x_{n1},…,x_{nD})$；则最小-最大值归一化表示为：</p>
+
+\[x_{nd}\leftarrow \frac{x_{nd}-\min_d(x_{nd})}{\max_d(x_{nd})-\min_d(x_{nd})}\]
+
+<h2 id="2标准化-standardization">（2）标准化 Standardization</h2>
+
+<p><strong>标准化</strong>又叫<strong>Z值归一化</strong>（<strong>Z-Score Normalization</strong>），是指将每个特征调整为均值为<strong>0</strong>，方差为<strong>1</strong>：</p>
+
+\[\begin{aligned}
+μ_d&amp;= \frac{1}{N} \sum_{n=1}^{N} {x_{nd}} \\
+σ_d^2&amp;= \frac{1}{N} \sum_{n=1}^{N} {(x_{nd}-μ_d)^2}\\
+x_{nd}&amp;\leftarrow \frac{x_{nd}-μ_d}{σ_d}
+\end{aligned}\]
+
+<h2 id="3白化-whitening">（3）白化 Whitening</h2>
+
+<p><strong>白化</strong>在调整特征取值范围的基础上消除了不同特征之间的相关性，降低输入数据特征的冗余。具体地，将输入数据在特征方向上被特征值相除，使数据独立同分布(<strong>i.i.d.</strong>)，实现输入数据的零均值(<strong>zero mean</strong>)、单位方差(<strong>unit variance</strong>)、去相关(<strong>decorrelated</strong>)。</p>
+
+<p>实现步骤：</p>
+<ol>
+  <li>零均值：
+$ \hat{X}=X-E(X) $</li>
+  <li>计算协方差：
+$ Cov(X)=E(XX^T)-E(X)(E(X))^T $</li>
+  <li>去相关：
+$ Cov(X)^ {-\frac{1}{2}} \hat{X} $</li>
+</ol>
+
+<p><img src="https://pic.downk.cc/item/5e7d917a504f4bcb04345594.png" alt="" /></p>
+
+<p>白化的主要缺点是对所有特征一视同仁，可能会放大不重要的特征和噪声；此外，对于深度学习，隐藏层使用白化时反向传播困难。</p>
+
+<h2 id="4逐层归一化-layer-wise-normalizaiton">（4）逐层归一化 Layer-wise Normalizaiton</h2>
+
+<p><strong>逐层归一化</strong>是指将归一化方法应用于深度神经网络中，对神经网络每一个隐藏层的输入特征都进行归一化，从而提高训练效率。</p>
+
+<p>逐层归一化的优点：</p>
+<ol>
+  <li>更好的尺度不变性：通过对每一层的输入进行归一化，不论低层的参数如何变化，高层的输入保持相对稳定，网络具有更好的尺度不变性，可以更高效地进行参数初始化和超参数选择。</li>
+  <li><a href="https://arxiv.org/abs/1806.02375">更平滑的损失函数</a>：可以使神经网络的损失函数更平滑，使梯度变得更稳定，可以使用更大的学习率，提高收敛速度。</li>
+  <li><a href="https://arxiv.org/abs/1809.00846">隐形的正则化方法</a>：可以提高网络的泛化能力，避免过拟合。</li>
+</ol>
+
+<h1 id="2-深度学习中的特征归一化">2. 深度学习中的特征归一化</h1>
+
+<h2 id="1局部响应归一化-local-response-normalization">（1）局部响应归一化 Local Response Normalization</h2>
+<ul>
+  <li>paper：<a href="http://stanford.edu/class/cs231m/references/alexnet.pdf">ImageNet Classification with Deep Convolutional Neural Networks</a></li>
+</ul>
+
+<p><strong>局部响应归一化</strong>受生物学中“<a href="https://baike.baidu.com/item/%E4%BE%A7%E6%8A%91%E5%88%B6/10397049?fr=aladdin">侧抑制</a>”的启发，即活跃的神经元对于相邻的神经元具有抑制的作用。</p>
+
+<p><strong>LRN</strong>通常应用在<strong>CNN</strong>中，且作用于激活函数之后，对邻近的特征映射（表现为邻近的<strong>通道</strong>）进行归一化。假设一个卷积层的特征图为\(X \in \mathbb{R}^{C×H×W}\)，$H$和$W$是特征图的高度和宽度，$C$为通道数。指定$n$为归一化考虑的邻域通道数量，则<strong>LRN</strong>表示为：</p>
+
+\[X^c \leftarrow \frac{X^c}{\left(k+\frac{α}{n}\sum_{c'=\max(1,c-\frac{n}{2})}^{\min(C,c+\frac{n}{2})} (X^{c'})^2\right)^β}\]
+
+<p>超参数的取值：$k=1, α=0.0001, β=0.75$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">LocalResponseNorm</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="2批归一化-batch-normalization">（2）批归一化 Batch Normalization</h2>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1502.03167">Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift</a></li>
+</ul>
+
+<p><strong>批归一化（BN）</strong>是指对神经网络每一个隐藏层的输入特征使用每一批次数据的统计量进行标准化。<strong>BN</strong>独立的对每一个特征维度计算统计量，并用<strong>mini batch</strong>的统计量作为总体统计量的估计（假设每一<strong>mini batch</strong>和总体数据近似同分布）。对每一个<strong>mini batch</strong>，计算每个特征维度的均值和（有偏的）方差，并对输入做标准化操作，其中$ε$保证了数值稳定性：</p>
+
+\[y = \frac{x - E[x]}{\sqrt{Var[x]+\epsilon}}*\gamma + \beta\]
+
+<p>注意到当使用具有饱和性质的激活函数（如<strong>Sigmoid</strong>）时，标准化操作会将几乎所有数据映射到激活函数的非饱和区（线性区），从而降低了神经网络的非线性表达能力。为了保证模型的表达能力不因标准化而下降，引入可学习的<strong>rescale</strong>和<strong>reshift</strong>操作$γ,β$。</p>
+
+<p><strong>BN</strong>一般应用在网络层（通常是仿射变换）后、激活函数前，此时仿射变换不再需要<strong>bias</strong>参数（$f(BN(WX+b))=f(BN(WX))$）；测试时，使用总体均值和方差的无偏估计进行标准化（有时也用训练时均值和方差的滑动平均值代替）:</p>
+
+\[\begin{aligned}
+\overline{\mu} &amp;\leftarrow (1-m)*\overline{\mu}+m*E[x]\\
+&amp;+= m*(E[x]-\overline{\mu}) \qquad \text{in-place form} \\
+\overline{\sigma}^2 &amp;\leftarrow (1-m)*\overline{\sigma}^2+m*Var[x]\\
+&amp;+= m*(Var[x]-\overline{\sigma}^2)  \quad \text{in-place form}\\
+\end{aligned}\]
+
+<p><strong>BN</strong>的作用包括：</p>
+<ol>
+  <li>调整每一层输入特征的分布，减缓了<strong>vanishing gradient</strong>，可以使用更大的学习率;</li>
+  <li><strong>BN</strong>具有权重缩放不变性，减少对参数初始化的敏感程度: $BN((λW)X) = BN(WX)$</li>
+  <li>与总体分布差距较小的<strong>mini batch</strong>分布可以看作为模型训练引入了噪声，可以增加模型的鲁棒性，带有正则化效果；</li>
+  <li><a href="https://arxiv.org/abs/1805.11604">How Does Batch Normalization Help Optimization?</a>: 对损失函数的<strong>landscape</strong>增加了平滑约束，从而可以更平稳地进行训练。</li>
+</ol>
+
+<p><strong>BN</strong>适用于<strong>mini batch</strong>比较大、与总体数据分布比较接近的场合。在进行训练之前，要做好充分的<strong>shuffle</strong>。<strong>BN</strong>在运行过程中需要计算每个<strong>mini batch</strong>的统计量，因此不适用于动态的网络结构和<strong>RNN</strong>网络，也不适合<strong>Online Learning</strong>（<strong>batchsize = 1</strong>）。</p>
+
+<h3 id="-batchnorm1d应用于mlp">⚪ BatchNorm1d：应用于MLP</h3>
+
+<p>记网络某一层的输入\(X=(x_{nd}) \in \mathbb{R}^{N×D}\)，$N$为<strong>batch</strong>维度，$D$为该层特征数（神经元个数），则<strong>BN</strong>表示为：</p>
+
+\[\begin{aligned}
+μ_d &amp;= \frac{1}{N} \sum_{n=1}^{N} {x_{nd}} \\
+σ_d^2&amp;= \frac{1}{N} \sum_{n=1}^{N} {(x_{nd}-μ_d)^2} \\
+\hat{x}_{nd}&amp;= \frac{x_{nd}-μ_d}{\sqrt{σ_d^2+\epsilon}} \\
+y_{nd} &amp;= γ \hat{x}_{nd} + β
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span>
+    <span class="n">num_features</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span>
+    <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">track_running_stats</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>此时<strong>BN</strong>沿着特征维度$D$进行归一化，沿着批量维度$N$计算统计量因此也被称为时序<strong>BN</strong>（<strong>Temporal Batch Normalization</strong>）。</p>
+
+<h3 id="-batchnorm2d应用于cnn">⚪ BatchNorm2d：应用于CNN</h3>
+
+<p>记网络某一层的输入\(X=(x_{nchw}) \in \mathbb{R}^{N×C×H×W}\)，$N$为<strong>batch</strong>维度，$C$为通道维度，$H,W$为空间维度，则<strong>BN</strong>表示为：</p>
+
+\[\begin{aligned}
+μ_c&amp;= \frac{1}{NHW} \sum_{n=1}^{N} \sum_{h=1}^{H} {\sum_{w=1}^{W} {x_{nchw}}} \\
+σ_c^2&amp;= \frac{1}{NHW} \sum_{n=1}^{N} {\sum_{h=1}^{H} {\sum_{w=1}^{W} {(x_{nchw}-μ_c)^2}}}\\
+\hat{x}_{nchw}&amp;= \frac{x_{nchw}-μ_c}{\sqrt{σ_c^2+ε}}\\
+y_{nchw} &amp;= γ \hat{x}_{nchw} + β
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span>
+    <span class="n">num_features</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span>
+    <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">track_running_stats</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-batchnorm2d-from-sctratch">⚪ BatchNorm2d from sctratch</h3>
+
+<p>如果要实现类似 <strong>BN</strong> 滑动平均的操作，在 <strong>forward</strong> 函数中要使用原地（<strong>inplace</strong>）操作给滑动平均赋值。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BatchNorm2d</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BatchNorm2d</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>\
+        <span class="bp">self</span><span class="p">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">momentum</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"running_mean"</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"running_var"</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">training</span><span class="p">:</span>
+            <span class="n">mean</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">mean</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">var</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">unbiased</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">running_mean</span><span class="err"> </span><span class="o">+=</span><span class="err"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="err"> </span><span class="o">*</span><span class="err"> </span><span class="p">(</span><span class="n">mean</span> <span class="o">-</span><span class="err"> </span><span class="bp">self</span><span class="p">.</span><span class="n">running_mean</span><span class="p">)</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">running_var</span> <span class="o">+=</span><span class="err"> </span><span class="bp">self</span><span class="p">.</span><span class="n">m</span><span class="err"> </span><span class="o">*</span><span class="err"> </span><span class="p">(</span><span class="n">var</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">dim</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">dim</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span><span class="err"> </span><span class="bp">self</span><span class="p">.</span><span class="n">running_var</span><span class="p">)</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mean</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">running_mean</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">running_var</span>
+        <span class="n">x_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="p">:,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="p">:,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">eps</span><span class="p">).</span><span class="n">sqrt</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">x_norm</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">gamma</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">beta</span>
+</code></pre></div></div>
+
+<h2 id="3层归一化-layer-normalization">（3）层归一化 Layer Normalization</h2>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1607.06450">Layer Normalizaiton</a></li>
+</ul>
+
+<p><strong>层归一化（LN）</strong>适用于序列模型（如<strong>RNN,LSTM,Transformer</strong>），最初提出是用来解决<strong>BN</strong>无法应用在<strong>RNN</strong>网络的问题。</p>
+
+<p><strong>BN</strong>沿<strong>batch</strong>维度计算统计量；而在<strong>RNN</strong>网络中，每一个样本句子的长度不固定，需要补零来统一长度，此时对于某个特征维度，有些样本可能是无意义的零填充，因此沿<strong>batch</strong>维度计算统计量是没有意义的。<strong>LN</strong>针对每一个训练样本计算统计量，即计算每个样本所有特征的均值和方差。</p>
+
+<p>记网络某一层的输入\(X=(x_{nd}) \in \mathbb{R}^{N×D}\)，$N$为<strong>batch</strong>维度，$D$为该层特征数（神经元个数），则<strong>LN</strong>表示为：</p>
+
+\[\begin{aligned}
+μ_n &amp;= \frac{1}{D} \sum_{d=1}^{D} {x_{nd}} \\
+σ_n^2&amp;= \frac{1}{D} \sum_{d=1}^{D} {(x_{nd}-μ_n)^2} \\
+\hat{x}_{nd}&amp;= \frac{x_{nd}-μ_n}{\sqrt{σ_n^2+\epsilon}} \\
+y_{nd} &amp;= γ \hat{x}_{nd} + β
+\end{aligned}\]
+
+<p><strong>LN</strong>也包含可学习的<strong>re-scale</strong>和<strong>re-center</strong>参数$\gamma,\beta$，并且参数与单个样本的特征维度相同（作用于每个特征位置）；此外<strong>LN</strong>不需要在训练过程中动态地保存<strong>mini batch</strong>的均值和方差，节省了额外的存储空间。</p>
+
+<p><strong>LN</strong>的适用场合如下：</p>
+<ol>
+  <li><strong>LN</strong>针对单个训练样本进行，不依赖于其他样本，适用小<strong>mini batch</strong>、动态网络和<strong>RNN</strong>，特别是<strong>NLP</strong>领域；可以<strong>Online Learning</strong>；</li>
+  <li><strong>LN</strong>对同一个样本的所有特征进行相同的转换，如果不同输入特征含义不同（比如颜色和大小），那么<strong>LN</strong>的处理可能会降低模型的表达能力；</li>
+  <li><strong>LN</strong>假设同一层的所有<strong>channel</strong>对结果具有相似的贡献，而<strong>CNN</strong>中每个通道提取不同模式的特征，因此<strong>LN</strong>不适用于<strong>CNN</strong>。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LayerNorm</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalized_shape</span><span class="p">,</span> <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">dim</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">normalized_shape</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">mean</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">keepdim</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">var</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">unbiased</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">keepdim</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">eps</span><span class="p">).</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">g</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">b</span>
+
+<span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span>
+    <span class="n">normalized_shape</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span> <span class="c1"># normalized_shape指定计算统计量的维度，如[C,H,W]
+</span>    <span class="n">elementwise_affine</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>     <span class="c1"># 仿射参数默认作用于每个元素
+</span>    <span class="n">device</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span>
+    <span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="4实例归一化-instance-normalization">（4）实例归一化 Instance Normalization</h2>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1607.08022">Instance Normalization: The Missing Ingredient for Fast Stylization</a></li>
+</ul>
+
+<p><strong>实例归一化（IN）</strong>适用于生成模型（<strong>GAN</strong>），最初是在图像风格迁移任务中提出的。</p>
+
+<p>在生成模型中，每一个样本实例之间是独立的，对<strong>batch</strong>维度计算统计量是不合适的；并且每个图像样本的每个通道之间通常也是独立的。<strong>IN</strong>计算每个样本在每个通道上的统计量，不仅可以加速模型收敛，并且可以保持每个实例及其通道之间的独立性。</p>
+
+<p>记网络某一层的输入\(X=(x_{nchw}) \in \mathbb{R}^{N×C×H×W}\)，$N$为<strong>batch</strong>维度，$C$为通道维度，$H,W$为空间维度，则<strong>IN</strong>表示为：</p>
+
+\[\begin{aligned}
+μ_{nc}&amp;= \frac{1}{HW} \sum_{h=1}^{H} {\sum_{w=1}^{W} {x_{nchw}}} \\
+σ_{nc}^2&amp;= \frac{1}{HW} {\sum_{h=1}^{H} {\sum_{w=1}^{W} {(x_{nchw}-μ_{nc})^2}}}\\
+\hat{x}_{nchw}&amp;= \frac{x_{nchw}-μ_{nc}}{\sqrt{σ_{nc}^2+ε}}\\
+\end{aligned}\]
+
+<p><strong>IN</strong>通常不引入额外的仿射变换。<strong>IN</strong>应用于<strong>CNN</strong>时假设每个样本的每个通道是独立的，这可能会忽略部分通道之间的相关性。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">InstanceNorm2d</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">mean</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">keepdim</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">var</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">unbiased</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">keepdim</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">x_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">eps</span><span class="p">).</span><span class="n">sqrt</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">affine</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x_norm</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">g</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">b</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x_norm</span>
+
+<span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">InstanceNorm2d</span><span class="p">(</span>
+    <span class="n">num_features</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span> <span class="c1"># normalized_shape指定计算统计量的维度，如[H,W]
+</span>    <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">track_running_stats</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span>
+    <span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="5组归一化-group-normalization">（5）组归一化 Group Normalization</h2>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1803.08494">Group Normalization</a></li>
+</ul>
+
+<p><strong>组归一化（GN）</strong>是<strong>LN</strong>和<strong>IN</strong>的一般形式：<strong>LN</strong>认为所有通道对输出的贡献是相似的，对每个样本的所有通道一起计算统计量；<strong>IN</strong>认为每个通道是独立的，对每个样本的每个通道分别计算统计量。</p>
+
+<p><strong>GN</strong>将每个样本的通道分成若干组$G$（默认$G=32$），假设组内通道具有相关性、组间通道是独立的，在每组通道内计算统计量。当$G=1$时<strong>GN</strong>退化为<strong>LN</strong>，当$G=C$时<strong>GN</strong>退化为<strong>IN</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64b8f2f41ddac507cc90eebf.jpg" alt="" /></p>
+
+<p>记网络某一层的输入\(X=(x_{nchw}) \in \mathbb{R}^{N×C×H×W}\)，$N$为<strong>batch</strong>维度，$C$为通道维度，将$C$分成$G$个组，$H,W$为空间维度，则<strong>GN</strong>表示为：</p>
+
+\[\begin{aligned}
+μ_{ng}&amp;= \frac{1}{HWC/G}  \sum_{c \in g} \sum_{h=1}^{H} {\sum_{w=1}^{W} {x_{nchw}}} \\
+σ_{ng}^2&amp;= \frac{1}{HWC/G}  \sum_{c \in g} {\sum_{h=1}^{H} {\sum_{w=1}^{W} {(x_{nchw}-μ_{ng})^2}}}\\
+\hat{x}_{nchw}&amp;= \frac{x_{nchw}-μ_{ng}}{\sqrt{σ_{ng}^2+ε}}\\
+y_{nchw} &amp;= γ \hat{x}_{nchw} + β
+\end{aligned}\]
+
+<p>作者通过实验发现<strong>GN</strong>相比于<strong>BN</strong>更容易优化，但损失了一定的正则化能力。<strong>GN</strong>对不同<strong>batch size</strong>具有很好的鲁棒性，尤其适合<strong>batch size</strong>较小的计算机视觉任务中（如目标检测，分割）。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">GroupNorm</span><span class="p">(</span>
+    <span class="n">num_groups</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">,</span>
+    <span class="n">eps</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span>
+    <span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="6切换归一化-switchable-normalization">（6）切换归一化 Switchable Normalization</h2>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1806.10779">Differentiable Learning-to-Normalize via Switchable Normalization</a></li>
+</ul>
+
+<p><strong>BN</strong>、<strong>LN</strong>、<strong>IN</strong>分别是<strong>minibatch-wise</strong>、<strong>layer-wise</strong>和<strong>channel-wise</strong>的归一化操作。<strong>切换归一化（SN）</strong>同时应用这三种方法，学习三种方法的权重，从而适应各种深度学习任务。</p>
+
+<p>如下图所示，不同的深度学习任务具有不同的权重，代表不同归一化方法对不同任务的适合程度。
+<img src="https://pic.downk.cc/item/5e7db2c7504f4bcb044fe556.png" alt="" /></p>
+
+<p><strong>SN</strong>的实现：</p>
+
+\[y_{nchw}=\frac{x_{nchw}-\sum_{k \in Ω}^{} {w_kμ_k}}{\sqrt{\sum_{k \in Ω}^{} {w'_kσ^2_k}+ε}}*γ+β\]
+
+<p>其中$Ω={in,ln,bn}$，注意到三种方法的统计量是相关的，可计算如下：</p>
+
+\[μ_{in}=\frac{1}{HW}\sum_{h,w}^{H,W} {x_{nchw}}，  σ^2_{in}=\frac{1}{HW}\sum_{h,w}^{H,W} {(x_{nchw}-μ_{in})^2} \\ μ_{ln}=\frac{1}{C}\sum_{c=1}^{C} {μ_{in}}，  σ^2_{ln}=\frac{1}{C}\sum_{c=1}^{C} {(σ^2_{in}+μ^2_{in})}-μ^2_{ln} \\ μ_{bn}=\frac{1}{N}\sum_{n=1}^{N} {μ_{in}}，  σ^2_{bn}=\frac{1}{N}\sum_{n=1}^{N} {(σ^2_{in}+μ^2_{in})}-μ^2_{bn}\]
+
+<p>$w_k$和$w_k’$是三种方法对应的权重系数，用参数$λ_{in},λ_{ln},λ_{bn},λ_{in}’,λ_{ln}’,λ_{bn}’$控制：</p>
+
+\[w_k=\frac{e^{λ_k}}{\sum_{z \in Ω}^{} {e^{λ_z}}},\quad  w'_k=\frac{e^{λ'_k}}{\sum_{z \in Ω}^{} {e^{λ'_z}}}\]
+
+<h1 id="3-改进特征归一化">3. 改进特征归一化</h1>
+
+<h2 id="1改进batch-norm">（1）改进Batch Norm</h2>
+
+<h3 id="-synchronized-batchnorm-syncbn">⚪ Synchronized-BatchNorm (SyncBN)</h3>
+
+<p>当使用<code class="language-plaintext highlighter-rouge">torch.nn.DataParallel</code>将代码运行在多张 <strong>GPU</strong> 卡上时，<strong>PyTorch</strong> 的 <strong>BN</strong> 层默认操作是各卡上数据独立地计算均值和标准差。<strong>同步BN (SyncBatchNorm)</strong>使用所有卡上的数据一起计算 <strong>BN</strong> 层的均值和标准差，缓解了当批量大小比较小时对均值和标准差估计不准的情况，是在目标检测等任务中一个有效的提升性能的技巧。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">SyncBatchNorm</span><span class="p">(</span>
+    <span class="n">num_features</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">,</span>
+    <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">track_running_stats</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">process_group</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span>
+    <span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-batch-renormalization">⚪ Batch Renormalization</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1702.03275">Batch Renormalization: Towards Reducing Minibatch Dependence in Batch-Normalized Models</a></li>
+</ul>
+
+<p><strong>BN</strong>假设每一<strong>mini batch</strong>和总体数据近似同分布，用<strong>mini batch</strong>的统计量作为总体统计量的估计。实际上<strong>mini batch</strong>和总体的分布存在偏差，<strong>Batch Renormalization</strong>用一个仿射变换修正这一偏差。</p>
+
+<p>记总体均值为$μ$，方差为$σ^2$；某一<strong>mini batch</strong>计算的均值为$μ_B$，方差为$σ_B^2$，引入仿射变换：</p>
+
+\[\frac{x-μ}{σ}=\frac{x-μ_B}{σ_B} r+d\]
+
+<p>可以得到一组变换参数为：</p>
+
+\[r=\frac{σ_B}{σ} , d=\frac{μ_B-μ}{σ}\]
+
+<p>当$σ=E(σ_B),μ=E(μ_B)$时，有$E(r)=1,E(d)=0$，这便是<strong>BN</strong>的假设。注意$r$和$d$是与<strong>mini batch</strong>有关的常数，并不参与训练，并对上下限进行了裁剪：</p>
+
+\[\begin{aligned}
+r&amp;=\text{Clip}_{[1/r_{max},r_{max}]}(\frac{σ_B}{σ})\\
+d&amp;=\text{Clip}_{[-d_{max},d_{max}]}(\frac{μ_B-μ}{σ})
+\end{aligned}\]
+
+<p>在实际使用时，先使用<strong>BN</strong>（设置$r=1,d=0$）训练得到一个相对稳定的滑动平均，作为总体均值$μ$和方差$σ^2$的近似，再逐渐放松约束。</p>
+
+<h3 id="-adaptive-batch-normalization-adabn">⚪ Adaptive Batch Normalization (AdaBN)</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1603.04779">Revisiting Batch Normalization For Practical Domain Adaptation</a></li>
+</ul>
+
+<p><strong>Domain adaptation (transfer learning)</strong>希望能够将在一个训练集上训练的模型应用到一个类似的测试集上。此时训练集和测试集的分布是不同的，应用<strong>BN</strong>时由训练集得到的统计量不再适合测试集。</p>
+
+<p><strong>AdaBN</strong>的思想是用所有测试集数据计算预训练网络每一层的<strong>BN</strong>统计量（均值和方差），测试时用这些统计量代替由训练得到的原<strong>BN</strong>统计量:</p>
+
+\[\begin{aligned}
+μ^l &amp;= \frac{1}{N} \sum_{n=1}^{N} {x^l_{test,n}}\\
+σ^l &amp;= \sqrt{\frac{1}{N} \sum_{n=1}^{N} {(x^l_{test,n}-μ^l)^2}+ε}
+\end{aligned}\]
+
+<h3 id="-l1-norm-batch-normalization-l1-norm-bn">⚪ L1-Norm Batch Normalization (L1-Norm BN)</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1802.09769">L1-Norm Batch Normalization for Efficient Training of Deep Neural Networks</a></li>
+</ul>
+
+<p><strong>BN</strong>中存在平方和开根号运算，增加了计算量，需要额外的内存，减慢训练的速度；部署到资源限制的硬件系统（如<strong>FPGA</strong>）时有困难。</p>
+
+<p><strong>L1-norm BN</strong>把<strong>BN</strong>运算中的<strong>L2-norm variance</strong>替换成<strong>L1-norm variance</strong>：</p>
+
+\[σ_B= \frac{1}{N} \sum_{n=1}^{N} {\mid x_n-μ_B \mid}\]
+
+<p>可以证明，（在正态分布假设下）通过<strong>L1-norm</strong>计算得到的$σ’=E(|X-E(X)|)$和通过<strong>L2-norm</strong>计算得到的$σ$仅相差一常数：</p>
+
+\[\frac{σ}{E(\mid X-E(X) \mid)}=\sqrt{\frac{\pi}{2}}\]
+
+<p>这个常数可以由<strong>rescale</strong>时的$γ$参数学习到，所以不显式地引入算法中。</p>
+
+<h3 id="-generalized-batch-normalization-generalized-bn">⚪ Generalized Batch Normalization （Generalized BN）</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1812.03271">Generalized Batch Normalization: Towards Accelerating Deep Neural Networks</a></li>
+</ul>
+
+<p><strong>BN</strong>使用的是均值和方差统计量，在<strong>Generalized BN</strong>中使用更一般的统计量$S$和$D$:</p>
+
+\[\hat{x}_n= \frac{x_n-S(x_n)}{D(x_n)}\]
+
+<p>广义偏差测度(<strong>Generalized deviation measures</strong>)提供了选择$D$和相关统计量$S$的方法。</p>
+
+<h3 id="-spatially-adaptive-denormalization-spade">⚪ Spatially-Adaptive Denormalization (SPADE)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/05/18/gaugan.html"><font color="Blue">Semantic Image Synthesis with Spatially-Adaptive Normalization</font></a></li>
+</ul>
+
+<p><strong>SPADE (Spatially-adaptive denormalization)</strong>采用的归一化形式为<strong>BatchNorm</strong>，即沿着特征的每一个通道维度进行归一化。仿射变换参数$\gamma,\beta$不是标量，而是与空间位置有关的向量$\gamma_{c,x,y},\beta_{c,x,y}$，并由输入语义<strong>mask</strong>图像通过两层卷积层构造。</p>
+
+<p><img src="https://pic.imgdb.cn/item/639a8b11b1fccdcd36d3c37d.jpg" alt="" /></p>
+
+<p>向网络中加入<strong>SPADE</strong>层的参考代码实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#   SPADE module
+</span><span class="k">class</span> <span class="nc">SPADE2d</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SPADE2d</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_features</span> <span class="o">=</span> <span class="n">num_features</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">momentum</span> <span class="o">=</span> <span class="n">momentum</span>
+        <span class="c1"># weight and bias are dynamically assigned
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">weight</span> <span class="o">=</span> <span class="bp">None</span> <span class="c1"># [1, c, h, w]
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">bias</span> <span class="o">=</span> <span class="bp">None</span> <span class="c1"># [1, c, h, w]
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">bn</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">num_features</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+            <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># Apply batch norm
+</span>        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">weight</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">bias</span>
+
+
+<span class="c1">#            Model
+</span><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="c1"># 定义包含SPADE的主体网络
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">()</span>
+        <span class="c1"># 定义生成SPADE参数的网络
+</span>        <span class="n">num_spade_params</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">get_num_spade_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">ConvLayer</span><span class="p">(</span><span class="n">input_channel</span><span class="p">,</span> <span class="n">num_spade_params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_num_spade_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">"""Return the number of SPADE parameters needed by the model"""</span>
+        <span class="n">num_spade_params</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">m</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">"SPADE2d"</span><span class="p">:</span>
+                <span class="n">num_spade_params</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span>
+        <span class="k">return</span> <span class="n">num_spade_params</span>
+
+    <span class="k">def</span> <span class="nf">assign_spade_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spade_params</span><span class="p">):</span>
+        <span class="s">"""Assign the spade_params to the SPADE layers in model"""</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">m</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">"SPADE2d"</span><span class="p">:</span>
+                <span class="c1"># Extract weight and bias predictions
+</span>                <span class="n">m</span><span class="p">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">spade_params</span><span class="p">[:,</span> <span class="p">:</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:].</span><span class="n">contiguous</span><span class="p">()</span>
+                <span class="n">m</span><span class="p">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">spade_params</span><span class="p">[:,</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span> <span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:].</span><span class="n">contiguous</span><span class="p">()</span>
+                <span class="c1"># Move pointer
+</span>                <span class="k">if</span> <span class="n">spade_params</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="o">*</span><span class="n">m</span><span class="p">.</span><span class="n">num_features</span><span class="p">:</span>
+                    <span class="n">spade_params</span> <span class="o">=</span> <span class="n">spade_params</span><span class="p">[:,</span> <span class="mi">2</span><span class="o">*</span><span class="n">m</span><span class="p">.</span><span class="n">num_features</span><span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">main_input</span><span class="p">,</span> <span class="n">cond_input</span><span class="p">):</span>
+        <span class="c1"># Update SPADE parameters by ConvLayer prediction based off conditional input
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">assign_spade_params</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv</span><span class="p">(</span><span class="n">cond_input</span><span class="p">))</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">(</span><span class="n">main_input</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+</code></pre></div></div>
+
+<h2 id="2改进layer-norm">（2）改进Layer Norm</h2>
+
+<h3 id="-root-mean-square-layer-normalization-rmsnorm">⚪ Root Mean Square Layer Normalization (RMSNorm)</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1910.07467">Root Mean Square Layer Normalization</a></li>
+</ul>
+
+<p><strong>RMS Norm</strong>去掉了<strong>LN</strong>中的均值和<strong>reshift</strong>操作，相当于对每个样本进行了<strong>L2</strong>归一化，相比于<strong>LN</strong>减少了计算负担，并且具有相似的效果。</p>
+
+\[\begin{aligned}
+σ_n^2&amp;= \frac{1}{D} \sum_{d=1}^{D} {x_{nd}^2} \\
+\hat{x}_{nd}&amp;= \frac{x_{nd}}{\sqrt{σ_n^2+\epsilon}} \\
+y_{nd} &amp;= γ \hat{x}_{nd}
+\end{aligned}\]
+
+<p><strong>center</strong>操作（减均值或<strong>reshift</strong>操作）类似于全连接层的<strong>bias</strong>项，储存到的是关于预训练任务的一种先验分布信息；而把这种先验分布信息直接储存在模型中，反而可能会导致模型的迁移能力下降。</p>
+
+<h2 id="3改进instance-norm">（3）改进Instance Norm</h2>
+
+<h3 id="-filter-response-normalization-frn">⚪ Filter Response Normalization (FRN)</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1911.09737">Filter Response Normalization Layer: Eliminating Batch Dependence in the Training of Deep Neural Networks</a></li>
+</ul>
+
+<p><strong>FRN</strong>类似于<strong>IN</strong>，也是对每个样本的每个通道进行的操作。不同于<strong>IN</strong>，<strong>FRN</strong>使用二阶矩代替了方差统计量，即计算方差时没有考虑均值。</p>
+
+<p>记网络某一层的输入\(X=(x_{nchw}) \in \mathbb{R}^{N×C×H×W}\)，$N$为<strong>batch</strong>维度，$C$为通道维度，$H,W$为空间维度，则<strong>FRN</strong>表示为：</p>
+
+\[\begin{aligned}
+μ_{nc}&amp;= \frac{1}{HW} \sum_{h=1}^{H} {\sum_{w=1}^{W} {x_{nchw}}} \\
+v^2&amp;= \frac{1}{HW} {\sum_{h=1}^{H} {\sum_{w=1}^{W} {x_{nchw}^2}}}\\
+\hat{x}_{nchw}&amp;= \frac{x_{nchw}-μ_{nc}}{\sqrt{v^2+ε}}\\
+y_{nchw} &amp;= γ \hat{x}_{nchw} + β
+\end{aligned}\]
+
+<h3 id="-adaptive-instance-normalization-adain">⚪ Adaptive Instance Normalization (AdaIN)</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1703.06868">Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization</a></li>
+</ul>
+
+<p>本文作者指出，<strong>IN</strong>通过将特征统计量标准化来实现图像风格的标准化，即<strong>IN</strong>的仿射参数$\gamma,\beta$设置不同的值可以将特征统计信息标准化到不同的分布，从而将输出图像转换到不同的风格。<strong>AdaIN</strong>可以实现从内容图像$c$到风格图像$s$的风格迁移：</p>
+
+<p><img src="https://pic.imgdb.cn/item/64bddde81ddac507cc2bce31.jpg" alt="" /></p>
+
+<p>向网络中加入<strong>AdaIN</strong>层的参考代码实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#   AdaIN module
+</span><span class="k">class</span> <span class="nc">AdaptiveInstanceNorm2d</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_features</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AdaptiveInstanceNorm2d</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">momentum</span> <span class="o">=</span> <span class="n">momentum</span>
+        <span class="c1"># weight and bias are dynamically assigned
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">weight</span> <span class="o">=</span> <span class="bp">None</span> <span class="c1"># [1, c]
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">bias</span> <span class="o">=</span> <span class="bp">None</span> <span class="c1"># [1, c]
+</span>        <span class="c1"># fixed init
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"running_mean"</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_features</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"running_var"</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_features</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="n">running_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">running_mean</span><span class="p">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="n">running_var</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">running_var</span><span class="p">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+        <span class="c1"># Apply instance norm
+</span>        <span class="n">x_reshaped</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span> <span class="o">*</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">batch_norm</span><span class="p">(</span>
+            <span class="n">x_reshaped</span><span class="p">,</span> <span class="n">running_mean</span><span class="p">,</span> <span class="n">running_var</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">bias</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">momentum</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">eps</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<span class="c1">#            Model
+</span><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Model</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="c1"># 定义包含AdaIN的主体网络
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">()</span>
+        <span class="c1"># 定义生成AdaIN参数的网络
+</span>        <span class="n">num_adain_params</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">get_num_adain_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">input_channel</span><span class="p">,</span> <span class="n">num_adain_params</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_num_adain_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="s">"""Return the number of AdaIN parameters needed by the model"""</span>
+        <span class="n">num_adain_params</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">m</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">"AdaptiveInstanceNorm2d"</span><span class="p">:</span>
+                <span class="n">num_adain_params</span> <span class="o">+=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span>
+        <span class="k">return</span> <span class="n">num_adain_params</span>
+
+    <span class="k">def</span> <span class="nf">assign_adain_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adain_params</span><span class="p">):</span>
+        <span class="s">"""Assign the adain_params to the AdaIN layers in model"""</span>
+        <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">modules</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">m</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">"AdaptiveInstanceNorm2d"</span><span class="p">:</span>
+                <span class="c1"># Extract weight and bias predictions
+</span>                <span class="n">weight</span> <span class="o">=</span> <span class="n">adain_params</span><span class="p">[:,</span> <span class="p">:</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span><span class="p">]</span>
+                <span class="n">bias</span> <span class="o">=</span> <span class="n">adain_params</span><span class="p">[:,</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span> <span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span><span class="p">]</span>
+                <span class="c1"># Update bias and weight
+</span>                <span class="n">m</span><span class="p">.</span><span class="n">bias</span> <span class="o">=</span> <span class="n">bias</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">m</span><span class="p">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="p">.</span><span class="n">contiguous</span><span class="p">().</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="c1"># Move pointer
+</span>                <span class="k">if</span> <span class="n">adain_params</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span><span class="p">:</span>
+                    <span class="n">adain_params</span> <span class="o">=</span> <span class="n">adain_params</span><span class="p">[:,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">m</span><span class="p">.</span><span class="n">num_features</span> <span class="p">:]</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">main_input</span><span class="p">,</span> <span class="n">cond_input</span><span class="p">):</span>
+        <span class="c1"># Update AdaIN parameters by ConvLayer prediction based off conditional input
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">assign_adain_params</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv</span><span class="p">(</span><span class="n">cond_input</span><span class="p">))</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">(</span><span class="n">main_input</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+</code></pre></div></div>
+
+<h1 id="4-深度学习中的参数归一化">4. 深度学习中的参数归一化</h1>
+
+<p>之前介绍的归一化方法都是针对网络层中的特征进行的操作，也可以把归一化应用到网络权重上。</p>
+
+<h2 id="1权重归一化-weight-normalization">（1）权重归一化 Weight Normalization</h2>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1602.07868v1">Weight Normalization: A Simple Reparameterization to Accelerate Training of Deep Neural Networks</a></li>
+</ul>
+
+<p><strong>权重归一化（WN）</strong>对权重$W$使用长度标量$g$和方向向量$v$进行重参数化：</p>
+
+\[W=g\frac{v}{\mid\mid v \mid\mid}\]
+
+<p>其中$g= \mid\mid W \mid\mid$，向量$v$由反向传播更新。</p>
+
+<p>由于神经网络中权重经常是共享的，因此这种方法计算开销小于对特征进行归一化的方法，且不依赖于<strong>mini batch</strong>的统计量。</p>
+
+<h2 id="2余弦归一化-cosine-normalization">（2）余弦归一化 Cosine Normalization</h2>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1702.05870">Cosine Normalization: Using Cosine Similarity Instead of Dot Product in Neural Networks</a></li>
+</ul>
+
+<p>对数据进行归一化的原因是因为数据经过神经网络的计算后可能变得很大，导致分布的方差爆炸，而这一问题的根源就是采用的计算方式(点积)，向量点积是无界的。</p>
+
+<p>向量点积是衡量两个向量相似度的方法之一。类似的度量方式还有很多。夹角余弦就是其中一个且有确定界。余弦归一化将点积运算替换为计算余弦相似度，将输出控制在$[-1,1]$之间。</p>
+
+\[Norm(W\cdot X) = \frac{W·X}{\mid\mid W \mid\mid · \mid\mid X \mid\mid}\]
+
+<h2 id="3谱归一化-spectral-normalization">（3）谱归一化 Spectral Normalization</h2>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/02/08/sngan.html"><font color="Blue">Spectral Normalization for Generative Adversarial Networks</font></a></li>
+</ul>
+
+<p><strong>谱归一化(Spectral Normalization)</strong>是指使用<strong>谱范数(spectral norm)</strong>对网络参数进行归一化：</p>
+
+\[W \leftarrow \frac{W}{||W||_2^2}\]
+
+<p>谱归一化精确地使网络满足<a href="https://0809zheng.github.io/2022/10/11/lipschitz.html">Lipschitz连续性</a>。<strong>Lipschitz</strong>连续性保证了函数对于<strong>输入扰动的稳定性</strong>，即函数的输出变化相对输入变化是缓慢的。</p>
+
+<p>谱范数是一种由向量范数诱导出来的矩阵范数，作用相当于向量的模长：</p>
+
+\[||W||_2 = \mathop{\max}_{x \neq 0} \frac{||Wx||}{||x||}\]
+
+<p>谱范数$||W||_2$的平方的取值为$W^TW$的最大特征值。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">add_sn</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m</span><span class="p">.</span><span class="n">named_children</span><span class="p">():</span>
+             <span class="n">m</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">add_sn</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">)):</span>
+             <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">utils</span><span class="p">.</span><span class="n">spectral_norm</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+             <span class="k">return</span> <span class="n">m</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">add_sn</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>值得一提的是，谱归一化是对模型的每一层权重都进行的操作，使得网络的每一层都满足<strong>Lipschitz</strong>约束；这种约束有时太过强硬，通常只希望整个模型满足<strong>Lipschitz</strong>约束，而不必强求每一层都满足。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/05/initialization.html" class="read-next-link"></a>
+        <section>
+          <span>深度学习中的初始化方法(Initialization)</span>
+          <p>  Initialization in Deep Learning.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5e8ed4c7504f4bcb0429f47f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/03/regularization.html" class="read-next-link"></a>
+          <section>
+            <span>深度学习中的正则化方法(Regularization)</span>
+            <p>  Regularization in Deep Learning.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="http://p0.ifengimg.com/pmop/2018/0117/FF63C065C57341C7727412791090885E7EB230BD_size23_w900_h375.jpeg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

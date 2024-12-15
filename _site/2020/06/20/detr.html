@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DETR：End-to-End Object Detection with Transformers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="DETR：End-to-End Object Detection with Transformers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="DETR：End-to-End Object Detection with Transformers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/06/20/detr.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>DETR：End-to-End Object Detection with Transformers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-06-20"><i class="iconfont icon-date"></i>20 Jun 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5eedb67d14195aa594885979.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DETR: 使用Transformer实现端到端目标检测.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2005.12872">DETR：End-to-End Object Detection with Transformers</a></li>
+  <li>code：<a href="https://github.com/facebookresearch/detr">github</a></li>
+</ul>
+
+<p>本文提出了<strong>Detection Transformer (DETR)</strong>，一种将目标检测建模为集合预测任务的方法。该方法不依赖于目标检测中需要先验知识的手工设计组件，比如<strong>anchor</strong>设置和非极大值抑制；而是通过二分匹配执行唯一的预测，并构建基于集合的全局损失。给定一个可学习的目标查询集，<strong>DETR</strong>通过<strong>Transformer</strong>的编码器-解码器结构提取目标之间的关系和图像的全局上下文信息，并行地输出最终的预测集合。</p>
+
+<h1 id="1-detr的模型框架">1. DETR的模型框架</h1>
+
+<p>实现直接的集合预测需要两个要素：对预测结果和真实标签进行唯一匹配的集合预测损失，以及一次性预测一组对象并对其关系进行建模的网络结构。基于此作者设计了<strong>DETR</strong>结构：</p>
+
+<p><img src="https://pic.downk.cc/item/5eedb73f14195aa5948970e4.jpg" alt="" /></p>
+
+<h2 id="1-损失函数">(1) 损失函数</h2>
+
+<p><strong>DETR</strong>在单次推断过程中一次性的给出$N$个目标预测（包括目标类别和边界框）。记$y$为目标的真实标签<code class="language-plaintext highlighter-rouge">targets</code>，\(\hat{y}=\{\hat{y}_i\}_{i=1}^{N}\)是$N$个预测结果<code class="language-plaintext highlighter-rouge">outputs</code>。通常预测结果数量$N$远大于图像中实际存在目标的典型数量，因此对图像标签增加空集(<strong>no object</strong>)直至达到$N$个。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">""" 
+Params:
+    outputs: This is a dict that contains at least these entries:
+         "pred_logits": Tensor of dim [batch_size, num_queries, num_classes] with the classification logits
+         "pred_boxes": Tensor of dim [batch_size, num_queries, 4] with the predicted box coordinates
+    targets: This is a list of targets (len(targets) = batch_size), where each target is a dict containing:
+         "labels": Tensor of dim [num_target_boxes] (where num_target_boxes is the number of ground-truth
+                   objects in the target) containing the class labels
+         "boxes": Tensor of dim [num_target_boxes, 4] containing the target box coordinates
+"""</span>
+</code></pre></div></div>
+
+<p>为了构造损失函数，需要建立这两个集合之间的最优<strong>二分匹配（bipartite matching）</strong>，这是通过寻找使得代价最小的一个排列$\sigma$实现的：</p>
+
+\[\hat{\sigma} = \mathop{\arg \min}_{\sigma \in \Sigma_N} \sum_{i}^{N} \mathcal{L}_{\text{match}}(y_i,\hat{y}_{\sigma(i)})\]
+
+<p>其中\(\mathcal{L}_{\text{match}}(y_i,\hat{y}_{\sigma(i)})\)是真值$y_i$和对应预测\(\hat{y}_{\sigma(i)}\)之间的匹配代价，匹配过程是通过由<strong>匈牙利算法</strong>构造的最优指派，这种匹配是一对一的，不会产生重复的匹配结果。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">linear_sum_assignment</span>
+<span class="c1"># assert C.shape == (batch_size, num_queries, batch_size * num_target_boxes)
+</span><span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s">"boxes"</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">]</span> <span class="c1"># batch_size x [num_target_boxes]
+</span><span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">linear_sum_assignment</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">C</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="n">sizes</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))]</span>
+<span class="k">return</span> <span class="p">[(</span><span class="n">torch</span><span class="p">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">int64</span><span class="p">),</span> <span class="n">torch</span><span class="p">.</span><span class="n">as_tensor</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">int64</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+
+<span class="c1"># 注：源代码中对代价矩阵的计算没有避开不同样本之间的预测和真值交互
+#     而是通过split操作对第i个样本只取对应的矩阵块（存在许多不必要的计算）
+</span></code></pre></div></div>
+
+<p>匹配代价同时考虑类别预测结果和预测边界框的准确程度，真值$y_i$是由预测类别$c_i$和边界框(相对图像的)中心坐标与尺寸$b_i \in [0,1]^4$组成的。若记预测\(\hat{y}_{\sigma(i)}\)的类别概率为\(\hat{p}_{\sigma(i)}(c_i)\)，则匹配代价计算为：</p>
+
+\[\mathcal{L}_{\text{match}}(y_i,\hat{y}_{\sigma(i)}) = -\Bbb{I}(c_i \ne \Phi) \hat{p}_{\sigma(i)}(c_i) + \Bbb{I}(c_i \ne \Phi) \mathcal{L}_{\text{box}}(b_i,\hat{b}_{\sigma(i)})\]
+
+<p>在匹配代价中，直接使用类别概率\(\hat{p}_{\sigma(i)}(c_i)\)代替交叉熵中的对数概率，这使得其与边界框损失具有同单位度量，并且具有更好的实际表现。边界框损失若直接使用<strong>L1</strong>损失，会使得小边界框和大边界框具有不同的尺度，因此作者采用<strong>L1</strong>损失和<strong>GIoU</strong>损失的线性组合，并根据一个批量样本内目标的数量进行规范化：</p>
+
+\[\mathcal{L}_{\text{box}}(b_i, \hat{b}_{\hat{\sigma}}(i)) = \lambda_{\text{iou}}\mathcal{L}_{\text{iou}}(b_i, \hat{b}_{\hat{\sigma}}(i))+\lambda_{L1} ||b_i- \hat{b}_{\hat{\sigma}}(i)||_1\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">bs</span><span class="p">,</span> <span class="n">num_queries</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s">"pred_logits"</span><span class="p">].</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+
+<span class="c1"># We flatten to compute the cost matrices in a batch
+</span><span class="n">out_prob</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s">"pred_logits"</span><span class="p">].</span><span class="n">flatten</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">softmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [batch_size * num_queries, num_classes]
+</span><span class="n">out_bbox</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s">"pred_boxes"</span><span class="p">].</span><span class="n">flatten</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># [batch_size * num_queries, 4]
+</span>
+<span class="c1"># Also concat the target labels and boxes
+</span><span class="n">tgt_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="s">"labels"</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">])</span>  <span class="c1"># [batch_size * num_target_boxes]
+</span><span class="n">tgt_bbox</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="s">"boxes"</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">])</span>  <span class="c1"># [batch_size * num_target_boxes, 4]
+</span>
+<span class="c1"># Compute the classification cost. Contrary to the loss, we don't use the NLL,
+# but approximate it in 1 - proba[target class].
+# The 1 is a constant that doesn't change the matching, it can be ommitted.
+</span><span class="n">cost_class</span> <span class="o">=</span> <span class="o">-</span><span class="n">out_prob</span><span class="p">[:,</span> <span class="n">tgt_ids</span><span class="p">]</span>  <span class="c1"># [batch_size * num_queries]
+</span>
+<span class="c1"># Compute the L1 cost between boxes
+</span><span class="n">cost_bbox</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cdist</span><span class="p">(</span><span class="n">out_bbox</span><span class="p">,</span> <span class="n">tgt_bbox</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># [batch_size * num_queries, batch_size * num_target_boxes]
+</span>
+<span class="c1"># Compute the giou cost betwen boxes
+</span><span class="n">cost_giou</span> <span class="o">=</span> <span class="o">-</span><span class="n">generalized_box_iou</span><span class="p">(</span><span class="n">out_bbox</span><span class="p">,</span> <span class="n">tgt_bbox</span><span class="p">)</span> <span class="c1"># [batch_size * num_queries, batch_size * num_target_boxes]
+</span>
+<span class="c1"># Final cost matrix
+</span><span class="n">C</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cost_bbox</span> <span class="o">*</span> <span class="n">cost_bbox</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">cost_class</span> <span class="o">*</span> <span class="n">cost_class</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">cost_giou</span> <span class="o">*</span> <span class="n">cost_giou</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">C</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="n">num_queries</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">cpu</span><span class="p">()</span> <span class="c1"># [batch_size, num_queries, batch_size * num_target_boxes]
+</span></code></pre></div></div>
+
+<p>预测集合和真值集合匹配完成后可以计算损失函数，采用类别预测的负对数和边界框损失的线性组合：</p>
+
+\[\mathcal{L}_{\text{Hungarian}}(y,\hat{y}) = \sum_{i=1}^{N} [-\log \hat{p}_{\hat{\sigma}(i)}(c_i)+\Bbb{I}(c_i \ne \Phi) \mathcal{L}_{\text{box}}(b_i, \hat{b}_{\hat{\sigma}}(i)) ]\]
+
+<p>其中$\hat{\sigma}$表示构造的最优匹配。$c_i$和\(\hat{p}_{\hat{\sigma}(i)}(c_i)\)分别表示目标类别标签和预测标签，$b_i$和\(\hat{b}_{\hat{\sigma}}(i)\)分别表示实际边界框参数和预测边界框。在实践中对于$c_i=\Phi$损失缩小$10$倍，以减少类别不平衡。</p>
+
+<h2 id="2-模型结构">(2) 模型结构</h2>
+
+<p><strong>DETR</strong>的结构主要有三部分：</p>
+<ul>
+  <li>一个卷积神经网络<strong>backbone</strong>，用于提取紧凑的图像特征表示;</li>
+  <li>一个编码器-解码器结构的<strong>Transformer</strong>；</li>
+  <li>一个简单的前馈网络<strong>FFN</strong>，进行最终的检测预测。</li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5eedb8e214195aa5948bbb07.jpg" alt="" /></p>
+
+<h3 id="-backbone">⚪ Backbone</h3>
+<p>输入图像的尺寸为\(x_{\text{img}} \in \Bbb{R}^{3\times H_0 \times W_0}\)，<strong>backbone卷积网络</strong>生成低分辨率的激活图\(f \in \Bbb{R}^{C\times H \times W}\)，通常取\(C=2048,H=\frac{H_0}{32},W=\frac{W_0}{32}\)。</p>
+
+<h3 id="-transformer-encoder">⚪ Transformer encoder</h3>
+
+<p>首先使用$1×1$卷积降低通道数为$d$，构造新的特征图\(z_0 \in \Bbb{R}^{d\times H \times W}\)。由于编码器需要序列作为输入，因此将特征图调整为尺寸为$[d,HW]$的序列。由于<strong>Transformer</strong>是<strong>置换不变(permutation-invariant)</strong>的，在每个注意力层中加入位置编码。<strong>DETR</strong>编码器从整个图像中提取全局上下文信息。</p>
+
+<h3 id="-transformer-decoder">⚪ Transformer decoder</h3>
+
+<p>与标准的<strong>Transformer</strong>解码器使用自回归模型预测输出序列不同，<strong>DETR</strong>的解码器并行地将维度为$d$的$N$个输入嵌入解码为$N$个对象的输出嵌入。由于解码器也是置换不变的，因此$N$个输入嵌入必须不同才能产生不同的结果，将其设置为可学习的位置编码，称为<strong>对象查询</strong>(<strong>object query</strong>)，并加入到每个注意力层的输入中。<strong>DETR</strong>解码器利用对象之间的成对关系对所有对象进行全局推理。</p>
+
+<h3 id="-prediction-feed-forward-networks">⚪ Prediction feed-forward networks</h3>
+
+<p>前馈网络将$N$个对象的输出嵌入独立解码为边界框的坐标和类别标签，从而得到$N$个最终预测结果。网络包括一个使用<strong>ReLU</strong>激活函数的$3$层感知机和一个线性映射层，感知机将$N$个预测结果表示为目标边界框的归一化中心坐标和高度、宽度；线性映射层使用<strong>softmax</strong>函数预测类别标签。由于$N$通常比感兴趣的对象数量大得多，因此预测类别额外增加一个$\Phi$表示未检测到任何对象，类似于目标检测中的“背景”类。</p>
+
+<h3 id="-auxiliary-decoding-losses">⚪ Auxiliary decoding losses</h3>
+
+<p>作者发现训练过程中为解码器增加辅助损失(<strong>auxiliary loss</strong>)有助于模型输出每个类别的正确目标数量。具体地，在每个解码层后添加参数共享的预测<strong>FFN</strong>和匈牙利损失，并使用额外的共享<strong>layer-norm</strong>规范来自不同解码层的预测<strong>FFN</strong>的输入。</p>
+
+<h1 id="2-实验分析">2. 实验分析</h1>
+
+<p>作者将<strong>DETR</strong>与<strong>Faster R-CNN</strong>在<strong>COCO</strong>数据集上进行性能比较，并对<strong>DETR</strong>的结构进行详细的消融实验，并将<strong>DETR</strong>扩展到全景分割任务中。</p>
+
+<p>目标检测和分割实验都是在<strong>COCO</strong>数据集上进行的，该数据集包含$118$k训练图像和$5$k验证图像。每个图像平均有$7$个实例，单个图像中最多有$63$个实例。目标检测的评估指标采用<strong>bbox AP</strong>，与<strong>Faster R-CNN</strong>对比时使用最后一次训练过程中的验证精度，消融实验采用过去$10$轮验证精度的中位数。</p>
+
+<p><strong>DETR</strong>使用<strong>AdamW</strong>算法更新参数，模型中卷积<strong>backbone</strong>的初始学习率为$10^{-5}$，<strong>Transformer</strong>的初始学习率为$10^{-4}$，权重衰减为$10^{-4}$，<strong>dropout</strong>率为$0.1$。<strong>Transformer</strong>采用<strong>Xavier</strong>初始化，卷积<strong>backbone</strong>采用在<strong>ImageNet</strong>预训练的<strong>ResNet</strong>模型。作者设计了四种不同的模型：</p>
+<ul>
+  <li><strong>DETR</strong>：卷积<strong>backbone</strong>为<strong>ResNet-50</strong>。</li>
+  <li><strong>DETR-R101</strong>：卷积<strong>backbone</strong>为<strong>ResNet-101</strong>。</li>
+  <li><strong>DETR-DC5</strong>：卷积<strong>backbone</strong>为<strong>ResNet-50</strong>；最后一阶段中删除第一个卷积的<strong>stride</strong>；最后增加一个<strong>dilation</strong>卷积，通过提高特征分辨率增加对小目标的检测能力。</li>
+  <li><strong>DETR-DC5-R101</strong>：卷积<strong>backbone</strong>为<strong>ResNet-101</strong>；最后一阶段中删除第一个卷积的<strong>stride</strong>；最后增加一个<strong>dilation</strong>卷积，通过提高特征分辨率增加对小目标的检测能力。</li>
+</ul>
+
+<p>数据增强使用尺度变换调整图像大小，使短边至少为$480$像素，最多为$800$像素，而长边最多为$1333$像素。为了通过编码器的自注意力机制学习全局关系，在训练期间应用随机裁剪增强，即将图像以$0.5$的概率裁剪为随机矩形子图，然后再次调整为$800-1333$。</p>
+
+<p>在消融实验中，总训练轮数为$300$轮，$200$轮后学习率衰减$10$倍。在性能对比实验中，总训练轮数为$500$轮，$400$轮后学习率衰减$10$倍。</p>
+
+<h2 id="1-目标检测实验">(1) 目标检测实验</h2>
+
+<p>作者给出了<strong>Faster R-CNN</strong>、改进的<strong>Faster R-CNN</strong>(增加<strong>GIoU</strong>损失，训练时随机裁剪、$9$倍训练时间)以及<strong>DETR</strong>的目标检测结果。结果表明，在参数量相当的情况下(<strong>41.3</strong>M参数中卷积提供<strong>23.5</strong>M自注意力提供<strong>17.8</strong>M)，<strong>DETR</strong>检测大目标的性能大幅提高，但检测小目标的性能较差。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62bab4b71d64b0706693bf36.jpg" alt="" /></p>
+
+<h2 id="2-消融实验">(2) 消融实验</h2>
+
+<h3 id="-编码器层数">⚪ 编码器层数</h3>
+
+<p><img src="https://pic.imgdb.cn/item/62bab6891d64b07066969bba.jpg" alt="" /></p>
+
+<p>编码器通过自注意力机制捕捉图像的全局重要性，如果没有编码器，总体<strong>AP</strong>会下降$3.9$个点。作者认为编码器能够通过全局推理分离每一个目标对象。可视化最后一个编码器层的注意力图，观察到注意力集中在图像中的几个目标上。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62bab6961d64b0706696b1f6.jpg" alt="" /></p>
+
+<h3 id="-解码器层数">⚪ 解码器层数</h3>
+
+<p>增加解码器层数会使<strong>AP</strong>提高。由于<strong>DETR</strong>预测集合没有冗余，因此不需要<strong>NMS</strong>。为了验证这一点，在每层解码器后的输出运行一个标准<strong>NMS</strong>。结果表明<strong>NMS</strong>提高了来自第一个解码器层的预测性能，这是因为单个解码层无法很好地捕捉输出元素之间的相互关系，因此容易对同一对象进行多个预测。在后续层中<strong>NMS</strong>带来的改善随着深度的增加而减少。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62bab8771d64b0706699dff5.jpg" alt="" /></p>
+
+<p>下图给出了解码器注意力的可视化，注意到解码器的注意力是相当局部的，主要关注物体的四肢，如头部或腿部。这是因为编码器已经通过全局自注意力分离实例，解码器只需要关注局部来提取目标的类别和边界。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62bab8c21d64b070669a6672.jpg" alt="" /></p>
+
+<h3 id="-全连接层">⚪ 全连接层</h3>
+
+<p><strong>Transformer</strong>内部的全连接层可以看作是$1\times 1$卷积层，使得编码器类似于注意力增强卷积网络。将全连接层完全移除后网络参数量从$41.3$M减少到$28.7$M，性能下降了$2.3$ AP，可见全连接层对于取得良好的表现非常重要。</p>
+
+<h3 id="-位置编码">⚪ 位置编码</h3>
+
+<p>模型中编码器采用了空间位置编码，解码器采用了空间位置编码和输出位置编码(即目标查询)。作者对固定编码和可学习编码进行消融，并对编码的添加位置进行实验。结果表明，空间位置编码在每一层自注意力层中采用固定编码，输出位置编码在解码器每层自注意力层中采用可学习编码能够取得最好的性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62babc811d64b070669fd7a9.jpg" alt="" /></p>
+
+<h3 id="-损失函数">⚪ 损失函数</h3>
+
+<p>损失函数包括分类损失，<strong>l1</strong>边界框损失和<strong>GIoU</strong>边界框损失。作者也给出了不同损失的消融结果：</p>
+
+<p><img src="https://pic.imgdb.cn/item/62babd061d64b07066a12439.jpg" alt="" /></p>
+
+<h3 id="-更多分析">⚪ 更多分析</h3>
+
+<p>作者对解码器中的$20$个查询预测的边界框分布情况进行可视化。每个边界框预测都表示为一个点，其中心坐标位于图像尺寸归一化的方格内。对点进行颜色编码，使绿色对应小方框，红色对应大水平方框，蓝色对应大垂直方框。结果表明每个查询都具有针对不同区域和边界框大小的预测模式，特别地所有查询都能够预测较宽的边界框（绘图中间对齐的红点），这可能与<strong>COCO</strong>数据集中物体的分布有关。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62babe651d64b07066a431b8.jpg" alt="" /></p>
+
+<p>作者测试了模型的分布外泛化能力。比如训练集中没有出现超过$13$只长颈鹿的图像，于是合成了一个具有$24$个长颈鹿的图像验证模型的泛化能力，结果表明模型能够在图像上找到所有只长颈鹿。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62babf1b1d64b07066a5d2d2.jpg" alt="" /></p>
+
+<h2 id="3-全景分割实验">(3) 全景分割实验</h2>
+
+<p><strong>DETR</strong>是一个通用的可扩展模型，作者在解码器的输出端增加了一个<strong>mask head</strong>将<strong>DETR</strong>扩展到全景分割任务中。<strong>mask head</strong>的结构如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/62babffb1d64b07066a77160.jpg" alt="" /></p>
+
+<p><strong>mask head</strong>将每个对象的解码器输出作为输入，计算每个对象的自注意分数，并为每个对象生成具有较小的分辨率的二进制热图。使用<strong>FPN</strong>结构提升分辨率并获得最终预测结果，并通过<strong>DICE/F-1</strong>损失和<strong>focal</strong>损失进行监督学习。</p>
+
+<p><strong>mask head</strong>既可以和网络联合训练，也可以单独进行微调训练。实验结果表明两者的表现相似，而微调训练能够缩短总训练时间。为了获得全景分割的最终结果，在每个输出像素的热图上使用<strong>argmax</strong>确定最终的分割类别，从而确保分割结果没有重叠。</p>
+
+<p>作者给出了不同模型在全景分割任务上的表现，结果表明<strong>DETR</strong>仍然具有竞争力的表现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62bac2181d64b07066ab30c7.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/62bac20a1d64b07066ab15a2.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/06/26/mixup.html" class="read-next-link"></a>
+        <section>
+          <span>mixup: Beyond Empirical Risk Minimization</span>
+          <p>  mixup：样本对插值的经验风险最小化.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f09ac1a14195aa594471088.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/06/17/tensor-factorization.html" class="read-next-link"></a>
+          <section>
+            <span>张量分解(Tensor Decomposition)</span>
+            <p>  Tensor Decomposition(Factorization).</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ee9a89da240b370e3bcba63.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图像分割(Image Segmentation) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="图像分割(Image Segmentation)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="图像分割(Image Segmentation) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/05/07/semantic-segmentation.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>图像分割(Image Segmentation)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-05-07"><i class="iconfont icon-date"></i>07 May 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63f2c620f144a01007e3c370.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Image Segmentation.</p>
+</blockquote>
+
+<p><strong>图像分割 (Image Segmentation)</strong>是对图像中的每个像素进行分类，可以细分为：</p>
+<ul>
+  <li><strong>语义分割 (semantic segmentation)</strong>：注重类别之间的区分，而不区分同一类别的不同个体；</li>
+  <li><strong>实例分割 (instance segmentation)</strong>：注重类别以及同一类别的不同个体之间的区分；</li>
+  <li><strong>全景分割 (panoptic segmentation)</strong>：对于可数的对象实例(如行人、汽车)做实例分割，对于不可数的语义区域(如天空、地面)做语义分割。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/63f2c620f144a01007e3c370.jpg" alt="" /></p>
+
+<p><strong>语义分割</strong>模型可以直接根据图像像素进行分组，转换为密集的分类问题。<strong>实例分割</strong>一般可分为“自上而下” 和 “自下而上”的方法，自上而下的框架是先计算实例的检测框，在检测框内进行分割；自下而上的框架则是先进行语义分割，在分割结果上对实例对象进行检测。<strong>全景分割</strong>在实例分割框架上添加语义分割分支，或基于语义分割方法采用不同的像素分组策略。本文重点关注语义分割方法。</p>
+
+<p>本文目录：</p>
+<ol>
+  <li>图像分割模型</li>
+  <li>图像分割的评估指标</li>
+  <li>图像分割的损失函数</li>
+  <li>常用的图像分割数据集</li>
+</ol>
+
+<h1 id="1-图像分割模型">1. 图像分割模型</h1>
+
+<p>图像分割的任务是使用深度学习模型处理输入图像，得到带有语义标签的相同尺寸的输出图像。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f2e1aef144a0100707c297.jpg" alt="" /></p>
+
+<p>图像分割模型通常采用<strong>编码器-解码器(encoder-decoder)</strong>结构。编码器从预处理的图像数据中提取特征，解码器把特征解码为分割热图。图像分割模型的发展趋势可以大致总结为：</p>
+<ul>
+  <li>全卷积网络：<strong>FCN</strong>, <strong>SegNet</strong>, <strong>RefineNet</strong>, <strong>U-Net</strong>, <strong>V-Net</strong>, <strong>M-Net</strong>, <strong>W-Net</strong>, <strong>Y-Net</strong>, <strong>UNet++</strong>, <strong>Attention U-Net</strong>, <strong>GRUU-Net</strong>, <strong>BiSeNet V1,2</strong>, <strong>DFANet</strong>, <strong>SegNeXt</strong></li>
+  <li>上下文模块：<strong>DeepLab v1,2,3,3+</strong>, <strong>PSPNet</strong>, <strong>FPN</strong>, <strong>UPerNet</strong>, <strong>EncNet</strong>, <strong>PSANet</strong>, <strong>APCNet</strong>, <strong>DMNet</strong>, <strong>OCRNet</strong>, <strong>PointRend</strong>, <strong>K-Net</strong></li>
+  <li>基于<strong>Transformer</strong>：<strong>SETR</strong>, <strong>TransUNet</strong>, <strong>SegFormer</strong>, <strong>Segmenter</strong>, <strong>MaskFormer</strong>, <strong>SAM</strong></li>
+  <li>通用技巧：<strong>Deep Supervision</strong>, <strong>Self-Correction</strong></li>
+</ul>
+
+<h2 id="1-基于全卷积网络的图像分割模型">(1) 基于全卷积网络的图像分割模型</h2>
+
+<p>标准卷积神经网络包括卷积层、下采样层和全连接层。早期基于深度学习的图像分割模型为生成与输入图像尺寸一致的分割结果，丢弃了全连接层，并引入一系列上采样操作。因此这一阶段的模型旨在解决如何更好从卷积下采样中恢复丢掉的信息损失，逐渐形成了以<strong>U-Net</strong>为核心的对称编码器-解码器结构。</p>
+
+<h3 id="-fcn">⚪ <a href="https://0809zheng.github.io/2021/02/08/fcn.html"><font color="Blue">FCN</font></a></h3>
+
+<p><strong>FCN</strong>提出用全卷积网络来处理语义分割问题。首先通过全卷积网络进行特征提取和下采样，然后通过双线性插值进行上采样。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f3294ff144a010076aeec8.jpg" alt="" /></p>
+
+<h3 id="-segnet">⚪ <a href="https://0809zheng.github.io/2021/02/11/segnet.html"><font color="Blue">SegNet</font></a></h3>
+
+<p><strong>SegNet</strong>设计了对称的编码器-解码器结构，通过反池化进行上采样。</p>
+
+<p><img src="https://pic.downk.cc/item/5ebb64bcc2a9a83be59a49f5.jpg" alt="" /></p>
+
+<h3 id="-refinenet">⚪ <a href="https://0809zheng.github.io/2021/02/19/refinenet.html"><font color="Blue">RefineNet</font></a></h3>
+
+<p><strong>RefineNet</strong>把编码器产生的多个分辨率特征进行一系列卷积、融合、池化。</p>
+
+<p><img src="https://pic.downk.cc/item/5ebcea7ac2a9a83be531a81b.jpg" alt="" /></p>
+
+<h3 id="-u-net">⚪ <a href="https://0809zheng.github.io/2021/02/13/unet.html"><font color="Blue">U-Net</font></a></h3>
+
+<p><strong>U-Net</strong>使用对称的<strong>U</strong>型网络设计，在对应的下采样和上采样之间引入跳跃连接。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f32f2ff144a01007724bfb.jpg" alt="" /></p>
+
+<h3 id="-v-net">⚪ <a href="https://0809zheng.github.io/2021/06/05/vnet.html"><font color="Blue">V-Net</font></a></h3>
+
+<p><strong>V-Net</strong>是<strong>3D</strong>版本的<strong>U-Net</strong>，下采样使用步长为$2$的卷积。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f96706f144a01007a6219c.jpg" alt="" /></p>
+
+<h3 id="-m-net">⚪ <a href="https://0809zheng.github.io/2021/06/06/mnet.html"><font color="Blue">M-Net</font></a></h3>
+
+<p><strong>M-Net</strong>在<strong>U-Net</strong>的基础上引入了<strong>left leg</strong>和<strong>right leg</strong>。<strong>left leg</strong>使用最大池化不断下采样数据，<strong>right leg</strong>则对数据进行上采样并叠加到每一层次的输出后。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60db00195132923bf85b72b1.jpg" alt="" /></p>
+
+<h3 id="-w-net">⚪ <a href="https://0809zheng.github.io/2021/06/07/wnet.html"><font color="Blue">W-Net</font></a></h3>
+
+<p><strong>W-Net</strong>通过堆叠两个<strong>U-Net</strong>实现无监督的图像分割。编码器<strong>U-Net</strong>提取分割表示，解码器<strong>U-Net</strong>重构原始图像。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60dbc55a5132923bf89ebb75.jpg" alt="" /></p>
+
+<h3 id="-y-net">⚪ <a href="https://0809zheng.github.io/2021/06/08/ynet.html"><font color="Blue">Y-Net</font></a></h3>
+
+<p><strong>Y-Net</strong>在<strong>U-Net</strong>的编码位置后增加了一个概率图预测结构，在分割任务的基础上额外引入了分类任务。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60dc51415132923bf82c49dd.jpg" alt="" /></p>
+
+<h3 id="-unet">⚪ <a href="https://0809zheng.github.io/2021/06/29/unetpp.html"><font color="Blue">UNet++</font></a></h3>
+
+<p><strong>UNet++</strong>通过跳跃连接融合了不同深度的<strong>U-Net</strong>，并为每级<strong>U-Net</strong>引入深度监督。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f97021f144a01007b12a99.jpg" alt="" /></p>
+
+<h3 id="-attention-u-net">⚪ <a href="https://0809zheng.github.io/2021/02/20/attunet.html"><font color="Blue">Attention U-Net</font></a></h3>
+
+<p><strong>Attention U-Net</strong>通过引入<strong>Attention gate</strong>模块将空间注意力机制集成到<strong>U-Net</strong>的跳跃连接和上采样模块中。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f97532f144a01007b9c89a.jpg" alt="" /></p>
+
+<h3 id="-gruu-net">⚪ <a href="https://0809zheng.github.io/2021/01/25/gruunet.html"><font color="Blue">GRUU-Net</font></a></h3>
+
+<p><strong>GRUU-Net</strong>通过循环神经网络构造<strong>U</strong>型网络，根据多个尺度上的<strong>CNN</strong>和<strong>RNN</strong>特征聚合来细化分割结果。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640ae613f144a01007ae45c8.jpg" alt="" /></p>
+
+<h3 id="-bisenet">⚪ <a href="https://0809zheng.github.io/2021/01/26/bisenet.html"><font color="Blue">BiSeNet</font></a></h3>
+
+<p><strong>BiSeNet</strong>设计了一个双边结构，分别为<strong>空间路径（Spatial Path）</strong>和<strong>上下文路径（Context Path）</strong>。通过一个<strong>特征融合模块（FFM）</strong>将两个路径的特征进行融合，可以实现实时语义分割。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640981f1f144a01007559bf7.jpg" alt="" /></p>
+
+<h3 id="-bisenet-v2">⚪ <a href="https://0809zheng.github.io/2021/01/27/bisenetv2.html"><font color="Blue">BiSeNet V2</font></a></h3>
+
+<p><strong>BiSeNet V2</strong>精心设计了<strong>Detail Branch</strong>和<strong>Semantic Branch</strong>，使用更加轻巧的深度可分离卷积来加速模型；通过<strong>Aggregation Layer</strong>进行特征聚合；并额外引入辅助损失。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6409878ff144a010075ff114.jpg" alt="" /></p>
+
+<h3 id="-dfanet">⚪ <a href="https://0809zheng.github.io/2021/02/22/dfanet.html"><font color="Blue">DFANet</font></a></h3>
+
+<p><strong>DFANet</strong>以修改过的<strong>Xception</strong>为<strong>backbone</strong>网络，设计了一种多分支的特征重用框架来融合空间细节和上下文信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fc01e5f144a0100732efc8.jpg" alt="" /></p>
+
+<h3 id="-segnext">⚪ <a href="https://0809zheng.github.io/2021/03/27/segnext.html"><font color="Blue">SegNeXt</font></a></h3>
+
+<p><strong>SegNeXt</strong>的编码器部分采用<strong>ViT</strong>的结构，自注意力模块通过一种多尺度卷积注意力模块<strong>MSCA</strong>实现。解码器部分采用轻量型<strong>Hamberger</strong>模块对后三个阶段的特性进行聚合。</p>
+
+<p><img src="https://pic.imgdb.cn/item/642ff205a682492fccb07174.jpg" alt="" /></p>
+
+<h2 id="2-基于上下文模块的图像分割模型">(2) 基于上下文模块的图像分割模型</h2>
+
+<p>多尺度问题是指当图像中的目标对象存在不同大小时，分割效果不佳的现象。比如同样的物体，在近处拍摄时物体显得大，远处拍摄时显得小。解决多尺度问题的目标就是不论目标对象是大还是小，网络都能将其分割地很好。</p>
+
+<p>随着图像分割模型的效果不断提升，分割任务的主要矛盾逐渐从恢复像素信息逐渐演变为如何更有效地利用上下文(<strong>context</strong>)信息，并基于此设计了一系列用于提取多尺度特征的网络结构。</p>
+
+<p>这一时期的分割网络的基本结构为：首先使用预训练模型(如<strong>ResNet</strong>)提取图像特征(通常$8 \times$下采样)，然后应用精心设计的<strong>上下文模块</strong>增强多尺度特征信息，最后对特征应用上采样(通常为$8 \times$上采样)和$1\times 1$分割头生成分割结果。</p>
+
+<p>有一些方法把自注意力机制引入图像分割任务，通过自注意力机制的全局交互性来捕获视觉场景中的全局依赖，并以此构造上下文模块。对于这些方法的讨论详见<a href="https://0809zheng.github.io/2020/11/21/SAinCNN.html"><font color="Blue">卷积神经网络中的自注意力机制</font></a>。</p>
+
+<h3 id="-deeplab">⚪ <a href="https://0809zheng.github.io/2021/02/14/deeplab.html"><font color="Blue">Deeplab</font></a></h3>
+
+<p><strong>Deeplab</strong>引入空洞卷积进行图像分割任务，并使用全连接条件随机场精细化分割结果。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f333ecf144a010077a1a93.jpg" alt="" /></p>
+
+<h3 id="-deeplab-v2">⚪ <a href="https://0809zheng.github.io/2021/02/15/deeplab2.html"><font color="Blue">DeepLab v2</font></a></h3>
+
+<p><strong>Deeplab v2</strong>引入了<strong>空洞空间金字塔池化层 ASPP</strong>，即带有不同扩张率的空洞卷积的金字塔池化。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f724f6f144a010074d13e4.jpg" alt="" /></p>
+
+<h3 id="-deeplab-v3">⚪ <a href="https://0809zheng.github.io/2021/02/16/deeplab3.html"><font color="Blue">DeepLab v3</font></a></h3>
+
+<p><strong>Deeplab v3</strong>对<strong>ASPP</strong>模块做了升级，把扩张率调整为$[1, 6, 12, 18]$，并增加了全局平均池化：</p>
+
+<p><img src="https://pic.downk.cc/item/5ebcde6bc2a9a83be525b262.jpg" alt="" /></p>
+
+<h3 id="-deeplab-v3-1">⚪ <a href="https://0809zheng.github.io/2021/02/17/deeplab3+.html"><font color="Blue">DeepLab v3+</font></a></h3>
+
+<p><strong>Deeplab v3+</strong>采用了编码器-解码器结构。</p>
+
+<p><img src="https://pic.downk.cc/item/5ebce009c2a9a83be5274019.jpg" alt="" /></p>
+
+<p>上述<strong>Deeplab</strong>模型的对比如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f729f8f144a0100755b990.jpg" alt="" /></p>
+
+<h3 id="-pspnet">⚪ <a href="https://0809zheng.github.io/2021/02/18/pspnet.html"><font color="Blue">PSPNet</font></a></h3>
+
+<p><strong>PSPNet</strong>引入了<strong>金字塔池化模块 PPM</strong>。<strong>PPM</strong>模块并联了四个不同大小的平均池化层，经过卷积和上采样恢复到原始大小。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f86f67f144a010072e9a47.jpg" alt="" /></p>
+
+<h3 id="-fpn">⚪ <a href="https://0809zheng.github.io/2021/01/28/fpn.html"><font color="Blue">FPN</font></a></h3>
+
+<p><strong>特征金字塔网络 FPN</strong>金字塔把编码器每一层的特征通过卷积和上采样合并为输出语义特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64083b39f144a01007451842.jpg" alt="" /></p>
+
+<h3 id="-upernet">⚪ <a href="https://0809zheng.github.io/2021/02/28/upernet.html"><font color="Blue">UPerNet</font></a></h3>
+
+<p><strong>UPerNet</strong>设计了一个基于<strong>FPN</strong>和<strong>PPM</strong>的多任务分割范式，为每一个<strong>task</strong>设计了不同的检测头，可执行场景分类、目标和部位分割、材质和纹理检测。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64082f5ff144a0100732faf1.jpg" alt="" /></p>
+
+<h3 id="-encnet">⚪ <a href="https://0809zheng.github.io/2021/02/21/encnet.html"><font color="Blue">EncNet</font></a></h3>
+
+<p><strong>EncNet</strong>引入了<strong>上下文编码模块 CEM</strong>，通过字典学习和残差编码捕获全局场景上下文信息；并通过<strong>语义编码损失 SE-loss</strong>强化网络学习上下文语义。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fb12bcf144a01007f7486a.jpg" alt="" /></p>
+
+<h3 id="-psanet">⚪ <a href="https://0809zheng.github.io/2021/02/26/psanet.html"><font color="Blue">PSANet</font></a></h3>
+
+<p><strong>PSANet</strong>引入了<strong>逐点空间注意力 PSA</strong>建立每个特征像素与其他像素之间的联系，并且设计了双向的信息流传播路径。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fea9def144a01007258fcf.jpg" alt="" /></p>
+
+<h3 id="-apcnet">⚪ <a href="https://0809zheng.github.io/2021/02/24/apcnet.html"><font color="Blue">APCNet</font></a></h3>
+
+<p><strong>APCNet</strong>使用了自适应上下文模块<strong>ACM</strong>计算每个局部位置的上下文向量，并与原始特征图进行加权实现聚合上下文信息的作用。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fd5b40f144a0100744268d.jpg" alt="" /></p>
+
+<h3 id="-dmnet">⚪ <a href="https://0809zheng.github.io/2021/02/23/dmnet.html"><font color="Blue">DMNet</font></a></h3>
+
+<p><strong>DMNet</strong>使用了动态卷积模块<strong>DCM</strong>来捕获多尺度语义信息，每一个<strong>DCM</strong>模块都可以处理与输入尺寸相关的比例变化。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fd5395f144a0100738b4cd.jpg" alt="" /></p>
+
+<h3 id="-ocrnet">⚪ <a href="https://0809zheng.github.io/2021/03/26/ocrnet.html"><font color="Blue">OCRNet</font></a></h3>
+
+<p><strong>OCRNet</strong>根据预测结果和输出像素特征计算类别特征，然后计算像素特征与类别特征的相似度，用于增强特征的上下文表示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/642fd5bfa682492fcc5d21c7.jpg" alt="" /></p>
+
+<h3 id="-pointrend">⚪ <a href="https://0809zheng.github.io/2021/01/24/pointrender.html"><font color="Blue">PointRend</font></a></h3>
+
+<p><strong>PointRend</strong>从<strong>coarse prediction</strong>中挑选<strong>N</strong>个“难点”，根据其<strong>fine-grained features</strong>和<strong>coarse prediction</strong>构造点特征向量，通过<strong>MLP</strong>网络对这些难点进行重新预测。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640ec603f144a01007388399.jpg" alt="" /></p>
+
+<h3 id="-k-net">⚪ <a href="https://0809zheng.github.io/2021/01/23/knet.html"><font color="Blue">K-Net</font></a></h3>
+
+<p><strong>K-Net</strong>提出了一种基于动态内核的分割模型，为每个任务分配不同的核来实现语义分割、实例分割和全景分割的统一。具体地，使用<strong>N</strong>个<strong>Kernel</strong>将图像划分为<strong>N</strong>组，每个<strong>Kernel</strong>都负责找到属于其相应组的像素，并应用<strong>Kernel Update Head</strong>增强<strong>Kernel</strong>的特征提取能力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/641021f3ebf10e5d53e04e5e.jpg" alt="" /></p>
+
+<h2 id="3-基于transformer的图像分割模型">(3) 基于Transformer的图像分割模型</h2>
+
+<p><strong>Transformer</strong>是一种基于自注意力机制的序列处理模型，该模型在任意层都能实现全局的感受野，建立全局依赖；而且无需进行较大程度的下采样就能实现特征提取，保留了图像的更多信息。</p>
+
+<h3 id="-setr">⚪ <a href="https://0809zheng.github.io/2023/01/13/setr.html"><font color="Blue">SETR</font></a></h3>
+
+<p><strong>SETR</strong>采取了<strong>ViT</strong>作为编码器提取图像特征；通过基于卷积的渐进上采样或者多层次特征聚合生成分割结果。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6412d409ebf10e5d53c73766.jpg" alt="" /></p>
+
+<h3 id="-transunet">⚪ <a href="https://0809zheng.github.io/2023/01/14/transunet.html"><font color="Blue">TransUNet</font></a></h3>
+
+<p><strong>TransUNet</strong>的<strong>Encoder</strong>部分主要由<strong>ResNet50</strong>和<strong>ViT</strong>组成，其中前三个模块为两倍下采样的<strong>ResNet Block</strong>，最后一个模块为<strong>12</strong>层<strong>Transformer Layer</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6422a162a682492fcc79d22d.jpg" alt="" /></p>
+
+<h3 id="-segformer">⚪ <a href="https://0809zheng.github.io/2023/01/15/segformer.html"><font color="Blue">SegFormer</font></a></h3>
+
+<p><strong>SegFormer</strong>包括用于生成多尺度特征的分层<strong>Encoder</strong>（包含<strong>Efficient Self-Attention</strong>、<strong>Mix-FFN</strong>和<strong>Overlap Patch Embedding</strong>三个模块）和仅由<strong>MLP</strong>层组成的轻量级<strong>All-MLP Decoder</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6414188aa682492fcc38e8ce.jpg" alt="" /></p>
+
+<h3 id="-segmenter">⚪ <a href="https://0809zheng.github.io/2023/01/17/segmenter.html"><font color="Blue">Segmenter</font></a></h3>
+
+<p><strong>Segmenter</strong>完全基于<strong>Transformer</strong>的编码器-解码器架构。图像块序列由<strong>Transformer</strong>编码器编码，并由<strong>mask Transformer</strong>解码。<strong>Mask Transformer</strong>引入一组个可学习的类别嵌入，通过计算其与解码序列特征的乘积来生成每个图像块的分割图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6416d47da682492fccc0d56d.jpg" alt="" /></p>
+
+<h3 id="-maskformer">⚪ <a href="https://0809zheng.github.io/2023/01/19/maskformer.html"><font color="Blue">MaskFormer</font></a></h3>
+
+<p><strong>MaskFormer</strong>把分割问题看作掩码级的分类问题。对输入图像生成$N$个二值掩码，并为每个掩码预测$K+1$个类别中的某个。</p>
+
+<p><img src="https://pic.imgdb.cn/item/642e7af5a682492fccd18af3.jpg" alt="" /></p>
+
+<h3 id="-segment-anything">⚪ <a href="https://0809zheng.github.io/2023/04/06/sam.html"><font color="Blue">Segment Anything</font></a></h3>
+
+<p><strong>SAM</strong>是一个图像分割的基础模型，模型的设计和训练是通过提示工程实现的。<strong>SAM</strong>采用一种简单的设计：一个图像编码器生成图像嵌入，一个提示编码器生成提示嵌入，然后将这两种嵌入组合后通过一个轻量级掩码解码器预测分割掩码。</p>
+
+<p><img src="https://pic.imgdb.cn/item/642e6ea6a682492fccbedb0a.jpg" alt="" /></p>
+
+<h2 id="4-分割模型中的通用技巧">(4) 分割模型中的通用技巧</h2>
+
+<h3 id="-deep-supervision">⚪ Deep Supervision</h3>
+
+<ul>
+  <li><strong>Reference</strong>：<a href="https://0809zheng.github.io/2021/08/26/deepsuper.html"><font color="Blue">Deeply-Supervised Nets</font></a>、<a href="https://0809zheng.github.io/2021/08/27/deepersuper.html"><font color="Blue">Training Deeper Convolutional Networks with Deep Supervision</font></a></li>
+</ul>
+
+<p><strong>深度监督（Deep Supervision）</strong>是在深度神经网络的某些隐藏层后增加一个辅助的分类器作为一种网络分支来对主干网络进行监督的技巧，用来解决深度神经网络训练梯度消失和收敛速度过慢等问题。</p>
+
+<p>一个带有深度监督的八层卷积网络结构如下图所示。在<strong>Conv4</strong>之后添加了一个监督分类器作为分支。<strong>Conv4</strong>输出的特征图除了随着主网络进入<strong>Conv5</strong>之外，也作为输入进入分支分类器。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61274a2b44eaada7397f0256.jpg" alt="" /></p>
+
+<h3 id="-self-correction">⚪ Self-Correction</h3>
+
+<ul>
+  <li><strong>Reference</strong>：<a href="https://0809zheng.github.io/2022/03/11/schp.html"><font color="Blue">Self-Correction for Human Parsing</font></a></li>
+</ul>
+
+<p>图像分割任务的标签可能存在噪声。<strong>自校正（Self-Correction）</strong>是一种净化分割标签噪声的方法。模型训练从具有噪声的标签出发，通过聚合当前模型和前一个最优模型的参数来推断更可靠的标签，并用这些更正的标签训练更鲁棒的模型。</p>
+
+<p>自校正包括模型聚合和标签聚合两个过程。对于模型聚合，记录当前轮数的训练权重$\hat{w}$与之前训练的最优权重$\hat{w}_{m-1}$，得到融合权重并更新历史最优权重：</p>
+
+\[\hat{w}_m = \frac{m}{m+1}\hat{w}_{m-1} + \frac{1}{m+1}\hat{w}\]
+
+<p>标签的更新类似，通过融合当前预测结果$\hat{y}$和前一轮标签$\hat{y}_{m-1}$获得类别关系更明确的新标签：</p>
+
+\[\hat{y}_m = \frac{m}{m+1}\hat{y}_{m-1} + \frac{1}{m+1}\hat{y}\]
+
+<p><img src="https://pic.imgdb.cn/item/6231958a5baa1a80abe25d05.jpg" alt="" /></p>
+
+<h2 id="-参考文献">⭐ 参考文献</h2>
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/02/08/fcn.html"><font color="Blue">Fully Convolutional Networks for Semantic Segmentation</font></a>：(arXiv1411)FCN: 语义分割的全卷积网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/14/deeplab.html"><font color="Blue">Semantic Image Segmentation with Deep Convolutional Nets and Fully Connected CRFs</font></a>：(arXiv1412)DeepLab: 通过深度卷积网络和全连接条件随机场实现图像语义分割。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/13/unet.html"><font color="Blue">U-Net: Convolutional Networks for Biomedical Image Segmentation</font></a>：(arXiv1505)U-Net: 用于医学图像分割的卷积网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/11/segnet.html"><font color="Blue">SegNet: A Deep Convolutional Encoder-Decoder Architecture for Image Segmentation</font></a>：(arXiv1511)SegNet: 图像分割的深度卷积编码器-解码器结构。</li>
+  <li><a href="https://0809zheng.github.io/2021/06/05/vnet.html"><font color="Blue">V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation</font></a>：(arXiv1606)V-Net：用于三维医学图像分割的全卷积网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/15/deeplab2.html"><font color="Blue">DeepLab: Semantic Image Segmentation with Deep Convolutional Nets, Atrous Convolution, and Fully Connected CRFs</font></a>：(arXiv1606)DeepLab v2: 通过带有空洞卷积的金字塔池化实现图像语义分割。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/19/refinenet.html"><font color="Blue">RefineNet: Multi-Path Refinement Networks for High-Resolution Semantic Segmentation</font></a>：(arXiv1611)RefineNet: 高分辨率语义分割的多路径优化网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/18/pspnet.html"><font color="Blue">Pyramid Scene Parsing Network</font></a>：(arXiv1612)PSPNet: 金字塔场景解析网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/06/06/mnet.html"><font color="Blue">M-Net: A Convolutional Neural Network for Deep Brain Structure Segmentation</font></a>：(ISBI 2017)M-Net：用于三维脑结构分割的二维卷积神经网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/16/deeplab3.html"><font color="Blue">Rethinking Atrous Convolution for Semantic Image Segmentation</font></a>：(arXiv1706)DeepLab v3: 重新评估图像语义分割中的扩张卷积。</li>
+  <li><a href="https://0809zheng.github.io/2021/06/07/wnet.html"><font color="Blue">W-Net: A Deep Model for Fully Unsupervised Image Segmentation</font></a>：(arXiv1711)W-Net：一种无监督的图像分割方法。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/17/deeplab3+.html"><font color="Blue">Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation</font></a>：(arXiv1802)DeepLab v3+: 图像语义分割中的扩张可分离卷积。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/21/encnet.html"><font color="Blue">Context Encoding for Semantic Segmentation</font></a>：(arXiv1803)EncNet: 语义分割的上下文编码。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/20/attunet.html"><font color="Blue">Attention U-Net: Learning Where to Look for the Pancreas</font></a>：(arXiv1804)Attention U-Net: 向U-Net引入注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2021/06/08/ynet.html"><font color="Blue">Y-Net: Joint Segmentation and Classification for Diagnosis of Breast Biopsy Images</font></a>：(arXiv1806)Y-Net：乳腺活检图像的分割和分类。</li>
+  <li><a href="https://0809zheng.github.io/2021/06/29/unetpp.html"><font color="Blue">UNet++: A Nested U-Net Architecture for Medical Image Segmentation</font></a>：(arXiv1807)UNet++：用于医学图像分割的巢型UNet。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/28/upernet.html"><font color="Blue">Unified Perceptual Parsing for Scene Understanding</font></a>：(arXiv1807)UPerNet: 场景理解的统一感知解析。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/26/bisenet.html"><font color="Blue">BiSeNet: Bilateral Segmentation Network for Real-time Semantic Segmentation</font></a>：(arXiv1808)BiSeNet: 实时语义分割的双边分割网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/26/psanet.html"><font color="Blue">PSANet: Point-wise Spatial Attention Network for Scene Parsing</font></a>：(ECCV2018)PSANet: 场景解析的逐点空间注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/25/gruunet.html"><font color="Blue">GRUU-Net: Integrated convolutional and gated recurrent neural network for cell segmentation</font></a>：(Medical Image Analysis2018)GRUU-Net: 细胞分割的融合卷积门控循环神经网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/28/fpn.html"><font color="Blue">Panoptic Feature Pyramid Networks</font></a>：(arXiv1901)全景特征金字塔网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/22/dfanet.html"><font color="Blue">DFANet: Deep Feature Aggregation for Real-Time Semantic Segmentation</font></a>：(arXiv1904)DFANet: 实时语义分割的深度特征聚合。</li>
+  <li><a href="https://0809zheng.github.io/2021/03/26/ocrnet.html"><font color="Blue">Object-Contextual Representations for Semantic Segmentation</font></a>：(arXiv1909)OCRNet：语义分割中的目标上下文表示。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/24/pointrender.html"><font color="Blue">PointRend: Image Segmentation as Rendering</font></a>：(arXiv1912)PointRend: 把图像分割建模为渲染。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/24/apcnet.html"><font color="Blue">Adaptive Pyramid Context Network for Semantic Segmentation</font></a>：(CVPR2019)APCNet: 语义分割的自适应金字塔上下文网络。</li>
+  <li><a href="https://0809zheng.github.io/2021/02/23/dmnet.html"><font color="Blue">Dynamic Multi-Scale Filters for Semantic Segmentation</font></a>：(ICCV2019)DMNet: 语义分割的动态多尺度滤波器。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/27/bisenetv2.html"><font color="Blue">BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation</font></a>：(arXiv2004)BiSeNet V2: 实时语义分割的带引导聚合的双边网络。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/13/setr.html"><font color="Blue">Rethinking Semantic Segmentation from a Sequence-to-Sequence Perspective with Transformers</font></a>：(arXiv2012)用Transformer从序列到序列的角度重新思考语义分割。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/14/transunet.html"><font color="Blue">TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation</font></a>：(arXiv2102)TransUNet：用Transformer为医学图像分割构造强力编码器。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/15/segformer.html"><font color="Blue">SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers</font></a>：(arXiv2105)SegFormer：为语义分割设计的简单高效的Transformer模型。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/17/segmenter.html"><font color="Blue">Segmenter: Transformer for Semantic Segmentation</font></a>：(arXiv2105)Segmenter：为语义分割设计的视觉Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/23/knet.html"><font color="Blue">K-Net: Towards Unified Image Segmentation</font></a>：(arXiv2106)K-Net: 面向统一的图像分割。</li>
+  <li><a href="https://0809zheng.github.io/2023/01/19/maskformer.html"><font color="Blue">Per-Pixel Classification is Not All You Needfor Semantic Segmentation</font></a>：(arXiv2107)MaskFormer：逐像素分类并不是语义分割所必需的。</li>
+  <li><a href="https://0809zheng.github.io/2021/03/27/segnext.html"><font color="Blue">SegNeXt: Rethinking Convolutional Attention Design for Semantic Segmentation</font></a>：(arXiv2209)SegNeXt：重新思考语义分割中的卷积注意力设计。</li>
+  <li><a href="https://0809zheng.github.io/2023/04/06/sam.html"><font color="Blue">Segment Anything</font></a>：(arXiv2304)SAM：分割任意模型。</li>
+</ul>
+
+<h1 id="2-图像分割的评估指标">2. 图像分割的评估指标</h1>
+
+<p>图像分割任务本质上是一种图像像素分类任务，可以使用常见的分类评价指标来评估模型的好坏。图像分割中常用的评估指标包括：</p>
+<ul>
+  <li>像素准确率 (<strong>pixel accuracy, PA</strong>)</li>
+  <li>类别像素准确率 (<strong>class pixel accuracy, CPA</strong>)</li>
+  <li>类别平均像素准确率 (<strong>mean pixel accuracy, MPA</strong>)</li>
+  <li>交并比 (<strong>Intersection over Union, IoU</strong>)</li>
+  <li>平均交并比 (<strong>mean Intersection over Union, MIoU</strong>)</li>
+  <li>频率加权交并比 (<strong>Frequency Weighted Intersection over Union, FWIoU</strong>)</li>
+  <li><strong>Dice</strong>系数 (<strong>Dice Coefficient</strong>)</li>
+</ul>
+
+<p>上述评估指标均建立在<strong>混淆矩阵</strong>的基础之上，因此首先介绍混淆矩阵，然后介绍这些评估指标的计算。</p>
+
+<h2 id="-混淆矩阵">⚪ 混淆矩阵</h2>
+<p>图像分割问题本质上是对图像中的像素的分类问题。</p>
+
+<h3 id="1-二分类">(1) 二分类</h3>
+<p>以<strong>二分类</strong>为例，图像中的每个像素可能属于<strong>正例(Positive)</strong>也可能属于<strong>反例(Negative)</strong>。根据像素的实际类别和模型的预测结果，可以把像素划分为以下四类中的某一类：</p>
+<ul>
+  <li><strong>真正例 TP(True Positive)</strong>：实际为正例，预测为正例</li>
+  <li><strong>假正例 FP(False Positive)</strong>：实际为反例，预测为正例</li>
+  <li><strong>真反例 TN(True Negative)</strong>：实际为反例，预测为反例</li>
+  <li><strong>假反例 FN(False Negative)</strong>：实际为正例，预测为反例</li>
+</ul>
+
+<p>绘制分类结果的<strong>混淆矩阵(confusion matrix)</strong>如下：</p>
+
+\[\begin{array}{l|cc} \text{真实情况\预测结果} &amp; \text{正例} &amp; \text{反例} \\ \hline  \text{正例} &amp; TP &amp; FN \\  \text{反例} &amp; FP &amp; TN \\ \end{array}\]
+
+<p>根据混淆矩阵可做如下计算：</p>
+<ul>
+  <li><strong>准确率(accuracy)</strong>，定义为模型分类正确的像素比例：</li>
+</ul>
+
+\[\text{Accuracy} = \frac{TP+TN}{TP+FP+TN+FN}\]
+
+<ul>
+  <li><strong>查准率(precision)</strong>，定义为模型预测为正例的所有像素中，真正为正例的像素比例：</li>
+</ul>
+
+\[\text{Precision} = \frac{TP}{TP+FP}\]
+
+<ul>
+  <li><strong>查全率(recall)</strong>,又称<strong>召回率</strong>，定义为所有真正为正例的像素中，模型预测为正例的像素比例：</li>
+</ul>
+
+\[\text{Recall} = \frac{TP}{TP+FN}\]
+
+<ul>
+  <li><strong>F1分数(F1-Score)</strong>，定义为查准率和召回率的调和平均数。</li>
+</ul>
+
+\[\text{F}_1 = 2\frac{\text{Precision} \cdot \text{Recall}}{\text{Precision}+\text{Recall}}\]
+
+<h3 id="2-多分类">(2) 多分类</h3>
+
+<p>图像分割通常是<strong>多分类</strong>问题，也有类似结论。对于多分类问题，<strong>混淆矩阵</strong>表示如下：</p>
+
+\[\begin{array}{l|ccc} \text{真实情况\预测结果} &amp; \text{类别1} &amp; \text{类别2} &amp; \text{类别3} \\ \hline  \text{类别1} &amp; a &amp; b &amp; c \\  \text{类别2} &amp; d &amp; e &amp; f \\ \text{类别3} &amp; g &amp; h &amp; i \\ \end{array}\]
+
+<p>对于多分类问题，也可计算：</p>
+<ul>
+  <li><strong>准确率</strong>：</li>
+</ul>
+
+\[\text{Accuracy} = \frac{a+e+i}{a+b+c+d+e+f+g+h+i}\]
+
+<ul>
+  <li><strong>查准率</strong>，以类别$1$为例：</li>
+</ul>
+
+\[\text{Precision} = \frac{a}{a+d+g}\]
+
+<ul>
+  <li><strong>查全率</strong>，以类别$1$为例：</li>
+</ul>
+
+\[\text{Recall} = \frac{a}{a+b+c}\]
+
+<h3 id="3-计算混淆矩阵">(3) 计算混淆矩阵</h3>
+<p>对于图像分割的预测结果<code class="language-plaintext highlighter-rouge">imgPredict</code>和真实标签<code class="language-plaintext highlighter-rouge">imgLabel</code>，可以使用<a href="https://0809zheng.github.io/2020/09/11/bincount.html">np.bincount</a>函数计算混淆矩阵，计算过程如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">def</span> <span class="nf">genConfusionMatrix</span><span class="p">(</span><span class="n">numClass</span><span class="p">,</span> <span class="n">imgPredict</span><span class="p">,</span> <span class="n">imgLabel</span><span class="p">):</span>
+    <span class="s">'''
+    Parameters
+    ----------
+    numClass : 类别数(不包括背景).
+    imgPredict : 预测图像.
+    imgLabel : 标签图像.
+    '''</span>
+    <span class="c1"># remove classes from unlabeled pixels in gt image and predict
+</span>    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">imgLabel</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">imgLabel</span> <span class="o">&lt;</span> <span class="n">numClass</span><span class="p">)</span>
+    
+    <span class="n">label</span> <span class="o">=</span> <span class="n">numClass</span> <span class="o">*</span> <span class="n">imgLabel</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+</span> <span class="n">imgPredict</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">numClass</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">confusionMatrix</span> <span class="o">=</span> <span class="n">count</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">numClass</span><span class="p">,</span> <span class="n">numClass</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">confusionMatrix</span>
+
+<span class="n">imgPredict</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="n">imgLabel</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span>
+                  <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">genConfusionMatrix</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">imgPredict</span><span class="p">,</span> <span class="n">imgLabel</span><span class="p">))</span>
+
+<span class="c1">###
+</span><span class="p">[[</span><span class="mi">3</span> <span class="mi">0</span> <span class="mi">1</span><span class="p">]</span>
+ <span class="p">[</span><span class="mi">0</span> <span class="mi">2</span> <span class="mi">0</span><span class="p">]</span>
+ <span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="c1">###
+</span></code></pre></div></div>
+
+<h2 id="-像素准确率-pa">⚪ 像素准确率 PA</h2>
+<p><strong>像素准确率</strong> (<strong>pixel accuracy, PA</strong>) 衡量所有类别预测正确的像素占总像素数的比例，相当于分类任务中的<strong>准确率(accuracy)</strong>。</p>
+
+<p><strong>PA</strong>计算为混淆矩阵对角线元素之和比矩阵所有元素之和，以二分类为例：</p>
+
+\[\text{PA} = \frac{TP+TN}{TP+FP+TN+FN}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">pixelAccuracy</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">):</span>
+    <span class="c1"># return all class overall pixel accuracy
+</span>    <span class="c1">#  PA = acc = (TP + TN) / (TP + TN + FP + TN)
+</span>    <span class="n">acc</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">).</span><span class="nb">sum</span><span class="p">()</span> <span class="o">/</span>  <span class="n">confusionMatrix</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">acc</span>
+</code></pre></div></div>
+
+<h2 id="-类别像素准确率-cpa">⚪ 类别像素准确率 CPA</h2>
+<p><strong>类别像素准确率</strong> (<strong>class pixel accuracy, CPA</strong>) 衡量在所有预测类别为$i$的像素中，真正属于类别$i$的像素占总像素数的比例，相当于分类任务中的<strong>查准率(precision)</strong>。</p>
+
+<p>第$i$个类别的<strong>CPA</strong>计算为混淆矩阵第$i$个对角线元素比矩阵该列元素之和。以二分类为例，第$0$个类别的<strong>CPA</strong>计算为：</p>
+
+\[\text{CPA} = \frac{TP}{TP+FP}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">classPixelAccuracy</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">):</span>
+    <span class="c1"># return each category pixel accuracy(A more accurate way to call it precision)
+</span>    <span class="c1"># acc = (TP) / TP + FP
+</span>    <span class="n">classAcc</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">)</span> <span class="o">/</span> <span class="n">confusionMatrix</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">classAcc</span> <span class="c1"># 返回一个列表，表示各类别的预测准确率
+</span></code></pre></div></div>
+
+<h2 id="-类别平均像素准确率-mpa">⚪ 类别平均像素准确率 MPA</h2>
+<p><strong>类别平均像素准确率</strong> (<strong>mean pixel accuracy, MPA</strong>) 计算为所有类别的<strong>CPA</strong>的平均值:</p>
+
+\[\text{MPA} = \text{mean}(\text{CPA})\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">meanPixelAccuracy</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">):</span>
+    <span class="n">classAcc</span> <span class="o">=</span> <span class="n">classPixelAccuracy</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">)</span>
+    <span class="n">meanAcc</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">classAcc</span><span class="p">)</span> <span class="c1"># np.nanmean表示遇到Nan类型，其值取为0
+</span>    <span class="k">return</span> <span class="n">meanAcc</span> 
+</code></pre></div></div>
+
+<h2 id="-交并比-iou">⚪ 交并比 IoU</h2>
+<p><strong>交并比</strong> (<strong>Intersection over Union, IoU</strong>) 又称<strong>Jaccard index</strong>，衡量预测类别为$i$的像素集合$A$和真实类别为$i$的像素集合$B$的交集与并集之比。</p>
+
+\[\text{IoU} = \frac{|A ∩ B |}{|A ∪ B|}= \frac{|A ∩ B |}{|A|+| B |-|A ∩ B |}\]
+
+<p>预测类别为$i$的像素集合是指所有预测为类别$i$的像素，用混淆矩阵第$i$列元素之和表示。真实类别为$i$的像素集合是指所有实际类别$i$的像素，用混淆矩阵第$i$行元素之和表示。</p>
+
+<p>第$i$个类别的<strong>IoU</strong>计算为混淆矩阵第$i$个对角线元素比矩阵该列元素与该行元素的并集。以二分类为例，第$0$个类别的<strong>IoU</strong>计算为：</p>
+
+\[\text{IoU} = \frac{TP}{TP+FP+FN}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">IntersectionOverUnion</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">):</span>
+    <span class="c1"># Intersection = TP Union = TP + FP + FN
+</span>    <span class="c1"># IoU = TP / (TP + FP + FN)
+</span>    <span class="n">intersection</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">)</span>
+    <span class="n">union</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">)</span> 
+    <span class="n">IoU</span> <span class="o">=</span> <span class="n">intersection</span> <span class="o">/</span> <span class="n">union</span>  
+    <span class="k">return</span> <span class="n">IoU</span> <span class="c1"># 返回列表，其值为各个类别的IoU
+</span></code></pre></div></div>
+
+<h2 id="-平均交并比-miou">⚪ 平均交并比 MIoU</h2>
+<p><strong>平均交并比</strong> (<strong>mean Intersection over Union, MIoU</strong>) 计算为所有类别的<strong>IoU</strong>的平均值:</p>
+
+\[\text{MIoU} = \text{mean}(\text{IoU})\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">meanIntersectionOverUnion</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">):</span>
+    <span class="n">IoU</span> <span class="o">=</span> <span class="n">IntersectionOverUnion</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">)</span>
+    <span class="n">mIoU</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">IoU</span><span class="p">)</span> <span class="c1"># 求各类别IoU的平均
+</span>    <span class="k">return</span> <span class="n">mIoU</span>
+</code></pre></div></div>
+
+<h2 id="-频率加权交并比-fwiou">⚪ 频率加权交并比 FWIoU</h2>
+<p><strong>频率加权交并比</strong> (<strong>Frequency Weighted Intersection over Union, FWIoU</strong>) 按照真实类别为$i$对应像素占所有像素的比例对类别$i$的<strong>IoU</strong>进行加权。</p>
+
+<p>第$i$个类别的<strong>FWIoU</strong>首先计算混淆矩阵第$i$行元素求和比矩阵所有元素求和，再乘以第$i$个类别的<strong>IoU</strong>。以二分类为例，第$0$个类别的<strong>FWIoU</strong>计算为：</p>
+
+\[\text{FWIoU} = \frac{TP+FN}{TP+FP+FN+TN} \cdot \frac{TP}{TP+FP+FN}\]
+
+<p>最终给出的<strong>FWIoU</strong>应为所有类别<strong>FWIoU</strong>的求和。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">Frequency_Weighted_Intersection_over_Union</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">):</span>
+    <span class="c1"># FWIOU = [(TP+FN)/(TP+FP+TN+FN)] *[TP / (TP + FP + FN)]
+</span>    <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">)</span>
+    <span class="n">iu</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+            <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span>
+            <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="p">))</span>
+    <span class="n">FWIoU</span> <span class="o">=</span> <span class="p">(</span><span class="n">freq</span><span class="p">[</span><span class="n">freq</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">iu</span><span class="p">[</span><span class="n">freq</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]).</span><span class="nb">sum</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">FWIoU</span>
+</code></pre></div></div>
+
+<h2 id="-dice-coefficient">⚪ Dice Coefficient</h2>
+<p><strong>Dice Coefficient</strong>衡量预测类别为$i$的像素集合$A$和真实类别为$i$的像素集合$B$之间的相似程度。</p>
+
+<p>预测类别为$i$的像素集合是指所有预测为类别$i$的像素，用混淆矩阵第$i$列元素之和表示。真实类别为$i$的像素集合是指所有实际类别$i$的像素，用混淆矩阵第$i$行元素之和表示。</p>
+
+<p><strong>Dice Coefficient</strong>的计算相当于<strong>IoU</strong>的分子分母同时加上两个集合的交集。</p>
+
+\[\text{Dice} = \frac{2|A ∩ B |}{|A|+| B |} = \frac{2\text{IoU}}{1+\text{IoU}}\]
+
+<p>第$i$个类别的<strong>Dice</strong>计算为混淆矩阵第$i$个对角线元素的两倍比矩阵该列元素与该行元素之和。以二分类为例，第$0$个类别的<strong>Dice</strong>计算为：</p>
+
+\[\text{Dice} = \frac{2TP}{2TP+FP+FN} = \text{F1-score}\]
+
+<p>因此<strong>Dice</strong>系数等价于分类指标中的<strong>F1-Score</strong>。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">Dice</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">):</span>
+    <span class="c1"># Dice = 2*TP / (TP + FP + TP + FN)
+</span>    <span class="n">intersection</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">)</span>
+    <span class="n">Dice</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">intersection</span> <span class="o">/</span> <span class="p">(</span>
+        <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">confusionMatrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Dice</span> <span class="c1"># 返回列表，其值为各个类别的Dice
+</span></code></pre></div></div>
+
+<p>特别地，对于二值分割问题，<strong>Dice</strong>系数可以直接通过\(\{0,1\}\)预测矩阵和标签矩阵计算：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">dice_coef</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="s">"""
+    Dice =  2*sum(|A*B|)/(sum(A^2)+sum(B^2))
+    """</span>
+    <span class="n">smooth</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">m1</span> <span class="o">=</span> <span class="n">pred</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span>
+    <span class="n">m2</span> <span class="o">=</span> <span class="n">target</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span>
+    <span class="n">intersection</span> <span class="o">=</span> <span class="p">(</span><span class="n">m1</span> <span class="o">*</span> <span class="n">m2</span><span class="p">).</span><span class="nb">sum</span><span class="p">().</span><span class="nb">float</span><span class="p">()</span>
+    <span class="n">dice</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">intersection</span> <span class="o">+</span> <span class="n">smooth</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">m1</span><span class="o">*</span><span class="n">m1</span><span class="p">)</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">m2</span><span class="o">*</span><span class="n">m2</span><span class="p">)</span> <span class="o">+</span> <span class="n">smooth</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dice</span>
+</code></pre></div></div>
+
+<h1 id="3-图像分割的损失函数">3. 图像分割的损失函数</h1>
+
+<p>本节参考论文 <a href="https://www.sciencedirect.com/science/article/pii/S1361841521000815">Loss odyssey in medical image segmentation</a> 和<strong>Github</strong>库 <a href="https://github.com/JunMa11/SegLoss">SegLoss: A collection of loss functions for medical image segmentation</a>。</p>
+
+<p>图像分割的损失函数用于衡量预测分割结果和真实标签之间的差异。一个合理的损失函数不仅用于指导网络学习在给定评估指标上与真实标签相接近的预测结果，还启发网络如何权衡错误结果（如假阳性、假阴性）。</p>
+
+<p>根据损失函数的推导方式不同，图像分割任务中常用的损失函数可以划分为：</p>
+<ul>
+  <li>基于分布的损失：<strong>Cross-Entropy Loss</strong>, <strong>Weighted Cross-Entropy Loss</strong>, <strong>TopK Loss</strong>, <strong>Focal Loss</strong>, <strong>Distance Map Penalized CE Loss</strong></li>
+  <li>基于区域的损失：<strong>Sensitivity-Specifity Loss</strong>, <strong>IoU Loss</strong>, <strong>Lovász Loss</strong>, <strong>Dice Loss</strong>, <strong>Tversky Loss</strong>, <strong>Focal Tversky Loss</strong>, <strong>Asymmetric Similarity Loss</strong>, <strong>Generalized Dice Loss</strong>, <strong>Penalty Loss</strong>,</li>
+  <li>基于边界的损失：<strong>Boundary Loss</strong>, <strong>Hausdorff Distance Loss</strong></li>
+</ul>
+
+<p>在实践中，通常使用上述损失函数的组合形式，如<strong>Cross-Entropy Loss + Dice Loss</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/641e59a6a682492fcc029e90.jpg" alt="" /></p>
+
+<h2 id="1-基于分布的损失-distribution-based-loss">(1) 基于分布的损失 Distribution-based Loss</h2>
+
+<p>基于分布的损失函数旨在最小化两种分布之间的差异。</p>
+
+<h3 id="-cross-entropy-loss">⚪ Cross-Entropy Loss</h3>
+
+<p>交叉熵损失是由<strong>KL</strong>散度导出的，衡量数据分布$P$和预测分布$Q$之间的差异：</p>
+
+\[\begin{aligned}
+D_{K L}(P \mid Q) &amp; =\sum_i p_i \log \frac{p_i}{q_i} \\
+&amp; =-\sum_i p_i \log q_i+\sum_i p_i \log p_i \\
+&amp; =H(P, Q)-H(P)
+\end{aligned}\]
+
+<p>注意到数据分布$P$通常是已知的，因此最小化数据分布$P$和预测分布$Q$之间的<strong>KL</strong>散度等价于最小化交叉熵$H(P,Q)$。对于分割任务，指定$g_i^c$是像素$i$是否属于标签$c$的二元指示符，$s_i^c$是对应的预测结果，则交叉熵损失定义为：</p>
+
+\[L_{C E}=-\frac{1}{N} \sum_{c=1}^C \sum_{i=1}^N g_i^c \log s_i^c\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ce_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+<span class="c1"># result无需经过Softmax，gt为整型
+</span><span class="n">loss</span> <span class="o">=</span> <span class="n">ce_loss</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-weighted-cross-entropy-loss">⚪ Weighted Cross-Entropy Loss</h3>
+
+<p>为缓解类别不平衡问题，加权交叉熵损失为每个类别指定一个权重$w_c$。权重$w_c$通常与类别出现频率成反比，比如设置为训练集中类别出现频率的倒数。</p>
+
+\[L_{W C E}=-\frac{1}{N} \sum_{c=1}^c \sum_{i=1}^N w_c g_i^c \log s_i^c\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wce_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">CrossEntropyLoss</span><span class="p">(</span><span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">wce_loss</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-topk-loss">⚪ <a href="https://arxiv.org/abs/1605.06885">TopK Loss</a></h3>
+
+<p><strong>TopK</strong>损失旨在迫使网络在训练过程中专注于难例样本（<strong>hard samples</strong>）。在计算交叉熵损失时，只保留前$k\%$个最差的（损失最大的）分类像素。</p>
+
+\[L_{\text {Top} K}=-\frac{1}{N} \sum_{c=1}^c \sum_{i \in \mathbf{K}} g_i^c \log s_i^c\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">TopKLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TopKLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">ce_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">CrossEntropyLoss</span><span class="p">(</span><span class="nb">reduce</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">ce_loss</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">)</span>
+        <span class="n">num_pixels</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">prod</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">res</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">topk</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">view</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_pixels</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">k</span> <span class="o">/</span> <span class="mi">100</span><span class="p">),</span> <span class="nb">sorted</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-focal-loss">⚪ <a href="https://arxiv.org/abs/1605.06885">Focal Loss</a></h3>
+
+<p><strong>Focal Loss</strong>通过减少容易分类像素的损失权重，以处理前景-背景类别的不平衡问题。</p>
+
+\[L_{\text {Focal }}=-\frac{1}{N} \sum_c^c \sum_{i=1}^N\left(1-s_i^c\right)^\gamma g_i^c \log s_i^c\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span>
+
+<span class="k">class</span> <span class="nc">FocalLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FocalLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">'b c h w -&gt; b c (h w)'</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 (h w)'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">pt</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_onehot</span> <span class="o">*</span> <span class="n">result</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">logpt</span> <span class="o">=</span> <span class="n">pt</span><span class="p">.</span><span class="n">log</span><span class="p">()</span>
+
+        <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">gamma</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">pow</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">pt</span><span class="p">),</span> <span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> <span class="n">logpt</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-distance-map-penalized-ce-loss">⚪ <a href="https://arxiv.org/abs/1908.03679">Distance Map Penalized CE Loss</a></h3>
+
+<p>距离图惩罚交叉熵损失通过由真实标签计算的<a href="https://0809zheng.github.io/2023/03/22/distancetransfrom.html">距离变换图</a>对交叉熵进行加权，引导网络重点关注难以分割的边界区域。</p>
+
+\[L_{D P C E}=-\frac{1}{N} \sum_{c=1}^c\left(1+D^c\right) \circ \sum_{i=1}^N g_i^c \log s_i^c\]
+
+<p>其中$D^c$是类别$c$的距离惩罚项，通过取真实标签的距离变换图的倒数来生成。通过这种方式可以为边界上的像素分配更大的权重。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
+
+<span class="k">class</span> <span class="nc">DisPenalizedCE</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DisPenalizedCE</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">one_hot2dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">posmask</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span>
+            <span class="k">if</span> <span class="n">posmask</span><span class="p">.</span><span class="nb">any</span><span class="p">():</span>
+                <span class="n">negmask</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">-</span><span class="n">posmask</span>
+                <span class="n">pos_edt</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">posmask</span><span class="p">)</span>
+                <span class="n">pos_edt</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">pos_edt</span><span class="p">)</span><span class="o">-</span><span class="n">pos_edt</span><span class="p">)</span><span class="o">*</span><span class="n">posmask</span> 
+                <span class="n">neg_edt</span> <span class="o">=</span>  <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">negmask</span><span class="p">)</span>
+                <span class="n">neg_edt</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">neg_edt</span><span class="p">)</span><span class="o">-</span><span class="n">neg_edt</span><span class="p">)</span><span class="o">*</span><span class="n">negmask</span>        
+                <span class="n">res</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span> <span class="o">=</span> <span class="n">pos_edt</span> <span class="o">+</span> <span class="n">neg_edt</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 h w'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())</span><span class="o">+</span><span class="mi">1</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">result_logs</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">result_logs</span> <span class="o">*</span> <span class="n">y_onehot</span>
+        <span class="n">weighted_loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">*</span><span class="n">dist</span>
+        <span class="k">return</span> <span class="n">weighted_loss</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="2-基于区域的损失-region-based-loss">(2) 基于区域的损失 Region-based Loss</h2>
+
+<p>基于区域的损失函数旨在最小化真实标签$G$和预测分割$S$之间的不匹配程度或者最大化两者之间的重叠区域。</p>
+
+<h3 id="-sensitivity-specifity-loss">⚪ <a href="https://link.springer.com/chapter/10.1007/978-3-319-24574-4_1">Sensitivity-Specifity Loss</a></h3>
+
+<p>敏感性-特异性损失通过加权敏感性与特异性来解决类别不平衡问题：</p>
+
+\[\begin{aligned}
+L_{S S}= &amp; w \frac{\sum_{c=1}^C \sum_{i=1}^N\left(g_i^c-s_i^c\right)^2 g_i^c}{\sum_{c=1}^C \sum_{i=1}^N g_i^c+\epsilon} \\
+&amp; +(1-w) \frac{\sum_{c=1}^C \sum_{i=1}^N\left(g_i^c-s_i^c\right)^2\left(1-g_i^c\right)}{\sum_{c=1}^C \sum_{i=1}^N\left(1-g_i^C\right)+\epsilon}
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+
+<span class="k">class</span> <span class="nc">SSLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SSLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">r</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="c1"># weight parameter in SS paper
+</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">'b c h w -&gt; b c (h w)'</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 (h w)'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># no object value
+</span>        <span class="n">bg_onehot</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">y_onehot</span>
+        <span class="n">squared_error</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_onehot</span> <span class="o">-</span> <span class="n">result</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">specificity_numerator</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">squared_error</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">'b c n, b c n -&gt; b c'</span><span class="p">)</span>
+        <span class="n">specificity_denominator</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">'b c n -&gt; b c'</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="p">.</span><span class="n">smooth</span>
+        <span class="n">specificity_part</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">specificity_numerator</span><span class="p">,</span> <span class="s">'b c -&gt; b'</span><span class="p">)</span><span class="o">/</span><span class="n">einsum</span><span class="p">(</span><span class="n">specificity_denominator</span><span class="p">,</span> <span class="s">'b c -&gt; b'</span><span class="p">)</span>
+        <span class="n">sensitivity_numerator</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">squared_error</span><span class="p">,</span> <span class="n">bg_onehot</span><span class="p">,</span> <span class="s">'b c n, b c n -&gt; b c'</span><span class="p">)</span>
+        <span class="n">sensitivity_denominator</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">bg_onehot</span><span class="p">,</span> <span class="s">'b c n -&gt; b c'</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="p">.</span><span class="n">smooth</span>
+        <span class="n">sensitivity_part</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">sensitivity_numerator</span><span class="p">,</span> <span class="s">'b c -&gt; b'</span><span class="p">)</span><span class="o">/</span><span class="n">einsum</span><span class="p">(</span><span class="n">sensitivity_denominator</span><span class="p">,</span> <span class="s">'b c -&gt; b'</span><span class="p">)</span>
+
+        <span class="n">ss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">r</span> <span class="o">*</span> <span class="n">specificity_part</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="p">.</span><span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="n">sensitivity_part</span>
+        <span class="k">return</span> <span class="n">ss</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-iou-loss">⚪ <a href="https://link.springer.com/chapter/10.1007/978-3-319-50835-1_22">IoU Loss</a></h3>
+
+<p><strong>IoU Loss</strong>直接优化<strong>IoU index</strong>。由于预测热图和真实标签都可以表示为$[0,1]$矩阵，因此集合运算可以直接通过对应元素计算：</p>
+
+\[L_{I O U}=1- \frac{|A ∩ B |}{|A|+| B |-|A ∩ B |}=1-\frac{\sum_{c=1}^c \sum_{i=1}^N g_i^c s_i^c}{\sum_{c=1}^C \sum_{i=1}^N\left(g_i^c+s_i^c-g_i^c s_i^c\right)}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+
+<span class="k">class</span> <span class="nc">IoULoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">IoULoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">'b c h w -&gt; b c (h w)'</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 (h w)'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">intersection</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">union</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">"b c n -&gt; b c"</span><span class="p">)</span> <span class="o">+</span> <span class="n">einsum</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n -&gt; b c"</span><span class="p">)</span> <span class="o">-</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">divided</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">einsum</span><span class="p">(</span><span class="n">intersection</span><span class="p">,</span> <span class="s">"b c -&gt; b"</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">einsum</span><span class="p">(</span><span class="n">union</span><span class="p">,</span> <span class="s">"b c -&gt; b"</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">divided</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-lovász-loss">⚪ <a href="https://arxiv.org/abs/1705.08790">Lovász Loss</a></h3>
+
+<p><strong>Lovász Loss</strong>采用<a href="https://0809zheng.github.io/2023/03/25/submodularity.html"><strong>Lovász</strong>延拓</a>把图像分割中离散的<strong>IoU Loss</strong>变得光滑化。</p>
+
+<p>首先定义类别$c$的误分类像素集合$M_c$：</p>
+
+\[\mathbf{M}_c\left(\boldsymbol{y}^*, \tilde{\boldsymbol{y}}\right)=\left\{\boldsymbol{y}^*=c, \tilde{\boldsymbol{y}} \neq c\right\} \cup\left\{\boldsymbol{y}^* \neq c, \tilde{\boldsymbol{y}}=c\right\}\]
+
+<p>则<strong>IoU Loss</strong>可以写成集合$M_c$的函数：</p>
+
+\[\Delta_{J_c}: \mathbf{M}_c \in\{0,1\}^N \mapsto 1-\frac{\left|\mathbf{M}_c\right|}{\left|\left\{\boldsymbol{y}^*=c\right\} \cup \mathbf{M}_c\right|}\]
+
+<p>定义类别$c$的像素误差向量$m(c) \in [0,1]^N$：</p>
+
+\[m_i(c) = \begin{cases} 1-s_i^c, &amp; \text{if }c=\boldsymbol{y}^*_i \\ s_i^c, &amp; \text{otherwise} \end{cases}\]
+
+<p>则\(\Delta_{J_c}(\mathbf{M}_c)\)的<strong>Lovász</strong>延拓\(\overline{\Delta_{J_c}}(m(c))\)根据定义可表示为：</p>
+
+\[\overline{\Delta_{J_c}}: m \in R^N \mapsto \sum_{i=1}^N m_{\pi(i)} g_i(m)\]
+
+<p>其中\(g_i(m)=\Delta_{J_c}(\{\pi_1,...,\pi_i\})-\Delta_{J_c}(\{\pi_1,...,\pi_{i-1}\})\)，$\pi$是$m$中元素的一个按递减顺序排列：$m_{\pi_1} \geq m_{\pi_2} \geq \cdots \geq m_{\pi_N}$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span>
+
+<span class="k">def</span> <span class="nf">lovasz_grad</span><span class="p">(</span><span class="n">gt_sorted</span><span class="p">):</span>
+    <span class="s">"""
+    Computes gradient of the Lovasz extension w.r.t sorted errors
+    """</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_sorted</span><span class="p">)</span>
+    <span class="n">gts</span> <span class="o">=</span> <span class="n">gt_sorted</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span>
+    <span class="n">intersection</span> <span class="o">=</span> <span class="n">gts</span> <span class="o">-</span> <span class="n">gt_sorted</span><span class="p">.</span><span class="nb">float</span><span class="p">().</span><span class="n">cumsum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">union</span> <span class="o">=</span> <span class="n">gts</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gt_sorted</span><span class="p">).</span><span class="nb">float</span><span class="p">().</span><span class="n">cumsum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">jaccard</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">intersection</span> <span class="o">/</span> <span class="n">union</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># cover 1-pixel case
+</span>        <span class="n">jaccard</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">jaccard</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="n">jaccard</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">jaccard</span>
+
+<span class="k">class</span> <span class="nc">LovaszLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LovaszLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">lovasz_softmax_flat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+        <span class="n">num_classes</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_classes</span><span class="p">):</span>
+            <span class="n">target_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">targets</span> <span class="o">==</span> <span class="n">c</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span>
+            <span class="n">input_c</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[:,</span> <span class="n">c</span><span class="p">]</span>
+            <span class="n">loss_c</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_c</span> <span class="o">-</span> <span class="n">input_c</span><span class="p">).</span><span class="nb">abs</span><span class="p">()</span>
+            <span class="n">loss_c_sorted</span><span class="p">,</span> <span class="n">loss_index</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="n">loss_c</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">target_c_sorted</span> <span class="o">=</span> <span class="n">target_c</span><span class="p">[</span><span class="n">loss_index</span><span class="p">]</span>
+            <span class="n">losses</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">loss_c_sorted</span><span class="p">,</span> <span class="n">lovasz_grad</span><span class="p">(</span><span class="n">target_c_sorted</span><span class="p">)))</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">losses</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">losses</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+        <span class="c1"># inputs.shape = (batch size, class_num, h, w)
+</span>        <span class="c1"># targets.shape = (batch size, h, w)
+</span>        <span class="n">inputs</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s">'b c h w -&gt; (b h w) c'</span><span class="p">)</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">lovasz_softmax_flat</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">losses</span>
+</code></pre></div></div>
+
+<h3 id="-dice-loss">⚪ <a href="https://0809zheng.github.io/2021/06/05/vnet.html"><font color="Blue">Dice Loss</font></a></h3>
+
+<p><strong>Dice Loss</strong>与<strong>IoU loss</strong>类似，直接优化<strong>Dice Coefficient</strong>。由于预测热图和真实标签都可以表示为$[0,1]$矩阵，因此集合运算可以直接通过对应元素计算：</p>
+
+\[L_{\text {Dice }}=1-\frac{2|A ∩ B |}{|A|+| B |}=1-\frac{2 \sum_{c=1}^C \sum_{i=1}^N g_i^c s_i^c}{\sum_{c=1}^C \sum_{i=1}^N g_i^c+\sum_{c=1}^C \sum_{i=1}^N s_i^c}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+   
+<span class="k">class</span> <span class="nc">DiceLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DiceLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">'b c h w -&gt; b c (h w)'</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 (h w)'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">intersection</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">union</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">"b c n -&gt; b c"</span><span class="p">)</span> <span class="o">+</span> <span class="n">einsum</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">divided</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">einsum</span><span class="p">(</span><span class="n">intersection</span><span class="p">,</span> <span class="s">"b c -&gt; b"</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">einsum</span><span class="p">(</span><span class="n">union</span><span class="p">,</span> <span class="s">"b c -&gt; b"</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">divided</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-tversky-loss">⚪ <a href="https://arxiv.org/abs/1706.05721">Tversky Loss</a></h3>
+
+<p><strong>Dice Loss</strong>可以被视为查准率和召回率的调和平均值，它对假阳性和假阴性样本的权重相等。<strong>Tversky Loss</strong>在<strong>Dice Loss</strong>的分母中调整了假阳性和假阴性样本的权重，以实现查准率和召回率之间的权衡。</p>
+
+\[\begin{aligned}
+L_{\text {Tversky }}= &amp; 1-\left(\sum_c^C \sum_{i=1}^N g_i^c s_i^c\right) /\left(\sum_c^C \sum_{i=1}^N g_i^c s_j^c\right. \\
+&amp; \left.+\alpha \sum_c^C \sum_{i=1}^N\left(1-g_i^c\right) s_i^c+\beta \sum_c^C \sum_{i=1}^N g_i^c\left(1-s_i^c\right)\right)
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+
+<span class="k">class</span> <span class="nc">TverskyLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TverskyLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.3</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">beta</span> <span class="o">=</span> <span class="mf">0.7</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">'b c h w -&gt; b c (h w)'</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 (h w)'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">intersection</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">FP</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">FN</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="n">intersection</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">FP</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">FN</span>
+        <span class="n">divided</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">einsum</span><span class="p">(</span><span class="n">intersection</span><span class="p">,</span> <span class="s">"b c -&gt; b"</span><span class="p">)</span> <span class="o">/</span> <span class="n">einsum</span><span class="p">(</span><span class="n">denominator</span><span class="p">,</span> <span class="s">"b c -&gt; b"</span><span class="p">).</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">smooth</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">divided</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-focal-tversky-loss">⚪ <a href="https://arxiv.org/abs/1810.07842">Focal Tversky Loss</a></h3>
+
+<p><strong>Focal Tversky Loss</strong>把<strong>Focal Loss</strong>引入<strong>Tversky Loss</strong>，旨在更加关注具有较低概率的难例像素：</p>
+
+\[L_{\text {FTL}} = (L_{\text {Tversky}})^{\frac{1}{\gamma}}\]
+
+<h3 id="-asymmetric-similarity-loss">⚪ <a href="https://ieeexplore.ieee.org/document/8573779">Asymmetric Similarity Loss</a></h3>
+
+<p><strong>Asymmetric Similarity Loss</strong>和<strong>Tversky Loss</strong>的动机类似，也是调整假阳性和假阴性样本的权重，以平衡查准率和召回率。该损失相当于设置<strong>Tversky Loss</strong>中$\alpha+\beta=1$：</p>
+
+\[\begin{aligned}
+L_{\text {Asym }}= &amp; 1-\left(\sum_c^C \sum_{i=1}^N g_i^c s_i^c\right) /\left(\sum_c^C \sum_{i=1}^N g_i^c s_j^c\right. \\
+&amp; \left.+\frac{\beta^2}{1+\beta^2} \sum_c^C \sum_{i=1}^N\left(1-g_i^c\right) s_i^c+\frac{1}{1+\beta^2} \sum_c^C \sum_{i=1}^N g_i^c\left(1-s_i^c\right)\right)
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+
+<span class="k">class</span> <span class="nc">AsymLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AsymLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">beta</span> <span class="o">=</span> <span class="mf">1.5</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">'b c h w -&gt; b c (h w)'</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 (h w)'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">weight</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">beta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="bp">self</span><span class="p">.</span><span class="n">beta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">intersection</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">FP</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">FN</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="n">intersection</span> <span class="o">+</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">FP</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">weight</span><span class="p">)</span> <span class="o">*</span> <span class="n">FN</span>
+        <span class="n">divided</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">einsum</span><span class="p">(</span><span class="n">intersection</span><span class="p">,</span> <span class="s">"b c -&gt; b"</span><span class="p">)</span> <span class="o">/</span> <span class="n">einsum</span><span class="p">(</span><span class="n">denominator</span><span class="p">,</span> <span class="s">"b c -&gt; b"</span><span class="p">).</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">smooth</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">divided</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-generalized-dice-loss">⚪ <a href="https://arxiv.org/abs/1707.03237">Generalized Dice Loss</a></h3>
+
+<p><strong>Generalized Dice Loss</strong>是<strong>Dice Loss</strong>的多类别扩展，其中每个类别的权重与标签频率成反比：$w_c=1/(\sum_{i=1}^Ng_i^c)^2$。</p>
+
+\[L_{\text {GD }}=1-\frac{2 \sum_{c=1}^C w_c \sum_{i=1}^N g_i^c s_i^c}{\sum_{c=1}^C w_c \sum_{i=1}^N (g_i^c+s_i^c)}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+
+<span class="k">class</span> <span class="nc">GDiceLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GDiceLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">'b c h w -&gt; b c (h w)'</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 (h w)'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">einsum</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n -&gt; b c"</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">intersection</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">union</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">"b c n -&gt; b c"</span><span class="p">)</span> <span class="o">+</span> <span class="n">einsum</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">divided</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">einsum</span><span class="p">(</span><span class="n">intersection</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="s">"b c, b c -&gt; b"</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">einsum</span><span class="p">(</span><span class="n">union</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="s">"b c, b c -&gt; b"</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">divided</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-penalty-loss">⚪ <a href="https://openreview.net/forum?id=H1lTh8unKN">Penalty Loss</a></h3>
+
+<p><strong>Penalty Loss</strong>把<strong>Tversky Loss</strong>中调整假阳性和假阴性样本权重的思想引入<strong>Generalized Dice Loss</strong>。</p>
+
+\[\begin{aligned}
+L_{\text {Penalty }}= &amp; 1-2\left(\sum_c^C  w_c \sum_{i=1}^N g_i^c s_i^c\right) /\left(\sum_c^C  w_c \sum_{i=1}^N (g_i^c+ s_j^c)\right. \\
+&amp; \left.+k \sum_c^C  w_c \sum_{i=1}^N\left(1-g_i^c\right) s_i^c+k \sum_c^C  w_c \sum_{i=1}^N g_i^c\left(1-s_i^c\right)\right)
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+
+<span class="k">class</span> <span class="nc">PenaltyLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PenaltyLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">k</span> <span class="o">=</span> <span class="mf">2.5</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s">'b c h w -&gt; b c (h w)'</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 (h w)'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">einsum</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n -&gt; b c"</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">intersection</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">union</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="o">+</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">FP</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">FN</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">result</span><span class="p">,</span> <span class="n">y_onehot</span><span class="p">,</span> <span class="s">"b c n, b c n -&gt; b c"</span><span class="p">)</span>
+        <span class="n">denominator</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="n">union</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="s">"b c, b c -&gt; b"</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">einsum</span><span class="p">(</span><span class="n">FP</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="s">"b c, b c -&gt; b"</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">k</span> <span class="o">*</span> <span class="n">einsum</span><span class="p">(</span><span class="n">FN</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="s">"b c, b c -&gt; b"</span><span class="p">)</span>
+        <span class="n">divided</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">einsum</span><span class="p">(</span><span class="n">intersection</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="s">"b c, b c -&gt; b"</span><span class="p">)</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">smooth</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">divided</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="3-基于边界的损失-boundary-based-loss">(3) 基于边界的损失 Boundary-based Loss</h2>
+
+<p>基于边界的损失是指在目标的轮廓空间而不是区域空间上采用距离度量的形式定义的损失函数，衡量真实标签和预测分割中目标边界之间的距离。</p>
+
+<p>有两种不同的框架来计算两个边界之间的距离。一种是<strong>微分</strong>框架，它通过计算每个点沿边界曲线法线上的速度来评估每个点的运动情况。另一种是<strong>积分</strong>框架，它通过计算两个边界的不匹配区域的积分来近似距离。</p>
+
+<p>在训练神经网络时，边界损失通常应该与基于区域的损失相结合，以减少训练的不稳定性。</p>
+
+<h3 id="-boundary-loss">⚪ <a href="https://0809zheng.github.io/2021/03/25/boundary.html"><font color="Blue">Boundary Loss</font></a></h3>
+
+<p>在<strong>Boundary Loss</strong>中，每个点$q$的<strong>softmax</strong>输出$s_{\theta}(q)$通过$ϕ_G$进行加权。$ϕ_G:Ω→R$是真实标签边界$∂G$的水平集表示：如果$q∈G$则$ϕ_G(q)=−D_G(q)$否则$ϕ_G(q)=D_G(q)$。$D_G:Ω→R^+$是一个相对于边界$∂G$的<a href="https://0809zheng.github.io/2023/03/22/distancetransfrom.html">距离变换图</a>。</p>
+
+\[\mathcal{L}_B(\theta) = \int_{\Omega} \phi_G(q) s_{\theta}(q) d q\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
+
+<span class="k">class</span> <span class="nc">BDLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BDLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">one_hot2dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">posmask</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span>
+            <span class="k">if</span> <span class="n">posmask</span><span class="p">.</span><span class="nb">any</span><span class="p">():</span>
+                <span class="n">negmask</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">-</span><span class="n">posmask</span>
+                <span class="n">neg_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">negmask</span><span class="p">)</span>
+                <span class="n">pos_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">posmask</span><span class="p">)</span>
+                <span class="n">res</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span> <span class="o">=</span> <span class="n">neg_map</span> <span class="o">*</span> <span class="n">negmask</span> <span class="o">-</span> <span class="p">(</span><span class="n">pos_map</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">posmask</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 h w'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">bound</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())).</span><span class="nb">float</span><span class="p">()</span>
+        <span class="c1"># only compute the loss of foreground
+</span>        <span class="n">pc</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">...]</span>
+        <span class="n">dc</span> <span class="o">=</span> <span class="n">bound</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">...]</span>
+        <span class="n">multipled</span> <span class="o">=</span> <span class="n">pc</span> <span class="o">*</span> <span class="n">dc</span>
+        <span class="k">return</span> <span class="n">multipled</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-hausdorff-distance-loss">⚪ <a href="https://arxiv.org/abs/1904.10030">Hausdorff Distance Loss</a></h3>
+
+<p>豪斯多夫距离损失通过<a href="https://0809zheng.github.io/2023/03/22/distancetransfrom.html">距离变换图</a>来近似并优化真实标签和预测分割之间的<a href="https://0809zheng.github.io/2021/03/03/distance.html#-%E8%B1%AA%E6%96%AF%E5%A4%9A%E5%A4%AB%E8%B7%9D%E7%A6%BB-hausdorff-distance">Hausdorff距离</a>：</p>
+
+\[L_{H D}=\frac{1}{N} \sum_{c=1}^c \sum_{i=1}^N\left[\left(s_i^c-g_i^c\right)^2 \circ\left(d_{G_i^c}^{\alpha}+d_{S_i^c}^{\alpha}\right)\right]\]
+
+<p>其中$d_G,d_S$分别是真实标签和预测分割的距离变换图，计算每个像素与目标边界之间的最短距离。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
+
+<span class="k">class</span> <span class="nc">HausdorffDTLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="s">"""Binary Hausdorff loss based on distance transform"""</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HausdorffDTLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+
+    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">one_hot2dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">posmask</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span>
+            <span class="k">if</span> <span class="n">posmask</span><span class="p">.</span><span class="nb">any</span><span class="p">():</span>
+                <span class="n">negmask</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">-</span><span class="n">posmask</span>
+                <span class="n">pos_edt</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">posmask</span><span class="p">)</span>
+                <span class="n">neg_edt</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">negmask</span><span class="p">)</span>      
+                <span class="n">res</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span> <span class="o">=</span> <span class="n">pos_edt</span> <span class="o">+</span> <span class="n">neg_edt</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 h w'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">pred_dt</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())).</span><span class="nb">float</span><span class="p">()</span>
+        <span class="n">target_dt</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())).</span><span class="nb">float</span><span class="p">()</span>
+
+        <span class="n">pred_error</span> <span class="o">=</span> <span class="p">(</span><span class="n">result</span> <span class="o">-</span> <span class="n">y_onehot</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">pred_dt</span> <span class="o">**</span> <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">+</span> <span class="n">target_dt</span> <span class="o">**</span> <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span>
+
+        <span class="n">dt_field</span> <span class="o">=</span> <span class="n">pred_error</span> <span class="o">*</span> <span class="n">distance</span>
+        <span class="k">return</span> <span class="n">dt_field</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h1 id="4-常用的图像分割数据集">4. 常用的图像分割数据集</h1>
+
+<p>图像分割任务广泛应用在自动驾驶、遥感图像分析、医学图像分析等领域，其中常用的图像分割数据集包括：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f3386ff144a010077ff89b.jpg" alt="" /></p>
+
+<h3 id="-cityscapes">⚪ <a href="https://www.cityscapes-dataset.com/">Cityscapes</a></h3>
+
+<p><strong>Cityscapes</strong>是最常用的语义分割数据集之一，它是专门针对城市街道场景的数据集。整个数据集由 50 个不同城市的街景组成，数据集包括 5,000 张精细标注的图片和 20,000 张粗略标注的图片。</p>
+
+<p>关于测试集的表现，<strong>Cityscapes</strong> 数据集 <strong>SOTA</strong> 结果近几年鲜有明显增长，<strong>SOTA mIoU</strong> 数值在 80 ~ 85 之间。目前 <strong>Cityscapes</strong> 数据集主要用在一些应用型文章如实时语义分割。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f2dc32f144a01007ffb60a.jpg" alt="" /></p>
+
+<h3 id="-ade20k">⚪ <a href="http://groups.csail.mit.edu/vision/datasets/ADE20K/">ADE20K</a></h3>
+
+<p><strong>ADE20K</strong> 同样是最常用的语义分割数据集之一。它是一个有着 20,000 多张图片、150 种类别的数据集，其中训练集有 20,210 张图片，验证集有 2,000 张图片。近两年，大多数新提出的研究型模型（特别是 <strong>Transformer</strong>类的模型）都是在 <strong>ADE20K</strong> 数据集上检验其在语义分割任务中的性能的。</p>
+
+<p>关于测试集的表现，<strong>ADE20K</strong> 的 <strong>SOTA mIoU</strong> 数值仍然在被不停刷新，目前在 55~60 之间，偏低的指标绝对值主要可以归于以下两个原因：</p>
+<ul>
+  <li><strong>ADE20K</strong> 数据集类别更多（150类），<strong>mIoU</strong> 的指标容易被其中的长尾小样本类别拖累，因而指标偏低。</li>
+  <li><strong>ADE20K</strong> 数据集图片数量更多（训练集 20,210 张，验证集 2,000 张），对算法模型性能的考验更高。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/63f2dca0f144a0100700e378.jpg" alt="" /></p>
+
+<h3 id="-synthia">⚪ <a href="http://synthia-dataset.net">SYNTHIA</a></h3>
+
+<p><strong>SYNTHIA</strong>是计算机合成的城市道路驾驶环境的像素级标注的数据集。是为了在自动驾驶或城市场景规划等研究领域中的场景理解而提出的。提供了<strong>11</strong>个类别物体（分别为天空、建筑、道路、人行道、栅栏、植被、杆、车、信号标志、行人、骑自行车的人）细粒度的像素级别的标注。</p>
+
+<p><img src="https://pic.downk.cc/item/5ebb5eb7c2a9a83be58f1d5e.jpg" alt="" /></p>
+
+<h3 id="-apsis">⚪ <a href="http://xiaoyongshen.me/webpage_portrait/index.html">APSIS</a></h3>
+
+<p>人体肖像分割数据库<strong>(Automatic Portrait Segmentation for Image Stylization, APSIS)</strong>。</p>
+
+<p><img src="https://pic.downk.cc/item/5ebb5e07c2a9a83be58e8e68.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/05/08/object-detection.html" class="read-next-link"></a>
+        <section>
+          <span>目标检测(Object Detection)</span>
+          <p>  Object Detection.目标检测(Object Detection)任务是指在图像中检测出可能存在的...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64899e3d1ddac507ccb6d5cb.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/05/06/image-classification.html" class="read-next-link"></a>
+          <section>
+            <span>图像识别(Image Recognition)</span>
+            <p>  Image Recognition.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5eba62edc2a9a83be59d07b6.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

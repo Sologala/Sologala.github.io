@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自注意力机制(Self-Attention Mechanism) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="自注意力机制(Self-Attention Mechanism)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="自注意力机制(Self-Attention Mechanism) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/24/self-attention.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>自注意力机制(Self-Attention Mechanism)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-24"><i class="iconfont icon-date"></i>24 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ea28825c2a9a83be5477d93.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Self-Attention Mechanism.</p>
+</blockquote>
+
+<p><strong>自注意力(Self-Attention)</strong>机制也称为<strong>内部注意力(Intra-Attention)</strong>，是一种特殊的<a href="https://0809zheng.github.io/2020/04/22/attention.html">注意力机制</a>。自注意力机制作为一种新型的网络结构被广泛应用于自然语言处理与计算机视觉等任务中。本文首先讨论注意力机制与自注意力机制的区别；其次对比卷积神经网络、循环神经网络和自注意力机制；最后介绍自注意力机制的实现细节。</p>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>Attention and Self-Attention</li>
+  <li>CNN, RNN, and Self-Attention</li>
+  <li>Self-Attention</li>
+  <li>Multi-Head Self-Attention</li>
+  <li>Position Encoding</li>
+</ol>
+
+<h1 id="1-attention-and-self-attention">1. Attention and Self-Attention</h1>
+<p><a href="https://0809zheng.github.io/2020/04/22/attention.html">注意力机制</a>(<strong>attention mechanism</strong>)最早是在序列到序列模型中提出的，用于解决机器翻译任务。在该任务中需要把输入序列\(\{x_1,x_2,...,x_j\}\)转换为输出序列\(\{y_1,y_2,...,y_i\}\)，因此序列到序列模型采用编码器-解码器结构，即引入可学习的权重参数$w_{ij}$，使得：</p>
+
+\[y_i = \sum_{j}^{}w_{ij}x_j\]
+
+<p>其中$w_{ij}$表示输入序列的第$i$个<strong>token</strong>对输出序列的第$j$个<strong>token</strong>的重要性程度。在实际中引入约束$\sum_{j}^{}w_{ij}=1$，这一步是通过<strong>softmax</strong>函数实现的。自注意力机制是一种特殊的注意力机制，其主要区别在于前者的权重参数$w_{ij}$并不是直接学习得到的，而是由输入计算得到的，如通过<strong>点积</strong>的方式计算两个输入<strong>token</strong>的相关性：</p>
+
+\[w_{ij}=x_i^Tx_j\]
+
+<p>注意力机制与自注意力机制的主要区别包括：</p>
+<ol>
+  <li>注意力机制的权重参数是一个全局可学习参数，对于模型来说是<strong>固定</strong>的；而自注意力机制的权重参数是由输入决定的，即使是同一个模型，对于不同的输入也会有<strong>不同</strong>的权重参数。</li>
+  <li>注意力机制的输出序列长度与输入序列长度可以是<strong>不同</strong>的；而自注意力机制的的输出序列长度与输入序列长度必须是<strong>相同</strong>的。</li>
+  <li>注意力机制在一个模型中通常只使用一次，作为编码器和解码器之间的<strong>连接</strong>部分；而自注意力机制在同一个模型中可以使用很多次，作为网络<strong>结构</strong>的一部分。</li>
+  <li>注意力机制擅长捕捉两个<strong>序列之间</strong>的关系，如机器翻译任务中将一个序列映射为另一个序列；而自注意力机制擅长捕捉单个<strong>序列内部</strong>的关系，如作为预训练语言模型的基本结构。</li>
+</ol>
+
+<h1 id="2-cnn-rnn-and-self-attention">2. CNN, RNN, and Self-Attention</h1>
+<p>卷积神经网络、循环神经网络和自注意力机制都可以用于自然语言处理任务。在自然语言处理任务中，首先对输入序列(如句子)进行分词，将每个词转化成对应的词向量；即可将输入序列表示为$X=(x_1,x_2,…,x_n)\in \Bbb{R}^{n \times d}$，其中$x_i$表示第$i$个词的维度为$d$的词向量。因此对输入序列的处理等价于对该序列进行编码：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ebc1765132923bf88a64f9.jpg" alt="" /></p>
+
+<h3 id="a-卷积神经网络">(a) 卷积神经网络</h3>
+<p>可以用($1$维)<strong>卷积神经网络</strong>对该输入序列进行处理。即使用卷积核进行滑动窗口遍历，如长度为$3$的卷积核：</p>
+
+\[y_i = f(x_{i-1},x_{i},x_{i+1})\]
+
+<p><img src="https://pic.downk.cc/item/5ea28dafc2a9a83be54e9e5c.jpg" alt="" /></p>
+
+<p>卷积神经网络容易并行，可以捕捉一些全局的结构信息。但其<strong>弊端</strong>是每一个卷积核只能感受局部的信息，要获得更大的<strong>receptive field</strong>需要加深层数。</p>
+
+<h3 id="b-循环神经网络">(b) 循环神经网络</h3>
+
+<p><strong>循环神经网络</strong>是自然语言处理任务中最常用的模型，其计算过程是通过递归实现的：</p>
+
+\[y_i = f(h_{i-1},x_{i})\]
+
+<p><img src="https://pic.downk.cc/item/5ea28d62c2a9a83be54e2d83.jpg" alt="" /></p>
+
+<p>循环神经网络本身结构简单，适合序列建模。但其<strong>弊端</strong>是对于输入序列是顺序处理的，速度较慢，不能并行(<strong>parallel</strong>)实现；且循环神经网络无法很好的学习到全局结构信息(尽管上图的双向结构一定程度上缓解了这个问题)。</p>
+
+<h3 id="c-自注意力">(c) 自注意力</h3>
+<p><strong>自注意力模型</strong>的每个输出基于<strong>全局信息</strong>，并且可以<strong>并行化</strong>计算：</p>
+
+\[y_i = f(x_{1},x_{2},...,x_{n})\]
+
+<p><img src="https://pic.downk.cc/item/5ea28e2bc2a9a83be54f42d5.jpg" alt="" /></p>
+
+<h3 id="d-对不同网络结构的讨论">(d) 对不同网络结构的讨论</h3>
+
+<ol>
+  <li>卷积神经网络事实上只能获得局部信息，需要通过<strong>堆叠</strong>更多层数来增大感受野；循环神经网络需要通过<strong>递归</strong>获得全局信息，因此一般采用双向形式；自注意力机制能够直接获得<strong>全局信息</strong>。</li>
+  <li>常用的神经网络模型(如多层感知机)，其每一层的权重参数经过训练后是<strong>固定</strong>的，与输入无关；而自注意力层的权重是由输入决定的，但其只能处理长度固定的输入序列。</li>
+  <li>循环神经网络是递归计算的，无法并行；卷积神经网络的不同卷积核之间可以并行计算；自注意力机制的计算是高度并行的，很容易被<strong>GPU</strong>等加速。</li>
+</ol>
+
+<p>若输入序列长度为$n$，特征维度为$d$。则上述模型每层的计算复杂度、序列操作数(越大表示可并行化程度越差)和最大路径长度分别为：</p>
+
+\[\begin{array}{c|ccc}
+    \text{Layer Type} &amp; \text{Complexity per Layer} &amp; \text{Sequential Operations} &amp; \text{Maximum Path Length} \\
+    \hline
+    \text{Convolutional} &amp; O(k \cdot n \cdot d^2) &amp; O(1) &amp; O(\log_k(n)) \\
+    \text{Recurrent} &amp; O(n \cdot d^2) &amp; O(n) &amp; O(n) \\
+    \text{Self-Attention} &amp; O(n^2 \cdot d) &amp; O(1) &amp; O(1) \\ 
+\end{array}\]
+
+<h1 id="3-self-attention">3. Self-Attention</h1>
+<p>本小节介绍自注意力机制的运算过程。自注意力模型采用<strong>查询-键-值(Query-Key-Value,QKV)</strong>模式。</p>
+
+<h3 id="1-计算查询矩阵q键矩阵k值矩阵v">(1) 计算查询矩阵Q,键矩阵K,值矩阵V</h3>
+<p>假设输入序列为\(X=[x_1,...,x_N] \in \Bbb{R}^{D_x×N}\),经过<strong>词嵌入</strong>得到\(A=[a_1,...,a_N] \in \Bbb{R}^{D_a×N}\);
+将词嵌入矩阵线性映射到三个不同的空间，得到</p>
+<ol>
+  <li><strong>查询矩阵</strong>\(Q=[q_1,...,q_N] \in \Bbb{R}^{D_k×N}\)</li>
+  <li><strong>键矩阵</strong>\(K=[k_1,...,k_N] \in \Bbb{R}^{D_k×N}\)</li>
+  <li><strong>值矩阵</strong>\(V=[v_1,...,v_N] \in \Bbb{R}^{D_v×N}\);</li>
+</ol>
+
+<p><img src="https://pic.downk.cc/item/5ea2912ec2a9a83be5531a8a.jpg" alt="" /></p>
+
+<p>矩阵运算如下：</p>
+
+\[Q = W^qA, \quad W^q \in \Bbb{R}^{D_k×D_a}\]
+
+\[K = W^kA, \quad W^k \in \Bbb{R}^{D_k×D_a}\]
+
+\[V = W^vA, \quad W^v \in \Bbb{R}^{D_v×D_a}\]
+
+<p><img src="https://pic.downk.cc/item/5ea2928ac2a9a83be554b900.jpg" alt="" /></p>
+
+<h3 id="2-计算注意力分布">(2) 计算注意力分布</h3>
+<p>对于每个查询向量$q_i$使用<strong>键值对注意力机制</strong>,得到注意力分布\(\hat{a}_{1,1},...,\hat{a}_{1,N}\)：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea29327c2a9a83be5558220.jpg" alt="" /></p>
+
+<p>矩阵运算如下：</p>
+
+\[A = \frac{K^TQ}{\sqrt{D_k}}\]
+
+\[\hat{A} = softmax(A)\]
+
+<p><img src="https://pic.downk.cc/item/5ea29480c2a9a83be557541f.jpg" alt="" /></p>
+
+<p>其中注意力得分选用<strong>缩放点积Scaled Dot-Product</strong>，其原因是后续的<strong>Softmax</strong>函数对较大或较小的输入非常敏感(容易映射到$1$或$0$)，因此通过因子$\sqrt{D_k}$进行缩放；<strong>Softmax</strong>函数按<strong>列</strong>运算。</p>
+
+<h3 id="3-加权求和">(3) 加权求和</h3>
+<p>根据注意力分布$\hat{A}$，<strong>加权求和</strong>得到输出：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea29582c2a9a83be558a1c7.jpg" alt="" /></p>
+
+<p>矩阵运算如下：</p>
+
+\[B = V\hat{A}\]
+
+<p><img src="https://pic.downk.cc/item/5ea295c1c2a9a83be558eecd.jpg" alt="" /></p>
+
+<p>自注意力模型的<strong>优点</strong>：</p>
+<ol>
+  <li>提高并行计算效率;</li>
+  <li>捕捉长距离的依赖关系。</li>
+</ol>
+
+<p>自注意力模型可以看作在一个线性投影空间中建立$X$中不同向量之间的交互关系。上述自注意力运算的计算复杂度为$O(N^2)$。实践中有些问题并不需要捕捉全局结构，只依赖于局部信息，此时可以使用<strong>restricted</strong>自注意力机制，即假设当前词只与前后$r$个词发生联系(类似于卷积中的滑动窗口)，此时计算复杂度为$O(rN)$。</p>
+
+<h1 id="4-multi-head-self-attention">4. Multi-Head Self-Attention</h1>
+<p>为了提取更多的交互信息，可以使用<strong>多头自注意力(Multi-Head Self-Attention)</strong>，即在多个不同的投影空间中捕捉不同的交互信息。不妨类比于卷积神经网络，其一个卷积核通常用于捕捉某一类<strong>pattern</strong>的信息，故采用多个卷积核。自注意力机制采用多个<strong>head</strong>，便可以捕捉不同的相关性。在实践中，首先通过$M$个<strong>head</strong>生成$M$个不同的输出$B_1,B_2,…,B_M$，将其合并后再通过一层全连接层进行线性变换：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea296f0c2a9a83be55a5633.jpg" alt="" /></p>
+
+<p>假设使用$M$个<strong>head</strong>，矩阵运算如下：</p>
+
+\[A_m = \frac{K_m^TQ_m}{\sqrt{D_k}}\]
+
+\[B_m = V_msoftmax(A_m)\]
+
+\[B = W^o \begin{bmatrix} B_1 \\ ... \\ B_M \\ \end{bmatrix}\]
+
+<p>在实现多头自注意力时，有两种常用的形式：</p>
+<ol>
+  <li><strong>Narrow Self-Attention</strong>：把输入词向量切割成$h$块，每一块使用一次自注意力运算；这种方法速度快，节省内存，但是效果不好；</li>
+  <li><strong>Wide Self-Attention</strong>：对输入词向量独立地使用$h$次自注意力运算；这种方法效果更好，但花费更多时间和内存</li>
+</ol>
+
+<h1 id="5-position-encoding">5. Position Encoding</h1>
+<p>自注意力模型忽略了序列\([x_1,...,x_N]\)中每个$x$的位置信息，即将该序列打乱后并不影响输出结果。因此在模型中显式的引入<strong>位置编码(position encoding)</strong>$e$：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea29902c2a9a83be55cdc7b.jpg" alt="" /></p>
+
+<p>位置编码$e$是自注意力机制中获取序列<strong>位置</strong>信息的唯一来源，是模型重要的组成部分。位置编码既可以从数据中学习得到，也可以人为定义并加到词嵌入向量上。对位置编码的一些<strong>解释</strong>：</p>
+
+<h3 id="1为什么是add而不是concatenate-">(1)为什么是add而不是concatenate ?</h3>
+<p>假设位置编码为<strong>one-hot</strong>形式，<strong>concatenate</strong>到输入向量上进行词嵌入：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea29a5ac2a9a83be55e6d0f.jpg" alt="" /></p>
+
+<p>结果等价于先对位置索引和输入序列分别进行词嵌入，再相加。此时的位置编码是一种<strong>位置嵌入(position embedding)</strong></p>
+
+<h3 id="2设置位置编码">(2)设置位置编码</h3>
+<p>位置编码通过下面方式进行预定义：</p>
+
+\[e_{t,2i} = sin(\frac{t}{10000^{\frac{2i}{D}}})\]
+
+\[e_{t,2i+1} = cos(\frac{t}{10000^{\frac{2i}{D}}})\]
+
+<p>其中$e_{t,2i}$表示第$t$个位置的编码向量的第$2i$维，$D$是编码向量的维度。</p>
+
+<p>选用该形式的位置编码的思路是，由于有:</p>
+
+\[sin(\alpha+\beta)=sin(\alpha)cos(\beta)+cos(\alpha)sin(\beta)\]
+
+\[cos(\alpha+\beta)=cos(\alpha)cos(\beta)-sin(\alpha)sin(\beta)\]
+
+<p>因此位置$\alpha+\beta$处的编码很容易被位置$\alpha$和位置$\beta$处的编码表示。通过实验发现位置嵌入和上述位置编码效果是接近的，因此直接选用后者。</p>
+
+<p>上述位置编码也被称为<strong>Sinusoidal</strong>位置编码，其编码矩阵可视化如下：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea29a8ac2a9a83be55ea47e.jpg" alt="" /></p>
+
+<p>更多的位置编码形式可以参考<a href="https://0809zheng.github.io/2021/07/12/efficienttransformer.html"><font color="Blue">自注意力机制中的位置编码 (Position Encoding)</font></a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/25/transformer.html" class="read-next-link"></a>
+        <section>
+          <span>Transformer</span>
+          <p>  Transformer，基于Multi-head self-attention的Seq2Seq模型.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ea28751c2a9a83be5467bc1.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/23/memory-network.html" class="read-next-link"></a>
+          <section>
+            <span>记忆增强神经网络(Memory Augmented Neural Network)</span>
+            <p>  Memory Augmented Neural Network.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ea17d6bc2a9a83be50883e2.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

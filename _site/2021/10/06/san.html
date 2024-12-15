@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring Self-attention for Image Recognition - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Exploring Self-attention for Image Recognition">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Exploring Self-attention for Image Recognition - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/10/06/san.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Exploring Self-attention for Image Recognition</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-10-06"><i class="iconfont icon-date"></i>06 Oct 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/643e4cc20d2dde577779d31e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>探索图像识别的自注意力机制.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2004.13621">Exploring Self-attention for Image Recognition</a></li>
+</ul>
+
+<p>作者提出一种将<strong>self-attention</strong>机制应用到图像识别领域的方法。作者认为使用卷积网络进行图像识别任务实际上在实现两个函数:</p>
+<ol>
+  <li>特征聚集(<strong>feature aggregation</strong>): 即通过卷积核在特征图上进行卷积来融合特征的过程。</li>
+  <li>特征变换(<strong>feature transformation</strong>): 在卷积完成后进行的一系列线性和非线性变换（比如全连接和激活函数。这一部分通过感知机就能很好地完成）</li>
+</ol>
+
+<p>在以上观点的基础上，作者提出使用<strong>self-attention</strong>机制来替代卷积作为特征聚集方法。为此，作者考虑两种<strong>self-attention</strong>形式：<strong>pairwise self-attention</strong>和<strong>patchwise self-attention</strong>。用这两种形式的<strong>self-attention</strong>机制作为网络的<strong>basic block</strong>提出<strong>SAN</strong>网络结构。与经典卷积网络<strong>ResNet</strong>进行对比，<strong>SAN</strong>网络具有更少参数和运算量，同时在<strong>ImageNet</strong>数据集上的分类精确度有较大提升。</p>
+
+<h3 id="-pairwise-self-attention">⚪ Pairwise Self-attention</h3>
+
+<p><strong>pairwise self-attention</strong>计算公式如下：</p>
+
+\[\mathbf y_i = \sum\limits_{j\in \mathcal{R}(i)}\alpha(\mathbf x_i,\mathbf x_j) \odot \beta(\mathbf x_j)\]
+
+<p>其中$\odot$表示<strong>Hadamard product</strong>(矩阵的对应位置相乘)，\(\mathbf{x}\)是特征图上一点，\(\mathbf{y}\)是经过<strong>self-attention</strong>模块运算后得到的特征图上的对应点。\(\mathcal{R}(i)\)是对应位置$i$周围的局部区域(类似卷积过程中卷积核所在区域)。\(\alpha(\mathbf x_i,\mathbf x_j)\)是权重向量，\(\beta(\mathbf x_j)\)是对\(\mathbf{x}_j\)进行<strong>embedding</strong>后的结果。</p>
+
+<p>从上述计算公式中可以看出，<strong>pairwise self-attention</strong>方式和卷积方式最大的区别在于权重的确定：卷积核的权重在学习完成后就是一个固定的标量，再用这个标量与特征图上一点的每个维度相乘。而在<strong>pairwise self-attention</strong>方法中，权重通过\(\alpha(\mathbf x_i,\mathbf x_j)\)计算得到，而且计算结果是一个向量，再用这个向量与\(\beta(\mathbf x_j)\)对位相乘。显然这种方式考虑到了特征在不同通道上的权重大小。</p>
+
+<p>作者对\(\alpha(\mathbf x_i,\mathbf x_j)\)进行了分解：</p>
+
+\[\alpha(\mathbf x_i,\mathbf x_j) = \gamma(\delta(\mathbf x_i,\mathbf x_j))\]
+
+<p>这样做的好处在于，在尝试不同$\delta$函数的选择是就不必考虑向量的维度问题，将维度匹配问题交给$\gamma$函数解决。\(\gamma=\{Linear \to ReLU \to Linear\}\)，作者尝试了五种$\delta$函数的选择：</p>
+
+<p><img src="https://pic.imgdb.cn/item/643e54810d2dde5777830955.jpg" alt="" /></p>
+
+<p>此外作者还将位置$i$和位置$j$的坐标信息纳入\(\gamma(\delta(\mathbf x_i,\mathbf x_j))\)的计算过程之中。</p>
+
+<h3 id="-patchwise-self-attention">⚪ Patchwise Self-attention</h3>
+
+<p><strong>patchwise self-attention</strong>计算公式如下：</p>
+
+\[\mathbf y_i = \sum\limits_{j\in \mathcal{R}(i)}\alpha(\mathbf{x}_{\mathcal{R}_{(i)}})_j \odot \beta(\mathbf x_j)\]
+
+<p>其中，\(\mathbf x_{\mathcal{R}(i)}\)是\(\mathcal{R}(i)\)所在区域的特征图，\(\alpha(\mathbf{x}_{\mathcal{R}_{(i)}})\)是权重张量。可以看到，<strong>patchwise self-attention</strong>与<strong>pairwise self-attention</strong>的区别就在于<strong>patchwise self-attention</strong>中没有对\((\mathbf x_i, \mathbf x_j)\)的配对计算，而是整个区域用来计算得到一个权重张量，再用下标$j$来索引这个张量，再用这个向量与\(\beta(\mathbf x_j)\)对位相乘。</p>
+
+<p>同样地，$\alpha$函数进行分解：</p>
+
+\[\alpha(\mathbf{x}_{\mathcal{R}_{(i)}})=\gamma(\delta(\mathbf x_{\mathcal{R}(i)}))\]
+
+<p>作者尝试$\delta$函数三种不同选择：</p>
+
+<p><img src="https://pic.imgdb.cn/item/643e55f00d2dde5777855b37.jpg" alt="" /></p>
+
+<h3 id="-self-attention-network">⚪ self-attention network</h3>
+
+<p>基于<strong>pairwise self-attention</strong>和<strong>patchwise self-attention</strong>，作者设计了<strong>self-attention</strong>的<strong>basic block</strong>：</p>
+
+<p><img src="https://pic.imgdb.cn/item/643e565d0d2dde577785fd2a.jpg" alt="" /></p>
+
+<p>利用这样的<strong>block</strong>就替代了传统<strong>CNN</strong>中<strong>conv+bn/relu</strong>的过程便得到了<strong>SAN</strong>网络。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643e569b0d2dde5777865d27.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/10/07/rnl.html" class="read-next-link"></a>
+        <section>
+          <span>Region-based Non-local Operation for Video Classification</span>
+          <p>  为视频分类设计的基于区域的非局部网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/643faa530d2dde5777f6598a.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/10/05/nlsa.html" class="read-next-link"></a>
+          <section>
+            <span>Image Super-Resolution with Non-Local Sparse Attention</span>
+            <p>  通过非局部稀疏注意力实现图像超分辨率.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/643d1b950d2dde577732f259.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/07/t2tvit.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-07"><i class="iconfont icon-date"></i>07 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63f9d500f144a010073e18b2.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>T2T-ViT：在ImageNet上从头开始训练视觉Transformer.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2101.11986">Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet</a></li>
+</ul>
+
+<p>使用中等大小的数据集 (如 <strong>ImageNet</strong>) 训练时，目前视觉<strong>Transformer</strong>的性能相比于 <strong>CNN</strong> 模型 (比如 <strong>ResNet</strong>) 更低，作者认为原因有2点：</p>
+<ol>
+  <li>视觉<strong>Transformer</strong>处理图像的方式不够好，无法建模一张图片的局部信息；</li>
+  <li>视觉<strong>Transformer</strong>的自注意力机制的 <strong>Backbone</strong> 不如 <strong>CNN</strong> 设计的好。</li>
+</ol>
+
+<h2 id="1-改进图像处理方式">1. 改进图像处理方式</h2>
+
+<p><strong>ViT</strong>将图片分成不同的<strong>patch</strong>后，对每个<strong>patch</strong>进行<strong>tokenization</strong>操作，不同<strong>patch</strong>之间没有<strong>Overlapping</strong>部分，等价于<strong>kernel_size</strong>和<strong>stride</strong>相等的<strong>Conv2d</strong>操作，是一种<strong>Hard Split</strong>操作。</p>
+
+<p>作者提出了一种<strong>soft-split</strong>操作，每个<strong>patch</strong>中都包含有<strong>overlapping</strong>的部分，让每个<strong>token</strong>能够捕捉到更加精细的局部结构。这种操作称为<strong>Tokens-to-Token (T2T)</strong>。</p>
+
+<p><strong>T2T</strong>中用到了<strong>Pytorch</strong>提供的<strong>Unfold</strong>操作，这个操作的具体作用是在输入图像中按一定的<strong>stride</strong>和<strong>kernel_size</strong>，滑动地提取出局部区域块（只要<strong>stride</strong>比<strong>kernel_size</strong>小，提取出的局部区域块中就会有<strong>overlapping</strong>部分），然后把区域块内每个像素的特征拼接起来。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f9cccaf144a0100731574f.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="n">nn</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+<span class="n">soft_split</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Unfold</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">soft_split</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># size: 1, 3136, 147
+</span><span class="n">x</span> <span class="o">=</span> <span class="n">self_attention</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># 进行self-attention操作
+</span><span class="n">B</span><span class="p">,</span> <span class="n">new_HW</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">new_HW</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">new_HW</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p>用一层<strong>Tokens-to-Token</strong>操作举例，假设输入的图像是$(3,224,224)$，经过<strong>Unfold</strong>操作后，将一个<strong>kernel</strong>中的<strong>tokens</strong>纵向拼接起来，生成的每一个<strong>token</strong>大小是$7\times 7\times 3=147$，其中$7\times 7$表示一个<strong>kernel</strong>中有49个<strong>token</strong>，3是<strong>channel</strong>维度；根据<strong>stride</strong>和<strong>padding</strong>计算后一共生成了3136个<strong>token</strong>，每个<strong>token</strong>的维度是147，再进行一次<strong>self-attention</strong>操作来处理生成的<strong>tokens</strong>，然后再<strong>reshape</strong>成<strong>feature map</strong>。为了防止因为不断的<strong>unfold</strong>操作导致每个<strong>token</strong>的维度越来越高，每一层的<strong>self-attention</strong>操作后都会将其投影回一个较低的维度，文中设置的是$64$。
+<strong>T2T-ViT</strong>在生成最终输入进<strong>transformer encoder</strong>的<strong>token</strong>之前总共进行了三次<strong>tokens-to-token</strong>操作。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f9cecaf144a01007350b12.jpg" alt="" /></p>
+
+<h2 id="2-改进自注意力机制">2. 改进自注意力机制</h2>
+
+<p>自注意力机制的 <strong>Backbone</strong> 一开始不是为 <strong>CV</strong> 任务设计的，所以在<strong>ViT</strong>中，注意力存在冗余设计，在有限的训练数据集中难以产生丰富的特征图。通过可视化<strong>ViT</strong>中的特征图发现，在其中存在大量无效的特征图（红色框），并且一些特征的局部细节不如卷积神经网络。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f9cbc7f144a010072fbffd.jpg" alt="" /></p>
+
+<p>为了设计一种更高效的 <strong>Backbone</strong>，同时增加特征图的丰富性，作者借鉴了一些 <strong>CNN</strong> 的 <strong>Backbone</strong> 架构设计方案：</p>
+<ul>
+  <li>借鉴 <strong>DenseNet</strong>：使用 <strong>Dense</strong> 连接。</li>
+  <li>借鉴 <strong>Wide-ResNets</strong>：<strong>Deep-narrow vs. shallow-wide</strong> 结构对比。</li>
+  <li>借鉴 <strong>SE</strong> 模块：使用 <strong>Channel attention</strong> 结构。</li>
+  <li>借鉴 <strong>ResNeXt</strong>：在注意力机制中使用更多的 <strong>heads</strong>。</li>
+  <li>借鉴 <strong>GhostNet</strong>：使用 <strong>Ghost</strong> 模块。</li>
+</ul>
+
+<p>经过比较作者得出了2个结论：</p>
+<ul>
+  <li>使用 <strong>Deep-narrow</strong> 架构，并减少 <strong>embedding dimension</strong> 更适合视觉 <strong>Transformer</strong>，可以增加特征的丰富程度，同时也可以降低计算量。</li>
+  <li><strong>SE</strong> 模块的 <strong>Channel attention</strong> 结构也可以提升 <strong>ViT</strong> 的性能，但是效果不如前者。</li>
+</ul>
+
+<p>根据以上结论，作者设计了一个 <strong>Deep-narrow</strong> 架构的 <strong>T2T</strong> <strong>Backbone</strong>，它的 <strong>embedding dimension</strong> 比较小，同时层数较多：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fac0dff144a010076ce483.jpg" alt="" /></p>
+
+<p>一个完整的<strong>T2T-ViT</strong>网络首先通过 <strong>T2T</strong> 模块对图像的局部信息进行建模，再通过 <strong>T2T-ViT</strong> 的 <strong>Backbone</strong>提取特征用于下游任务。<strong>T2T</strong> 模块有$3$层，会进行3次 <strong>Soft Split</strong>  操作和2次 <strong>Restructurization</strong> 操作。其中3次 <strong>unfold</strong> 操作使用的卷积核的大小分别是$[7,3,3]$，<strong>patches</strong> 之间重叠的大小分别是$[3,1,1]$, <strong>stride</strong> 的大小分别是$[4,2,2]$。<strong>T2T</strong> 模块会把 $224×224$ 大小的图片变成 $14×14$ 大小。<strong>T2T</strong> 模块的输出张量进入 <strong>T2T Backbone</strong> 里面， <strong>T2T Backbone</strong> 有14层 <strong>Block</strong>，<strong>embedding dimension</strong> 大小是384。</p>
+
+<p><strong>T2T-ViT</strong>的完整实现可参考<a href="https://github.com/lucidrains/vit-pytorch/blob/main/vit_pytorch/t2t.py">vit-pytorch</a>。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">repeat</span>
+<span class="kn">from</span> <span class="nn">einops.layers.torch</span> <span class="kn">import</span> <span class="n">Rearrange</span>
+
+<span class="c1"># helpers
+</span><span class="k">def</span> <span class="nf">conv_output_size</span><span class="p">(</span><span class="n">image_size</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(((</span><span class="n">image_size</span> <span class="o">-</span> <span class="n">kernel_size</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">padding</span><span class="p">))</span> <span class="o">/</span> <span class="n">stride</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># classes
+</span><span class="k">class</span> <span class="nc">RearrangeImage</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s">'b (h w) c -&gt; b c h w'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+<span class="c1"># main class
+</span><span class="k">class</span> <span class="nc">T2TViT</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">depth</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">mlp_dim</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">pool</span> <span class="o">=</span> <span class="s">'cls'</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">emb_dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">transformer</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">t2t_layers</span> <span class="o">=</span> <span class="p">((</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">))):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">pool</span> <span class="ow">in</span> <span class="p">{</span><span class="s">'cls'</span><span class="p">,</span> <span class="s">'mean'</span><span class="p">},</span> <span class="s">'pool type must be either cls (cls token) or mean (mean pooling)'</span>
+
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">layer_dim</span> <span class="o">=</span> <span class="n">channels</span>
+        <span class="n">output_image_size</span> <span class="o">=</span> <span class="n">image_size</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">t2t_layers</span><span class="p">):</span>
+            <span class="n">layer_dim</span> <span class="o">*=</span> <span class="n">kernel_size</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="n">is_first</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="n">is_last</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t2t_layers</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">output_image_size</span> <span class="o">=</span> <span class="n">conv_output_size</span><span class="p">(</span><span class="n">output_image_size</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">stride</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+            <span class="n">layers</span><span class="p">.</span><span class="n">extend</span><span class="p">([</span>
+                <span class="n">RearrangeImage</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">is_first</span> <span class="k">else</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">(),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Unfold</span><span class="p">(</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">//</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="n">Rearrange</span><span class="p">(</span><span class="s">'b c n -&gt; b n c'</span><span class="p">),</span>
+                <span class="n">Transformer</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="n">layer_dim</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">depth</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="n">layer_dim</span><span class="p">,</span> <span class="n">mlp_dim</span> <span class="o">=</span> <span class="n">layer_dim</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">is_last</span> <span class="k">else</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">(),</span>
+            <span class="p">])</span>
+
+        <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">layer_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_patch_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">output_image_size</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">cls_token</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">emb_dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">heads</span><span class="p">,</span> <span class="n">dim_head</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">pool</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_latent</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">mlp_head</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+
+        <span class="n">cls_tokens</span> <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cls_token</span><span class="p">,</span> <span class="s">'() n d -&gt; b n d'</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">((</span><span class="n">cls_tokens</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">+=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">[:,</span> <span class="p">:</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">pool</span> <span class="o">==</span> <span class="s">'mean'</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_latent</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">mlp_head</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/08/cct.html" class="read-next-link"></a>
+        <section>
+          <span>Escaping the Big Data Paradigm with Compact Transformers</span>
+          <p>  CCT：使用紧凑的Transformer避免大数据依赖.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63fab68ff144a010075fb564.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/06/cait.html" class="read-next-link"></a>
+          <section>
+            <span>Going deeper with Image Transformers</span>
+            <p>  CaiT：更深的视觉Transformer.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63f816eff144a01007a851fc.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

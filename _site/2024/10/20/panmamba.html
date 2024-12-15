@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pan-Mamba: Effective pan-sharpening with State Space Model - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Pan-Mamba: Effective pan-sharpening with State Space Model">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Pan-Mamba: Effective pan-sharpening with State Space Model - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/10/20/panmamba.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Pan-Mamba: Effective pan-sharpening with State Space Model</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-10-20"><i class="iconfont icon-date"></i>20 Oct 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/673f1984d29ded1a8c04cae2.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Pan-Mamba：通过状态空间模型实现高效全色锐化.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2402.12192">Pan-Mamba: Effective pan-sharpening with State Space Model</a></li>
+</ul>
+
+<h2 id="tl-dr">TL; DR</h2>
+
+<p>本文提出了一种新颖的全色锐化网络<strong>Pan-Mamba</strong>，该网络利用了状态空间模型（<strong>State Space Model</strong>）来处理低分辨率多光谱（<strong>LRMS</strong>）图像和高分辨率全色（<strong>PAN</strong>）图像的信息融合。<strong>Pan-Mamba</strong>通过初步的跨模态交互、高效的特征提取与融合，以及冗余模态特征的过滤，实现了高分辨率多光谱图像的生成。实验结果表明，<strong>Pan-Mamba</strong>在多个数据集上均优于当前最先进的方法，不仅在定量指标上有所提升，还在真实世界的全分辨率数据集上展现了强大的泛化能力。</p>
+
+<h2 id="1-背景介绍">1. 背景介绍</h2>
+
+<p>全色锐化（<strong>Pan-sharpening</strong>）技术旨在结合低分辨率多光谱图像和高分辨率全色图像的信息，以生成高分辨率多光谱图像。多光谱图像包含丰富的光谱信息，但分辨率较低；而全色图像则具有较高的空间分辨率，但缺乏光谱信息。通过全色锐化技术，可以融合这两种互补信息，从而生成既具有高空间分辨率又包含丰富光谱信息的图像。</p>
+
+<p>近年来，状态空间模型在计算机视觉领域取得了显著进展，特别是在长距离依赖建模方面。<strong>Mamba</strong>模型通过引入输入自适应机制，增强了状态空间模型的能力，实现了更高的推理速度、吞吐量和整体性能。然而，状态空间模型在多模态图像融合（如全色锐化）方面的潜力尚未得到充分探索。因此，本文提出了<strong>Pan-Mamba</strong>模型，旨在利用状态空间模型的优势来解决全色锐化问题。</p>
+
+<h2 id="2-方法介绍">2. 方法介绍</h2>
+
+<p>状态空间模型的概念最初在<strong>S4</strong>模型中提出，该模型具有全局信息建模的有效架构，相较于传统的卷积神经网络（<strong>CNN</strong>）或<strong>Transformer</strong>架构具有显著优势。随后，<strong>S5</strong>模型进一步降低了复杂度，实现了线性级别的计算复杂度。<strong>H3</strong>模型在此基础上进行了精炼和扩展，使模型在语言模型任务中能够与<strong>Transformer</strong>相媲美。<strong>Mamba</strong>模型则通过引入输入自适应机制，增强了状态空间模型的能力，相比同等规模的<strong>Transformer</strong>具有更高的性能。</p>
+
+<p><strong>Pan-Mamba</strong>模型架构由三个核心组件组成：<strong>Mamba</strong>块、通道交换<strong>Mamba</strong>块和跨模态<strong>Mamba</strong>块。</p>
+<ul>
+  <li><strong>Mamba</strong>块：用于建模<strong>PAN</strong>和<strong>LRMS</strong>特征内的长距离依赖关系。</li>
+  <li>通道交换<strong>Mamba</strong>块：通过交换<strong>PAN</strong>和<strong>LRMS</strong>特征的通道来鼓励特征交互，并引发它们之间的相关性。</li>
+  <li>跨模态<strong>Mamba</strong>块：基于交叉注意力机制，实现<strong>PAN</strong>和<strong>LRMS</strong>特征的有效融合。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/673f1b56d29ded1a8c061be9.png" alt="" /></p>
+
+<p><strong>Pan-Mamba</strong>模型首先使用卷积层将两种图像投影到特征空间，并沿空间维度扁平化为令牌；然后利用状态空间模型的离散表示来更新隐藏状态，并生成输出；之后通过通道交换和跨模态<strong>Mamba</strong>块实现特征的深度融合和冗余特征的过滤；最后通过反卷积层将融合后的特征重构为高分辨率多光谱图像。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673f1bfed29ded1a8c069c46.png" alt="" />
+<img src="https://pic.imgdb.cn/item/673f1c17d29ded1a8c06b05f.png" alt="" /></p>
+
+<h2 id="3-实验分析">3. 实验分析</h2>
+
+<p>实验采用了<strong>WorldView-II</strong>、<strong>WorldView-III</strong>和<strong>Gaofen-2</strong>等多个数据集进行评估。评估指标包括峰值信噪比（<strong>PSNR</strong>）、结构相似性指数（<strong>SSIM</strong>）、光谱角映射（<strong>SAM</strong>）和相对全局无量纲合成误差（<strong>ERGAS</strong>）等。</p>
+
+<p>实验结果表明，<strong>Pan-Mamba</strong>在多个数据集上均优于当前最先进的方法。在<strong>WorldView-II</strong>和<strong>WorldView-III</strong>数据集上，<strong>Pan-Mamba</strong>在<strong>PSNR</strong>指标上分别提升了<strong>0.38</strong>和<strong>0.29</strong>，同时在<strong>SSIM</strong>和<strong>SAM</strong>指标上也表现出显著的改进。此外，在真实世界的全分辨率<strong>WV2</strong>数据集上，<strong>Pan-Mamba</strong>也取得了优越的性能，验证了模型的强大泛化能力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673f1ccfd29ded1a8c073c2c.png" alt="" />
+<img src="https://pic.imgdb.cn/item/673f1d01d29ded1a8c075eb6.png" alt="" /></p>
+
+<p>为了验证状态空间模型的有效性，进行了消融实验。实验结果表明，状态空间模型在图像恢复任务中表现优于其他广泛认可的操作符，如卷积核和<strong>Transformer</strong>等。这进一步证明了<strong>Pan-Mamba</strong>模型中状态空间模型的核心作用。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673f1d4fd29ded1a8c07970c.png" alt="" /></p>
+
+<p>与其他先进方法相比，<strong>Pan-Mamba</strong>在保持高性能的同时，也具有较高的计算效率。这得益于状态空间模型的高效特征提取和融合能力，以及模型架构的轻量化设计。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673f1d40d29ded1a8c078c31.png" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/11/01/phenotype.html" class="read-next-link"></a>
+        <section>
+          <span>表型图像分析(Phenotypic Image Analysis)</span>
+          <p>  Phenotypic Image Analysis.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/10/19/panflownet.html" class="read-next-link"></a>
+          <section>
+            <span>PanFlowNet: A Flow-Based Deep Network for Pan-sharpening</span>
+            <p>  PanFlowNet：基于流的深度网络用于全色锐化.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/673f14e1d29ded1a8c016cef.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

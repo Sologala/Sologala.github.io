@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/05/convnext2.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-05"><i class="iconfont icon-date"></i>05 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63b6a98dbe43e0d30e1bd82a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>ConvNeXt V2: 使用MAE协同设计和扩展卷积网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2301.00808">ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders</a></li>
+</ul>
+
+<p>本文作者把视觉领域的自监督预训练技术和卷积网络的结构设计结合起来，设计了一种适用于卷积神经网络的掩蔽预训练方法<strong>FCMAE</strong>，并基于此设计了适用于掩蔽预训练的卷积网络<strong>ConvNeXt V2</strong>。</p>
+
+<h1 id="1-全卷积掩蔽自编码器-fully-convolutional-masked-autoencoder">1. 全卷积掩蔽自编码器 Fully Convolutional Masked AutoEncoder</h1>
+
+<p><a href="https://0809zheng.github.io/2021/12/09/mae.html">掩蔽自编码器 (MAE)</a>是一种流行的视觉自监督学习方法，该方法针对视觉<strong>Transformer</strong>设计了一种自监督学习框架，通过随机遮挡输入的部分子区域并预测这些区域，实现了视觉信息的表征学习。</p>
+
+<p>然而这种掩蔽自训练方法不适合直接应用到卷积神经网络中。<strong>MAE</strong>只把可见的图像块输入视觉<strong>Transformer</strong>，而卷积网络采用密集的滑动窗口。为了将卷积层用于稀疏的图像数据，在预训练阶段采用<a href="">子流形稀疏卷积</a>，这使得模型只能在可见的数据点上操作；在微调阶段，稀疏卷积层可以转换回标准卷积，而不需要额外的处理。</p>
+
+<p>基于稀疏卷积设计的全卷积掩蔽自编码器(<strong>Fully Convolutional Masked AutoEncoder, FCMAE</strong>)采用编码器-解码器结构。编码器采用分层结构，逐渐把被掩蔽的输入图像转换为掩码特征；解码器采用单个卷积块，输出预测被掩蔽的图像部分。损失函数采用被掩蔽图像部分与对应真实图像块的均方误差。编码器和解码器均采用<a href="https://0809zheng.github.io/2022/12/25/convnext.html">ConvNeXt</a>网络。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b6ccc3be43e0d30e64462a.jpg" alt="" /></p>
+
+<p>在实验时作者设置$0.6$的随即掩码策略，即从原始输入图像中随机去除 $60\%$的$32\times 32$图像块，数据增强采用随机裁剪。实验在<strong>ImageNet-1K</strong>数据集上进行$800$轮预训练，然后进行$100$轮微调。结果表明，使用稀疏卷积能够有效提高掩蔽特征表示学习的质量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b6ce7fbe43e0d30e683d53.jpg" alt="" /></p>
+
+<p>将<strong>FCMAE</strong>与监督学习进行比较，有监督训练$100$轮的精度是$82.7\%$，有监督训练$300$轮的精度是$83.8\%$，<strong>FCMAE</strong>的结果是$83.7\%$。实验结果说明<strong>FCMAE</strong>预训练提供了比随机基准更好的初始化 ($82.7→83.7$)，但仍然不如监督训练的最佳性能。</p>
+
+<h1 id="2-convnext-v2">2. ConvNeXt V2</h1>
+
+<p>为了进一步提高卷积网络的自监督学习性能，作者设计了新的卷积网络结构。对于训练中使用的<strong>ConvNeXt</strong>网络，经过掩蔽预训练后出现特征<strong>collapse</strong>现象，即有许多未激活的或饱和的特征映射，特征通道之间冗余性较大。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b6d10bbe43e0d30e6d738b.jpg" alt="" /></p>
+
+<p>为了进一步分析特征<strong>collapse</strong>现象，作者计算了不同卷积层中特征$X$的不同通道之间的成对余弦距离：</p>
+
+\[\frac{1}{C^2} \sum_i^C \sum_j^C \frac{1-\cos(X_i,X_j)}{2}\]
+
+<p>余弦距离越大，表明特征的多样性越强；反之特征的冗余性越强。结果表明，<strong>FCMAE</strong>预训练的<strong>ConvNeXt</strong>模型表现出明显的特征<strong>collapse</strong>趋势。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b6d276be43e0d30e700796.jpg" alt="" /></p>
+
+<p>为了缓解特征<strong>collapse</strong>问题，作者设计了全局响应归一化 (<strong>Global Response Normalization, GRN</strong>)，用于提高特征通道的对比度和多样性。</p>
+
+<p><strong>GRN</strong>通过一个全局聚合函数$G(\cdot)$把输入特征聚合成一个通道维度的向量：</p>
+
+\[G(X) := X \in \Bbb{R}^{H\times W\times C} \to  \Bbb{R}^{ C}\]
+
+<p>然后通过一个特征归一化函数$N(\cdot)$把通道的统计信息进行归一化，计算其相对于所有其他通道的相对重要性：</p>
+
+\[N(||X_i||) := ||X_i|| \in \Bbb{R} \to  \Bbb{R}\]
+
+<p>全局聚合函数$G(\cdot)$和特征归一化函数$N(\cdot)$的选择如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b6d40bbe43e0d30e737f18.jpg" alt="" /></p>
+
+<p>然后使用计算出的特征归一化分数校准原始输入特征：</p>
+
+\[X_i = X_i * N(G(X)_i)\in \Bbb{R}^{H\times W}\]
+
+<p>并进一步引入两个可学习参数$\gamma,\beta$，以及输入的残差连接：</p>
+
+\[X_i = \gamma * X_i * N(G(X)_i) + \beta + X_i\]
+
+<p>基于<strong>GRN</strong>，作者改进了<strong>ConvNeXt</strong>模块，即在每个模块最后一个$1\times 1$卷积层之前使用<strong>GRN</strong>：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b6d61dbe43e0d30e7858d8.jpg" alt="" /></p>
+
+<p>结果表明，<strong>FCMAE</strong>和<strong>ConvNeXt V2</strong>配合的结果显著优于有监督训练结果。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b6d69fbe43e0d30e798fa6.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/06/cait.html" class="read-next-link"></a>
+        <section>
+          <span>Going deeper with Image Transformers</span>
+          <p>  CaiT：更深的视觉Transformer.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63f816eff144a01007a851fc.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/04/deepvit.html" class="read-next-link"></a>
+          <section>
+            <span>DeepViT: Towards Deeper Vision Transformer</span>
+            <p>  DeepViT：构建更深的视觉Transformer.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63f8074ff144a0100790bea1.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

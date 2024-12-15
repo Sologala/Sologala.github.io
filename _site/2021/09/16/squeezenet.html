@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/09/16/squeezenet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and <0.5MB model size</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-09-16"><i class="iconfont icon-date"></i>16 Sep 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/616ffb2a2ab3f51d91c39aaa.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SqueezeNet: 与AlexNet精度相当的轻量级模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and &lt;0.5MB model size</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1602.07360">link</a></li>
+</ul>
+
+<p>本文提出了<strong>SqueezeNet</strong>，在<strong>ImageNet</strong>数据集上实现了<strong>AlexNet</strong>级别的准确率，但参数量减少了$50$倍，且压缩后模型尺寸小于$0.5$MB（是<strong>AlexNet</strong>的$510$倍）。在同等精度下，参数量更小的模型具有以下优势：</p>
+<ul>
+  <li>更有效的分布式训练：参数量越小，服务器之间的通信开销越少，分布式训练的可扩展性越好；</li>
+  <li>将新模型导出到客户端的开销更少：一些公司会使用<strong>架空更新</strong>(<strong>over-the-air update</strong>)，即定期将新模型更新到产品中。网络更新需要大量的数据传输。</li>
+  <li>可以部署到<strong>FPGA</strong>和嵌入式设备上：<strong>FPGA</strong>的内存通常少于$10$MB，小模型不会受到带宽限制。</li>
+</ul>
+
+<h1 id="1-squeezenet">1. SqueezeNet</h1>
+<p><strong>SqueezeNet</strong>的设计思路如下：</p>
+<ol>
+  <li>使用$1 \times 1$卷积替换$3 \times 3$卷积：参数量降低$9$倍；</li>
+  <li>降低$3 \times 3$卷积的输入通道数量：进一步降低参数量；</li>
+  <li>延迟下采样：将下采样放在网络后期，使早期的卷积层具有较大的特征图，在参数量受限的情况下尽可能提高分类精度。</li>
+</ol>
+
+<p><strong>SqueezeNet</strong>是由<strong>Fire</strong>模块组成的。<strong>Fire</strong>模块包括一个<strong>squeeze</strong>卷积层和一个<strong>expand</strong>层。<strong>squeeze</strong>卷积层使用$1\times 1$卷积，由参数$s_{1x1}$控制通道数；<strong>expand</strong>层使用$1\times 1$卷积和$3\times 3$卷积，由参数$e_{1x1}$和$e_{3x3}$控制通道数。通常$s_{1x1}&lt;e_{1x1}+e_{3x3}$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6170c17a2ab3f51d91570b76.jpg" alt="" /></p>
+
+<p><strong>SqueezeNet</strong>的结构如下，分别表示无跳跃连接、带有简单跳跃连接和带有复杂跳跃连接的网络。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6170c2ce2ab3f51d9157bf24.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/6170c2e32ab3f51d9157ce9c.jpg" alt="" /></p>
+
+<h1 id="2-实验分析">2. 实验分析</h1>
+<p>作者比较了<strong>SqueezeNet</strong>与<strong>AlexNet</strong>及其压缩网络的性能。即使未压缩<strong>SqueezeNet</strong>，模型也小于压缩后的<strong>AlexNet</strong>，并保持相当的准确率。作者进一步使用深度压缩技术对<strong>SqueezeNet</strong>进行压缩，并没有造成明显的精度损失。这表明即使是小模型也有继续压缩的空间。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6170c4ae2ab3f51d9158d88b.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/09/17/squeezenext.html" class="read-next-link"></a>
+        <section>
+          <span>SqueezeNext: Hardware-Aware Neural Network Design</span>
+          <p>  SqueezeNext: 针对硬件特性的神经网络设计.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6170ccce2ab3f51d915dd4b5.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/09/15/mobilenetv3.html" class="read-next-link"></a>
+          <section>
+            <span>Searching for MobileNetV3</span>
+            <p>  使用神经结构搜索寻找MobileNet V3.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/613b11fe44eaada739cd1a26.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

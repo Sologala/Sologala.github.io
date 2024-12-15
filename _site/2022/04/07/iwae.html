@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importance Weighted Autoencoders - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Importance Weighted Autoencoders">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Importance Weighted Autoencoders - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/07/iwae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Importance Weighted Autoencoders</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-07"><i class="iconfont icon-date"></i>07 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6284bcc209475431295b5925.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>IWAE：重要性加权自编码器.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1509.00519">Importance Weighted Autoencoders</a></li>
+</ul>
+
+<h1 id="1-vae的优化gap">1. VAE的优化Gap</h1>
+
+<p>变分自编码器(<strong>VAE</strong>)的优化目标是<strong>对数似然的变分下界</strong>:</p>
+
+\[\log p(x)  = \log \Bbb{E}_{z \text{~} q(z|x)}[\frac{p(x,z)}{q(z|x)}] \geq \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{q(z|x)}]\]
+
+<p>注意到变分下界是原优化目标的一个下界，与原目标之间存在<strong>gap</strong>。该<strong>gap</strong>可以通过分析对数似然得到解析表达式。对数似然又可以写作：</p>
+
+\[\begin{aligned} \log p(x) &amp;= \int q(z|x)\log p(x)dz= \Bbb{E}_{z \text{~} q(z|x)}[\log p(x)]\\ &amp;= \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{p(z|x)}] = \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{p(z|x)}\frac{q(z|x)}{q(z|x)}] \\ &amp;= \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{q(z|x)}] + \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{q(z|x)}{p(z|x)}] \end{aligned}\]
+
+<p>因此<strong>VAE</strong>的变分下界与原目标之间存在的<strong>gap</strong>为$\Bbb{E}_{z \text{~} q(z|x)}[\log \frac{q(z|x)}{p(z|x)}]$。<strong>IWAE</strong>的出发点便是减小这一<strong>gap</strong>。</p>
+
+<h1 id="2-iwae的目标函数">2. IWAE的目标函数</h1>
+
+<p><strong>IWAE</strong>的目标函数如下：</p>
+
+\[\log p(x)  = \log \Bbb{E}_{z \text{~} q(z|x)}[\frac{p(x,z)}{q(z|x)}] = \log \Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q(z|x)}[\frac{1}{k}\sum_{i=1}^{k}\frac{p(x,z_i)}{q(z_i|x)}]\]
+
+<p>同样可以根据<strong>Jenson</strong>不等式求其变分下界：</p>
+
+\[\log \Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q(z|x)}[\frac{1}{k}\sum_{i=1}^{k}\frac{p(x,z_i)}{q(z_i|x)}] \geq \Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q(z|x)}[\log \frac{1}{k}\sum_{i=1}^{k}\frac{p(x,z_i)}{q(z_i|x)}]\]
+
+<p>直观上<strong>IWAE</strong>将变分下界中的数学期望用采样平均操作进行了替代。当$k=1$时优化目标退化为标准的<strong>VAE</strong>，即<strong>VAE</strong>相当于只进行了单次采样。当$k \to \infty$时变分下界逼近原对数似然。可以证明<strong>IWAE</strong>的<strong>gap</strong>要小于标准的<strong>VAE</strong>(即\(\mathcal{L}_{1}\))：</p>
+
+\[\log p(x) \geq \mathcal{L}_{k+1} \geq \mathcal{L}_{k} \geq \mathcal{L}_{1}\]
+
+<h1 id="3-iwae的pytorch实现">3. IWAE的pytorch实现</h1>
+
+<p><strong>IWAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/iwae.py">PyTorch-VAE</a>，下面进行分析。</p>
+
+<p>在标准的<strong>VAE</strong>中，采样是通过重参数化过程实现的。因此在<strong>IWAE</strong>中，对每个样本重参数化时进行$S$次采样：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+    <span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="p">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># [B x S x D]
+</span>    <span class="n">log_var</span> <span class="o">=</span> <span class="n">log_var</span><span class="p">.</span><span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># [B x S x D]
+</span>    <span class="n">z</span><span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">reparameterize</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span><span class="p">)</span> <span class="c1"># [B x S x D]
+</span>    <span class="n">eps</span> <span class="o">=</span> <span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">log_var</span> <span class="c1"># Prior samples
+</span>    <span class="k">return</span>  <span class="p">[</span><span class="bp">self</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="n">z</span><span class="p">),</span> <span class="nb">input</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">eps</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>在计算损失函数时，由于对数函数中存在求和项，因此求解比较困难。注意到损失函数与梯度的计算是等价的，因此不妨先讨论<strong>VAE</strong>与<strong>IWAE</strong>的梯度之间的差异，以便于进一步将<strong>VAE</strong>的损失函数扩展为<strong>IWAE</strong>的损失函数。</p>
+
+<p><strong>VAE</strong>的优化目标的梯度计算如下（优化参数用$\theta$表示）：</p>
+
+\[\nabla_{\theta}\Bbb{E}_{z \text{~} q_{\theta}(z|x)}[\log \frac{p_{\theta}(x,z)}{q_{\theta}(z|x)}] = \Bbb{E}_{z \text{~} q_{\theta}(z|x)}[\nabla_{\theta}\log \frac{p_{\theta}(x,z)}{q_{\theta}(z|x)}]\]
+
+<p>记$w=\frac{p_{\theta}(x,z)}{q_{\theta}(z|x)}$，则<strong>VAE</strong>的梯度进一步写作：</p>
+
+\[\Bbb{E}_{z \text{~} q_{\theta}(z|x)}[\nabla_{\theta}\log \frac{p_{\theta}(x,z)}{q_{\theta}(z|x)}] = \Bbb{E}_{z \text{~} q_{\theta}(z|x)}[\nabla_{\theta}\log w]\]
+
+<p><strong>IWAE</strong>的梯度计算如下：</p>
+
+\[\begin{aligned} &amp;\nabla_{\theta}\Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q_{\theta}(z|x)}[\log \frac{1}{k}\sum_{i=1}^{k}\frac{p_{\theta}(x,z_i)}{q_{\theta}(z_i|x)}] = \nabla_{\theta}\Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q_{\theta}(z|x)}[\log \frac{1}{k}\sum_{i=1}^{k}w_i] \\ &amp;= \Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q_{\theta}(z|x)}[\nabla_{\theta}\log \frac{1}{k}\sum_{i=1}^{k}w_i] = \Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q_{\theta}(z|x)}[\frac{1}{\frac{1}{k}\sum_{j=1}^{k}w_j}\nabla_{\theta} \frac{1}{k}\sum_{i=1}^{k}w_i] \\ &amp; = \Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q_{\theta}(z|x)}[\frac{1}{\sum_{j=1}^{k}w_j}\sum_{i=1}^{k}\nabla_{\theta} w_i] = \Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q_{\theta}(z|x)}[\frac{1}{\sum_{j=1}^{k}w_j}\sum_{i=1}^{k}w_i\nabla_{\theta} \log w_i] \end{aligned}\]
+
+<p>记\(\tilde{w}_i=\frac{w_i}{\sum_{j=1}^{k}w_j}\)，则<strong>IWAE</strong>的梯度进一步写作：</p>
+
+\[\Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q_{\theta}(z|x)}[\frac{1}{\sum_{j=1}^{k}w_j}\sum_{i=1}^{k}w_i\nabla_{\theta} \log w_i] = \Bbb{E}_{z_1,z_2,\cdots z_k \text{~} q_{\theta}(z|x)}[\sum_{i=1}^{k}\tilde{w}_i\nabla_{\theta} \log w_i]\]
+
+<p>对比<strong>VAE</strong>与<strong>IWAE</strong>的梯度计算，两者都是根据已有采样点计算$\log w_i$。<strong>VAE</strong>只进行了一次采样，而<strong>IWAE</strong>进行了$k$次采样，并使用归一化的权重$\tilde{w}_i$对采样结果的权重进行加权平均。由于梯度和损失函数是等价的，因此<strong>IWAE</strong>的损失函数也是对不同采样结果损失的加权平均，这也是其名称<strong>重要性加权自编码器(Importance Weighted Autoencoder, IWAE)</strong>的又来。</p>
+
+<p>注意到对数权重$\log w=\log \frac{p_{\theta}(x,z)}{q_{\theta}(z|x)}$，恰好为<strong>VAE</strong>的目标函数，因此不同采样点的实际权重$\tilde{w}_i$可以通过对其损失函数的<strong>softmax</strong>得到。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">log_p_x_z</span> <span class="o">=</span> <span class="p">((</span><span class="n">recons</span> <span class="o">-</span> <span class="nb">input</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">).</span><span class="n">flatten</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># [B x S]
+</span><span class="n">kld_loss</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="n">exp</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># [B x S]
+</span>
+<span class="c1"># Get importance weights
+</span><span class="n">log_weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">log_p_x_z</span> <span class="o">+</span> <span class="n">kld_weight</span> <span class="o">*</span> <span class="n">kld_loss</span><span class="p">)</span>
+<span class="n">weight</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">log_weight</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">weight</span> <span class="o">*</span> <span class="n">log_weight</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/08/miwae.html" class="read-next-link"></a>
+        <section>
+          <span>Tighter Variational Bounds are Not Necessarily Better</span>
+          <p>  MIWAE：紧凑的变分下界阻碍推理网络训练.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6285d75709475431296381b6.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/06/ssmp.html" class="read-next-link"></a>
+          <section>
+            <span>Single-Shot Multi-Person 3D Pose Estimation From Monocular RGB</span>
+            <p>  使用遮挡鲁棒姿态图从单目相机中重构三维姿态.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/624d4f6b239250f7c59458ad.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

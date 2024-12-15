@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机森林(Random Forest) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="随机森林(Random Forest)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="随机森林(Random Forest) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/20/random-forest.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>随机森林(Random Forest)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-20"><i class="iconfont icon-date"></i>20 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5efb023c14195aa5948bf48e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Random Forest.</p>
+</blockquote>
+
+<p><strong>随机森林(Random Forest)</strong>是一种把<a href="https://0809zheng.github.io/2020/03/17/bagging.html"><strong>bagging</strong></a>和<a href="https://0809zheng.github.io/2020/03/19/decision-tree.html"><strong>决策树</strong></a>结合起来的方法。在以决策树(如<strong>CART</strong>)为基学习器构建<strong>bagging</strong>集成模型的基础上，随机森林在决策树的训练过程中引入了<strong>随机子空间(random subspace)</strong>算法。</p>
+<ul>
+  <li><strong>bagging</strong>是一种集成方法，通过对训练集进行<strong>bootstrap</strong>采样分成若干个子训练集，训练多个模型进行集成，可以减小模型本身的<strong>方差</strong>；</li>
+  <li><strong>fully-grown CART</strong>是一种模型方差本身较大的决策树，对于单一模型容易过拟合。</li>
+</ul>
+
+<p>随机森林方法的优点：</p>
+<ol>
+  <li>每一个基学习器(<strong>CART</strong>决策树)训练是独立的，该算法可以并行实现；</li>
+  <li>继承了<strong>CART</strong>的优点(可解释性好,易于实现,能够处理特征缺失)；</li>
+  <li>使用<strong>bagging</strong>集成多个树，避免了过拟合问题，提高了模型的泛化能力。</li>
+</ol>
+
+<h1 id="1-为决策树引入随机性-random-combination-cart">1. 为决策树引入随机性 random-combination CART</h1>
+<p>标准的<strong>CART</strong>决策树在训练时，每一次选择分支(<strong>branching</strong>)是在当前结点的特征集合(假设有$d$个特征)中选择一个最优特征。在随机森林中，
+在训练每一个<strong>CART</strong>基学习器时，为增加模型的能力，每一次选择分支时，可以随机的选择样本的一部分特征，比如选择其中的$k$个特征，再在这$k$个特征$(x_{i_1},x_{i_2},…,x_{i_{k}})$中选择一个最优特征构建分支。若$k=d$，则等价于标准的<strong>CART</strong>；若$k=1$，则随机选择一个特征用于划分；一般情况下推荐选$k=\log_2d$。</p>
+
+<p>将<strong>随机子空间</strong>算法引入随机森林，在选择分支时可以引入<strong>特征映射(Feature Projection)</strong>，即：</p>
+
+\[φ(x) = Px\]
+
+<p>其中$P$是从高维映射到低维的映射矩阵，相当于对原特征进行随机的线性组合，映射到新的特征空间。这样做使得在选择分支时不是使用<strong>决策树桩</strong>(针对某个特征的决策树)针对某一特征，而是使用<strong>感知机</strong>同时处理多个特征。</p>
+
+<p><img src="https://pic.downk.cc/item/5edc9025c2a9a83be50e9fa4.jpg" alt="" /></p>
+
+<p>上述方法为子树增加了更多的随机性。值得一提的是，随机森林的起始性能(基学习器较少时)往往相对较差，这是因为引入随机性使得单个基学习器的性能下降。随着基学习器的数目增加，随机森林通常会收敛到更低的泛化误差。</p>
+
+<h1 id="2-包外估计-out-of-bag-estimate">2. 包外估计 Out-Of-Bag Estimate</h1>
+<p>使用<strong>bagging</strong>随机生成子数据集也会为算法引入随机性。</p>
+
+<p>假设使用<strong>bootstrap</strong>在$N$个样本中进行$T$轮有放回的抽样过程，生成$T$个子样本集：</p>
+
+<p><img src="https://pic.downk.cc/item/5edc7a71c2a9a83be5dca99a.jpg" alt="" /></p>
+
+<p>在某一轮中，总样本集中未被选中的的样本称为<strong>out-of-bag(OOB) example</strong>.</p>
+
+<p>假设在$N$个样本中有放回的抽样，每轮抽取$N$个样本组成子样本集，则其中某一样本$(x_n,y_n)$未被抽中(成为<strong>OOB</strong>样本)的概率为：</p>
+
+\[(1-\frac{1}{N})^N = \frac{1}{(\frac{N}{N-1})^N} = \frac{1}{(1+\frac{1}{N-1})^N} ≈ \frac{1}{e}\]
+
+<p>使用<strong>OOB</strong>样本可以进行<strong>自验证(self-validation)</strong>。对于每个样本(以上图$(x_N,y_N)$为例)，将所有未使用该样本训练的模型集成起来作为一个子模型：</p>
+
+\[G_N^-(x) = \text{avg}(g_2,g_3,...,g_T)\]
+
+<p>可以计算该样本在这个模型上的误差；进一步计算所有样本在其对应模型上的平均表现：</p>
+
+\[E_{OOB} = \frac{1}{N} \sum_{n=1}^{N} {\text{error}(y_n,g_n^-(x_n))}\]
+
+<p>随机森林算法不需要单独的验证集，而是用$E_{OOB}$代替验证集误差。</p>
+
+<h1 id="3-特征选择-feature-selection">3. 特征选择 Feature Selection</h1>
+<p>随机森林可以用来进行<strong>特征选择(Feature Selection)</strong>，实现方法是通过<strong>随机排序测试(permutation test)</strong>。</p>
+
+<p>首先对于给定样本集训练随机森林$G$，并进一步计算自验证误差$E_{OOB}$；</p>
+
+<p>对于样本的第i个特征，将其在样本集中的值随机打乱后，计算打乱后的自验证误差$E_{OOB}^p$；</p>
+
+<p>则第i个特征的重要性定义为将该特征随机排序打乱后引入的自验证误差值：</p>
+
+\[\text{importance}(i) = E_{OOB}^p(G)-E_{OOB}(G)\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/21/GBDT.html" class="read-next-link"></a>
+        <section>
+          <span>梯度提升决策树(Gradient Boosted Decision Tree, GBDT)</span>
+          <p>  Gradient Boosted Decision Tree.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5efb035714195aa5948c4ccf.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/19/decision-tree.html" class="read-next-link"></a>
+          <section>
+            <span>决策树(Decision Tree)</span>
+            <p>  Decision Tree.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63a2e4feb1fccdcd36e7094a.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

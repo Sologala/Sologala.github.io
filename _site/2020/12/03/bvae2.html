@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding disentangling in β-VAE - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Understanding disentangling in β-VAE">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Understanding disentangling in β-VAE - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/03/bvae2.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Understanding disentangling in β-VAE</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-03"><i class="iconfont icon-date"></i>03 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5fc8ac85394ac5237844da3b.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>使用信息瓶颈解释β-VAE的解耦表示能力.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1804.03599">Understanding disentangling in β-VAE</a></li>
+</ul>
+
+<h1 id="1-使用信息瓶颈解释β-vae">1. 使用信息瓶颈解释β-VAE</h1>
+
+<p>作者使用信息论中的<strong>信息瓶颈(information bottleneck)</strong>来解释<strong>β-VAE</strong>的解耦能力。</p>
+
+<p>信息瓶颈是指，如果想用由随机变量$X$表示的随机变量$Z$来预测随机变量$Y$，则应尽可能最大化$Z$与$Y$的互信息，同时减少$X$与$Z$的互信息。即令$Z$尽可能保留$X$中与预测$Y$相关的信息，并提出其中对预测$Y$无用的信息，表示如下：</p>
+
+\[\mathop{\max} [I(Z;Y)- \beta I(X;Z)]\]
+
+<p>上式对比<strong>β-VAE</strong>的目标函数：</p>
+
+\[L(\theta,\phi; x,z, \beta) = \mathbb{E}_{q_{\phi}(z|x)} [\log p_{\theta}(x | z)] - \beta D_{KL}(q_{\phi}(z|x)||p_{\theta}(z))\]
+
+<p>该目标函数可用信息瓶颈的思想来解释。第一项重构误差衡量编码得到的$Z$预测$X$的能力，$Z$包含$X$的信息越多，预测能力就越强。第二项正则化项拉近变分后验概率$q_{\phi}(z|x)$与先验概率$p_{\theta}(z)$的距离，减少$Z$包含$X$的信息，引入了信息瓶颈。</p>
+
+<p>作者进一步分析了<strong>β-VAE</strong>能够得到更加“平滑”的表示的原因。如下图所示，增大后验概率的方差与移动其均值都能使其与先验概率(标准正态分布)的KL散度减小。这将使对于不同的输入样本，后验概率之间的重叠更大。如图中数据点$\tilde{x}$的编码表示$z$处于$q(z_1|x_1)$和$q(z_2|x_2)$的重叠区域中，则容易造成样本的混淆。为了增大对数似然，最好的编码方式就是让相近的数据点对应的编码分布也是相近的。在这种编码方式下，数据空间$X$的微小变化只会引起隐空间$Z$的微小变化，从而得到更平滑的表示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62834cba09475431298b9253.jpg" alt="" /></p>
+
+<h1 id="2-实验与分析">2. 实验与分析</h1>
+
+<p>作者比较了<strong>VAE</strong>和<strong>β-VAE</strong>的解耦能力。在一个黑色背景下放置一个白球的<strong>Toy</strong>数据集上，生成位置不同的图像。第一排是真实图像，第二排是模型的重构图像，之后每一排按照隐变量$z$不同维度与标准正态分布的KL距离从大到小进行排列，并从左到右逐渐地变化这个维度，并保持其他维度不变，生成一系列图像。</p>
+
+<p><img src="https://pic.downk.cc/item/5fc9d8e0394ac52378ffa3ce.jpg" alt="" /></p>
+
+<p>从上图可以看出，<strong>β-VAE</strong>只用$2$个维度表示小球的变化（上下位移、左右位移），并且这种变化是平滑的；而<strong>VAE</strong>用了更多维度表示其变化，并且均匀变化$X$会导致$Z$的不均匀变化。</p>
+
+<p>作者分析了<strong>β-VAE</strong>为什么能够得到解耦表示，原因如下：</p>
+<ol>
+  <li><strong>β-VAE</strong>能够学习到更平滑的表示，在该平滑性假设下，如果要引入新的变化<strong>factor</strong>，最优的方式是用一个新的维度编码该<strong>factor</strong>，并且不会影响到其他维度；</li>
+  <li>若只是由于上面这一点，不能避免学习到的隐空间是解耦隐空间的一个旋转表示（多个维度共同决定一个<strong>factor</strong>），但人为假设后验分布$q_{\phi}(z|x)$为对角协方差的正态分布，因此不同维度之间是独立的，避免了这种旋转表示。</li>
+</ol>
+
+<p>作者认为，如果一开始$\beta$值很大，再逐渐地减小其值，既不会降低模型的解耦能力，又可以逐渐降低重构误差。因此在训练过程中，可以逐渐减小KL项来改进<strong>β-VAE</strong>：</p>
+
+\[L(\theta,\phi; x,z, C) = \mathbb{E}_{q_{\phi}(z|x)} [\log p_{\theta}(x | z)] - \gamma | D_{KL}(q_{\phi}(z|x)||p_{\theta}(z)) - C|\]
+
+<p>在训练中会逐渐增大$C$的值。</p>
+
+<h1 id="3-所提β-vae的pytorch实现">3. 所提β-VAE的pytorch实现</h1>
+
+<p>本文所提<strong>β-VAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/beta_vae.py">PyTorch-VAE</a>，与标准的<strong>β-VAE</strong>主要区别在损失函数上，逐渐放宽对后验分布与先验分布的<strong>KL</strong>散度限制：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+<span class="n">kld_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="n">exp</span><span class="p">(),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="bp">self</span><span class="p">.</span><span class="n">C_max</span> <span class="o">=</span> <span class="n">max_capacity</span> <span class="c1"># 25
+</span><span class="bp">self</span><span class="p">.</span><span class="n">C_stop_iter</span> <span class="o">=</span> <span class="n">Capacity_max_iter</span> <span class="c1">#1e5
+</span><span class="n">C</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">C_max</span><span class="o">/</span><span class="bp">self</span><span class="p">.</span><span class="n">C_stop_iter</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_iter</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">C_max</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">recons_loss</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="n">kld_loss</span> <span class="o">-</span> <span class="n">C</span><span class="p">).</span><span class="nb">abs</span><span class="p">()</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/04/infovae.html" class="read-next-link"></a>
+        <section>
+          <span>InfoVAE: Balancing Learning and Inference in Variational Autoencoders</span>
+          <p>  InfoVAE：平衡变分自编码器的学习和推断过程.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5fc837cc394ac52378fb58db.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/02/bvae.html" class="read-next-link"></a>
+          <section>
+            <span>β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework</span>
+            <p>  β-VAE：学习变分自编码器隐空间的解耦表示.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fc740c0394ac5237895ee10.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

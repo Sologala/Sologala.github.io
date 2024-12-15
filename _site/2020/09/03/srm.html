@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Regret Minimization for Contextual Bandits - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Simple Regret Minimization for Contextual Bandits">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Simple Regret Minimization for Contextual Bandits - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/03/srm.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Simple Regret Minimization for Contextual Bandits</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-03"><i class="iconfont icon-date"></i>03 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f508384160a154a67246dc1.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>上下文多臂老虎机问题的简单遗憾最小化.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Second-order Attention Network for Single Image Super-Resolution</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1810.07371?context=cs">link</a></li>
+</ul>
+
+<p>本文的主要贡献在于：</p>
+<ol>
+  <li>建立了一个新颖的问题模型：上下文多臂老虎机问题的简单遗憾最小化模型。</li>
+  <li>提出了一个选择策略：<strong>Contextual-Gap</strong> 算法。</li>
+</ol>
+
+<h1 id="1-问题建模">1. 问题建模</h1>
+<p>本文所研究的问题可以建模为上下文多臂老虎机（<strong>Contextual Multi-Armed Bandit，cMAB</strong>）模型。</p>
+
+<h3 id="1符号说明">（1）符号说明</h3>
+<p>记上下文空间为$X \in \Bbb{R}^d$，即将观测到的上下文序列(<strong>context</strong>)表示为一系列$d$维向量\(\{x_t\}^∞_{t=1}\)。假设共有$A$个臂(<strong>arm</strong>)，在任意$t$时刻，得到观测结果$x_t$，学习者(<strong>learner</strong>)需要选择一个臂$a$。</p>
+
+<p>记$f_a : X → \Bbb{R}$为将上下文向量映射为奖励（<strong>reward</strong>）的函数。对于$t$时刻，选择臂$a_t$，并引入噪声$ζ_t$，根据当前上下文向量$x_t$得到此时的奖励$r_t$：</p>
+
+\[r_t = f_{a_t}(x_t) + ζ_t\]
+
+<p>记$D_{a,t}$为$t$时刻前臂$a$被选择的时刻集合，$N_{a,t}$为其大小；$X_{a,t}$为其对应的上下文向量矩阵，$Y_{a,t}$为其对应的奖励向量。</p>
+
+<h3 id="2问题陈述">（2）问题陈述</h3>
+<p>前$T$轮属于探索（<strong>exploration</strong>）阶段，学习者观察上下文向量，选择臂并得到奖励，记录实验数据用于学习上下文向量到奖励的映射$f_a$；$T$轮后属于利用（<strong>exploitation</strong>）阶段，学习者观察上下文向量，选择能使奖励最大或使简单遗憾最小的臂。</p>
+
+<p>给定上下文向量$x$，选择臂$a$的简单遗憾（<strong>simple regret</strong>）定义为：</p>
+
+\[R_a(x) = \mathop{\max}_{i \in A} f_i(x) - f_a(x)\]
+
+<p>记将给定上下文向量选择臂的策略（<strong>policy</strong>）为$Ω$，则目标可表示为通过探索选择合适的策略，使得对于$ε&gt;0$，$t&gt;T$时：</p>
+
+\[P(R_{Ω(x_t)}(x_t) ≥ ε \mid x_t) ≤ b_ε(T)\]
+
+<p>其中$b_ε(T)$表示当$T→∞$时衰减到$0$的表达式。</p>
+
+<h1 id="2-算法流程">2. 算法流程</h1>
+<p>设置探索轮数为$T$，总共$A$个臂。算法先对每个臂同样探索$N_λ$次，再使用<strong>Contextual-Gap</strong>策略探索直至$T$次。之后进行利用阶段。</p>
+
+<h2 id="t--1an_λ">⚪$t = 1:AN_λ$</h2>
+<ul>
+  <li><strong>Exploration I：Burn-in Period</strong></li>
+</ul>
+
+<p>这一阶段对每个臂$a$探索$N_λ$次，记录$x_t$和返回的$r_t$；</p>
+
+<h2 id="t--an_λ1t">⚪$t = AN_λ+1:T$</h2>
+<ul>
+  <li><strong>Exploration II：Contextual-Gap Policy</strong></li>
+</ul>
+
+<p>这一阶段根据上下文向量选择臂进行探索，记录$x_t$和返回的$r_t$；主要步骤如下：</p>
+
+<p>① 首先观察当前上下文向量$x_t$；</p>
+
+<p>② 根据之前记录的实验结果，使用核岭回归估计在当前上下文向量下选择每一个臂能得到的奖励：</p>
+
+\[\hat{f}_{a,t}(x) = \mathop{\arg \max}_{f_a \in H} \sum_{j \in D_{a,t}}^{} {(f_a(x_j)-r_j)^2} + λ\mid\mid f_a \mid\mid^2\]
+
+<p>上式表示对臂$a$在希尔伯特空间中寻找一个映射函数$f_a$，能够拟合之前在臂$a$上获得的实验结果，并且进行了<strong>L2</strong>正则化限制。</p>
+
+<p>根据上面的拟合结果可以得到$t$时刻，观察到上下文向量$x_t$时，选择臂$a$得到的奖励估计值$\hat{f}_{a,t}(x_t)$。</p>
+
+<p>③ 对奖励估计值\(\hat{f}_{a,t}(x_t)\)进行区间估计，可得到其置信区间，记置信区间宽度为\(s_{a,t}(x_t)\)。进一步计算置信上界\(U_{a,t}(x_t) = \hat{f}_{a,t}(x_t) + \frac{s_{a,t}(x_t)}{2}\)，置信下界\(L_{a,t}(x_t) = \hat{f}_{a,t}(x_t) - \frac{s_{a,t}(x_t)}{2}\)。</p>
+
+<p>④ 选择两个候选臂$J_t(x_t)$和$j_t(x_t)$;</p>
+
+<p>$J_t(x_t)$表示在最坏情况下奖励最高的臂。即在选择该臂并情况最坏（取置信下界）时，与选择其他臂并情况最好（取置信上界），奖励差距最小的臂。</p>
+
+\[J_t(x_t) = \mathop{\arg \min}_{a} (\mathop{\max}_{i≠a} U_{i,t}(x_t) - L_{a,t}(x_t))\]
+
+<p>$j_t(x_t)$表示在乐观情况下奖励最高的臂。即除$J_t(x_t)$外置信上界最大的臂。</p>
+
+\[j_t(x_t) = \mathop{\arg \max}_{a≠J_t(x_t)} U_{a,t}(x_t)\]
+
+<p>⑤ 最终选择两个候选臂中置信区间范围大的臂。</p>
+
+\[a_t = \mathop{\arg \max}_{a \in \{J_t(x_t),j_t(x_t)\}} s_{a,t}(x_t)\]
+
+<h2 id="t--t">⚪$t &gt; T$</h2>
+<ul>
+  <li><strong>Exploitation</strong></li>
+</ul>
+
+<p>这一阶段根据之前探索记录的实验结果，选择当前最坏情况下奖励最高的臂$J_t(x_t)$。</p>
+
+<h1 id="3-一个例子">3. 一个例子</h1>
+
+<p><img src="https://pic.downk.cc/item/5f509fae160a154a672b53d6.jpg" alt="" /></p>
+
+<p>如上图所示，有$3$个臂并且已经分别计算出在当前上下文向量中其估计的奖励置信区间。</p>
+
+<p>则由计算可得$J_t(x_t)=2$，$j_t(x_t)=1$，最终选择$a_t=1$。</p>
+
+<h1 id="3-算法特点">3. 算法特点</h1>
+<p>作者提出的<strong>Contextual-Gap</strong>算法在探索阶段首先选择两个候选臂（在最坏情况下奖励最高的臂和在乐观情况下奖励最高的臂），再从其中选择最终的臂。而之前的算法如<strong>UCB</strong>算法，则是直接选择在乐观情况下奖励最高的臂（置信上界最大的臂）。前者扩大了探索范围，增加了获得更高奖励上限的可能性。与此同时相比于<strong>Uniform Sampling</strong>算法（等可能选择每个臂），将搜索集中于更可能提供更多奖励的臂上，避免了不必要的搜索。</p>
+
+<p>作者对比了不同算法对不同臂的搜索次数：</p>
+
+<p><img src="https://pic.downk.cc/item/5f50aebd160a154a672f2df9.jpg" alt="" /></p>
+
+<p>作者对比了在合成数据集上不同算法的简单遗憾下降曲线：</p>
+
+<p><img src="https://pic.downk.cc/item/5f50af0e160a154a672f4009.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/04/lfd.html" class="read-next-link"></a>
+        <section>
+          <span>Learning in the Frequency Domain</span>
+          <p>  在频域中进行图像任务.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f52ec8f160a154a67aba310.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/02/multiarm-bandit.html" class="read-next-link"></a>
+          <section>
+            <span>Multi-Armed Bandit(MAB)：多臂老虎机</span>
+            <p>  Multi-armed bandit.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f505cc9160a154a671bb05b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

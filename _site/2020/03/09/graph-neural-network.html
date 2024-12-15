@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图神经网络(Graph Neural Network) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="图神经网络(Graph Neural Network)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="图神经网络(Graph Neural Network) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/09/graph-neural-network.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>图神经网络(Graph Neural Network)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-09"><i class="iconfont icon-date"></i>09 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ea59bbdc2a9a83be5281d20.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Graph Neural Networks.</p>
+</blockquote>
+
+<p><strong>图神经网络 (Graph Neural Network, GNN)</strong>是用于处理图结构的神经网络，其核心思想是学习一个函数映射$f(\cdot)$，图中的节点$v_i$通过该映射可以聚合它自己的特征$x_i$与它的邻居特征$x_{j \in N(v_i)}$来生成节点$v_i$的新表示。</p>
+
+<p><strong>GNN</strong>可以分为两大类，基于空间（<strong>spatial-based</strong>）和基于谱（<strong>spectral-based</strong>）。</p>
+<ul>
+  <li>基于空间的<strong>GNN</strong>直接根据邻域聚合特征信息，把图粗化为高级子结构，可用于提取图的各级表示和执行下游任务。如<strong>NN4G</strong>, <strong>DCNN</strong>, <strong>DGC</strong>, <strong>MoNET</strong>, <strong>GraphSAGE</strong>, <strong>GAT</strong>, <strong>GIN</strong>。</li>
+  <li>基于谱的<strong>GNN</strong>把图网络通过傅里叶变换转换到谱域，引入滤波器处理图谱后通过逆变换还原到顶点域。如<strong>ChebNet</strong>, <strong>GCN</strong>, <strong>DropEdge</strong>。</li>
+</ul>
+
+<p><strong>本文目录：</strong></p>
+<ol>
+  <li><strong>Spatial-based GNN</strong></li>
+  <li><strong>Spectral-based GNN</strong></li>
+  <li><strong>Benchmarks</strong></li>
+</ol>
+
+<h1 id="1-spatial-based-gnn">1. Spatial-based GNN</h1>
+
+<p><strong>术语</strong>Terminology：</p>
+<ul>
+  <li><strong>Aggregate</strong>: 用邻域的特征更新节点的隐状态</li>
+  <li><strong>Readout</strong>: 把所有节点的特征集合起来代表整个图</li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5ea590d8c2a9a83be519e2c6.jpg" alt="" /></p>
+
+<p><strong>方法</strong>:</p>
+<ol>
+  <li>NN4G (Neural Networks for Graph)</li>
+  <li>DCNN (Diffusion-Convolution Neural Network)</li>
+  <li>DGC (Diffusion Graph Convolution)</li>
+  <li>MoNET (Mixture Model Networks)</li>
+  <li>GraphSAGE</li>
+  <li>GAT (Graph Attention Networks)</li>
+  <li>GIN (Graph Isomorphism Network)</li>
+</ol>
+
+<h3 id="1-nn4g-neural-networks-for-graph">(1) <a href="https://ieeexplore.ieee.org/document/4773279">NN4G (Neural Networks for Graph)</a></h3>
+
+<p>先对输入图的每个节点进行嵌入，得到初始隐状态：</p>
+
+<p>（以节点$v3$为例）：\(h_3^0 = \overline{w}_0x_3\)</p>
+
+<p><img src="https://pic.downk.cc/item/5ea59bbdc2a9a83be5281d20.jpg" alt="" /></p>
+
+<p>状态更新时，每个节点使用邻节点的状态和该节点的输入更新：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea59c77c2a9a83be529444d.jpg" alt="" /></p>
+
+<p>$Readout$时对每一层的隐状态的均值进行加权求和，得到输出：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea59cbcc2a9a83be529a8a7.jpg" alt="" /></p>
+
+<h3 id="2-dcnn-diffusion-convolution-neural-network">(2) <a href="https://arxiv.org/abs/1511.02136">DCNN (Diffusion-Convolution Neural Network)</a></h3>
+
+<p><strong>DCNN</strong>对第$l$个隐藏层的节点$v_l$，使用自身以及距离为$l+1$的节点状态进行更新。</p>
+
+<p>如下图，在更新$h_3^1$时，使用$h_3^0$和距离为2的$h_1^0$进行更新：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea59dc1c2a9a83be52b2e2f.jpg" alt="" /></p>
+
+<p>$Readout$时把所有层的状态连接起来进行线性变换：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea59e9dc2a9a83be52c63d5.jpg" alt="" /></p>
+
+<h3 id="3-dgc-diffusion-graph-convolution">(3) <a href="https://arxiv.org/pdf/1707.01926.pdf">DGC (Diffusion Graph Convolution)</a></h3>
+
+<p><strong>DGC</strong>与<strong>DCNN</strong>的不同在于$Readout$时把所有层的状态相加：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea59ed8c2a9a83be52cba90.jpg" alt="" /></p>
+
+<h3 id="4-monet-mixture-model-networks">(4) <a href="https://arxiv.org/pdf/1611.08402.pdf">MoNET (Mixture Model Networks)</a></h3>
+
+<p>定义两节点$x$、$y$之间的“距离”$u$：</p>
+
+\[u(x,y) = (\frac{1}{\sqrt{deg(x)}},\frac{1}{\sqrt{deg(y)}})^T\]
+
+<p>其中$deg(x)$表示$x$的维度。</p>
+
+<p>节点更新时采用对邻域节点加权求和的方法：</p>
+
+\[h_3^1 = w(\hat{u}_{3,0})×h_0^0 + w(\hat{u}_{3,2})×h_2^0 + w(\hat{u}_{3,4})×h_4^0\]
+
+<p>其中$w$是一个神经网络，$\hat{u}$是$u$的变换。</p>
+
+<p><img src="https://pic.downk.cc/item/5ea5a04bc2a9a83be52eba44.jpg" alt="" /></p>
+
+<h3 id="5-graphsage">(5) <a href="https://arxiv.org/pdf/1706.02216.pdf">GraphSAGE</a></h3>
+
+<p><strong>GraphSAGE</strong>采用两个操作：<strong>Sample</strong>和<strong>aggregate</strong>。对于某节点，从其$k$邻域中采样节点，并根据采样的节点更新图信息。</p>
+
+<p><img src="https://pic.downk.cc/item/5ea5a0cbc2a9a83be52f6eea.jpg" alt="" /></p>
+
+<h3 id="6-gat-graph-attention-networks">(6) <a href="https://arxiv.org/pdf/1710.10903.pdf">GAT (Graph Attention Networks)</a></h3>
+
+<p>用一个函数$f$实现注意力机制，用邻域节点的注意力分布加权更新参数：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea5a135c2a9a83be53009c2.jpg" alt="" /></p>
+
+<h3 id="7-gin-graph-isomorphism-network">(7) <a href="https://openreview.net/forum?id=ryGs6iA5Km">GIN (Graph Isomorphism Network)</a></h3>
+
+<p>节点的状态更新：</p>
+
+\[h_v^{(k)} = MLP^{(k)}((1+ε^{(k)})·h_v^{(k-1)} + \sum_{u \in \Bbb{N}(v)}^{} {h_u^{(k-1)}})\]
+
+<p>使用$MLP$代替了单层网络，$ε$是可学习参数，$\Bbb{N}$是邻节点集合。</p>
+
+<p>该论文指出节点的状态更新应该用<strong>求和sum</strong>而不是<strong>均值mean</strong>或<strong>最大值max</strong>，因为均值或最大值可能会失效：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea5a1acc2a9a83be530b5a3.jpg" alt="" /></p>
+
+<h1 id="2-spectral-based-gnn">2. Spectral-based GNN</h1>
+<p><strong>Spectral-based</strong>的思想是将图网络和卷积核通过傅里叶变换到谱域(<strong>spectral domain</strong>)，相乘后把结果通过傅里叶逆变换到顶点域(<strong>vertex domain</strong>)。</p>
+
+<p><img src="https://pic.downk.cc/item/5ea6c0d3c2a9a83be5a1ce61.jpg" alt="" /></p>
+
+<h2 id="-谱图理论-spectral-graph-theory">⚪ 谱图理论 Spectral Graph Theory</h2>
+<p><strong>术语</strong>Terminology：</p>
+<ul>
+  <li><strong>Graph</strong>:\(G=(V,E)\),$N= \mid V \mid$，本文讨论<strong>无向图undirected graph</strong>。</li>
+  <li><strong>Adjacency matrix(weight matrix)</strong>:\(A \in \Bbb{R}^{N×N}\)表示节点间是否有连接，是<strong>对称矩阵</strong>。</li>
+  <li><strong>Degree matrix</strong>:\(D \in \Bbb{R}^{N×N}\)表示节点的邻节点数量，是<strong>对角矩阵</strong>。</li>
+  <li><strong>Signal on graph(vertices)</strong>:\(f:V → \Bbb{R}\),$f(i)$表示每个节点$i$的信号。</li>
+  <li><strong>Graph Laplacian</strong>:\(L=D-A\)是对称的半正定矩阵。</li>
+</ul>
+
+<p><strong>谱分解Spectral Decomposition</strong>：\(L=U \Lambda U^T\)</p>
+<ul>
+  <li>对角矩阵\(\Lambda = diag(λ_0,...,λ_{N-1}) \in \Bbb{R}^{N×N}\)，$λ_i$表示<strong>频率frequency</strong>。</li>
+  <li>正交矩阵\(U = [u_0,...,u_{N-1}] \in \Bbb{R}^{N×N}\)，$u_i$表示<strong>基basis</strong>。</li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5ea6c643c2a9a83be5a8085c.jpg" alt="" /></p>
+
+<p>上述概念的例题：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea6c6fec2a9a83be5a89035.jpg" alt="" /></p>
+
+<p>$u_i$表示各节点中频率$λ_i$所占的权重；频率越大，相邻两节点之间的信号变化量越大：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea6ce22c2a9a83be5ae6f12.jpg" alt="" /></p>
+
+<p>信号$x$的<strong>Graph Fourier Transform (GFT)</strong>：\(\hat{x} = U^Tx\)</p>
+
+<p><img src="https://pic.downk.cc/item/5ea6cf12c2a9a83be5af2e47.jpg" alt="" /></p>
+
+<p>信号$\hat{x}$的<strong>Inverse Graph Fourier Transform (IGFT)</strong>：\(x = U\hat{x}\)</p>
+
+<p><img src="https://pic.downk.cc/item/5ea6cfafc2a9a83be5afb05d.jpg" alt="" /></p>
+
+<h2 id="-基于谱的gnn">⚪ 基于谱的GNN</h2>
+<ol>
+  <li>将信号$x$通过$GFT$转换到$spectral$ $domain$：\(\hat{x} = U^Tx\);</li>
+  <li>在$spectral$ $domain$设计滤波器\(g_θ(\Lambda)\);</li>
+  <li>$vertex$ $domain$的卷积相当于$spectral$ $domain$的乘积：\(\hat{y}=g_θ(\Lambda)\hat{x}\);</li>
+  <li>将信号$\hat{y}$通过$IGFT$转换到$vertex$ $domain$：\(y = U\hat{y}\)</li>
+</ol>
+
+<p>计算：</p>
+
+\[y = U\hat{y} = Ug_θ(\Lambda)\hat{x} = Ug_θ(\Lambda)U^Tx = g_θ(U\Lambda U^T)x = g_θ(L)x\]
+
+<p><img src="https://pic.downk.cc/item/5ea6d0c7c2a9a83be5b0df38.jpg" alt="" /></p>
+
+<p>\(g_θ(L)\)可以是任何函数：</p>
+<ol>
+  <li>\(g_θ(L)=log(I+L)=L-\frac{L^2}{2}+\frac{L^3}{3}...\)
+    <ul>
+      <li>问题：学习复杂度$O(N)$</li>
+    </ul>
+  </li>
+  <li>\(g_θ(L)=cos(L)=I-\frac{L^2}{2!}+\frac{L^4}{4!}...\)
+    <ul>
+      <li>问题：失去局部性</li>
+    </ul>
+  </li>
+</ol>
+
+<p><strong>引理Lemma</strong>：如果一个图具有$N$个节点，则$L^N$不存在$0$元素，即使所有节点共享。</p>
+
+<p><strong>方法</strong>:</p>
+<ol>
+  <li>ChebNet</li>
+  <li>GCN(Graph Convolution Network)</li>
+  <li>DropEdge</li>
+</ol>
+
+<h3 id="1-chebnet">(1) <a href="https://arxiv.org/pdf/1606.09375.pdf">ChebNet</a></h3>
+
+<p>\(g_θ(L)\)使用$k$阶多项式函数函数：\(g_θ(L) = \sum_{k=0}^{K} {θ_kL^k}\)</p>
+
+<p>由引理知上式是<strong>K-localized</strong>的，上式时间复杂度$O(N^2)$。</p>
+
+<p>引入<strong>Chebyshev polynomial</strong>：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea6d6a2c2a9a83be5b742da.jpg" alt="" /></p>
+
+<p>为使\(λ \in [-1,1]\)，做变换：\(\overline{\Lambda}=\frac{2\Lambda}{λ_{max}}-I\)</p>
+
+<p>则\(T_0(\overline{\Lambda})=I, \quad T_1(\overline{\Lambda})=\overline{\Lambda}, \quad T_k(\overline{\Lambda})=2\overline{\Lambda}T_{k-1}(\overline{\Lambda})-T_{k-2}(\overline{\Lambda})\)</p>
+
+\[g_θ(\hat{L}) = \sum_{k=0}^{K} {θ'_kT_k(\hat{L})}\]
+
+\[y = g_θ(\hat{L})x = \sum_{k=0}^{K} {θ'_kT_k(\hat{L})}x\]
+
+<p>若记\(\hat{x}_k = T_k(\hat{L})x\),则：</p>
+
+\[y = \sum_{k=0}^{K} {θ'_k\hat{x}_k} = [\hat{x}_0;...;\hat{x}_K][θ'_0;...;θ'_K]\]
+
+<p>上式时间复杂度$O(KE)$。</p>
+
+<p>实际使用中，可以使用多个\(g_θ\)：</p>
+
+<p><img src="https://pic.downk.cc/item/5ea6da28c2a9a83be5baef92.jpg" alt="" /></p>
+
+<h3 id="2-gcngraph-convolution-network">(2) <a href="https://openreview.net/pdf?id=SJU4ayYgl">GCN(Graph Convolution Network)</a></h3>
+<p><img src="https://pic.downk.cc/item/5ea6daefc2a9a83be5bb9f38.jpg" alt="" /></p>
+
+<p>$GCN$的计算公式也写作：</p>
+
+\[h_v = f(\frac{1}{\mid N(v) \mid}\sum_{u \in N(v)}^{} {Wx_u}+b, \quad \forall v \in V)\]
+
+<h3 id="3-dropedge">(3) <a href="https://openreview.net/pdf?id=Hkx1qkrKPr">DropEdge</a></h3>
+
+<p>随机丢弃<strong>Adjacency Matrix</strong>的一些元素，防止<strong>over-smoothing</strong>。</p>
+
+<h1 id="3-benchmarks">3. Benchmarks</h1>
+
+<h3 id="1graph-classification">(1)Graph Classification</h3>
+<ul>
+  <li><strong>Dataset</strong>:** SuperPixel MNIST and CIFAR10**
+<img src="https://pic.downk.cc/item/5ea6bd91c2a9a83be59cf7f5.jpg" alt="" /></li>
+</ul>
+
+<h3 id="2regression">(2)Regression</h3>
+<ul>
+  <li><strong>Dataset</strong>: <strong>ZINC molecule graphs dataset</strong>
+<img src="https://pic.downk.cc/item/5ea6bdf2c2a9a83be59d74e4.jpg" alt="" /></li>
+</ul>
+
+<h3 id="3node-classification">(3)Node classification</h3>
+<ul>
+  <li><strong>Dataset</strong>: <strong>Stochastic Block Model dataset</strong></li>
+</ul>
+
+<p>graph pattern recognition and semi-supervised graph clustering
+<img src="https://pic.downk.cc/item/5ea6be68c2a9a83be59dfd51.jpg" alt="" /></p>
+
+<h3 id="4edge-classification">(4)Edge classification</h3>
+<ul>
+  <li><strong>Dataset</strong>: <strong>Traveling Salesman Problem</strong>
+<img src="https://pic.downk.cc/item/5ea6beaac2a9a83be59e5364.jpg" alt="" /></li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/11/perceptron.html" class="read-next-link"></a>
+        <section>
+          <span>感知机(Perceptron)</span>
+          <p>  Perceptron.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5eca7715c2a9a83be521b412.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/08/recursive-neural-network.html" class="read-next-link"></a>
+          <section>
+            <span>递归神经网络(Recursive Neural Network)</span>
+            <p>  Recursive Neural Networks.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ea14499c2a9a83be5c09f98.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人体姿态估计(Human Pose Estimation) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="人体姿态估计(Human Pose Estimation)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="人体姿态估计(Human Pose Estimation) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/05/31/pose-estimation.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>人体姿态估计(Human Pose Estimation)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-05-31"><i class="iconfont icon-date"></i>31 May 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ebab802101ccd402bd8d03b.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Person Pose Estimation.</p>
+</blockquote>
+
+<p><strong>人体姿态估计 (Human Pose Estimation, HPE)</strong>是指从图像、视频等输入信号中估计人体的姿态信息。姿态通常以关键点（<strong>keypoint</strong>，也称为关节点 <strong>joint</strong>，比如手肘、膝盖、肩膀）组成的人体骨骼（<strong>skeleton</strong>）表示。</p>
+
+<p>人体姿态估计与关键点检测的区别：人体关键点检测是指在图像中直接预测若干预定义人体关键点的空间位置，当关键点部位被遮挡时则无法直接预测；而人体姿态估计在此基础上根据人体关节的先验知识和全局关系对被遮挡的关键点位置进行估计，从而获得完整的人体姿态预测结果。</p>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li><strong>2D</strong>单人姿态估计</li>
+  <li><strong>2D</strong>多人姿态估计</li>
+  <li><strong>3D</strong>人体姿态估计</li>
+  <li>人体姿态估计的技巧</li>
+  <li>人体姿态估计的评估指标</li>
+  <li>人体姿态估计数据集</li>
+</ol>
+
+<h3 id="-扩展阅读">⭐ 扩展阅读：</h3>
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/11/17/pose.html"><font color="blue">Monocular Human Pose Estimation: A Survey of Deep Learning-based Methods</font></a>：(arXiv2006)单目人体姿态估计的深度学习方法综述。</li>
+</ul>
+
+<h1 id="1-2d单人姿态估计-2d-single-human-pose-estimation">1. 2D单人姿态估计 2D Single Human Pose Estimation</h1>
+
+<p><strong>2D</strong>单人人体姿态估计通常是从已完成定位的人体图像中计算人体关节点的位置，并进一步生成<strong>2D</strong>人体骨架。这些方法可以进一步分为<strong>基于回归(regression-based)</strong>的方法与<strong>基于检测(detection-based)</strong>的方法。</p>
+<ul>
+  <li>基于回归的方法：直接将输入图像映射为人体关节的<strong>坐标</strong>或人体模型的<strong>参数</strong>，如<strong>DeepPose</strong>, <strong>TFPose</strong>, <strong>PCT</strong>。</li>
+  <li>基于检测的方法：将输入图像映射为<strong>图像块(patch)</strong>或人体关节位置的<strong>热图(heatmap)</strong>，从而将身体部位作为检测目标；如<strong>CPM</strong>, <strong>Hourglass</strong>, <strong>Chained</strong>, <strong>MCA</strong>, <strong>FPM</strong>, <strong>HRNet</strong>, <strong>Lite-HRNet</strong>, <strong>HR-NAS</strong>, <strong>Lite Pose</strong>, <strong>TokenPose</strong>, <strong>ViTPose</strong>。</li>
+</ul>
+
+<h2 id="1基于回归的2d单人姿态估计-regression-based-2d-shpe">（1）基于回归的2D单人姿态估计 Regression-based 2D SHPE</h2>
+
+<p>基于回归的方法直接预测人体各关节点的<strong>联合坐标</strong>。这类方法可以端到端的训练，速度更快，并且可以得到子像素级(<strong>sub-pixel</strong>)的精度；但由于映射是高度非线性的，学习较为困难，且缺乏鲁棒性。</p>
+
+<h3 id="-deeppose">⚪ DeepPose</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/01/deeppose.html"><font color="blue">DeepPose: Human Pose Estimation via Deep Neural Networks</font></a></li>
+</ul>
+
+<p><strong>DeepPose</strong>使用预训练卷积神经网络提取特征，直接对人体的$k$对关键点坐标进行回归预测。模型使用了级联回归器，对前一阶段的预测结果进行细化。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a3fac1ddac507cc46d279.jpg" alt="" /></p>
+
+<h3 id="-tfpose">⚪ TFPose</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/05/09/tfpose.html"><font color="blue">TFPose: Direct Human Pose Estimation with Transformers</font></a></li>
+</ul>
+
+<p><strong>TFPose</strong>通过将卷积神经网络与<strong>Transformer</strong>结构相结合，直接并行地预测所有关键点坐标序列。<strong>Transformer</strong>解码器将一定数量的关键点查询向量和编码器输出特征作为输入，并通过一个多层前馈网络预测最终的关键点坐标。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629df817094754312978e61a.jpg" alt="" /></p>
+
+<h3 id="-pose-as-compositional-tokens-pct">⚪ Pose as Compositional Tokens (PCT)</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2023/03/21/pct.html"><font color="blue">Human Pose as Compositional Tokens</font></a></li>
+</ul>
+
+<p><strong>PCT</strong>通过<strong>VQ-VAE</strong>学习关节点坐标的离散编码表，然后使用预训练的人体姿态编码器把人体图像编码到同一个特征空间，并通过查表的方式重构人体姿态坐标。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668e337ed9c307b7e96cb6db.png" alt="" /></p>
+
+<h2 id="2基于检测的2d单人姿态估计-detection-based-2d-shpe">（2）基于检测的2D单人姿态估计 Detection-based 2D SHPE</h2>
+
+<p>基于检测的方法使用<strong>热图</strong>来指示关节的真实位置。如下图所示，每个关键点占据一个热图通道，表示为以目标关节位置为中心的二维高斯分布。</p>
+
+<p><img src="https://pic.downk.cc/item/5fb37ddeb18d62711306f2a6.jpg" alt="" /></p>
+
+<p>由于热图能够保存空间位置信息，这类方法鲁棒性更好；但从中估计关节点坐标的准确性较差（热图大小往往是原图的等比例缩放，通过在输出热图上按通道找最大的响应位置，精度是<strong>pixel</strong>级别），并且阻碍了端到端的训练。同时基于热图的方法需要网络始终保留热图尺寸的中间层特征图，会使网络整体具有较大的参数量，不适合移动端部署。</p>
+
+<p>把关节点坐标转换成热图的过程如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Coord2Heatmap</span><span class="p">:</span>
+    <span class="s">"""
+        Generate target heatmaps from given coords
+    """</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hm_size</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span><span class="mi">64</span><span class="p">],</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="s">"""
+        Args:
+            hm_size: [int, int]. Width and height of Target heatmap
+            sigma: int. Variance of Target heatmap
+        """</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Coord2Heatmap</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">hm_size</span> <span class="o">=</span> <span class="n">hm_size</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span>
+    
+    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coords</span><span class="p">):</span>
+        <span class="s">"""
+        Args:
+            coords: numpy.array, shape: [N, 2]. Coordinates of keypoints
+        Return:
+            targets: numpy.array, shape: [N, hm_size[1], hm_size[0]]. Generated target heatmaps
+        """</span>
+        <span class="n">num_joints</span> <span class="o">=</span> <span class="n">coords</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">W</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">hm_size</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">W</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">W</span><span class="p">)[</span><span class="n">np</span><span class="p">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">num_joints</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">H</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">)[</span><span class="n">np</span><span class="p">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">num_joints</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">heatmap</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])[:,</span> <span class="p">:,</span> <span class="n">np</span><span class="p">.</span><span class="n">newaxis</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">y</span><span class="o">-</span><span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])[:,</span> <span class="n">np</span><span class="p">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">heatmap</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
+    <span class="n">generator</span> <span class="o">=</span> <span class="n">Coord2Heatmap</span><span class="p">(</span><span class="n">hm_size</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">])</span>
+    <span class="n">test_coords</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span>
+                            <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+                            <span class="p">])</span>
+    <span class="n">test_targets</span> <span class="o">=</span> <span class="n">generator</span><span class="p">.</span><span class="n">generate</span><span class="p">(</span><span class="n">test_coords</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-convolutional-pose-machine-cpm">⚪ Convolutional Pose Machine (CPM)</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/04/cpm.html"><font color="blue">Convolutional Pose Machines</font></a></li>
+</ul>
+
+<p>卷积姿态机使用顺序化的卷积网络来进行图像特征提取，以置信度热图的形式表示预测结果，在全卷积的结构下使用中间监督进行端到端的训练。</p>
+
+<p>顺序化的卷积架构表现在网络分为多个阶段，每一个阶段都有监督训练的部分。前面的阶段使用原始图片作为输入，后面阶段使用之前阶段的特征图作为输入。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a887b1ddac507ccbf6247.jpg" alt="" /></p>
+
+<h3 id="-stacked-hourglass-network">⚪ Stacked Hourglass Network</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/03/hourglass.html"><font color="blue">Stacked Hourglass Networks for Human Pose Estimation</font></a></li>
+</ul>
+
+<p>堆叠沙漏网络是由若干个<strong>Hourglass</strong>模块堆叠而成，<strong>Hourglass</strong>模块是由若干次下采样+上采样和残差连接组成。此外还在每个<strong>Hourglass</strong>模块中引入了中间监督。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a44321ddac507cc4e7389.jpg" alt="" /></p>
+
+<h3 id="-chained-prediction">⚪ Chained Prediction</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/05/chain.html"><font color="blue">Chained Predictions Using Convolutional Neural Networks</font></a></li>
+</ul>
+
+<p><strong>Chained Prediction</strong>是指按照关节链模型的顺序输出关节热图，每一步的输出取决于输入图像和先前预测的热图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649b8a9a1ddac507cc19d7e9.jpg" alt="" /></p>
+
+<h3 id="-multi-context-attention-mca">⚪ Multi-Context Attention (MCA)</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/06/multicontext.html"><font color="blue">Multi-Context Attention for Human Pose Estimation</font></a></li>
+</ul>
+
+<p>本文为堆叠沙漏网络引入了沙漏残差单元(<strong>HRUs</strong>)以学习不同尺度的特征，并在浅层引入多分辨率注意力，在深层引入由粗到细的部位注意力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649b95661ddac507cc2a4b4f.jpg" alt="" /></p>
+
+<h3 id="-feature-pyramid-module-fpm">⚪ Feature Pyramid Module (FPM)</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/07/prm.html"><font color="blue">Learning Feature Pyramids for Human Pose Estimation</font></a></li>
+</ul>
+
+<p>特征金字塔模块能够提取不同尺度的特征，可以替换<strong>Hourglass</strong>中的残差模块。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649ba4961ddac507cc44f04b.jpg" alt="" /></p>
+
+<h3 id="-hrnet">⚪ HRNet</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/14/hrnet.html"><font color="blue">Deep High-Resolution Representation Learning for Human Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>HRNet</strong>不断地去融合不同尺度上的信息，其整体结构分成多个层级，但是始终保留着最精细的空间层级信息，通过融合下采样然后做上采样的层，来获得更多的上下文以及语义层面的信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a510fb1ddac507cc221282.jpg" alt="" /></p>
+
+<h3 id="-lite-hrnet">⚪ Lite-HRNet</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/12/litehrnet.html"><font color="blue">Lite-HRNet: A Lightweight High-Resolution Network</font></a></li>
+</ul>
+
+<p><strong>Lite-HRNet</strong>首先在<strong>HRNet</strong>中通过<strong>Shuffle Block</strong>替换残差模块；进一步发现<strong>Shuffle Block</strong>中的1x1卷积成为了计算瓶颈，于是采用<strong>SENet</strong>模块替换1x1卷积进行特征聚合。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668e3f3cd9c307b7e97c4648.png" alt="" /></p>
+
+<h3 id="-hr-nas">⚪ HR-NAS</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/06/20/hrnas.html"><font color="blue">HR-NAS: Searching Efficient High-Resolution Neural Architectures with Lightweight Transformers</font></a></li>
+</ul>
+
+<p>本文设计了一个简单的轻量级视觉<strong>Transformer</strong>模块，然后在<strong>HRNet</strong>结构基础上进行神经结构搜索，将原本的3x3卷积模块扩展成了3x3,5x5,7x7,轻量级视觉<strong>Transformer</strong>模块等四种模块拼接的模块，然后搜索这四种模块的比例和通道数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668e4e8dd9c307b7e992fe19.png" alt="" /></p>
+
+<h3 id="-lite-pose">⚪ Lite Pose</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/01/litepose.html"><font color="blue">Lite Pose: Efficient Architecture Design for 2D Human Pose Estimation</font></a></li>
+</ul>
+
+<p>对于轻量级姿态估计模型而言，多分支高分辨率的结构是比较冗余的。<strong>Lite Pose</strong>采用带有残差连接的单分支网络：</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d0a3561ddac507cce88190.jpg" alt="" /></p>
+
+<h3 id="-tokenpose">⚪ TokenPose</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/27/tokenpose.html"><font color="blue">TokenPose: Learning Keypoint Tokens for Human Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>TokenPose</strong>通过<strong>CNN</strong>网络提取特征图，将特征图拆分为<strong>patch</strong>后拉平为<strong>visual tokens</strong>，然后随机初始化一些可学习的<strong>keypoint tokens</strong>一起送入<strong>transformer</strong>进行学习，并将输出的<strong>keypoint tokens</strong>通过一个<strong>MLP</strong>映射到<strong>heatmap</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64cf201d1ddac507ccadc8fc.jpg" alt="" /></p>
+
+<h3 id="-vitpose">⚪ ViTPose</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/07/08/vitpose.html"><font color="blue">ViTPose: Simple Vision Transformer Baselines for Human Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>ViTPose</strong>使用<strong>ViT</strong>结构作为<strong>Backbone</strong>，结合一个轻量级的<strong>Decoder</strong>解码关节点热图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a38a991ddac507cc5f767b.jpg" alt="" /></p>
+
+<h1 id="2-2d多人姿态估计-2d-multiple-human-pose-estimation">2. 2D多人姿态估计 2D Multiple Human Pose Estimation</h1>
+
+<p>与单人姿态估计相比，多人姿态估计需要同时完成<strong>检测</strong>和<strong>估计</strong>任务。根据完成任务的顺序不同，多人姿态估计方法分为<strong>自上而下(top-down)</strong>的方法和<strong>自下而上(bottom-up)</strong>的方法。</p>
+<ul>
+  <li>自上而下的方法先做<strong>检测</strong>再做<strong>估计</strong>。即先通过目标检测的方法在输入图像中检测出不同的人体，再使用单人姿态估计方法对每个人进行姿态估计；如<strong>RMPE</strong>, <strong>CPN</strong>, <strong>MSPN</strong>。</li>
+  <li>自下而上的方法先做<strong>估计</strong>再做<strong>检测</strong>。即先在图像中估计出所有人体关节点，再将属于不同人的关节点进行关联和组合；如<strong>DeepCut</strong>, <strong>DeeperCut</strong>, <strong>Associative Embedding</strong>, <strong>OpenPose</strong>。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/649bd8b31ddac507cc9c3cc5.jpg" alt="" /></p>
+
+<h2 id="1自上而下的2d多人姿态估计-top-down-2d-mhpe">（1）自上而下的2D多人姿态估计 Top-down 2D MHPE</h2>
+
+<p>自上而下的方法中两个最重要的组成部分是<strong>人体区域检测器</strong>和<strong>单人姿态估计器</strong>。大多数研究基于现有的人体目标检测器进行估计，如<strong>Faster R-CNN</strong>、<strong>Mask R-CNN</strong>和<strong>FPN</strong>。</p>
+
+<p>通过将现有的人体检测网络和单人姿态估计网络结合起来，可以轻松实现自上而下的多人姿态估计。这类方法检测人体目标的召回率较高，关节点的定位精度较高，几乎在所有<strong>Benchmarks</strong>上取得了最先进的表现，但这种方法的处理速度受到检测人数的限制，当检测人数增加时运行时间成倍地增加。</p>
+
+<h3 id="-rmpe">⚪ RMPE</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/09/alphapose.html"><font color="blue">RMPE: Regional Multi-person Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>RMPE</strong>框架包含三部分：对称空间变换网络<strong>SSTN</strong>用于在不准确的人体检测框中提取准确的单人区域；参数化姿态的非极大值抑制<strong>p-pose NMS</strong>用于解决人体检测框冗余问题；姿态引导区域框生成器<strong>PGPG</strong>用于数据增强。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a7651d1ddac507cc964064.jpg" alt="" /></p>
+
+<h3 id="-cpn">⚪ CPN</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/12/cpn.html"><font color="blue">Cascaded Pyramid Network for Multi-Person Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>CPN</strong>使用<strong>FPN</strong>进行人体目标检测，在关节点检测时采用<strong>GlobalNet</strong>和<strong>RefineNet</strong>。<strong>GlobalNet</strong>对关键点进行粗提取，<strong>RefineNet</strong>对不同层信息进行融合，更好地综合特征定位关键点。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a4db461ddac507ccb950e1.jpg" alt="" /></p>
+
+<h3 id="-mspn">⚪ MSPN</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/13/mspn.html"><font color="blue">Rethinking on Multi-Stage Networks for Human Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>MSPN</strong>使用<strong>CPN</strong>的<strong>GlobalNet</strong>进行多阶段的堆叠，并引入了跨阶段的特征聚合（融合不同阶段同一层的特征）与由粗到细的监督（中间监督热图随着阶段的增加越来越精细）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a50a0a1ddac507cc132f0a.jpg" alt="" /></p>
+
+<h2 id="2自下而上的2d多人姿态估计-bottom-up-2d-mhpe">（2）自下而上的2D多人姿态估计 Bottom-up 2D MHPE</h2>
+
+<p>自下而上的人体姿态估计方法的主要组成部分包括<strong>人体关节检测</strong>和<strong>候选关节分组</strong>。大多数算法分别处理这两个组件，也可以在<strong>单阶段</strong>进行预测。</p>
+
+<p>这类方法的关键在于正确组合关节点，速度不受图像中人数变化影响，实时性好；但是性能会受到复杂背景和人为遮挡的影响，精度相对低，当不同人体之间有较大遮挡时，估计效果会进一步下降。</p>
+
+<h3 id="-deepcut">⚪ DeepCut</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/11/deepcut.html"><font color="blue">DeepCut: Joint Subset Partition and Labeling for Multi Person Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>DeepCut</strong>首先从图像中提取关节点候选集合$D$，并将其划分到$C$个关节类别中。定义三元组$(x,y,z)$：</p>
+
+\[x \in \{0,1\}^{D\times C},y \in \{0,1\}^{\begin{pmatrix}D \\ 2\end{pmatrix}},z \in \{0,1\}^{\begin{pmatrix}D \\ 2\end{pmatrix}\times C^2}\]
+
+<p>其中$x_{dc} = 1$表示关节点$d$属于类别$c$，$y_{dd’}=1$表示关节点$d$和$d’$属于同一个人，$z_{dd’cc’}=x_{dc}x_{d’c’}y_{dd’}$是一个辅助变量。进一步建立$(x,y,z)$的线性方程，构造整数线性规划问题。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a4d4901ddac507ccacd73b.jpg" alt="" /></p>
+
+<h3 id="-deepercut">⚪ DeeperCut</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1605.03170">DeeperCut: A Deeper, Stronger, and Faster Multi-Person Pose Estimation Model</a></li>
+</ul>
+
+<p><strong>DeeperCut</strong>相比于<strong>DeepCut</strong>有三点改进：</p>
+<ul>
+  <li>使用<strong>ResNet</strong>提高关节点检测的准确率；</li>
+  <li>改进优化策略更有效地搜索空间，获得更好的性能和显著速度提升；</li>
+  <li>通过图像条件成对项(<strong>image-conditioned pairwise terms</strong>)进行关节点的非极大值抑制，即通过候选关节点之间的距离来判断是否为不同的重要关节点。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/64a4d5a31ddac507ccaedcf9.jpg" alt="" /></p>
+
+<h3 id="-associative-embedding">⚪ Associative Embedding</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/10/associative.html"><font color="blue">Associative Embedding: End-to-End Learning for Joint Detection and Grouping</font></a></li>
+</ul>
+
+<p><strong>Associative Embedding</strong>为每个关节点输出一个<strong>embedding</strong>，使得同一个人的<strong>embedding</strong>尽可能相近，不同人的<strong>embedding</strong>尽可能不一样。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a4c1c81ddac507cc8b09b6.jpg" alt="" /></p>
+
+<h3 id="-openpose">⚪ OpenPose</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/08/openpose.html"><font color="blue">Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields</font></a></li>
+</ul>
+
+<p><strong>OpenPose</strong>使用卷积神经网络从输入图像中提取部位置信图(<strong>PCM</strong>)与部位亲和场(<strong>PAF</strong>)：部位置信图是指人体关节点的热力图，用于表征人体关节点的位置；部位亲和场是用于编码肢体支撑区域的位置和方向信息的<strong>2D</strong>向量场。然后通过二分匹配（边权基于<strong>PAF</strong>计算）进行关节分组。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649bde451ddac507cca66b23.jpg" alt="" /></p>
+
+<h1 id="3-3d人体姿态估计-3d-human-pose-estimation">3. 3D人体姿态估计 3D Human Pose Estimation</h1>
+
+<p><strong>3D</strong>人体姿态估计是从图片或视频中估计出关节点的三维坐标$(x, y, z)$，本质上是一个回归问题。与<strong>2D</strong>人体姿态估计相比，<strong>3D</strong>人体姿态估计需要估计<strong>深度(depth)</strong>信息。<strong>3D</strong>人体姿态估计的主要挑战：</p>
+<ul>
+  <li>单视角下<strong>2D</strong>到<strong>3D</strong>映射中固有的深度模糊性与不适定性：因为一个<strong>2D</strong>骨架可以对应多个<strong>3D</strong>骨架。</li>
+  <li>缺少大型的室外数据集和特殊姿态数据集：<strong>3D</strong>姿态数据集是依靠适合室内环境的动作捕捉（<strong>MOCAP</strong>）系统构建的，而<strong>MOCAP</strong>系统需要佩戴有多个传感器的复杂装置，在室外环境使用是不切实际的。因此数据集大多是在实验室环境下建立的，模型的泛化能力也比较差。</li>
+</ul>
+
+<p><strong>3D</strong>人体姿态估计方法可以分为：</p>
+<ul>
+  <li>直接回归的方法：直接把图像映射为<strong>3D</strong>关节点，如<strong>DconvMP</strong>, <strong>VNect</strong>, <strong>ORPM</strong>, <strong>Volumetric Prediction</strong>, <strong>3DMPPE</strong>。</li>
+  <li><strong>2D→3D</strong>的方法：从<strong>2D</strong>姿态估计结果中估计深度信息，如<strong>2D+Matching</strong>, <strong>SimpleBasline-3D</strong>。</li>
+  <li>基于模型的方法：引入人体模型，如<strong>SMPLify</strong>, <strong>SMPLify-X</strong>。</li>
+</ul>
+
+<h2 id="1直接回归的3d人体姿态估计-regression-based-3d-hpe">（1）直接回归的3D人体姿态估计 Regression-based 3D HPE</h2>
+
+<p>直接回归的<strong>3D</strong>人体姿态估计直接把图像映射成<strong>3D</strong>关节点，这通常是严重的<a href="https://0809zheng.github.io/2020/08/16/ill-posed-problem.html">欠定问题</a>，因此需要引入额外的约束条件。</p>
+
+<h3 id="-dconvmp">⚪ DconvMP</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/15/dconvmp.html"><font color="blue">3D Human Pose Estimation from Monocular Images with Deep Convolutional Neural Network</font></a></li>
+</ul>
+
+<p>把<strong>3D</strong>人体姿态估计任务建模为关节点回归任务+关节点检测任务。关节点回归任务估计关节点相对于根关节点的位置；关节点检测任务检测每个局部窗口中是否存在关节点。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a531751ddac507cc6d7c6d.jpg" alt="" /></p>
+
+<h3 id="-vnect">⚪ VNect</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/16/vnect.html"><font color="blue">VNect: Real-time 3D Human Pose Estimation with a Single RGB Camera</font></a></li>
+</ul>
+
+<p><strong>VNect</strong>预测一个热图及位置图。位置图存储关节点相对于根关节的三维坐标。找到关键点的过程为从热图中寻找关节的最大值，在对应的$X, Y, Z$位置图中找到对应位置的点组成相对根节点的<strong>3D</strong>坐标。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a62c581ddac507cc313aea.jpg" alt="" /></p>
+
+<h3 id="-orpm">⚪ ORPM</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/04/06/ssmp.html"><font color="blue">Single-Shot Multi-Person 3D Pose Estimation From Monocular RGB</font></a></li>
+</ul>
+
+<p>遮挡鲁棒的姿态图<strong>ORPM</strong>将场景中所有人的<strong>3D</strong>关节位置编码为固定数量的位置图，并使用身体部位关联推断任意数量的人体目标。</p>
+
+<p><img src="https://pic.imgdb.cn/item/627f7f1e0947543129b63bac.jpg" alt="" /></p>
+
+<h3 id="-volumetric-prediction">⚪ Volumetric Prediction</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/17/volumetric.html"><font color="blue">Coarse-to-Fine Volumetric Prediction for Single-Image 3D Human Pose</font></a></li>
+</ul>
+
+<p>本文提出了一种端到端的单图像<strong>3D</strong>姿态估计方法，从<strong>2D</strong>图像中直接得到体素（<strong>Volumetric</strong>）表示，并取最大值的位置作为每个关节点的输出。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a661d61ddac507cc9c9a5e.jpg" alt="" /></p>
+
+<h3 id="-3dmppe">⚪ 3DMPPE</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/18/3dmppe.html"><font color="blue">Camera Distance-aware Top-down Approach for 3D Multi-person Pose Estimation from a Single RGB Image</font></a></li>
+</ul>
+
+<p>本文提出了一种自顶向下的多人<strong>3D</strong>姿态估计方法：边界框检测网络<strong>DetectNet</strong>检测每个目标的边界框；根节点定位网络<strong>RootNet</strong>定位根节点位置；相对根节点的<strong>3D</strong>单人姿态估计网络<strong>PoseNet</strong>估计相对根节点的3D姿态。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a680581ddac507cce9a714.jpg" alt="" /></p>
+
+<h2 id="22d3d的3d人体姿态估计-2d3d-3d-hpe">（2）2D→3D的3D人体姿态估计 2D→3D 3D HPE</h2>
+
+<p><strong>2D→3D</strong>的<strong>3D</strong>人体姿态估计从<strong>2D</strong>姿态估计的结果中估计深度信息，再生成<strong>3D</strong>姿态估计，这类方法可以很容易地利用<strong>2D</strong>姿态数据集，并且具有<strong>2D</strong>姿态估计的优点。</p>
+
+<h3 id="-2d--matching">⚪ 2D + Matching</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/19/2dmatch.html"><font color="blue">3D Human Pose Estimation = 2D Pose Estimation + Matching</font></a></li>
+</ul>
+
+<p>给定<strong>2D</strong>图像，通过<strong>CPM</strong>预测<strong>2D</strong>姿态，并从大型的<strong>2D-3D</strong>姿态对库中通过<strong>kNN</strong>搜索最相似的<strong>2D-3D</strong>姿态对，配对的<strong>3D</strong>姿态被选为<strong>3D</strong>姿态估计结果。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64a684421ddac507ccf4c1c5.jpg" alt="" /></p>
+
+<h3 id="-simplebasline-3d">⚪ SimpleBasline-3D</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/11/19/3dpose.html"><font color="blue">A simple yet effective baseline for 3d human pose estimation</font></a></li>
+</ul>
+
+<p>将 <strong>3D</strong> 姿态估计解耦为<strong>2D</strong> 姿态估计和从<strong>2D</strong> 到 <strong>3D</strong> 姿态估计（即<strong>3D</strong>姿态估计 = <strong>2D</strong>姿态估计 <strong>+ (2D-&gt;3D)</strong>）。<strong>(2D-&gt;3D)</strong>通过全连接网络直接回归坐标。</p>
+
+<p><img src="https://pic.downk.cc/item/5fb5f62db18d62711392b0c5.jpg" alt="" /></p>
+
+<h2 id="3基于模型的3d人体姿态估计-model-based-3d-hpe">（3）基于模型的3D人体姿态估计 Model-based 3D HPE</h2>
+
+<p>基于模型的方法通常采用<strong>人体参数模型 (human body model)</strong>或<strong>运动学模型(kinematic model)</strong>从图像中估计人体的姿态和形状。</p>
+
+<p><a href="https://0809zheng.github.io/2021/01/07/3dhuman.html"><font color="blue">SMPL(Skinned Multi-Person Linear Model)</font></a>是最常用的参数控制的三维人体统计模型之一，它将人体编码为两类参数：<strong>Pose</strong>参数$\theta$和<strong>Shape</strong>参数$\beta$。</p>
+<ul>
+  <li><strong>Pose</strong>参数$\theta$：具有$24 \times 3$个标量值的姿态向量(定义$K=24$个关节点，并建立一组关节点树)，该参数代表每个关节点相对于其父节点的局部旋转向量的轴角式表达，用于控制人体<strong>姿态</strong>变化；</li>
+  <li><strong>Shape</strong>参数$\beta$：具有$10$个标量值的形状向量，其每一维度都可看做人体形状的某个指标，用于控制人体<strong>形状</strong>变化。</li>
+</ul>
+
+<p><img src="https://khanhha.github.io/assets/images/smpl/shape_pose.png" alt="" /></p>
+
+<h3 id="-smplify">⚪ SMPLify</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/01/13/smplify.html"><font color="blue">Keep it SMPL: Automatic Estimation of 3D Human Pose and Shape from a Single Image</font></a></li>
+</ul>
+
+<p>给定一个图像，使用基于 <strong>CNN</strong> 的方法来预测 <strong>2D</strong> 关节位置。然后将 <strong>3D</strong> 身体模型<strong>SMPL</strong>拟合到此，以估计 <strong>3D</strong> 身体形状和姿势。</p>
+
+<p><img src="https://img.imgdb.cn/item/5ffe48f63ffa7d37b386d39d.jpg" alt="" /></p>
+
+<h3 id="-smplify-x">⚪ SMPLify-X</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/02/02/smplifyx.html"><font color="blue">Expressive Body Capture: 3D Hands, Face, and Body from a Single Image</font></a></li>
+</ul>
+
+<p>本文提出了<strong>SMPL</strong>三维人体模型的改进版本：<strong>SMPL-X (eXpressive)</strong>，在原有人体姿态的基础上增加了手部姿势和面部表情。为从单张图像中学习三维人体姿态，作者提出了<strong>SMPLify</strong>模型的改进版本：<strong>SMPLify-X</strong>；后者具有更好的姿态先验、更多细节的碰撞惩罚、性别检测和更快的<strong>PyTorch</strong>实现。</p>
+
+<h1 id="4-人体姿态估计的技巧-bag-of-tricks">4. 人体姿态估计的技巧 Bag of Tricks</h1>
+
+<h2 id="1数据预处理">（1）数据预处理</h2>
+
+<h3 id="-augmentation-by-information-dropping-aid">⚪ Augmentation by Information Dropping (AID)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/22/aid.html"><font color="blue">AID: Pushing the Performance Boundary of Human Pose Estimation with Information Dropping Augmentation</font></a></li>
+</ul>
+
+<p>模型在定位图像中的人体关键点时通常会使用两种信息：<strong>外观</strong>信息和<strong>约束</strong>信息。外观信息是定位关键点的基础，而约束信息主要包含人体关键点之间固有的相互约束关系以及人体和环境交互形成的约束关系。</p>
+
+<p>本文引入信息丢弃的正则化手段，通过在训练过程中以一定的概率丢弃关键点的外观信息，以此避免训练过程过拟合外观信息而忽视约束信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64acf9411ddac507cc3a3a0c.jpg" alt="" /></p>
+
+<h3 id="-poseaug">⚪ PoseAug</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/20/poseaug.html"><font color="blue">PoseAug: A Differentiable Pose Augmentation Framework for 3D Human Pose Estimation</font></a></li>
+</ul>
+
+<p>本文针对<strong>2D</strong>坐标到<strong>3D</strong>坐标成对标注信息的姿态估计任务，对<strong>3D</strong>数据进行增强。对数据进行三个方面的变换：骨骼角度、骨骼长度、旋转和变形；并用判别器来评估生成的数据的合理性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64abcd831ddac507cce3abea.jpg" alt="" /></p>
+
+<h3 id="-unbiased-data-processing-udp">⚪ Unbiased Data Processing (UDP)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/23/udp.html"><font color="blue">The Devil is in the Details: Delving into Unbiased Data Processing for Human Pose Estimation</font></a></li>
+</ul>
+
+<p>对于离散像素点进行翻转和下采样等变换后可能会引入位置误差，通过将像素点定义到连续图像空间来消除这种误差。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64ae57211ddac507ccbf5622.jpg" alt="" /></p>
+
+<h2 id="2量化误差消除">（2）量化误差消除</h2>
+
+<p>在<strong>Heatmap-based</strong>方法中，对预测热图解码时是把模型输出的高斯概率分布图用<strong>Argmax</strong>得到最大相应点坐标。由于<strong>Argmax</strong>操作最的结果只能是整数，这就导致了经过下采样的特征图永远不可能得到输入图片尺度的坐标精度，因此产生了<strong>量化误差(quantization error)</strong>。</p>
+
+<h3 id="-distribution-aware-coordinate-representation-of-keypoint-dark">⚪ Distribution-Aware coordinate Representation of Keypoint (DARK)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/24/dark.html"><font color="blue">Distribution-Aware Coordinate Representation for Human Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>DARK</strong>方法利用高斯分布的泰勒展开来缓解热图回归的量化误差，适用于热图概率分布函数的对数多项式需不高于二次。通常模型的预测热图并不是良好的高斯形式，因此可以首先对输出热图应用高斯模糊。</p>
+
+\[\mu = m-(\mathcal{H}''(m))^{-1} \mathcal{H}'(m)\]
+
+<p><img src="https://pic.imgdb.cn/item/64ae6c021ddac507cc17ad27.jpg" alt="" /></p>
+
+<h3 id="-pixel-in-pixel-net-pip-net">⚪ Pixel-in-Pixel Net (PIP-Net)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/30/pipnet.html"><font color="blue">Pixel-in-Pixel Net: Towards Efficient Facial Landmark Detection in the Wild</font></a></li>
+</ul>
+
+<p><strong>PIP-Net</strong>是对<strong>Heatmap</strong>和<strong>Regression</strong>两种形式的统一，对特征图上的每个特征预测关键点的存在性得分和关键点相对于左上角的坐标偏移，并预测周围最近关键点的坐标偏移。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d07c601ddac507cc86380f.jpg" alt="" /></p>
+
+<h3 id="-simple-coordinate-classification-simcc">⚪ Simple Coordinate Classification (SimCC)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/28/simcc.html"><font color="blue">SimCC: a Simple Coordinate Classification Perspective for Human Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>SimCC</strong>将关键点坐标$(x, y)$用两个独立的一维向量进行表征，通过缩放因子$k(\geq1)$将定位精度增强到比单个像素更小的级别。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d069ce1ddac507cc5cc49f.jpg" alt="" /></p>
+
+<h3 id="-differentiable-spatial-to-numerical-transform-dsnt">⚪ Differentiable Spatial to Numerical Transform (DSNT)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/03/dstn.html"><font color="blue">Numerical Coordinate Regression with Convolutional Neural Networks</font></a></li>
+</ul>
+
+<p><strong>DSNT</strong>通过构造坐标矩阵，并与归一化的热图计算$F$范数，从而把热图转换为关节点坐标。</p>
+
+\[DSTN(\hat{Z}) = \left[ \langle \hat{Z},X\rangle_F, \langle\hat{Z},Y\rangle_F\right]\]
+
+<p><img src="https://pic.imgdb.cn/item/64d200da1ddac507ccdef44d.jpg" alt="" /></p>
+
+<h3 id="-integral-pose-regression-ipr">⚪ Integral Pose Regression (IPR)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/25/softargmax.html"><font color="blue">Integral Human Pose Regression</font></a></li>
+</ul>
+
+<p><strong>IPR</strong>把从预测热图中取最大值操作修改为取期望操作：关节被估计为热图中所有位置的积分，由它们的归一化概率加权。</p>
+
+\[\boldsymbol{J}_k = \int_{\boldsymbol{p} \in \Omega} \boldsymbol{p} \cdot \tilde{\boldsymbol{H}}_k(\boldsymbol{p}) = \int_{\boldsymbol{p} \in \Omega} \boldsymbol{p} \cdot \frac{e^{\boldsymbol{H}_k(\boldsymbol{p})}}{\int_{\boldsymbol{q} \in \Omega}e^{\boldsymbol{H}_k(\boldsymbol{q})}}\]
+
+<h3 id="-debiased-ipr">⚪ Debiased IPR</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/02/debias.html"><font color="blue">Removing the Bias of Integral Pose Regression</font></a></li>
+</ul>
+
+<p><strong>IPR</strong>用<strong>Soft-Argmax</strong>近似<strong>Argmax</strong>的结果，只有在响应值足够大时近似才比较精确。这是因为<strong>Softmax</strong>倾向于让每一项的值都非零，导致原本多余的长尾也参与了期望值的计算。可以把这部分从期望结果中减去：</p>
+
+\[\begin{aligned}
+\begin{bmatrix} x_0  \\ y_0  \end{bmatrix}= \begin{bmatrix} \frac{C}{C-hw}x_J-\frac{h^2w}{2(C-hw)} \\ \frac{C}{C-hw}y_J-\frac{hw^2}{2(C-hw)} \end{bmatrix}
+\end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/64d1a3731ddac507ccfb3e92.jpg" alt="" /></p>
+
+<h3 id="-symmetric-integral-keypoints-regression-sikr">⚪ Symmetric Integral Keypoints Regression (SIKR)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/12/08/alphapose.html"><font color="blue">AlphaPose: Whole-Body Regional Multi-Person Pose Estimation and Tracking in Real-Time</font></a></li>
+</ul>
+
+<p><strong>IPR</strong>通过<strong>L1</strong>损失在反向传播时梯度形式是不对称的，梯度计算会对每个热图像素乘上它的坐标值，因此坐标值较大的像素梯度变化幅度更大。<strong>SIKR</strong>直接对反向传播时的梯度进行修改，调整为坐标对称的形式：</p>
+
+\[\frac{\partial L_{reg}}{\partial p_x} = A_{grad} \cdot sign(x-\hat{\mu}) \cdot sign(\hat{\mu} - \mu)\]
+
+<h2 id="3训练技巧">（3）训练技巧</h2>
+
+<h3 id="-online-knowledge-distillation-okdhp">⚪ Online Knowledge Distillation (OKDHP)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/04/26/okdhp.html"><font color="blue">Online Knowledge Distillation for Efficient Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>OKDHP</strong>训练了一个多分支网络，其中每个分支都被当做独立的学生模型；教师模型是通过加权集成多个分支的<strong>heatmap</strong>结果后形成的。通过优化<strong>Pixel-wise KL Divergence</strong>损失来优化每个学生分支模型。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64cf03991ddac507cc6af259.jpg" alt="" /></p>
+
+<h3 id="-bone-loss">⚪ Bone Loss</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/04/boneloss.html"><font color="blue">Weakly-Supervised Mesh-Convolutional Hand Reconstruction in the Wild</font></a></li>
+</ul>
+
+<p><strong>Bone Loss</strong>计算了姿态骨骼长度比例的损失：</p>
+
+\[\mathcal{L}_{\text{bone}}(J, Y) = \sum_{(i,j) \in \epsilon} \left| ||J_{2D_i}-J_{2D_j}|| - ||Y_{2D_i}-Y_{2D_j}|| \right|\]
+
+<p>其中$J_{2D}$是模型预测的关键点，$Y_{2D}$是<strong>Ground Truth</strong>，该公式约束了每个关键点之间的空间关系，能帮助学习到骨骼长度关系，避免预测出一些诡异的不存在的姿态。</p>
+
+<h3 id="-heatmap-distribution-matching-hdm">⚪ Heatmap Distribution Matching (HDM)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/12/09/hdm.html"><font color="blue">Heatmap Distribution Matching for Human Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>HDM</strong>把人工渲染高斯热图的监督信息替换为更简单的监督信号，通过插值的方式直接将连续空间上的坐标用相邻的离散像素计算表示。损失函数直接优化预测热图与监督热图的<strong>Wasserstein</strong>距离。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668fa6b0d9c307b7e9156f43.png" alt="" /></p>
+
+<h3 id="-pose-equivariant-contrastive-learning-peclr">⚪ Pose Equivariant Contrastive Learning (PeCLR)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/06/25/peclr.html"><font color="blue">PeCLR: Self-Supervised 3D Hand Pose Estimation from monocular RGB via Equivariant Contrastive Learning</font></a></li>
+</ul>
+
+<p><strong>PeCLR</strong>是一个适用于姿态估计任务的具有几何变换等变性的对比学习目标函数，该目标不直接作用于正样本对的特征$z_i,z_j$，而是这两个特征做几何变换的逆变换。</p>
+
+\[L_{i,j} = - \log \frac{\exp(sim(t_i^{-1}(z_i),t_i^{-1}(z_j))/\tau)} {\sum_{k=1:2N,k\neq i} \exp(sim(t_i^{-1}(z_i),t_i^{-1}(z_k))/\tau)}\]
+
+<p><img src="https://pic.imgdb.cn/item/668f8120d9c307b7e9dd0d07.png" alt="" /></p>
+
+<h3 id="-self-correctable-and-adaptable-inference-scai">⚪ Self-Correctable and Adaptable Inference (SCAI)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2023/03/20/scai.html"><font color="blue">Self-Correctable and Adaptable Inference for Generalizable Human Pose Estimation</font></a></li>
+</ul>
+
+<p><strong>SCAI</strong>是一种自监督的推理方法，能在完全没有标注的测试样本上进行训练，逐步修正预测结果，带来显著的性能提升。<strong>SCAI</strong>方法的输入是姿态模型预测的<strong>Heatmap</strong>，通过近端关节点热图预测远端关节点热图，学习预测结果的误差并进行反馈。</p>
+
+<p><img src="https://pic.imgdb.cn/item/652fb8abc458853aef3efc5c.jpg" alt="" /></p>
+
+<h1 id="5-人体姿态估计的评估指标-pose-estimation-evaluation">5. 人体姿态估计的评估指标 Pose Estimation Evaluation</h1>
+
+<p>二维人体姿态估计中常用的评估指标包括<strong>PCP</strong>, <strong>PCK</strong>, <strong>OKS</strong>, <strong>AP</strong>, <strong>mAP</strong>。三维人体姿态估计中常用的评估指标包括<strong>MPJPE</strong>。</p>
+
+<h3 id="-pcppercentage-of-correct-parts">⚪ PCP：Percentage of Correct Parts</h3>
+<p><strong>PCP</strong>指标以肢体的检出率作为评估指标。考虑每个人的左右大臂、小臂、大腿、小腿共计$4$个肢体（对应$8$个关节点）。如果两个预测关节位置和真实肢体关节位置之间的距离不超过肢体长度的一半，则认为肢体已经被正确地检测到。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64ae18681ddac507cccff4c7.jpg" alt="" /></p>
+
+<p>对于某个特定部位，完整数据集上的<strong>PCP</strong>指标计算为：</p>
+
+\[\text{PCP} = \frac{\text{整个数据集中正确检出此部位数量}}{\text{整个数据集中此部位总数}}\]
+
+<h3 id="-pckpercentage-of-correct-keypoints">⚪ PCK：Percentage of Correct Keypoints</h3>
+<p><strong>PCK</strong>指标衡量正确估计出的关键点比例，这是比较老的人体姿态估计指标，在$2017$年比较广泛使用，现在基本不再使用。但是在工程项目中，使用该指标评价训练模型的好坏还是蛮方便的。</p>
+
+<p>如果预测关节点和真实关节点之间的距离在某个阈值范围内，则认为检测到的关节点是正确的；其中阈值通常是根据目标的比例设置的。第$i$个关键点的<strong>PCK</strong>指标计算如下：</p>
+
+\[PCK_{i}@T_k = \frac{\sum_{p}^{} {\delta (d_{pi} ≤ T_k*d_{p}^{def})}}{\sum_{p}^{} {1}}\]
+
+<p>其中：</p>
+<ul>
+  <li>$p$表示第$p$个人</li>
+  <li>$T_k$表示人工设定的阈值，$T_k \in [0:0.01:0.1]$</li>
+  <li>$d_{pi}$表示第$p$个人的第$i$个关键点预测值与人工标注值之间的欧氏距离</li>
+  <li>$d_{p}^{def}$表示第$p$个人的尺度因子，不同数据集中此因子的计算方法不一样。<strong>FLIC</strong>数据集是以当前人的躯干直径作为尺度因子，即左肩到右臀的欧式距离或者右肩到左臀的欧式距离；<strong>MPII</strong>数据集是以当前人的头部直径作为尺度因子，即头部左上点与右下点的欧式距离，使用此尺度因子的姿态估计指标也称<strong>PCKh</strong>。</li>
+  <li>$\delta$表示如果条件成立则为$1$，否则为$0$</li>
+</ul>
+
+<p>算法的<strong>PCK</strong>指标是对所有关键点计算取平均：</p>
+
+\[PCK@T_k = \frac{\sum_{p}^{} \sum_{i}^{} \delta (d_{pi} ≤ T_k*d_{p}^{def})}{\sum_{p} \sum_{i}^{} {1}}\]
+
+<p>例如，$PCK@0.2$是指阈值设置为躯干直径的$20\%$，$PCKh@0.5$是指阈值设置为头部直径的$50\%$。</p>
+
+<p><strong>PCK</strong>指标计算参考代码：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">compute_pck_pckh</span><span class="p">(</span><span class="n">dt_kpts</span><span class="p">,</span><span class="n">gt_kpts</span><span class="p">,</span><span class="n">refer_kpts</span><span class="p">):</span>
+    <span class="s">"""
+    :param dt_kpts:算法检测输出的估计结果,shape=[n,h,k]=[行人数，２，关键点个数]
+    :param gt_kpts: groundtruth人工标记结果,shape=[n,h,k]
+    :param refer_kpts: 计算尺度因子的关键点，用于预测点与groundtruth的欧式距离的scale。
+    　　　　　　　　　　　pck指标：躯干直径，左肩点－右臀点的欧式距离；
+    　　　　　　　　　　　pckh指标：头部长度，头部对角线的欧式距离；
+    :return: 相关指标
+    """</span>
+    <span class="n">dt</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">dt_kpts</span><span class="p">)</span>
+    <span class="n">gt</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">gt_kpts</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">refer_kpts</span><span class="p">)</span><span class="o">==</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">dt</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="n">gt</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">ranges</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">kpts_num</span><span class="o">=</span><span class="n">gt</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">ped_num</span><span class="o">=</span><span class="n">gt</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+	
+    <span class="c1"># compute dist
+</span>    <span class="n">scale</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">square</span><span class="p">(</span><span class="n">gt</span><span class="p">[:,:,</span><span class="n">refer_kpts</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">-</span><span class="n">gt</span><span class="p">[:,:,</span><span class="n">refer_kpts</span><span class="p">[</span><span class="mi">1</span><span class="p">]]),</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">dist</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">square</span><span class="p">(</span><span class="n">dt</span><span class="o">-</span><span class="n">gt</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">scale</span><span class="p">,(</span><span class="n">gt</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="mi">1</span><span class="p">)).</span><span class="n">T</span>
+	
+    <span class="c1"># compute pck
+</span>    <span class="n">pck</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">ranges</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gt</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">idh</span><span class="p">,</span><span class="n">trh</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">ranges</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">kpt_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">kpts_num</span><span class="p">):</span>
+            <span class="n">pck</span><span class="p">[</span><span class="n">idh</span><span class="p">,</span><span class="n">kpt_idx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dist</span><span class="p">[:,</span><span class="n">kpt_idx</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">trh</span><span class="p">)</span>
+        <span class="c1"># compute average pck
+</span>        <span class="n">pck</span><span class="p">[</span><span class="n">idh</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dist</span> <span class="o">&lt;=</span> <span class="n">trh</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pck</span>
+</code></pre></div></div>
+
+<h3 id="-oksobject-keypoint-similarity">⚪ OKS：Object Keypoint Similarity</h3>
+<p><strong>OKS</strong>是目前常用的人体骨骼关键点检测算法的评估指标，该指标受目标检测中的<strong>IoU</strong>指标启发，目的是计算关键点预测值和标注真值的相似度。</p>
+
+<p>第$p$个人的<strong>OKS</strong>指标计算如下：</p>
+
+\[OKS_p = \frac{\sum_{i}^{} {\exp\{-d_{pi}^{2}/2S_{p}^{2} \sigma_{i}^{2}\} \delta (v_{pi} &gt; 0)}}{\sum_{i}^{} {\delta (v_{pi} &gt; 0)}}\]
+
+<p>其中：</p>
+<ul>
+  <li>$i$表示第$i$个关键点</li>
+  <li>$d_{pi}$表示第$p$个人的第$i$个关键点预测值与人工标注值之间的欧氏距离</li>
+  <li>$S_{p}$表示第$p$个人的尺度因子，其值为行人检测框面积的平方根$S_{p}=\sqrt{wh}$，$w$、$h$为检测框的宽和高</li>
+  <li>$\sigma_{i}$表示第$i$个关键点的归一化因子，该因子是通过对所有的样本集中关键点由人工标注与真实值存在的标准差，$\sigma$越大表示此类型的关键点越难标注。对<strong>COCO</strong>数据集中的$5000$个样本统计出$17$类关键点的归一化因子，取值为：{<strong>鼻子：0.026，眼睛：0.025，耳朵：0.035，肩膀：0.079，手肘：0.072，手腕：0.062，臀部：0.107，膝盖：0.087，脚踝：0.089</strong>}，此值可以看作常数，如果使用的关键点类型不在此当中，则需要统计方法计算</li>
+  <li>$v_{pi}$表示第$p$个人的第$i$个关键点的可见性，对于人工标注值，$v_{pi}=0$表示关键点未标记（图中不存在或不确定在哪里），$v_{pi}=1$表示关键点无遮挡且已标注，$v_{pi}=2$关键点有遮挡但已标注。对于预测关键点，$v_{pi}’=0$表示没有预测出，$v_{pi}’=1$表示预测出</li>
+  <li>$\delta$表示如果条件成立则为$1$，否则为$0$</li>
+</ul>
+
+<p><strong>OKS</strong>指标计算参考代码：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sigmas</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([.</span><span class="mi">26</span><span class="p">,</span> <span class="p">.</span><span class="mi">25</span><span class="p">,</span> <span class="p">.</span><span class="mi">25</span><span class="p">,</span> <span class="p">.</span><span class="mi">35</span><span class="p">,</span> <span class="p">.</span><span class="mi">35</span><span class="p">,</span> <span class="p">.</span><span class="mi">79</span><span class="p">,</span> <span class="p">.</span><span class="mi">79</span><span class="p">,</span> <span class="p">.</span><span class="mi">72</span><span class="p">,</span> <span class="p">.</span><span class="mi">72</span><span class="p">,</span> <span class="p">.</span><span class="mi">62</span><span class="p">,.</span><span class="mi">62</span><span class="p">,</span> <span class="mf">1.07</span><span class="p">,</span> <span class="mf">1.07</span><span class="p">,</span> <span class="p">.</span><span class="mi">87</span><span class="p">,</span> <span class="p">.</span><span class="mi">87</span><span class="p">,</span> <span class="p">.</span><span class="mi">89</span><span class="p">,</span> <span class="p">.</span><span class="mi">89</span><span class="p">])</span><span class="o">/</span><span class="mf">10.0</span>
+<span class="n">variances</span> <span class="o">=</span> <span class="p">(</span><span class="n">sigmas</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+<span class="k">def</span> <span class="nf">compute_kpts_oks</span><span class="p">(</span><span class="n">dt_kpts</span><span class="p">,</span> <span class="n">gt_kpts</span><span class="p">,</span> <span class="n">area</span><span class="p">):</span>
+    <span class="s">"""
+    :param dt_kpts: 关键点检测结果　dt_kpts.shape=[3,k],dt_kpts[0]表示横坐标值，dt_kpts[1]表示纵坐标值，dt_kpts[2]表示可见性，
+    :param gt_kpts:　关键点标记结果　gt_kpts.shape=[3,k],gt_kpts[0]表示横坐标值，gt_kpts[1]表示纵坐标值，gt_kpts[2]表示可见性，
+    :param area:　groundtruth中当前一组关键点所在人检测框的面积
+    :return:　两组关键点的相似度oks
+    """</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">gt_kpts</span><span class="p">)</span>
+    <span class="n">xg</span> <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">yg</span> <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">vg</span> <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">vg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">dt_kpts</span><span class="p">)</span>
+    <span class="n">xd</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">yd</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">xd</span> <span class="o">-</span> <span class="n">xg</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">yd</span> <span class="o">-</span> <span class="n">yg</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dy</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span><span class="n">variances</span><span class="o">/</span> <span class="p">(</span><span class="n">area</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">spacing</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span><span class="err">　</span><span class="c1">#加入np.spacing()防止面积为零
+</span>    <span class="n">e</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="n">vg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">e</span><span class="p">))</span> <span class="o">/</span> <span class="n">e</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="-apaverage-precision">⚪ AP：Average Precision</h3>
+
+<p>对于<strong>单人姿态估计</strong>，首先计算<strong>OKS</strong>指标，然后人为给定一个阈值$T$，通过所有图像计算<strong>AP</strong>指标：</p>
+
+\[AP = \frac{\sum_{p}^{} {\delta (OKS_p) &gt; T}}{\sum_{p}^{} {1}}\]
+
+<p>对于<strong>多人姿态估计</strong>，如果采用的检测方法是<strong>自顶向下</strong>，先把所有的人找出来再检测关键点，那么其<strong>AP</strong>计算方法同上；</p>
+
+<p>如果采用的检测方法是<strong>自底向上</strong>，先把所有的关键点找出来再组成人，假设一张图片中共有$M$个人，预测出$N$个人，由于不知道预测出的$N$个人与标记的$M$个人之间的对应关系，因此需要计算标记的每个人与预测的$N$个人的<strong>OKS</strong>指标，得到一个大小为${M}\times{N}$的矩阵，矩阵的每一行为标记的一个人与预测结果的$N$个人的<strong>OKS</strong>指标，然后找出每一行中<strong>OKS</strong>指标最大的值作为当前标记人的<strong>OKS</strong>指标。最后每一个标记人都有一个<strong>OKS</strong>指标，然后人为给定一个阈值$T$，通过所有图像计算<strong>AP</strong>指标：</p>
+
+\[AP = \frac{\sum_{m}^{} \sum_{p}^{} {\delta (OKS_p) &gt; T}}{\sum_{m}^{} \sum_{p}^{} {1}}\]
+
+<h3 id="-mapmean-average-precision">⚪ mAP：mean Average Precision</h3>
+<p><strong>mAP</strong>是给<strong>AP</strong>指标中的人工阈值$T$设定不同的值，对这些阈值下得到的<strong>AP</strong>求平均得到的结果。</p>
+
+\[T \in [0.5:0.05:0.95]\]
+
+<h3 id="-mpjpemean-per-joint-position-error">⚪ MPJPE：Mean Per Joint Position Error</h3>
+
+<p><strong>MPJPE</strong>衡量各个关节位置误差的平均值。关节位置误差是指真实关节点与预测关节点之间的欧几里得距离。<strong>MPJPE</strong>的计算公式为:</p>
+
+\[MPJPE = 
+\frac{1}{N_J} \sum_{j=l}^{N_J}\sqrt{\sum_i (p_{i,j}-\hat{p}_{i,j})^2}\]
+
+<p>其中，$N_J$是关节数，$p_{i,j}$是第$j$个关节的真实位置的第$i$个维度，$\hat{p}_{i,j}$是第$j$个关节的预测位置的第$i$个维度。</p>
+
+<h1 id="6-姿态估计数据集">6. 姿态估计数据集</h1>
+
+<h2 id="12d姿态估计数据集">（1）2D姿态估计数据集</h2>
+
+<p>常用的二维人体姿态估计数据集包括：</p>
+<ul>
+  <li><a href="http://sam.johnson.io/research/lsp.html">LSP</a>：样本数$2000$，关节点个数$14$，单人</li>
+  <li><a href="https://bensapp.github.io/flic-dataset.html">FLIC</a>：样本数$20000$，关节点个数$9$，单人</li>
+</ul>
+
+<h3 id="-mpii">⚪ <a href="http://human-pose.mpi-inf.mpg.de/">MPII</a></h3>
+
+<ul>
+  <li>paper：<a href="http://human-pose.mpi-inf.mpg.de/contents/andriluka14cvpr.pdf">2D Human Pose Estimation: New Benchmark and State of the Art Analysis</a></li>
+</ul>
+
+<p><strong>MPII</strong>人体姿态数据集是用于评估关节式人体姿态估计的常用基准之一。该数据集包括大约<strong>25000</strong>张图像，其中包含超过<strong>40000</strong>名带有关节注释的人体目标，涵盖<strong>410</strong>种人类活动，并且每个图像都提供有活动标签。每个图像都是从<strong>YouTube</strong>视频中提取的，并提供了前面和后面的未注释帧。此外，测试集提供了更丰富的注释，包括身体部位遮挡以及<strong>3D</strong>躯干和头部方向。</p>
+
+<p><img src="http://human-pose.mpi-inf.mpg.de/images/random_activities.png" alt="" /></p>
+
+<p><strong>MPII</strong>原始的标注数据是<strong>matlab</strong>格式的，也可以下载<a href="https://drive.google.com/drive/folders/1En_VqmStnsXMdldXA6qpqEyDQulnmS3a?usp=sharing"><strong>json</strong>格式</a>。<strong>MPII</strong>的标注文件是一个列表，每一项代表一个人体以及该人体的标注，以下是每一项人体标注的内容解析：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[{</span>
+<span class="s">"joints_vis"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="err">···</span><span class="p">],</span>   <span class="c1"># 关节点是否可见，长度16
+</span><span class="s">"joints"</span><span class="p">:</span> <span class="p">[[</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">],</span> <span class="err">···</span><span class="p">],</span> <span class="c1"># 关节点坐标
+</span><span class="s">"image"</span><span class="p">:</span> <span class="s">"000003072.jpg"</span><span class="p">,</span> <span class="c1"># 对应的图像名称
+</span><span class="s">"scale"</span><span class="p">:</span> <span class="mf">1.946961</span><span class="p">,</span>        <span class="c1"># scale*200为人体边界框的边长（正方形框）
+</span><span class="s">"center"</span><span class="p">:</span> <span class="p">[</span><span class="mf">754.0</span><span class="p">,</span> <span class="mf">335.0</span><span class="p">]</span>  <span class="c1"># 人体边界框的中心
+</span><span class="p">},</span> <span class="err">···</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p><strong>MPII</strong>格式中关节点的对应关系为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="mi">0</span> <span class="o">-</span> <span class="n">r</span> <span class="n">ankle</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">r</span> <span class="n">knee</span><span class="p">,</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">r</span> <span class="n">hip</span><span class="p">,</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">l</span> <span class="n">hip</span>
+<span class="mi">4</span> <span class="o">-</span> <span class="n">l</span> <span class="n">knee</span><span class="p">,</span> <span class="mi">5</span> <span class="o">-</span> <span class="n">l</span> <span class="n">ankle</span><span class="p">,</span> <span class="mi">6</span> <span class="o">-</span> <span class="n">pelvis</span><span class="p">,</span> <span class="mi">7</span> <span class="o">-</span> <span class="n">thorax</span>
+<span class="mi">8</span> <span class="o">-</span> <span class="n">upper</span> <span class="n">neck</span><span class="p">,</span> <span class="mi">9</span> <span class="o">-</span> <span class="n">head</span> <span class="n">top</span><span class="p">,</span> <span class="mi">10</span> <span class="o">-</span> <span class="n">r</span> <span class="n">wrist</span><span class="p">,</span> <span class="mi">11</span> <span class="o">-</span> <span class="n">r</span> <span class="n">elbow</span>
+<span class="mi">12</span> <span class="o">-</span> <span class="n">r</span> <span class="n">shoulder</span><span class="p">,</span> <span class="mi">13</span> <span class="o">-</span> <span class="n">l</span> <span class="n">shoulder</span><span class="p">,</span> <span class="mi">14</span> <span class="o">-</span> <span class="n">l</span> <span class="n">elbow</span><span class="p">,</span> <span class="mi">15</span> <span class="o">-</span> <span class="n">l</span> <span class="n">wrist</span>
+</code></pre></div></div>
+
+<h3 id="-ms-coco">⚪ <a href="http://cocodataset.org/#home">MS COCO</a></h3>
+
+<p><strong>COCO</strong>数据集的样本数$300000$，$100000$人。关节点个数$18$，关节点对应关系如下：</p>
+
+<p><img src="https://pic.downk.cc/item/5ebaa357101ccd402bb8c7c6.jpg" alt="" /></p>
+
+<p><strong>COCO</strong>的标注中包含 <strong>4</strong> 个部分/字段，”<strong>info</strong>” 描述数据集，”<strong>licenses</strong>” 描述图片来源，”<strong>images</strong>” 和 “<strong>annotations</strong>” 是主体部分。</p>
+
+<p>“<strong>images</strong>” 部分是一个列表，每一项是一张图片的基本信息与图片 <strong>ID</strong>，<strong>ID</strong>是为了方便 <strong>annotation</strong> 回溯对应图片，该部分格式如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[{</span>
+<span class="s">"license"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+<span class="s">"file_name"</span><span class="p">:</span> <span class="s">"000000017905.jpg"</span><span class="p">,</span>
+<span class="s">"coco_url"</span><span class="p">:</span> <span class="s">"http://images.cocodataset.org/val2017/000000017905.jpg"</span><span class="p">,</span>
+<span class="s">"height"</span><span class="p">:</span> <span class="mi">640</span><span class="p">,</span>
+<span class="s">"width"</span><span class="p">:</span> <span class="mi">480</span><span class="p">,</span>
+<span class="s">"date_captured"</span><span class="p">:</span> <span class="s">"2013-11-16 18:01:33"</span><span class="p">,</span>
+<span class="s">"flickr_url"</span><span class="p">:</span> <span class="s">"http://farm1.staticflickr.com/44/173771776_53b9c22bb6_z.jpg"</span><span class="p">,</span>
+<span class="s">"id"</span><span class="p">:</span> <span class="mi">17905</span>     <span class="c1"># 对应 annotation 中的 image_id
+</span><span class="p">},</span> <span class="err">···</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>“<strong>annotations</strong>” 部分是一个列表，每一项是一个对象(人体、汽车等等)的一条标注，该部分中与姿态估计相关的数据格式如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="s">"num_keypoints"</span><span class="p">:</span> <span class="mi">17</span>
+<span class="s">"keypoints"</span><span class="p">:</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span><span class="n">y1</span><span class="p">,</span><span class="n">vis1</span><span class="p">,</span> <span class="err">···</span><span class="p">],</span>          <span class="c1"># 特征点坐标与可见性，共17个个特征点，长度3*17。
+</span>                                         <span class="c1"># 可见性对应关系为 { 0: "不可见", 1: "遮挡", 2: "可见" }。
+</span><span class="s">"image_id"</span><span class="p">:</span> <span class="mi">17905</span><span class="p">,</span>                       <span class="c1"># 图片ID
+</span><span class="s">"bbox"</span><span class="p">:</span> <span class="p">[</span><span class="mf">81.27</span><span class="p">,</span> <span class="mf">229.19</span><span class="p">,</span> <span class="mf">119.39</span><span class="p">,</span> <span class="mf">364.68</span><span class="p">],</span> <span class="c1"># [l, t, w, h] 格式的 bounding box
+</span><span class="s">"category_id"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>                        <span class="c1"># 标注对象的类别，如果是 1 则是人体，选入姿态估计任务的数据
+</span><span class="s">"id"</span><span class="p">:</span> <span class="mi">2157397</span>                            <span class="c1"># 每一条标注数据的ID
+</span></code></pre></div></div>
+
+<h3 id="-ai-challenge-aic">⚪ <a href="https://challenger.ai/competition/keypoint/subject">AI Challenge (AIC)</a></h3>
+
+<p><strong>AIC</strong>数据集包括：$210000$训练集，$30000$验证集，$30000$测试集；关节点个数$14$，$380000$人。</p>
+
+<p><strong>AIC</strong>数据集在论文主要以 “<strong>extra data</strong>” 的形式出现，因此最重要的是 “如何利用 <strong>AIC</strong> 数据进行预训练，提升 <strong>COCO</strong> 数据集上的结果”。有两种思路，一是在 <strong>AIC</strong> 数据集上先训练，然后在 <strong>COCO train2017</strong> 数据集上训练；另一种思路是合并 <strong>AIC</strong> 和 <strong>COCO train2017</strong> 数据集。因为两个数据集 “<strong>keypoints</strong>” 中特征点个数与“<strong>index</strong>与特征点对应关系”是不同的，不管哪种思路，都需要将 <strong>AIC</strong> “<strong>keypoints</strong>” 内容转换为 <strong>COCO</strong> 格式。</p>
+
+<p>转换后的<strong>AIC</strong>数据集下载见<a href="https://download.openmmlab.com/mmpose/datasets/aic_annotations.tar">链接</a>。转换后 <strong>json</strong> 字段格式与 <strong>COCO</strong> 相同，可以参见 <strong>COCO</strong> 的标注格式。转换后的 <strong>AIC</strong> 标注格式与 <strong>COCO</strong> 不同的是 [“<strong>annotations</strong>”][“<strong>keypoints</strong>”] 字段，包括特征点个数与“<strong>index</strong>与特征点对应关系”是不同的。<strong>AIC</strong> 共<strong>14</strong>个个特征点，长度<strong>3*14</strong>，可见性对应关系与<strong>COCO</strong>相同。<strong>index</strong>与特征点对应关系如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="s">"right shoulder"</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s">"right elbow"</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s">"right wrist"</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s">"left shoulder"</span><span class="p">,</span>
+<span class="mi">4</span><span class="p">:</span> <span class="s">"left elbow"</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span> <span class="s">"left wrist"</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="s">"right hip"</span><span class="p">,</span> <span class="mi">7</span><span class="p">:</span> <span class="s">"right knee"</span><span class="p">,</span>
+<span class="mi">8</span><span class="p">:</span> <span class="s">"right ankle"</span><span class="p">,</span> <span class="mi">9</span><span class="p">:</span> <span class="s">"left hip"</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span> <span class="s">"left knee"</span><span class="p">,</span> <span class="mi">11</span><span class="p">:</span> <span class="s">"left ankle"</span><span class="p">,</span>
+<span class="mi">12</span><span class="p">:</span> <span class="s">"head tops"</span> <span class="mi">13</span><span class="p">:</span> <span class="s">"upper neck"</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p><strong>aic2coco</strong>标注格式转换代码见<a href="https://github.com/Indigo6/Human-Pose-Estimation-datasets-annot-format/blob/main/aic2coco.py">链接</a>。</p>
+
+<h2 id="23d姿态估计数据集">（2）3D姿态估计数据集</h2>
+
+<p>由于 <strong>3D</strong> 关键点标注难度较大，目前的数据集基本上都借助于<strong>MoCap</strong>和可穿戴<strong>IMU</strong>设备来完成数据标注，也正因为此，大多数数据集都局限于室内场景。</p>
+
+<p>常用的三维人体姿态估计数据集包括：</p>
+
+<h3 id="-human36m">⚪ Human3.6M</h3>
+
+<ul>
+  <li>paper：<a href="https://ieeexplore.ieee.org/document/6682899?arnumber=6682899">Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human Sensing in Natural Environments</a></li>
+</ul>
+
+<p><strong>Human3.6M</strong> 是目前 <strong>3D HPE</strong> 任务最为常用的数据集之一，包含了<strong>360</strong>万帧图像和对应的 <strong>2D/3D</strong> 人体姿态。该数据集在实验室环境下采集，通过<strong>4</strong>个高清相机同步记录<strong>4</strong>个视角下的场景，并通过 <strong>MoCap</strong> 系统获取精确的人体三维关键点坐标及关节角。如图所示，Human3.6M 包含了多样化的表演者、动作和视角。</p>
+
+<h3 id="-mpi-inf-3dhp">⚪ MPI-INF-3DHP</h3>
+
+<p><strong>Human3.6M</strong> 尽管数据量大，但场景单一。为了解决这一问题，<strong>MPI-INF-3DHP</strong> 在数据集中加入了针对前景和背景的数据增强处理。具体来说，其训练集的采集是借助于多目相机在室内绿幕场景下完成的，对于原始的采集数据，先对人体、背景等进行分割，然后用不同的纹理替换背景和前景，从而达到数据增强的目的。测试集则涵盖了三种不同的场景，包括室内绿幕场景、普通室内场景和室外场景。因此，<strong>MPI-INF-3DHP</strong> 更有助于评估算法的泛化能力。</p>
+
+<h3 id="-cmu-panoptic">⚪ CMU Panoptic</h3>
+
+<ul>
+  <li>paper：<a href="https://ieeexplore.ieee.org/document/7410738">Panoptic Studio: A Massively Multiview System for Social Motion Capture</a></li>
+</ul>
+
+<p><strong>CMU Panoptic</strong>是一个大型的多目图像数据集，提供了<strong>31</strong>个不同视角的高清图像以及<strong>10</strong>个不同视角的 <strong>Kinect</strong> 数据，包含了<strong>65</strong>段视频（总时长<strong>5.5 h</strong>），<strong>3D skeleton</strong> 总数超过<strong>150</strong>万。该数据集还包含了多个多人场景，因此也成为了多人 <strong>3D HPE</strong> 的 <strong>benchmark</strong> 之一。</p>
+
+<h3 id="-amass">⚪ AMASS</h3>
+
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/29/amass.html"><font color="blue">AMASS: Archive of Motion Capture as Surface Shapes</font></a></li>
+</ul>
+
+<p><strong>AMASS</strong>是一个经过<strong>SMPL</strong>参数标准化的三维人体动作捕捉数据集合。现有的人体<strong>mocap</strong>数据集使用不同的人体参数，很难将其集成到单个数据集中共同使用，作者将这些数据集使用<strong>SMPL</strong>模型进行统一参数化，将其整合成一个新的数据集。所整合的数据集包括<strong>CMU、MPI-HDM05、MPIPose Limits、KIT、BioMotion Lab、TCD</strong>和<strong>ACCAD</strong>数据集中的样本。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/06/01/ipa.html" class="read-next-link"></a>
+        <section>
+          <span>英语国际音标</span>
+          <p>  International Phonetic Alphabet.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60bccd428355f7f718b5510d.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/05/29/gaussian-mixture-model.html" class="read-next-link"></a>
+          <section>
+            <span>Gaussian Mixture Model(GMM)：高斯混合模型</span>
+            <p>  Gaussian Mixture Model.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://img.imgdb.cn/item/60763e328322e6675c8cb89f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

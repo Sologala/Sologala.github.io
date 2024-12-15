@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>局部线性嵌入(Locally Linear Embedding, LLE) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="局部线性嵌入(Locally Linear Embedding, LLE)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="局部线性嵌入(Locally Linear Embedding, LLE) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/07/31/lle.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>局部线性嵌入(Locally Linear Embedding, LLE)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-07-31"><i class="iconfont icon-date"></i>31 Jul 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61de7ac52ab3f51d9158a897.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Locally Linear Embedding.</p>
+</blockquote>
+
+<p><strong>局部线性嵌入</strong>(<strong>locally linear embedding, LLE</strong>)是一种流形学习的降维方法。<strong>LLE</strong>旨在高维空间中的样本点的局部线性关系在降维后的低维空间中得以保持。
+与<a href="https://0809zheng.github.io/2021/07/28/mds.html"><font color="Blue">多维缩放 MDS</font></a>和<a href="https://0809zheng.github.io/2021/07/28/mds.html"><font color="Blue">等度量映射 ISOMAP</font></a>方法试图保持近邻样本之间的距离不同；<strong>LLE</strong>试图保持邻域内样本之间的线性关系，与<a href="https://0809zheng.github.io/2021/09/30/lpp.html"><font color="Blue">局部保留投影 LPP</font></a>类似。</p>
+
+<h1 id="1-lle建模">1. LLE建模</h1>
+
+<p>低维流形空间通常在局部与欧氏空间<strong>同胚</strong>，这意味着流形在局部具有欧氏空间的性质。
+对于任意样本点$x_i \in \Bbb{R}^{1 \times d}$，选择与其邻近的$k$个样本点$x_j$，根据局部的线性关系，样本点$x_j$可以被其邻域内的样本点$x_j$线性表示：</p>
+
+\[x_i = \sum_{j}^{}w_{ij}x_j\]
+
+<p>邻域样本点的选择有两种方法。可以选择与每个点欧氏距离最近的$k$个点作为邻近点，此时称为$k$近邻；也可以选择与每个点欧氏距离小于$\epsilon$的点作为邻近点，此时称为$\epsilon$近邻。</p>
+
+<p><strong>LLE</strong>试图保留邻域内样本点之间的线性关系。即样本$x_i$的降维表示$z_i$仍然可以由邻域样本$x_j$的降维表示$z_j$和上述权重$w_{ij}$线性表示：</p>
+
+\[z_i = \sum_{j}^{}w_{ij}z_j\]
+
+<p><img src="https://pic.imgdb.cn/item/61de7ac52ab3f51d9158a897.jpg" alt="" /></p>
+
+<h1 id="2-求解lle">2. 求解LLE</h1>
+
+<h3 id="-高维空间中求解权重">① 高维空间中求解权重</h3>
+
+<p><strong>LLE</strong>将原始样本空间中的任意样本点$x_i \in \Bbb{R}^{1 \times d}$表示为其邻近的$k$个样本点$X_i \in \Bbb{R}^{k \times d}$的线性组合：</p>
+
+\[x_i = W_{i}X_i\]
+
+<p>其中线性权重$W_i \in \Bbb{R}^{1 \times k}$是待求解的参数。进一步约束权重是归一化的，即$W_i\cdot 1_k=1$，其中$1_k$是全$1$列向量。</p>
+
+<p>将权重$W_i$的求解建模为最小化问题：</p>
+
+\[\begin{align} \mathop{\min}_{W_i} \quad &amp; \frac{1}{2}||x_i- W_{i}X_i||_2^2 \\ s.t. \quad &amp; W_i\cdot 1_k=1 \end{align}\]
+
+<p>采用拉格朗日方法求解上述问题，建立拉格朗日函数：</p>
+
+\[\mathcal{L}(W_i,\lambda) = \frac{1}{2}||x_i- W_{i}X_i||_2^2+\lambda(1-W_i\cdot 1_k) \\ = \frac{1}{2}||W_i 1_kx_i- W_{i}X_i||_2^2+\lambda(1-W_i\cdot 1_k)  \\ = \frac{1}{2}||W_i (1_kx_i- X_i)||_2^2+\lambda(1-W_i\cdot 1_k)  \\ = \frac{1}{2}W_i (1_kx_i- X_i) (1_kx_i- X_i)^TW_i^T+\lambda(1-W_i\cdot 1_k)\]
+
+<p>记$S_i=(1_kx_i- X_i) (1_kx_i- X_i)^T \in \Bbb{R}^{k \times k}$，则拉格朗日函数简化为：</p>
+
+\[\mathcal{L}(W_i,\lambda) =  \frac{1}{2}W_i S_i W_i^T+\lambda(1-W_i\cdot 1_k)\]
+
+<p>对上式求导(值得一提的是，求导结果应和所求参数具有相同的张量尺寸)：</p>
+
+\[\frac{\partial \mathcal{L}(W_i,\lambda)}{\partial W_i} = W_i S_i-\lambda 1_k^T\]
+
+<p>令导数为零得到$W_i S_i=\lambda 1_k^T$，即$W_i =\lambda 1_k^TS_i^{-1}$。进一步注意到约束项：</p>
+
+\[W_i\cdot 1_k = \lambda 1_k^TS_i^{-1}1_k  =1\]
+
+<p>因此$\lambda = \frac{1}{1_k^TS_i^{-1}1_k}$，可以得到权重$W_i$的解：</p>
+
+\[W_i =\frac{1_k^TS_i^{-1}}{1_k^TS_i^{-1}1_k}\]
+
+<p>注意到$1_k$是全$1$列向量，因此$1_k^TS_i^{-1}$表示对矩阵$S_i^{-1}$按列求和；$1_k^TS_i^{-1}1_k$表示求矩阵$S_i^{-1}$所有元素的和。</p>
+
+<h3 id="-低维空间中应用权重">② 低维空间中应用权重</h3>
+
+<p>在高维样本空间学习到权重$W_i$后，将其应用到降维后的低维空间中。</p>
+
+<p>对于样本$x_i$的降维表示$z_i \in \Bbb{R}^{1 \times d’}$及其邻域样本$X_i$的降维表示$Z_i \in \Bbb{R}^{k \times d’}$，建立最小化问题：</p>
+
+\[\mathop{\min}_{Z} \quad  ||z_i- W_{i}Z_i||_2^2\]
+
+<p>将$W_i \in \Bbb{R}^{1 \times k}$扩充为$W \in \Bbb{R}^{1 \times N}$，无关位置填充为$0$。则优化问题可由降维后的全体样本$Z \in \Bbb{R}^{N \times d’}$表示，并可进一步表示为：</p>
+
+\[||z_i- W_{i}Z_i||_2^2 =  ||z_i- WZ||_2^2 \\ = \text{tr}((Z-WZ)^T(Z-WZ)) \\ = \text{tr}(Z^T(I_{N\times N}-W)^T(I_{N\times N}-W)Z)\]
+
+<p>通常对低维空间中的待求解特征增加标准化约束，使其特征维度的方差为零，即：</p>
+
+\[Z^TZ = I_{d'\times d'}\]
+
+<p>最终的优化问题可写作：</p>
+
+\[\begin{align} \mathop{\min}_{Z} \quad &amp; \text{tr}(Z^T(I_{N\times N}-W)^T(I_{N\times N}-W)Z) \\ s.t. \quad &amp; Z_i^TZ_i = I_{d'\times d'} \end{align}\]
+
+<p>上式为<a href="https://0809zheng.github.io/2021/06/22/rayleigh.html">瑞利商</a>，因此降维表示$Z$可以由矩阵$(I_{N\times N}-W)^T(I_{N\times N}-W)$最小的$k$个特征值对应的特征向量构造。具体地，采用拉格朗日方法求解上述问题，建立拉格朗日函数：</p>
+
+\[\mathcal{L}(Z,\lambda) = \text{tr}(Z^T(I_{N\times N}-W)^T(I_{N\times N}-W)Z)+\lambda(I_{d'\times d'}-Z^TZ)\]
+
+<p>对上式求导(值得一提的是，求导结果应和所求参数具有相同的张量尺寸)：</p>
+
+\[\frac{\partial \mathcal{L}(Z,\lambda)}{\partial Z} =(I_{N\times N}-W)^T(I_{N\times N}-W)Z-\lambda Z\]
+
+<p>令导数为零，得到：</p>
+
+\[(I_{N\times N}-W)^T(I_{N\times N}-W)Z = \lambda Z\]
+
+<p>记$M=(I_{N\times N}-W)^T(I_{N\times N}-W) \in \Bbb{R}^{N \times N}$，注意到降维后的样本矩阵$Z$就是$M$的特征向量矩阵。</p>
+
+<p>目标函数最小等价于$\lambda$最小，因此选取$d’$个最小的特征值对应的特征向量构成降维矩阵。</p>
+
+<p>在实践中由于最小的特征值接近$0$，因此选取除最小特征值外最小的$d’$个特征值对应的特征向量。</p>
+
+<h1 id="3-实现lle">3. 实现LLE</h1>
+
+<h3 id="-lle-from-scratch">① LLE from scratch</h3>
+<p>由上述介绍，<strong>LLE</strong>的一般步骤如下：</p>
+<ol>
+  <li>给定输入样本$X \in \Bbb{R}^{N \times d}$、近邻参数$k$和降维维度$d’$;</li>
+  <li>对于每个样本点$x_i$计算与其距离最近的$k$个样本点$X_i \in \Bbb{R}^{k \times d}$；</li>
+  <li>计算矩阵$S_i=(1_kx_i- X_i) (1_kx_i- X_i)^T \in \Bbb{R}^{k \times k}$；</li>
+  <li>对样本点$x_i$计算权重参数$W_i =\frac{1_k^TS_i^{-1}}{1_k^TS_i^{-1}1_k}$；</li>
+  <li>将$W_i \in \Bbb{R}^{1 \times k}$扩充为$W \in \Bbb{R}^{1 \times N}$，无关位置填充为$0$；</li>
+  <li>计算矩阵$M=(I_{N\times N}-W)^T(I_{N\times N}-W) \in \Bbb{R}^{N \times N}$；</li>
+  <li>对矩阵$M$进行特征值分解，选取除最小特征值外最小的$d’$个特征值对应的特征向量构成降维矩阵$Z \in \Bbb{R}^{N \times d’}$</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">LLE</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_dims</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
+    <span class="n">N</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">])</span>
+    <span class="c1"># 计算距离矩阵D
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="c1"># 计算样本邻域
+</span>    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span><span class="mi">1</span><span class="p">:</span><span class="n">n_neighbors</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># 计算权重Wi
+</span>    <span class="n">Wi</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">N</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">Xi</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="n">xi</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+        <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">([</span><span class="n">n_neighbors</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">Si</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">I</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span><span class="o">-</span><span class="n">Xi</span><span class="p">,</span> <span class="p">(</span><span class="n">I</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span><span class="o">-</span><span class="n">Xi</span><span class="p">).</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">Si_inv</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">Si</span><span class="p">)</span>
+        <span class="n">Wi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">I</span><span class="p">.</span><span class="n">T</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Si_inv</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">I</span><span class="p">.</span><span class="n">T</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Si_inv</span><span class="p">).</span><span class="n">dot</span><span class="p">(</span><span class="n">I</span><span class="p">))</span>
+    <span class="c1"># 扩充Wi为W
+</span>    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Wi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="c1"># 计算矩阵M
+</span>    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">((</span><span class="n">I</span><span class="o">-</span><span class="n">W</span><span class="p">).</span><span class="n">T</span><span class="p">,</span> <span class="n">I</span><span class="o">-</span><span class="n">W</span><span class="p">)</span>
+    <span class="c1"># 计算特征值和特征向量
+</span>    <span class="n">eig_values</span><span class="p">,</span> <span class="n">eig_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">eig</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+    <span class="c1"># 选择前n_dims个最小的特征值标号
+</span>    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">eig_values</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="n">n_dims</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># 选择对应的特征值和特征向量
+</span>    <span class="n">reduced_data</span> <span class="o">=</span> <span class="n">eig_vectors</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">reduced_data</span>
+</code></pre></div></div>
+
+<h3 id="-lle-from-sklearn">② LLE from sklearn</h3>
+
+<p><strong>LLE</strong>也可以通过<code class="language-plaintext highlighter-rouge">sklearn</code>库快速实现：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_swiss_roll</span>
+<span class="kn">from</span> <span class="nn">sklearn.manifold</span> <span class="kn">import</span> <span class="n">LocallyLinearEmbedding</span>
+
+<span class="n">data</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">make_swiss_roll</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">X_lle</span> <span class="o">=</span> <span class="n">LocallyLinearEmbedding</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_neighbors</span> <span class="o">=</span> <span class="mi">12</span><span class="p">).</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_lle</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_lle</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">"LLE"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/08/01/yolox.html" class="read-next-link"></a>
+        <section>
+          <span>YOLOX: Exceeding YOLO Series in 2021</span>
+          <p>  YOLOX：Anchor-free的YOLO检测器.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/61075a215132923bf858aa8e.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/07/30/isomap.html" class="read-next-link"></a>
+          <section>
+            <span>等度量映射(Isometric Mapping, ISOMAP)</span>
+            <p>  Isometric Mapping.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/61dd3f942ab3f51d91867de0.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

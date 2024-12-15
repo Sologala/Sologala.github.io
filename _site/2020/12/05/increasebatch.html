@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Don’t Decay the Learning Rate, Increase the Batch Size - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Don’t Decay the Learning Rate, Increase the Batch Size">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Don’t Decay the Learning Rate, Increase the Batch Size - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/05/increasebatch.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Don’t Decay the Learning Rate, Increase the Batch Size</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-05"><i class="iconfont icon-date"></i>05 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61f00bd32ab3f51d91b4fab7.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>通过增加批量大小代替学习率衰减.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1711.00489">Don’t Decay the Learning Rate, Increase the Batch Size</a></li>
+</ul>
+
+<p>通常在训练深度学习模型时会衰减学习率，作者认为在训练时增加批量的大小也可以获得类似的学习曲线。这两种方法在相同的训练次数下能够取得相似的测试精度，但后者所进行的参数更新次数更少，并行性更好，缩短了训练时间。作者在<strong>ImageNet</strong>上训练<strong>ResNet50</strong>模型，仅用$0.5 h$达到$76.1 \%$的验证集准确率。</p>
+
+<h1 id="1-随机梯度下降中的噪声建模">1. 随机梯度下降中的噪声建模</h1>
+
+<p>在强凸函数的优化过程中，学习率应满足：</p>
+
+\[\sum_{i}^{∞}\epsilon_i = ∞, \quad \sum_{i}^{∞}\epsilon_i^2 &lt; ∞\]
+
+<p>其中$\epsilon_i$表示第$i$次梯度更新时的学习率。左式确保训练过程能够达到最小值，无论参数初始化在什么位置；右式表示学习率衰减足够快，确保训练过程能够收敛到最小值，而不是在最小值周围震荡。</p>
+
+<p>若用$C$表示代价函数，$w$表示待优化参数，这些参数随时间$t$(即训练轮数)的变化可以建模为随机微分方程：</p>
+
+\[\frac{dw}{dt} = -\frac{dC}{dw} + \eta(t)\]
+
+<p>其中$\eta(t)$表示高斯随机噪声，是由批量梯度估计全量梯度造成的。若总样本数为$N$，批量大小为$B$，则噪声尺度$g$估计为：</p>
+
+\[g = \epsilon(\frac{N}{B}-1)\]
+
+<p>从上式可以观察到，衰减学习率会使噪声尺度减小，从而收敛到代价函数的最小值。若增加批量大小，也可以在固定的学习率下实现相同速率的噪声降低。因此在训练期间可以固定学习率，逐渐增加批量大小，直至$B=N/10$后再衰减学习率。</p>
+
+<p>当随机梯度下降引入动量时，噪声尺度$g$估计为：</p>
+
+\[g = \frac{\epsilon}{1-m}(\frac{N}{B}-1)\]
+
+<p>因此也可以协调地调整动量系数$m$和批量大小$B$，尽管实验发现这样会轻微降低精度。</p>
+
+<h1 id="2-实验分析">2. 实验分析</h1>
+
+<p>为了验证衰减学习率和增加批量大小之间的等价性，作者设置了三种不同的学习策略：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61f0b6a02ab3f51d913bea3d.jpg" alt="" /></p>
+
+<p>作者绘制了训练过程中的损失和精度随<strong>epoch</strong>变化的曲线，发现三种学习策略得到的学习曲线几乎是完全相同的：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61f0b6f52ab3f51d913c23b6.jpg" alt="" /></p>
+
+<p>作者进一步绘制了训练过程中的损失和精度随更新轮数变化的曲线，注意到此时每轮更新中增大批量大小能够处理更多的样本，因此增加批量大小能够更快的收敛。若增大批量的同时调整学习率和动量，则收敛速度还会更快。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61f0bc542ab3f51d913fba01.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/06/adadelta.html" class="read-next-link"></a>
+        <section>
+          <span>ADADELTA: An Adaptive Learning Rate Method</span>
+          <p>  Adadelta：一种自适应学习率方法.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/61f3e9ff2ab3f51d912b41f2.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/04/infovae.html" class="read-next-link"></a>
+          <section>
+            <span>InfoVAE: Balancing Learning and Inference in Variational Autoencoders</span>
+            <p>  InfoVAE：平衡变分自编码器的学习和推断过程.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fc837cc394ac52378fb58db.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

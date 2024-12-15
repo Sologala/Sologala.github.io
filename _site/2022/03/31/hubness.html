@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring and Exploiting Hubness Priors for High-Quality GAN Latent Sampling - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Exploring and Exploiting Hubness Priors for High-Quality GAN Latent Sampling">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Exploring and Exploiting Hubness Priors for High-Quality GAN Latent Sampling - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/03/31/hubness.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Exploring and Exploiting Hubness Priors for High-Quality GAN Latent Sampling</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-03-31"><i class="iconfont icon-date"></i>31 Mar 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/639145b5b1fccdcd3655ee5f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>高质量GAN采样的枢纽度先验.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2206.06014">Exploring and Exploiting Hubness Priors for High-Quality GAN Latent Sampling</a></li>
+</ul>
+
+<h1 id="1-维度灾难与hubness现象">1. 维度灾难与Hubness现象</h1>
+
+<p><strong>维度灾难（the curse of dimensionality）</strong>指出，数据在高维空间中的分布具有稀疏性，从而产生有悖于低维空间（如二维或三维空间）常识的现象。</p>
+
+<p>高维空间中边长为$1$的超立方体内的样本点集中分布在立方体<strong>角落</strong>。考虑$n$维空间中边长为$1$的超立方体内接超球体，超球体半径为$\frac{1}{2}$，其<a href="https://spaces.ac.cn/archives/3154">体积（测度）</a>为$\text{const} \cdot (\frac{1}{2})^n $，当$n→∞$时，超球体体积为$0$。</p>
+
+<p><strong>枢纽(Hubness)现象</strong>是指在高维空间中随机采样一批样本点，会有少数样本点经常出现在其他点的$k$邻域中。用<strong>hub</strong>值统计每个样本点出现在其余点的$k$邻域的次数，则总有一些点的<strong>hub</strong>值较大。</p>
+
+<p>直观地，靠近密度中心(均值向量)的点与所有点的平均距离最小，有更大的概率在其他点的$k$邻域中(对应<strong>hub</strong>值较大)；而密度中心附近的点(以密度中心为球心的球邻域)占比非常小，因此这类<strong>hub</strong>值较大的点非常少。</p>
+
+<h1 id="2-枢纽度先验-hubness-prior">2. 枢纽度先验 Hubness Prior</h1>
+
+<p>本文提出了<strong>枢纽度先验(Hubness Prior)</strong>，即在<strong>GAN</strong>的采样过程中，<strong>hub</strong>值越大的采样点对应的生成质量就越好。</p>
+
+<p>一般地，<strong>GAN</strong>的采样流程是$z$~\(\mathcal{N}(0,1)\), $x = G(z)$。从\(\mathcal{N}(0,1)\)中采样$N$个样本点后，计算每个样本点的<strong>hub</strong>值，只保留<strong>hub</strong>值超过阈值$t$的样本点用来生成新的样本。<strong>hub</strong>值的计算通过<a href="https://0809zheng.github.io/2020/03/23/knn.html">kNN</a>实现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/639149e4b1fccdcd3659f3a2.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/63914a04b1fccdcd365a119f.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">get_z_samples</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+    <span class="s">"""通过Hub值对采样结果进行筛选
+    """</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">z_dim</span><span class="p">))</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="n">z_dim</span><span class="p">)</span>
+        <span class="n">hub</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+            <span class="n">zi</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">]</span>
+            <span class="c1"># 计算样本矩阵z和查询矩阵zi的距离
+</span>            <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">z</span><span class="o">**</span><span class="mi">2</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)[:,</span> <span class="bp">None</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">zi</span><span class="o">**</span><span class="mi">2</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="bp">None</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">z</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">zi</span><span class="p">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="c1"># 计算每个样本点的5近邻
+</span>            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">d</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">5</span><span class="p">].</span><span class="n">T</span><span class="p">:</span>
+                <span class="n">hub</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">hub</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">]</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">Z</span><span class="p">,</span> <span class="n">z</span><span class="p">],</span> <span class="mi">0</span><span class="p">)[:</span><span class="n">size</span><span class="p">]</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'%s / %s'</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Z</span><span class="p">),</span> <span class="n">size</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Z</span>
+</code></pre></div></div>
+
+<p><strong>hub</strong>值越大，则越接近样本的密度中心，则该样本不太可能是没有经过充分训练的离群点，因此采样质量相对更高。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63914f94b1fccdcd36602ec8.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/01/vae.html" class="read-next-link"></a>
+        <section>
+          <span>变分自编码器(Variational Autoencoder)</span>
+          <p>  Variational Autoencoder.本文目录：  变分自编码器之“自编码器”：概率编码器与概率解码...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5fb715b8b18d627113d7ae88.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/03/30/kid.html" class="read-next-link"></a>
+          <section>
+            <span>Demystifying MMD GANs</span>
+            <p>  GAN的KID评估指标.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6391ddc6b1fccdcd362da928.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

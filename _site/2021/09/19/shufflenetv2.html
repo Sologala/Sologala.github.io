@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShuffleNet V2: Practical Guidelines for Efficient CNN Architecture Design - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="ShuffleNet V2: Practical Guidelines for Efficient CNN Architecture Design">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="ShuffleNet V2: Practical Guidelines for Efficient CNN Architecture Design - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/09/19/shufflenetv2.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>ShuffleNet V2: Practical Guidelines for Efficient CNN Architecture Design</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-09-19"><i class="iconfont icon-date"></i>19 Sep 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61712d8d2ab3f51d91a1c751.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>ShuffleNet V2: 高效卷积神经网络结构设计的实践准则.</p>
+</blockquote>
+
+<ul>
+  <li>paper：ShuffleNet V2: Practical Guidelines for Efficient CNN Architecture Design</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1807.11164">link</a></li>
+</ul>
+
+<p>高效神经网络的结构设计质量主要是通过计算复杂度的间接度量作为评估指标，比如<strong>FLOPs</strong> (<strong>float-point operations</strong>, 浮点操作数量)。然而，其他因素如内存访问成本和硬件特性也会影响网络的速度。因此，作者尝试在不同硬件平台上评估高效网络的一些直接指标，并提出了一种新的网络结构，<strong>ShuffleNet v2</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/617140032ab3f51d91b5fcd6.jpg" alt="" /></p>
+
+<p>上图显示了在不同硬件平台上，具有相近<strong>FLOPs</strong>的不同网络具有不同的速度。因此使用<strong>FLOPs</strong>作为计算复杂度的度量是不准确的。造成<strong>FLOPs</strong>指标和速度指标之间的差异的主要原因如下：</p>
+<ol>
+  <li><strong>FLOPs</strong>没有考虑到内存访问成本(<strong>memory access cost, MAC</strong>)，组卷积所需的<strong>MAC</strong>较高，可能会成为<strong>GPU</strong>运算的瓶颈；</li>
+  <li>在<strong>FLOPs</strong>相同的情况下，并行度高的模型比低并行度的模型运算更快；</li>
+  <li>硬件平台不同，具有相同<strong>FLOPs</strong>的操作可能有不同的运行时间。比如<strong>CUDNN</strong>库针对$3\times 3$卷积进行了优化，因此并不能说$3\times 3$卷积比$1\times 1$卷积慢$9$倍。</li>
+</ol>
+
+<p>作者进一步分析了<strong>ShuffleNet</strong>和<strong>MobileNet V2</strong>两个网络中不同操作的运行时间占比。尽管<strong>FLOPs</strong>是由卷积操作提供的，但其他操作也占用了一部分时间，如读取数据、打乱和元素操作。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6172148f2ab3f51d9173d803.jpg" alt="" /></p>
+
+<p>作者依此提出了四条高效网络设计准则：</p>
+
+<h3 id="-输入输出通道数相等能够最小化内存访问成本">① 输入输出通道数相等能够最小化内存访问成本</h3>
+
+<p>以$1\times 1$卷积为例。假设特征的空间尺寸为$h\times w$，输入通道数为$c_1$，输出通道数为$c_2$，则该卷积的<strong>FLOPs</strong>为$B=hwc_1c_2$。该卷积的内存访问成本为：</p>
+
+\[MAC = hwc_1+hwc_2+c_1c_2\]
+
+<p>这三项分别表示对输入特征、输出特征和卷积核权重的内存访问。由均值不等式：</p>
+
+\[MAC \geq 2\sqrt{hwB}+\frac{B}{hw}\]
+
+<p>因此内存访问成本可以表示为<strong>FLOPs</strong>的下界，且当$c_1=c_2$时取下界。下表展示了不同通道数比例下的运行速度：</p>
+
+<p><img src="https://pic.imgdb.cn/item/617218ea2ab3f51d91768cb9.jpg" alt="" /></p>
+
+<h3 id="-过多的组卷积会增加内存访问成本">② 过多的组卷积会增加内存访问成本</h3>
+
+<p>组卷积限制了卷积在不同的输入通道组内运算，能够降低<strong>FLOPs</strong>，但可能增加内存访问成本。</p>
+
+<p>假设输入通道分成$g$组，则组卷积的<strong>FLOPs</strong>为$B=hwc_1c_2/g$。组卷积的内存访问成本为：</p>
+
+\[MAC = hwc_1+hwc_2+\frac{c_1c_2}{g} \\ = hwc_1+\frac{Bg}{c_1}+\frac{B}{hw}\]
+
+<p>当固定输入特征的尺寸$hwc_1$以及计算<strong>FLOPs</strong> $B$时，分组数量增大，则内存访问成本增加。下表表明使用更大的分组会显著降低处理速度：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61721b3d2ab3f51d9177e545.jpg" alt="" /></p>
+
+<h3 id="-在模块中使用更多层会降低并行度">③ 在模块中使用更多层会降低并行度</h3>
+
+<p><strong>GoogLeNet</strong>系列和一些自动设计的网络模块中会使用许多小的操作而不是几个大的操作，比如一个<strong>ResNet</strong>模块中通常会使用$2$-$3$个卷积层，而<strong>NASNet-A</strong>的一个模块使用了$13$个卷积和池化层。虽然这种碎片化的操作能够提高精度，但会引入额外的开销(内核启动和同步等)。下表表明串行或并行的碎片化的操作都降低了处理速度：</p>
+
+<p><img src="https://pic.imgdb.cn/item/617220862ab3f51d917ba261.jpg" alt="" /></p>
+
+<h3 id="-逐元素的操作是不可忽略的">④ 逐元素的操作是不可忽略的</h3>
+
+<p>一些逐元素的操作，如激活函数、张量相加和偏置相加等，在轻量型模型中是不可忽略的，尤其是在<strong>GPU</strong>上。下表表明，在移除<strong>ReLU</strong>和跳跃连接后，网络的处理速度得到提升：</p>
+
+<p><img src="https://pic.imgdb.cn/item/617221962ab3f51d917c38da.jpg" alt="" /></p>
+
+<p>基于上述原则，作者设计了<strong>shufflenet v2</strong>的基本模块，如下图cd所示。作为对比，<strong>shufflenet</strong>的基本模块如下图ab所示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/617224102ab3f51d917de14f.jpg" alt="" /></p>
+
+<p><strong>shufflenet v2</strong>的基本模块采用了一个主体分支的形式(遵循原则③)。作者没有使用组卷积(遵循原则②)，并且卷积的输入和输出特征保持相同(遵循原则①)。对于跳跃连接，作者没有使用相加操作，而是使用了连接操作(遵循原则④)。</p>
+
+<p>作者引入了<strong>通道拆分</strong>(<strong>channel split</strong>)，即在输入端把特征拆分成$c’$通道和$c-c’$通道，分别作为卷积分支和跳跃连接的输入特征。通常取$c’=c/2$。在输出端使用通道打乱保证不同通道之间的交流。
+特征中的一半直接通过跳跃连接输出，这相当于<strong>DenseNet</strong>中的特征复用。</p>
+
+<p>通常相邻的模块之间的特征存在较大的冗余，临近模块的特征复用可以减少这种冗余。第$i$个和第$i+j$个模块之间直连的通道数量为$(\frac{c-c’}{c})^jc$，即特征复用的数量随模块之间的距离呈指数衰减。</p>
+
+<p>实验结果表明，<strong>shufflenet v2</strong>在准确率、浮点运算数量和处理速度上均优于之前的模型：</p>
+
+<p><img src="https://pic.imgdb.cn/item/617229b42ab3f51d9181d8b1.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/09/20/channelnet.html" class="read-next-link"></a>
+        <section>
+          <span>ChannelNets: Compact and Efficient Convolutional Neural Networks via Channel-Wise Convolutions</span>
+          <p>  ChannelNets: 使用通道卷积构建高效卷积神经网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6173ccb32ab3f51d91fb3bcb.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/09/18/shufflenet.html" class="read-next-link"></a>
+          <section>
+            <span>ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices</span>
+            <p>  ShuffleNet: 使用组卷积与通道打乱构造高效网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/61710f222ab3f51d918ace5a.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

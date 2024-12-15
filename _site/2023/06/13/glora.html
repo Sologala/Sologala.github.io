@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>One-for-All: Generalized LoRA for Parameter-Efficient Fine-tuning - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="One-for-All: Generalized LoRA for Parameter-Efficient Fine-tuning">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="One-for-All: Generalized LoRA for Parameter-Efficient Fine-tuning - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/06/13/glora.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>One-for-All: Generalized LoRA for Parameter-Efficient Fine-tuning</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-06-13"><i class="iconfont icon-date"></i>13 Jun 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648ebfb11ddac507cc93bcd7.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>GLoRA：参数高效微调的广义LoRA方法.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2305.14314">One-for-All: Generalized LoRA for Parameter-Efficient Fine-tuning</a></li>
+</ul>
+
+<p>近年来，大规模深度神经网络在各种领域和任务中表现出前所未有的性能。这些大模型通常具有数百万甚至数十亿参数，在通用的大规模数据集上进行预训练，然后通过迁移学习的微调适应下游目标任务。</p>
+
+<p>考虑到对大模型进行全量微调（即微调大模型的所有参数）需要的庞大的计算资源，大模型通常采用参数高效的微调方法。比如<a href="https://0809zheng.github.io/2023/02/05/prompttuning.html"><font color="blue">Prompt Tuning</font></a>在<strong>Transformer</strong>的输入中引入了少量的可学习参数；<a href="https://0809zheng.github.io/2023/02/01/adapter.html"><font color="blue">Adapter</font></a>在<strong>Transformer</strong>模块中引入了包含少量参数的网络；<a href="https://0809zheng.github.io/2023/02/10/lora.html"><font color="blue">LoRA</font></a>通过学习低秩分解矩阵对来减少可训练参数的数量。</p>
+
+<p>然而不同的下游任务数据集在分布和组成上存在显著差异。上述微调策略可能无法充分解释这些差异，从而阻碍其适应不同数据集的能力。本文提出了一种新的微调方法：广义<strong>LoRA</strong>（<strong>GLoRA</strong>），<strong>GLoRA</strong>通过一个针对参数高效微调的统一公式构建，同时考虑了权重、特征和<strong>token</strong>维度，通过采用可扩展、模块化、逐层的结构搜索来学习网络每层的微调参数。由于微调参数采用重参数化形式，因此不会引入额外的推理成本。</p>
+
+<p>对于模型微调，本文提出了一个统一的公式，该公式包含所有可调维度（包括但不限于权重空间和特征空间）。此外，在推理阶段采用了重参数化策略，将辅助参数纳入对应的预训练参数中，从而不额外增加推理成本。</p>
+
+\[\begin{aligned}
+f(x) &amp;= (W_0 + \underbrace{W_0A + B}_{\text{weight space}} )x + \underbrace{CW_0+Db_0+E}_{\text{feature space}}+b_0 \\
+&amp;= W_{uni}x+b_{uni}
+\end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/648ec9d31ddac507cca27daa.jpg" alt="" /></p>
+
+<p>其中$A,B,C,D,E$是下游任务中可训练的张量，$W_0,b_0$是预训练模型的参数（微调时被冻结）。其中$A$用于缩放权重参数，$B$用于缩放输入和偏移权重参数，$C$用于补充层级可训练<strong>prompt</strong>（与<strong>prompt tuning</strong>相似），$D,E$用于缩放和偏移偏置参数。</p>
+
+<p>$A,B,C,D,E$可以在网络的不同层中设置为不同的形式，可取标量、向量、低秩分解(如<strong>LoRA</strong>)或不采用的形式，具体的搜索空间为：</p>
+
+\[\begin{aligned}
+A &amp;= \{ \text{LoRA},\text{vector},\text{scalar},\text{none} \} \\
+B &amp;= \{ \text{LoRA},\text{vector},\text{scalar},\text{none} \} \\
+C &amp;= \{ \text{LoRA},\text{vector},\text{none} \} \\
+D &amp;= \{ \text{vector},\text{scalar},\text{none} \} \\
+E &amp;= \{ \text{vector},\text{scalar},\text{none} \} \\
+\end{aligned}\]
+
+<p>为了确定每一层中$A,B,C,D,E$的最佳配置，采用了进化搜索方法。进化搜索相比于广泛的超参数搜索不需要额外的超参数调整，能够实现效率与有效性的平衡，但仍然会增加训练时间。在搜索过程中采用权重共享策略，即为每个张量定义一个矩阵，根据分量（<strong>LoRA</strong>、向量、标量或无），对子矩阵进行索引。</p>
+
+<p>下图展示了在$72$次不同的搜索中，网络不同层中可训练参数的设置分布情况。结果表明参数$D,E$在不同的调整中表现出明显的无适应性，而参数$A,B$表现出较高的适应性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ed0d61ddac507ccac20e1.jpg" alt="" /></p>
+
+<p>实验结果表明，在<strong>VTAB-1k</strong>基准测试集（包含$19$个不同的视觉图像集）上，<strong>GLoRA</strong>的平均精度超过以往所有最先进的参数高效微调方法。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ecd781ddac507cca79ddb.jpg" alt="" /></p>
+
+<p>此外，在一些细粒度视觉识别数据集上，<strong>GLoRA</strong>进行少样本学习的性能也超过现有方法：</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ecde41ddac507cca8263a.jpg" alt="" /></p>
+
+<p>下图显示了在不同任务中网络不同层对应可学习参数的分布。结果表明多头自注意力模块的投影层具有的可训练参数最少，而<strong>MLP</strong>中的全连接层需要的可训练参数最多。并且结构化（<strong>structured</strong>）任务需要的参数量最大，因为这些数据集相比于预训练的自然数据集具有明显的语义鸿沟。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ed2421ddac507ccadff28.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/06/30/countx.html" class="read-next-link"></a>
+        <section>
+          <span>Open-world Text-specified Object Counting</span>
+          <p>  开放世界文本指定目标计数.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/667e79d4d9c307b7e9760915.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/06/07/alphadev.html" class="read-next-link"></a>
+          <section>
+            <span>Faster sorting algorithms discovered using deep reinforcement learning</span>
+            <p>  AlphaDev：通过深度强化学习发现更快的排序算法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/648427041ddac507cca554a3.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

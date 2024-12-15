@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用pydensecrf构造条件随机场 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="使用pydensecrf构造条件随机场">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="使用pydensecrf构造条件随机场 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/07/11/crf.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>使用pydensecrf构造条件随机场</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-07-11"><i class="iconfont icon-date"></i>11 Jul 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/62cd3ce4f54cd3f9375f8493.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Building fully-connected conditional random field with pydensecrf.</p>
+</blockquote>
+
+<h1 id="1-pydensecrf简介">1. pydensecrf简介</h1>
+
+<p><a href="https://github.com/lucasb-eyer/pydensecrf">pydensecrf</a>是一个构造全连接型条件随机场<strong>CRF</strong>的<strong>python</strong>第三方库。全连接<strong>CRF</strong>模型采用能量函数：</p>
+
+\[E(X) = \sum_{u} \Phi(u) +\sum_{u,v} \Psi(u,v)\]
+
+<p>其中$u,v$是图像$X$上的像素，$\Phi(u)$是一元势函数，$\Psi(u,v)$是二元势函数。</p>
+
+<p>对于二维图像，使用以下语句定义<strong>DenseCRF2D</strong>类：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">pydensecrf.densecrf</span> <span class="k">as</span> <span class="n">dcrf</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">dcrf</span><span class="p">.</span><span class="n">DenseCRF2D</span><span class="p">(</span><span class="mi">640</span><span class="p">,</span> <span class="mi">480</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># width, height, nlabels
+</span></code></pre></div></div>
+
+<h1 id="2-一元势-unary-potential">2. 一元势 Unary potential</h1>
+
+<p>定义一元势函数$\Phi(u) = -\log p(u)$，构造一元势有两种常见的方法：</p>
+<ol>
+  <li>由人类或其他过程产生的硬标签。</li>
+  <li>由概率分布计算得到的软标签，例如深度网络的<strong>softmax</strong>输出。</li>
+</ol>
+
+<h3 id="-由硬标签构造一元势">⚪ 由硬标签构造一元势</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pydensecrf.utils</span> <span class="kn">import</span> <span class="n">unary_from_labels</span>
+<span class="n">U</span> <span class="o">=</span> <span class="n">unary_from_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">n_labels</span><span class="p">,</span> <span class="n">gt_prob</span><span class="p">,</span> <span class="n">zero_unsure</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">labels</code>：(<strong>numpy.array</strong>)图像的标签，形状与图像相同，一个像素对应一个标签值</li>
+  <li><code class="language-plaintext highlighter-rouge">n_labels</code>：(<strong>int</strong>)标签总数，不包括$0$标签</li>
+  <li><code class="language-plaintext highlighter-rouge">gt_prob</code>：(<strong>float</strong>)标签的置信度，取值$(0,1)$</li>
+  <li><code class="language-plaintext highlighter-rouge">zero_unsure</code>：(<strong>bool</strong>)不考虑$0$标签，默认为<strong>True</strong></li>
+</ul>
+
+<h3 id="-由软标签构造一元势">⚪ 由软标签构造一元势</h3>
+
+<p>将<strong>softmax</strong>输出转换成负对数似然值<strong>NLL</strong>。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pydensecrf.utils</span> <span class="kn">import</span> <span class="n">unary_from_softmax</span>
+<span class="n">U</span> <span class="o">=</span> <span class="n">unary_from_softmax</span><span class="p">(</span><span class="n">sm</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">sm</code>：(<strong>numpy.array</strong>)网络输出概率值，第一个维度是类别</li>
+  <li><code class="language-plaintext highlighter-rouge">scale</code>：(<strong>float</strong>)网络输出的确定性，如果不为<strong>None</strong>，则<strong>softmax</strong>输出被缩放到[0,scale]范围</li>
+  <li><code class="language-plaintext highlighter-rouge">clip</code>：(<strong>float</strong>)概率裁剪的最小值，避免出现$\log 0$</li>
+</ul>
+
+<p>该函数相当于进行如下操作：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">sm</span><span class="p">).</span><span class="n">reshape</span><span class="p">([</span><span class="n">num_cls</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]).</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-将一元势加入densecrf2d">⚪ 将一元势加入DenseCRF2D</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">d</span><span class="p">.</span><span class="n">setUnaryEnergy</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h1 id="3-二元势-pairwise-potentials">3. 二元势 Pairwise potentials</h1>
+
+<p>二元势函数$\Psi(u,v)$用于描述像素点和像素点之间的关系，鼓励相似像素分配相同的标签，而相差较大的像素分配不同的标签。</p>
+
+<p>对于二维图像，常见的二元势有两种:</p>
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">d.addPairwiseGaussian</code>：高斯关系，创建与颜色无关的位置特征(参数实际相对距离sxy)，大致表示位置相似的像素可能属于同一个类</li>
+  <li><code class="language-plaintext highlighter-rouge">d.addPairwiseBilateral</code>：双边关系，创建与颜色相关和位置相关的特征，大致表示颜色相似或位置相似的像素可能属于同一个类</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/62cd1fabf54cd3f9372e2a4a.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This adds the color-independent term, features are the locations only.
+</span><span class="n">d</span><span class="p">.</span><span class="n">addPairwiseGaussian</span><span class="p">(</span><span class="n">sxy</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">compat</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                      <span class="n">kernel</span><span class="o">=</span><span class="n">dcrf</span><span class="p">.</span><span class="n">DIAG_KERNEL</span><span class="p">,</span>
+                      <span class="n">normalization</span><span class="o">=</span><span class="n">dcrf</span><span class="p">.</span><span class="n">NORMALIZE_SYMMETRIC</span><span class="p">)</span>
+
+<span class="c1"># This adds the color-dependent term, i.e. features are (x,y,r,g,b).
+# im is an RGB image-array, e.g. im.dtype == np.uint8 and im.shape == (640,480,3)
+</span><span class="n">d</span><span class="p">.</span><span class="n">addPairwiseBilateral</span><span class="p">(</span><span class="n">sxy</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span><span class="mi">80</span><span class="p">),</span> <span class="n">srgb</span><span class="o">=</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">13</span><span class="p">),</span>
+                       <span class="n">rgbim</span><span class="o">=</span><span class="n">im</span><span class="p">,</span> <span class="n">compat</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                       <span class="n">kernel</span><span class="o">=</span><span class="n">dcrf</span><span class="p">.</span><span class="n">DIAG_KERNEL</span><span class="p">,</span>
+                       <span class="n">normalization</span><span class="o">=</span><span class="n">dcrf</span><span class="p">.</span><span class="n">NORMALIZE_SYMMETRIC</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>高斯情况下的sxy为$\theta_{\gamma}$，双边情况下，sxy和srgb分别映射到$\theta_{\alpha}$和$\theta_{\beta}$。分别代表“x/y标准偏差”(<strong>x/y standard-deviation，sxy</strong>)和“rgb标准偏差”(<strong>rgb standard-deviation,srgb</strong>)。</p>
+
+<p>其余参数选择：</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">compat</code>：(<strong>int</strong>)对应公式中的$w^{(1)}$和$w^{(2)}$</li>
+  <li><code class="language-plaintext highlighter-rouge">kernel</code>：可选<code class="language-plaintext highlighter-rouge">dcrf.DIAG_KERNEL</code>,<code class="language-plaintext highlighter-rouge">dcrf.CONST_KERNEL</code>,<code class="language-plaintext highlighter-rouge">dcrf.FULL_KERNEL</code></li>
+  <li><code class="language-plaintext highlighter-rouge">normalization</code>：可选<code class="language-plaintext highlighter-rouge">dcrf.NORMALIZE_SYMMETRIC</code>,<code class="language-plaintext highlighter-rouge">dcrf.NORMALIZE_AFTER</code>,<code class="language-plaintext highlighter-rouge">dcrf.NORMALIZE_BEFORE</code>,<code class="language-plaintext highlighter-rouge">dcrf.NO_NORMALIZATION</code></li>
+</ul>
+
+<h1 id="4-推理-inference">4. 推理 Inference</h1>
+
+<p><strong>CRF</strong>模型结合一元势和二元势比较全面地考虑像素之间的关系，并得出优化后的结果：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Q</span> <span class="o">=</span> <span class="n">d</span><span class="p">.</span><span class="n">inference</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>也可以实现一步一步的推理：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Q</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span> <span class="o">=</span> <span class="n">d</span><span class="p">.</span><span class="n">startInference</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">"KL-divergence at {}: {}"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">d</span><span class="p">.</span><span class="n">klDivergence</span><span class="p">(</span><span class="n">Q</span><span class="p">)))</span>
+    <span class="n">d</span><span class="p">.</span><span class="n">stepInference</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">)</span>
+<span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">Q</span> <span class="o">=</span> <span class="n">Q</span><span class="p">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+</code></pre></div></div>
+
+<h1 id="5-实例使用pydensecrf处理灰度图像">5. 实例：使用pydensecrf处理灰度图像</h1>
+
+<p>对于灰度图像，其通道数为$1$，因此无法直接构造双边关系的二元势。输入定义如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">pydensecrf.densecrf</span> <span class="k">as</span> <span class="n">dcrf</span>
+<span class="kn">import</span> <span class="nn">pydensecrf.utils</span> <span class="k">as</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="n">fn</span> <span class="o">=</span> <span class="s">'./input/image.png'</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">.</span><span class="nb">open</span><span class="p">(</span><span class="n">fn</span><span class="p">).</span><span class="n">convert</span><span class="p">(</span><span class="s">'L'</span><span class="p">)</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="p">)</span> <span class="c1"># [H, W]
+</span><span class="n">prob</span> <span class="o">=</span> <span class="n">img</span><span class="o">/</span><span class="mf">255.</span>     <span class="c1"># [H, W] 模拟softmax的结果
+</span></code></pre></div></div>
+
+<p>下面人为构造包含$2$个类的概率图，即一个”<strong>foreground</strong>“和一个”<strong>background</strong>“类。实现时通过<code class="language-plaintext highlighter-rouge">np.tile</code>复制数组：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">prob</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">prob</span><span class="p">[</span><span class="n">np</span><span class="p">.</span><span class="n">newaxis</span><span class="p">,:,:],(</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">prob</span><span class="p">[</span><span class="mi">1</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">prob</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">prob</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>   <span class="c1"># [2, H, W]
+</span></code></pre></div></div>
+
+<p>在构造双边二元势时，使用如下函数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pairwise_energy</span> <span class="o">=</span> <span class="n">utils</span><span class="p">.</span><span class="n">create_pairwise_bilateral</span><span class="p">(</span><span class="n">sdims</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span> <span class="n">schan</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,),</span> <span class="n">img</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">chdim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">d</span><span class="p">.</span><span class="n">addPairwiseEnergy</span><span class="p">(</span><span class="n">pairwise_energy</span><span class="p">,</span> <span class="n">compat</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">sdims</code>：(<strong>list/tuple</strong>)每个维度的比例因子，相当于<code class="language-plaintext highlighter-rouge">addPairwiseBilateral</code>中的sxy</li>
+  <li><code class="language-plaintext highlighter-rouge">schan</code>：(<strong>list/tuple</strong>)图像中每个通道的比例因子，相当于<code class="language-plaintext highlighter-rouge">addPairwiseBilateral</code>中的srgb</li>
+  <li><code class="language-plaintext highlighter-rouge">chdim</code>：(<strong>int</strong>)指定通道维度在图像中的位置。例如 chdim=2说明其通道值放在第二个维度上。如果图像只有一个通道，则使用chdim=-1。</li>
+</ul>
+
+<p>使用CRF处理图像：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DenseCRF</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iter_max</span><span class="p">,</span> <span class="n">pos_w</span><span class="p">,</span> <span class="n">pos_xy_std</span><span class="p">,</span> <span class="n">bi_w</span><span class="p">,</span> <span class="n">bi_xy_std</span><span class="p">,</span> <span class="n">bi_rgb_std</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">iter_max</span> <span class="o">=</span> <span class="n">iter_max</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_w</span> <span class="o">=</span> <span class="n">pos_w</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_xy_std</span> <span class="o">=</span> <span class="n">pos_xy_std</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bi_w</span> <span class="o">=</span> <span class="n">bi_w</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bi_xy_std</span> <span class="o">=</span> <span class="n">bi_xy_std</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bi_rgb_std</span> <span class="o">=</span> <span class="n">bi_rgb_std</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">probmap</span><span class="p">):</span>
+        <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">shape</span>
+
+        <span class="n">U</span> <span class="o">=</span> <span class="n">utils</span><span class="p">.</span><span class="n">unary_from_softmax</span><span class="p">(</span><span class="n">probmap</span><span class="p">)</span>
+        <span class="n">U</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+
+        <span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">image</span><span class="p">[:,:,</span><span class="n">np</span><span class="p">.</span><span class="n">newaxis</span><span class="p">])</span>
+
+        <span class="n">d</span> <span class="o">=</span> <span class="n">dcrf</span><span class="p">.</span><span class="n">DenseCRF2D</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">d</span><span class="p">.</span><span class="n">setUnaryEnergy</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+        <span class="n">d</span><span class="p">.</span><span class="n">addPairwiseGaussian</span><span class="p">(</span><span class="n">sxy</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">pos_xy_std</span><span class="p">,</span> <span class="n">compat</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">pos_w</span><span class="p">)</span>
+        <span class="n">pairwise_energy</span> <span class="o">=</span> <span class="n">utils</span><span class="p">.</span><span class="n">create_pairwise_bilateral</span><span class="p">(</span><span class="n">sdims</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">bi_xy_std</span><span class="p">,</span>
+                                                          <span class="n">schan</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">bi_rgb_std</span><span class="p">,</span> <span class="n">img</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">chdim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">d</span><span class="p">.</span><span class="n">addPairwiseEnergy</span><span class="p">(</span><span class="n">pairwise_energy</span><span class="p">,</span> <span class="n">compat</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">bi_w</span><span class="p">)</span>
+
+        <span class="n">Q</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span> <span class="o">=</span> <span class="n">d</span><span class="p">.</span><span class="n">startInference</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">iter_max</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">"KL-divergence at {}: {}"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">d</span><span class="p">.</span><span class="n">klDivergence</span><span class="p">(</span><span class="n">Q</span><span class="p">)))</span>
+            <span class="n">d</span><span class="p">.</span><span class="n">stepInference</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">)</span>
+        <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">Q</span><span class="p">).</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="n">postprocessor</span> <span class="o">=</span> <span class="n">DenseCRF</span><span class="p">(</span>
+    <span class="n">iter_max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">pos_xy_std</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+    <span class="n">pos_w</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>      
+    <span class="n">bi_xy_std</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">),</span>
+    <span class="n">bi_rgb_std</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,),</span>
+    <span class="n">bi_w</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">prob</span> <span class="o">=</span> <span class="n">postprocessor</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">prob</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">Image</span><span class="p">.</span><span class="n">fromarray</span><span class="p">((</span><span class="n">prob</span> <span class="o">*</span> <span class="mi">255</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">uint8</span><span class="p">))</span> 
+<span class="n">result</span><span class="p">.</span><span class="n">save</span><span class="p">(</span><span class="s">'res.jpg'</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/07/20/jenson.html" class="read-next-link"></a>
+        <section>
+          <span>琴生不等式(Jenson’s Inequality)</span>
+          <p>  Jenson’s Inequality.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62d8fc04f54cd3f937cae30f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/07/10/yolov7.html" class="read-next-link"></a>
+          <section>
+            <span>YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors</span>
+            <p>  YOLOv7：实时目标检测器的可训练技巧.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/668cf372d9c307b7e9e9e258.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/05/21/gfl.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-05-21"><i class="iconfont icon-date"></i>21 May 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/65289e0cc458853aef256495.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>GFocal Loss: 为密集目标检测学习合格且分散的边界框.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2006.04388">Generalized Focal Loss: Learning Qualified and Distributed Bounding Boxes for Dense Object Detection</a></li>
+</ul>
+
+<p>目前比较强力的单阶段目标检测器最终的输出基本会包含<strong>3</strong>个表示：</p>
+<ol>
+  <li>分类表示：目标的类别得分（<strong>classification score</strong>）</li>
+  <li>检测框表示：边界框的回归结果（<strong>bbox regression</strong>）</li>
+  <li>检测框的质量估计（<strong>IoU/centerness score</strong>）</li>
+</ol>
+
+<h2 id="1-目前存在的问题">1. 目前存在的问题</h2>
+
+<p>现有的表示形式存在如下问题：</p>
+<ol>
+  <li>分类预测分值和质量评估分值训练测试不一致</li>
+  <li><strong>bbox</strong>回归采用的表示不够灵活，没有办法建模复杂场景下不确定性</li>
+</ol>
+
+<p><strong>① classification score 和 IoU/centerness score 训练测试不一致</strong></p>
+
+<ol>
+  <li>用法不一致。训练的时候，分类和质量估计独立地训练；但测试的时候却又是乘在一起作为<strong>NMS score</strong>排序的依据；</li>
+  <li>对象不一致。分类分支能够使得少量的正样本和大量的负样本一起成功训练，但是质量估计通常就只针对正样本训练。</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/6528ea03c458853aef0be0d0.jpg" alt="" /></p>
+
+<p><strong>② bbox regression 采用的表示不够灵活，没有办法建模复杂场景下的uncertainty</strong></p>
+
+<p>在复杂场景中，边界框的表示具有很强的不确定性，而现有的框回归本质都是建模了非常单一的狄拉克分布，应该用一种<strong>general</strong>的分布去建模边界框的表示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6528ea6ac458853aef0d3923.jpg" alt="" /></p>
+
+<h2 id="2-解决方案">2. 解决方案</h2>
+
+<p>针对目前目标检测存在的两个问题，提出了两个解决办法：</p>
+<ol>
+  <li>将<strong>bbox</strong>预测质量和分类分支<strong>loss</strong>联合表示，解决两分支独立训练，联合测试不一致问题</li>
+  <li>采用自发学习的灵活分布建模形式来表示<strong>bbox</strong>不确定性，具体是采用<strong>softmax+</strong>积分形式，相当于把回归问题转换为分类问题</li>
+</ol>
+
+<p><strong>① 将bbox预测质量和分类分支loss联合表示</strong></p>
+
+<p>对于第一个问题，为了保证训练和测试的一致性，同时还能够兼顾分类<strong>score</strong>和质量预测<strong>score</strong>都能够训练到所有的正负样本，需要将两者的表示进行联合。从物理上依然还是保留分类的向量，但是对应类别位置的置信度的物理含义不再是分类的<strong>score</strong>，而是改为质量预测的<strong>score</strong>。这样就做到了两者的联合表示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6528ecbac458853aef144355.jpg" alt="" /></p>
+
+<p>对于分类-质量联合表示，<strong>label</strong>变成了<strong>0~1</strong>之间的连续值。如果要引入<strong>Focal Loss</strong>平衡正负、难易样本的特性，需要让其支持连续数值的监督，因此需要对<strong>Focal Loss</strong>在连续<strong>label</strong>上拓展，称为<strong>Quality Focal Loss (QFL)</strong>。<strong>Focal Loss</strong>表示为：</p>
+
+\[FL(p) = -(1-p_t)^\gamma \log(p_t) \\
+p_t = \begin{cases}
+p, &amp; y=1 \\
+1-p, &amp; y=0
+\end{cases}\]
+
+<p><strong>QFL</strong>则将其修改为：</p>
+
+\[QFL(p) = -|y-p|^\beta \left( y\log p + (1-y) \log(1-p) \right)\]
+
+<p>其中$y$为$0$~$1$的质量标签，$\sigma$为预测。注意<strong>QFL</strong>的全局最小解即是$\sigma = y$，这样交叉熵部分变为完整的交叉熵。调节因子为距离绝对值的幂次函数，实验中发现一般取$\beta = 2$为最优。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">quality_focal_loss</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+    <span class="s">"""
+    Args:
+        pred (torch.Tensor): Predicted joint representation of classification
+            and quality (IoU) estimation with shape (N, C), C is the number of
+            classes.
+        target (tuple([torch.Tensor])): Target category label with shape (N,)
+            and target quality label with shape (N,).
+        beta (float): The beta parameter for calculating the modulating factor.
+            Defaults to 2.0.
+    Returns:
+        torch.Tensor: Loss tensor with shape (N,).
+    """</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"""target for QFL must be a tuple of two elements,
+        including category label and quality label, respectively"""</span>
+    <span class="c1"># label denotes the category id, score denotes the quality score
+</span>    <span class="n">label</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">target</span>  <span class="c1"># label(N) 类别,score(N),预测bbox和gt bbox的iou
+</span>
+    <span class="c1"># negatives are supervised by 0 quality score
+</span>    <span class="n">pred_sigmoid</span> <span class="o">=</span> <span class="n">pred</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">()</span>  <span class="c1"># (N,class_num)
+</span>    <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">pred_sigmoid</span>
+    <span class="n">zerolabel</span> <span class="o">=</span> <span class="n">scale_factor</span><span class="p">.</span><span class="n">new_zeros</span><span class="p">(</span><span class="n">pred</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="c1"># 先假设所有label都是负样本，计算bce loss，乘上sigmoid^beta次方，达到focal效应
+</span>    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span>
+        <span class="n">pred</span><span class="p">,</span> <span class="n">zerolabel</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'none'</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+
+    <span class="c1"># FG cat_id: [0, num_classes -1], BG cat_id: num_classes
+</span>    <span class="n">bg_class_ind</span> <span class="o">=</span> <span class="n">pred</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># 找出正样本索引
+</span>    <span class="n">pos</span> <span class="o">=</span> <span class="p">((</span><span class="n">label</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">label</span> <span class="o">&lt;</span> <span class="n">bg_class_ind</span><span class="p">)).</span><span class="n">nonzero</span><span class="p">().</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pos_label</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="n">pos</span><span class="p">].</span><span class="nb">long</span><span class="p">()</span>
+    <span class="c1"># positives are supervised by bbox quality (IoU) score
+</span>    <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">score</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">-</span> <span class="n">pred_sigmoid</span><span class="p">[</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos_label</span><span class="p">]</span>  <span class="c1"># 正样本focal值
+</span>    <span class="c1"># 计算正样本处的bce loss，注意label=score，而不是1
+</span>    <span class="n">loss</span><span class="p">[</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos_label</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span>
+        <span class="n">pred</span><span class="p">[</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos_label</span><span class="p">],</span> <span class="n">score</span><span class="p">[</span><span class="n">pos</span><span class="p">],</span>
+        <span class="n">reduction</span><span class="o">=</span><span class="s">'none'</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">.</span><span class="nb">abs</span><span class="p">().</span><span class="nb">pow</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>  <span class="c1"># (N,class_num)在1维度直接求和，变成(N,)
+</span>    <span class="k">return</span> <span class="n">loss</span>
+</code></pre></div></div>
+
+<p><strong>① 采用自发学习的灵活分布建模形式来表示bbox不确定性</strong></p>
+
+<p>对于第二个问题，选择直接回归一个任意分布来建模框的表示。在连续域上回归是不可能的，所以可以用离散化的方式，通过<strong>softmax</strong>来实现即可。</p>
+
+<p>首先作者对所有 <strong>gt bbox</strong> 映射到特征图维度，并计算所有<strong>coco</strong>数据集中正样本的回归范围，如下所示：</p>
+
+<p><img src="https://pic.imgdb.cn/item/6531d3bbc458853aef5996c3.jpg" alt="" /></p>
+
+<p>可以发现最大值大概可以设置为$16$，也就是说分布长度可以设置为$16+1$，而且需要特别指出不同的数据集由于分布不一致，需要针对数据特点重新确定这个超参。</p>
+
+<p>对于任意分布来建模框的表示，它可以用积分形式（通过求和实现）直接转化得到浮点坐标，嵌入到任意已有的和框回归相关的损失函数上。不过如果分布过于任意，网络学习的效率可能会不高，原因是一个积分目标可能对应了无穷多种分布模式。</p>
+
+<p>考虑到真实的分布通常不会距离标注的位置太远，所以额外引入<strong>Distribution Focal Loss (DFL)</strong>，希望网络能够快速地聚焦到标注位置附近的数值，使得他们概率尽可能大。其形式上与<strong>QFL</strong>的右半部分很类似，含义是以类似交叉熵的形式去优化与标签$y$最接近的一左一右两个位置的概率，从而让网络快速地聚焦到目标位置的邻近区域的分布中去。</p>
+
+\[DFL(S_i, S_{i+1}) = -\left( (y_{i+1}-y)\log S_i + (y-y_i) \log S_{i+1} \right)\]
+
+<p>$y_i$和$y_{i+1}$是浮点值$y$的左右整数值，$S$是输出分布，长度为$17$，可以看出这本质就是一个<strong>bce loss</strong>，通过计算全局最优解是：</p>
+
+\[S_i=\frac{y_{i+1}-y}{y_{i+1}-y_i}, S_{i+1}=\frac{y-y_i}{y_{i+1}-y_i}\]
+
+<p>学出来的分布理论上是在真实浮点坐标的附近，并且以线性插值的模式得到距离左右整数坐标的权重。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">distribution_focal_loss</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="s">"""
+    Args:
+        pred (torch.Tensor): Predicted general distribution of bounding boxes
+            (before softmax) with shape (N, n+1), n is the max value of the
+            integral set `{0, ..., n}` in paper.
+        label (torch.Tensor): Target distance label for bounding boxes with
+            shape (N,).
+    Returns:
+        torch.Tensor: Loss tensor with shape (N,).
+    """</span>
+    <span class="n">dis_left</span> <span class="o">=</span> <span class="n">label</span><span class="p">.</span><span class="nb">long</span><span class="p">()</span>  <span class="c1"># 坐标整数值
+</span>    <span class="n">dis_right</span> <span class="o">=</span> <span class="n">dis_left</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># 右边整数值
+</span>    <span class="c1"># 线性权重
+</span>    <span class="n">weight_left</span> <span class="o">=</span> <span class="n">dis_right</span><span class="p">.</span><span class="nb">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">label</span>
+    <span class="n">weight_right</span> <span class="o">=</span> <span class="n">label</span> <span class="o">-</span> <span class="n">dis_left</span><span class="p">.</span><span class="nb">float</span><span class="p">()</span>
+    <span class="c1"># 两个bce loss，并且加权，促使学到的分布是双峰分布，提高优化效率
+</span>    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">dis_left</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'none'</span><span class="p">)</span> <span class="o">*</span> <span class="n">weight_left</span> \
+           <span class="o">+</span> <span class="n">F</span><span class="p">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">dis_right</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'none'</span><span class="p">)</span> <span class="o">*</span> <span class="n">weight_right</span>
+    <span class="k">return</span> <span class="n">loss</span>
+</code></pre></div></div>
+
+<p><strong>QFL</strong>和<strong>DFL</strong>可以统一地表示为<strong>GFL (Generalized Focal Loss)</strong>:</p>
+
+\[GFL\left(p_{y_l}, p_{y_r}\right)=-\left|y-\left(y_l p_{y_l}+y_r p_{y_r}\right)\right|^\beta\left(\left(y_r-y\right) \log \left(p_{y_l}\right)+\left(y-y_l\right) \log \left(p_{y_r}\right)\right)\]
+
+<p><img src="https://pic.imgdb.cn/item/6529fd6ec458853aefddb96b.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/05/22/libra.html" class="read-next-link"></a>
+        <section>
+          <span>Libra R-CNN: Towards Balanced Learning for Object Detection</span>
+          <p>  Libra R-CNN: 面向目标检测中的均衡学习.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/652de54bc458853aef2dbee8.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/05/20/long-tail.html" class="read-next-link"></a>
+          <section>
+            <span>图像长尾分布(Long-Tail Distribution)问题</span>
+            <p>  Long-tail distribution problem in image datasets.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/625fe9c2239250f7c51abe59.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卷积神经网络中的注意力机制(Attention Mechanism) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="卷积神经网络中的注意力机制(Attention Mechanism)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="卷积神经网络中的注意力机制(Attention Mechanism) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/11/18/AinCNN.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>卷积神经网络中的注意力机制(Attention Mechanism)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-11-18"><i class="iconfont icon-date"></i>18 Nov 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63aaba3608b6830163a51dfb.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Attention Mechanism in Convolutional Neural Networks.</p>
+</blockquote>
+
+<p>卷积神经网络中的<strong>注意力机制(Attention Mechanism)</strong>表现为在特征的某个维度上计算相应<strong>统计量</strong>，并根据所计算的统计量对该维度上的每一个元素赋予不同的权重，用以增强网络的特征表达能力。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Attention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Attention</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">layer</span><span class="p">()</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>         <span class="c1"># 在某特征维度上计算权重
+</span>        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">w</span><span class="p">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># 对特征进行加权
+</span></code></pre></div></div>
+
+<p>卷积层的特征维度包括通道维度$C$和空间维度$H,W$，因此注意力机制可以应用在不同维度上：</p>
+<ul>
+  <li><strong>通道注意力(Channel Attention)</strong>：<strong>SENet</strong>, <strong>CMPT-SE</strong>, <strong>GENet</strong>, <strong>GSoP</strong>, <strong>SRM</strong>, <strong>SKNet</strong>, <strong>DIA</strong>, <strong>ECA-Net</strong>, <strong>SPANet</strong>, <strong>FcaNet</strong>, <strong>EPSA</strong>, <strong>TSE</strong>, <strong>NAM</strong></li>
+  <li><strong>空间注意力(Spatial Attention)</strong>：<strong>Residual Attention Network</strong>, <strong>SGE</strong>, <strong>ULSAM</strong></li>
+  <li>通道+空间：(<strong>并联</strong>)<strong>scSE</strong>, <strong>BAM</strong>, <strong>SA-Net</strong>, <strong>Triplet Attention</strong>; (<strong>串联</strong>)<strong>CBAM</strong>; (<strong>融合</strong>)<strong>SCNet</strong>, <strong>Coordinate Attention</strong>, <strong>SimAM</strong></li>
+  <li>其他注意力：<strong>DCANet</strong>, <strong>WE</strong>, <strong>ATAC</strong>, <strong>AFF</strong>, <strong>AW-Convolution</strong>, <strong>BA^2M</strong>, <strong>Interflow</strong>, <strong>CSRA</strong></li>
+</ul>
+
+<h2 id="1-通道注意力">1. 通道注意力</h2>
+
+<h3 id="-squeeze-and-excitation-network-senet">⚪ <a href="https://0809zheng.github.io/2020/10/01/senet.html"><font color="blue">Squeeze-and-Excitation Network (SENet)</font></a></h3>
+
+<p><strong>SENet</strong>对输入特征沿着通道维度计算一阶统计量(全局平均池化)，然后通过带有瓶颈层的全连接层学习通道之间的相关性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a41844b1fccdcd36de13f2.jpg" alt="" /></p>
+
+<h3 id="-competitive-squeeze-and-excitation-cmpt-se">⚪ <a href="https://0809zheng.github.io/2020/11/04/cmptse.html"><font color="blue">Competitive Squeeze and Excitation (CMPT-SE)</font></a></h3>
+
+<p><strong>CMPT-SE</strong>通过残差流和恒等流进行竞争建模，以共同决定通道注意力分布，使得恒等流能自主参与对特征的权重调控。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63c00db5be43e0d30e58e019.jpg" alt="" /></p>
+
+<h3 id="-gather-excite-network-genet">⚪ <a href="https://0809zheng.github.io/2020/10/10/genet.html"><font color="blue">Gather-Excite Network (GENet)</font></a></h3>
+
+<p><strong>GENet</strong>对输入特征使用通道卷积提取每个局部空间位置的统计量，然后将其进行缩放还原回原始尺寸，并通过带有瓶颈层的$1\times 1$卷积层学习通道之间的相关性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63ad7a4808b6830163c30e7b.jpg" alt="" /></p>
+
+<h3 id="-global-second-order-pooling-gsop">⚪ <a href="https://0809zheng.github.io/2020/10/03/gsopnet.html"><font color="blue">Global Second-order Pooling (GSoP)</font></a></h3>
+
+<p><strong>GSoP</strong>对输入特征沿着通道维度进行降维后，计算通道之间的协方差矩阵(二阶统计量)，然后通过按行卷积和全连接层学习通道之间的相关性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a441b408b6830163cd168d.jpg" alt="" /></p>
+
+<h3 id="-style-based-recalibration-module-srm">⚪ <a href="https://0809zheng.github.io/2020/11/03/srm.html"><font color="blue">Style-based Recalibration Module (SRM)</font></a></h3>
+
+<p><strong>SRM</strong>首先通过风格池化将每个特征图的通道级统计信息（均值和标准差）用作风格特征，然后通过风格集成来估计每个通道的重校准权重。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b9763bbe43e0d30e612cfc.jpg" alt="" /></p>
+
+<h3 id="-selective-kernel-network-sknet">⚪ <a href="https://0809zheng.github.io/2020/10/02/sknet.html"><font color="blue">Selective Kernel Network (SKNet)</font></a></h3>
+
+<p><strong>SKNet</strong>首先同时使用不同大小的卷积核作为不同的分支提取特征，然后通过通道注意力机制融合这些特征，以获得不同感受野的信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a4269bb1fccdcd36f4c6b3.jpg" alt="" /></p>
+
+<h3 id="-dense-and-implicit-attention-dia">⚪ <a href="https://0809zheng.github.io/2020/10/18/dianet.html"><font color="blue">Dense-and-Implicit-Attention (DIA)</font></a></h3>
+
+<p><strong>DIA</strong>在不同的网络层共享同一个注意力模块，以鼓励分层信息的集成。具体地通过<strong>LSTM</strong>共享模块参数并捕获长距离依赖性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b293545d94efb26ffd9365.jpg" alt="" /></p>
+
+<h3 id="-efficient-channel-attention-eca-net">⚪ <a href="https://0809zheng.github.io/2020/10/07/ecanet.html"><font color="blue">Efficient Channel Attention (ECA-Net)</font></a></h3>
+
+<p><strong>ECA-Net</strong>通过把通道注意力模块中的全连接层替换为一维卷积层，实现了轻量级的通道注意力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a5570808b6830163258973.jpg" alt="" /></p>
+
+<h3 id="-spatial-pyramid-attention-spanet">⚪ <a href="https://0809zheng.github.io/2020/10/27/spanet.html"><font color="blue">Spatial Pyramid Attention (SPANet)</font></a></h3>
+
+<p><strong>SPANet</strong>在<strong>4×4</strong>、<strong>2×2</strong>和<strong>1×1</strong>三个尺度上对输入特征图进行自适应平均池化，然后将三个输出特征连接并调整为一维向量以生成通道注意力分布。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b56326be43e0d30e36b559.jpg" alt="" /></p>
+
+<h3 id="-multi-spectral-channel-attention-fcanet">⚪ <a href="https://0809zheng.github.io/2020/10/09/fcanet.html"><font color="blue">Multi-Spectral Channel Attention (FcaNet)</font></a></h3>
+
+<p><strong>FcaNet</strong>首先选择应用离散余弦变换后<strong>Top-n</strong>个性能最佳的频率分量标号，然后把输入特征沿通道划分为$n$等份，对每份计算其对应的<strong>DCT</strong>频率分量，并与对应的特征分组相乘。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a6645a08b6830163bc8227.jpg" alt="" /></p>
+
+<h3 id="-efficient-pyramid-split-attention-epsa">⚪ <a href="https://0809zheng.github.io/2020/10/25/epsanet.html"><font color="blue">Efficient Pyramid Split Attention (EPSA)</font></a></h3>
+
+<p><strong>EPSA</strong>首先根据拆分和拼接模块生成多尺度的特征图，通过通道注意力机制提取不同尺度特征图的注意力向量，利用<strong>Softmax</strong>重新校准不同尺度的注意力向量，并对多尺度特征图进行加权。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b55eefbe43e0d30e2fc791.jpg" alt="" /></p>
+
+<h3 id="-tiled-squeeze-and-excite-tse">⚪ <a href="https://0809zheng.github.io/2020/11/02/tse.html"><font color="blue">Tiled Squeeze-and-Excite (TSE)</font></a></h3>
+
+<p><strong>TSE</strong>把通道注意力的全局平均池化替换成更小的池化核，为针对数据流设计的<strong>AI</strong>加速器中的元素乘法引入更小的缓冲区。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b958a2be43e0d30e28f946.jpg" alt="" /></p>
+
+<h3 id="-normalization-based-attention-module-nam">⚪ <a href="https://0809zheng.github.io/2020/10/31/nam.html"><font color="blue">Normalization-based Attention Module (NAM)</font></a></h3>
+
+<p><strong>NAM</strong>对输入特征应用<strong>Batch Norm</strong>，并通过<strong>Batch Norm</strong>中可学习的尺度变换参数$\gamma$构造注意力分布。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b92d4dbe43e0d30ed8ac4b.jpg" alt="" /></p>
+
+<h2 id="2-空间注意力">2. 空间注意力</h2>
+
+<h3 id="-residual-attention-network">⚪ <a href="https://0809zheng.github.io/2020/10/30/ran.html"><font color="blue">Residual Attention Network</font></a></h3>
+
+<p><strong>Residual Attention Module</strong>在卷积模块中增加侧分支提取高层特征，高层特征的激活位置能够反映感兴趣的区域；然后对高层特征进行上采样，并与卷积特征进行加权。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64326add0d2dde577727c6d8.jpg" alt="" /></p>
+
+<h3 id="-spatial-group-wise-enhance-sge">⚪ <a href="https://0809zheng.github.io/2020/10/08/sge.html"><font color="blue">Spatial Group-wise Enhance (SGE)</font></a></h3>
+
+<p><strong>SGE</strong>把输入特征进行分组，对每组特征在空间维度上与其全局平均池化特征做点积后进行标准化，然后通过学习两个仿射参数(缩放和偏移)实现空间注意力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a55f3d08b683016332fdc6.jpg" alt="" /></p>
+
+<h3 id="-ultra-lightweight-subspace-attention-module-ulsam">⚪ <a href="https://0809zheng.github.io/2020/11/27/ulsam.html"><font color="blue">Ultra-Lightweight Subspace Attention Module (ULSAM)</font></a></h3>
+
+<p><strong>ULSAM</strong>对输入特征进行分组，对每组特征通过深度可分离卷积构造空间注意力分布，进行空间上的重新校准；最后把所有特征连接作为输出特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fdbffff144a01007d918c3.jpg" alt="" /></p>
+
+<h2 id="31-并联通道空间注意力">3.1 并联通道+空间注意力</h2>
+
+<h3 id="-concurrent-spatial-and-channel-squeeze--excitation-scse">⚪ <a href="https://0809zheng.github.io/2020/10/06/scse.html"><font color="blue">Concurrent Spatial and Channel Squeeze &amp; Excitation (scSE)</font></a></h3>
+
+<p><strong>scSE</strong>通过并联使用通道注意力和空间注意力增强特征的表达能力。通道注意力通过全局平均池化和全连接层实现；空间注意力通过$1\times 1$卷积实现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a51eee08b6830163cb93b0.jpg" alt="" /></p>
+
+<h3 id="-bottleneck-attention-module-bam">⚪ <a href="https://0809zheng.github.io/2020/10/04/bam.html"><font color="blue">Bottleneck Attention Module (BAM)</font></a></h3>
+
+<p><strong>BAM</strong>通过并联使用通道注意力和空间注意力增强特征的表达能力。通道注意力通过全局平均池化和全连接层实现；空间注意力通过$1\times 1$卷积和空洞卷积实现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a50e2908b6830163b5939c.jpg" alt="" /></p>
+
+<h3 id="-shuffle-attention-sa-net">⚪ <a href="https://0809zheng.github.io/2021/01/30/sanet.html"><font color="blue">Shuffle Attention (SA-Net)</font></a></h3>
+
+<p><strong>SA-Net</strong>把输入特征沿通道维度拆分为$g$组，对每组特征再次沿通道平均拆分后应用并行的通道注意力和空间注意力，之后集成所有特征，并通过通道置换操作进行不同通道间的交互。</p>
+
+<p><img src="https://img.imgdb.cn/item/601cb04a3ffa7d37b3c0b9c2.jpg" alt="" /></p>
+
+<h3 id="-triplet-attention">⚪ <a href="https://0809zheng.github.io/2020/10/14/triplet.html"><font color="blue">Triplet Attention</font></a></h3>
+
+<p><strong>Triplet Attention</strong>分别沿着通道维度、高度维度和宽度维度应用注意力机制，其中输入特征可以通过维度交换构造；统计函数$Z$选用全局最大池化和全局平均池化。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aee0f708b68301639e2448.jpg" alt="" /></p>
+
+<h2 id="32-串联通道空间注意力">3.2 串联通道+空间注意力</h2>
+
+<h3 id="-convolutional-block-attention-module-cbam">⚪ <a href="https://0809zheng.github.io/2020/10/05/cbam.html"><font color="blue">Convolutional Block Attention Module (CBAM)</font></a></h3>
+
+<p><strong>CBAM</strong>通过串联使用通道注意力和空间注意力增强特征的表达能力，每种注意力机制构造两个一阶统计量（全局最大池化和全局平均池化）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a516a408b6830163c0658b.jpg" alt="" /></p>
+
+<h2 id="33-融合通道空间注意力">3.3 融合通道+空间注意力</h2>
+
+<h3 id="-self-calibrated-convolution-scnet">⚪ <a href="https://0809zheng.github.io/2020/10/13/scnet.html"><font color="blue">Self-Calibrated Convolution (SCNet)</font></a></h3>
+
+<p><strong>SCNet</strong>把输入特征沿通道维度拆分成两部分，一部分直接应用标准的卷积操作；另一部分在两个不同的尺度空间中进行卷积特征转换：原始特征空间和下采样后具有较小分辨率的隐空间。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63ad903808b6830163e5047d.jpg" alt="" /></p>
+
+<h3 id="-coordinate-attention">⚪ <a href="https://0809zheng.github.io/2021/03/06/ca.html"><font color="blue">Coordinate Attention</font></a></h3>
+
+<p><strong>坐标注意力</strong>能够同时建模通道之间的相关性和特征的位置信息。通过沿水平或垂直方向进行平均池化，以捕捉精确的互补位置信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b2546d5d94efb26faf5a86.jpg" alt="" /></p>
+
+<h3 id="-simple-parameter-free-attention-module-simam">⚪ <a href="https://0809zheng.github.io/2021/10/02/simam.html"><font color="blue">Simple, Parameter-Free Attention Module (SimAM)</font></a></h3>
+
+<p><strong>SimAM</strong>根据视觉神经学中的空间抑制效应为每个神经元生成一个重要性权重。定义神经元的能量函数$E$测量一个目标神经元与其他神经元之间的线性可分性，能量越低，神经元与周围神经元的区别越大，重要性越高。因此神经元的重要性可以通过$1/E$得到。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643143840d2dde577788fe84.jpg" alt="" /></p>
+
+<h2 id="4-其他注意力">4. 其他注意力</h2>
+
+<h3 id="-deep-connected-attention-network-dcanet">⚪ <a href="https://0809zheng.github.io/2020/10/15/dcanet.html"><font color="blue">Deep Connected Attention Network (DCANet)</font></a></h3>
+
+<p><strong>DCANet</strong>把相邻的注意力模块连接起来，使信息在注意力模块之间流动。实现过程是把前一个注意力模块中转换模块的输出$T_{n-1}$乘以提取模块的输出$E_{n-1}$后（用注意力分布对统计特征进行加权），连接到当前注意力模块中提取模块的输出$E_{n}$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b23e955d94efb26f974f43.jpg" alt="" /></p>
+
+<h3 id="-weight-excitation-we">⚪ <a href="https://0809zheng.github.io/2020/10/20/we.html"><font color="blue">Weight Excitation (WE)</font></a></h3>
+
+<p><strong>WE</strong>对卷积核的不同权重赋予注意力机制，通过<strong>SENet</strong>模块调整卷积核每个权重通道的重要性，通过激活函数调整卷积核每个权重幅值的重要性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b3964fbe43e0d30e51f580.jpg" alt="" /></p>
+
+<h3 id="-attentional-activation-atac">⚪ <a href="https://0809zheng.github.io/2020/10/29/atac.html"><font color="blue">Attentional Activation (ATAC)</font></a></h3>
+
+<p><strong>ATAC</strong>是一种同时用于非线性激活和逐元素特征细化的局部通道注意力模块，该模块局部地聚合了逐点跨通道特征上下文信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b8cdf2be43e0d30e457c3b.jpg" alt="" /></p>
+
+<h3 id="-attentional-feature-fusion-aff">⚪ <a href="https://0809zheng.github.io/2020/12/01/aff.html"><font color="blue">Attentional Feature Fusion (AFF)</font></a></h3>
+
+<p><strong>AFF</strong>把来自不同层或不同分支的特征通过注意力机制进行组合。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b24e6b5d94efb26fa89166.jpg" alt="" /></p>
+
+<h3 id="-aw-convolution">⚪ <a href="https://0809zheng.github.io/2020/11/01/awconv.html"><font color="blue">AW-Convolution</font></a></h3>
+
+<p><strong>AW-conv</strong>通过生成与卷积核尺寸相同的注意力图并作用于卷积核，实现了多通道、多区域的注意力机制。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b93ac7be43e0d30eef26ff.jpg" alt="" /></p>
+
+<h3 id="-batch-aware-attention-module-ba2m">⚪ <a href="https://0809zheng.github.io/2020/10/22/baam.html"><font color="blue">Batch Aware Attention Module (BA^2M)</font></a></h3>
+
+<p>在图像分类任务中，由于图像内容的复杂性不同，在计算损失的时候不同图像应该具有不同的重要性。<strong>BA^2M</strong>在批量训练中为每个样本$x_i$根据注意力机制赋予一个重要性权重$w_i$，从而调整其在损失计算中的重要性：</p>
+
+\[\begin{aligned}  L &amp;=  -\frac{1}{N} \sum_i^N \log (\frac{e^{w_i\cdot f_{y_i}}}{\sum_j^K e^{w_i\cdot f_j}})  \end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/63b555d0be43e0d30e205daf.jpg" alt="" /></p>
+
+<h3 id="-interflow">⚪ <a href="https://0809zheng.github.io/2020/10/28/interflow.html"><font color="blue">Interflow</font></a></h3>
+
+<p><strong>Interflow</strong>根据深度把卷积网络划分为几个阶段，并利用每个阶段的特征映射进行预测。把这些预测分支输入到一个注意力模块中学习这些预测分支的权值，并将其聚合得到最终的输出。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b81ab0be43e0d30e146939.jpg" alt="" /></p>
+
+<h3 id="-class-specific-residual-attention-csra">⚪ <a href="https://0809zheng.github.io/2021/10/01/residual.html"><font color="blue">Class-Specific Residual Attention (CSRA)</font></a></h3>
+
+<p><strong>CSRA</strong>通过空间注意力分数为每个类别生成类别相关的特征，然后将其与类别无关的平均池化特征相结合，以提高多标签分类的准确率。</p>
+
+<p><img src="https://pic.imgdb.cn/item/642569d0a682492fcc48ce19.jpg" alt="" /></p>
+
+<h3 id="-参考文献">⭐ 参考文献</h3>
+<ul>
+  <li><a href="https://arxiv.org/abs/2111.07624">Attention Mechanisms in Computer Vision: A Survey</a>：(arXiv1709)一篇卷积神经网络中的注意力机制综述。</li>
+  <li><a href="https://arxiv.org/abs/1904.02874">An Attentive Survey of Attention Models</a>：(arXiv1904)包括<strong>NLP</strong>/<strong>CV</strong>/推荐系统等方面的注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/30/ran.html"><font color="blue">Residual Attention Network for Image Classification</font></a>：(arXiv1704)图像分类的残差注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/01/senet.html"><font color="blue">Squeeze-and-Excitation Networks</font></a>：(arXiv1709)SENet：卷积神经网络的通道注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/06/scse.html"><font color="blue">Concurrent Spatial and Channel Squeeze &amp; Excitation in Fully Convolutional Networks</font></a>：(arXiv1803)scSE：全卷积网络中的并行空间和通道注意力模块。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/04/cmptse.html"><font color="blue">Competitive Inner-Imaging Squeeze and Excitation for Residual Network</font></a>：(arXiv1807)残差网络的竞争性内部图像通道注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/04/bam.html"><font color="blue">BAM: Bottleneck Attention Module</font></a>：(arXiv1807)BAM：瓶颈注意力模块。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/05/cbam.html"><font color="blue">CBAM: Convolutional Block Attention Module</font></a>：(arXiv1807)CBAM：卷积块注意力模块。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/10/genet.html"><font color="blue">Gather-Excite: Exploiting Feature Context in Convolutional Neural Networks</font></a>：(arXiv1810)GENet：在通道注意力中利用特征上下文。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/03/gsopnet.html"><font color="blue">Global Second-order Pooling Convolutional Networks</font></a>：(arXiv1811)GSoP-Net：全局二阶池化卷积网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/03/srm.html"><font color="blue">SRM: A Style-based Recalibration Module for Convolutional Neural Networks</font></a>：(arXiv1903)SRM：一种基于风格的卷积神经网络重校准模块。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/02/sknet.html"><font color="blue">Selective Kernel Networks</font></a>：(arXiv1903)SKNet：通过注意力机制实现卷积核尺寸选择。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/18/dianet.html"><font color="blue">DIANet: Dense-and-Implicit Attention Network</font></a>：(arXiv1905)DIANet：密集的隐式注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/08/sge.html"><font color="blue">Spatial Group-wise Enhance: Improving Semantic Feature Learning in Convolutional Networks</font></a>：(arXiv1905)通过空间分组增强模块提高卷积网络的语义特征学习能力。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/07/ecanet.html"><font color="blue">ECA-Net: Efficient Channel Attention for Deep Convolutional Neural Networks</font></a>：(arXiv1910)ECA-Net：卷积神经网络的高效通道注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/13/scnet.html"><font color="blue">Improving Convolutional Networks with Self-Calibrated Convolutions</font></a>：(CVPR2020)SCNet：通过自校正卷积改进卷积神经网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/20/we.html"><font color="blue">Weight Excitation: Built-in Attention Mechanisms in Convolutional Neural Networks</font></a>：(AAAI2020)权重激励：卷积神经网络中的内部注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/27/spanet.html"><font color="blue">Spanet: Spatial Pyramid Attention Network for Enhanced Image Recognition</font></a>：(ICME2020)SPANet：图像识别的空间金字塔注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/27/ulsam.html"><font color="blue">ULSAM: Ultra-Lightweight Subspace Attention Module for Compact Convolutional Neural Networks</font></a>：(arXiv2006)ULSAM：超轻量级子空间注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/15/dcanet.html"><font color="blue">DCANet: Learning Connected Attentions for Convolutional Neural Networks</font></a>：(arXiv2007)DCANet：学习卷积神经网络中的连接注意力。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/29/atac.html"><font color="blue">Attention as Activation</font></a>：(arXiv2007)使用注意力机制作为激活函数。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/01/aff.html"><font color="blue">Attentional Feature Fusion</font></a>：(arXiv2009)AFF：特征通道注意力融合。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/14/triplet.html"><font color="blue">Rotate to Attend: Convolutional Triplet Attention Module</font></a>：(arXiv2010)通过旋转特征构造卷积三元注意力模块。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/09/fcanet.html"><font color="blue">FcaNet: Frequency Channel Attention Networks</font></a>：(arXiv2012)FcaNet：频域通道注意力网络。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/01/awconv.html"><font color="blue">An Attention Module for Convolutional Neural Networks</font></a>：(arXiv2012)AW-conv：一个卷积神经网络的注意力模块。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/30/sanet.html"><font color="blue">SA-Net: Shuffle Attention for Deep Convolutional Neural Networks</font></a>：(arXiv2102)SANet：通过特征分组和通道置换实现轻量型置换注意力。</li>
+  <li><a href="https://0809zheng.github.io/2021/03/06/ca.html"><font color="blue">Coordinate Attention for Efficient Mobile Network Design</font></a>：(arXiv2103)为轻量型网络设计的坐标注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/22/baam.html"><font color="blue">BA^2M: A Batch Aware Attention Module for Image Classification</font></a>：(arXiv2103)BA^2M：图像分类的批量注意力模块。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/25/epsanet.html"><font color="blue">EPSANet: An Efficient Pyramid Split Attention Block on Convolutional Neural Network</font></a>：(arXiv2105)EPSANet：卷积神经网络的高效金字塔拆分注意力模块。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/28/interflow.html"><font color="blue">Interflow: Aggregating Multi-layer Feature Mappings with Attention Mechanism</font></a>：(arXiv2106)Interflow：通过注意力机制汇聚多层特征映射。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/02/tse.html"><font color="blue">Tiled Squeeze-and-Excite: Channel Attention With Local Spatial Context</font></a>：(arXiv2107)TSE：通过局部空间上下文构造通道注意力。</li>
+  <li><a href="https://0809zheng.github.io/2021/10/01/residual.html"><font color="blue">Residual Attention: A Simple but Effective Method for Multi-Label Recognition</font></a>：(arXiv2108)为多标签分类设计的简单有效的残差注意力。</li>
+  <li><a href="https://0809zheng.github.io/2020/10/31/nam.html"><font color="blue">NAM: Normalization-based Attention Module</font></a>：(arXiv2111)NAM：基于归一化的注意力模块。</li>
+  <li><a href="https://0809zheng.github.io/2021/10/02/simam.html"><font color="blue">SimAM: A Simple, Parameter-Free Attention Module for Convolutional Neural Networks</font></a>：(ICML2021)SimAM：为卷积神经网络设计的简单无参数注意力模块。</li>
+</ul>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/11/19/3dpose.html" class="read-next-link"></a>
+        <section>
+          <span>A simple yet effective baseline for 3d human pose estimation</span>
+          <p>  通过回归2D关节坐标进行3D人体姿态估计.  paper：A simple yet effective bas...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5fb5f23fb18d62711391d311.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/11/17/pose.html" class="read-next-link"></a>
+          <section>
+            <span>Monocular Human Pose Estimation: A Survey of Deep Learning-based Methods</span>
+            <p>  单目人体姿态估计的深度学习方法综述.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fb32b3eb18d627113f5867e.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

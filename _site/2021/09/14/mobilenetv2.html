@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MobileNetV2: Inverted Residuals and Linear Bottlenecks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="MobileNetV2: Inverted Residuals and Linear Bottlenecks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="MobileNetV2: Inverted Residuals and Linear Bottlenecks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/09/14/mobilenetv2.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>MobileNetV2: Inverted Residuals and Linear Bottlenecks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-09-14"><i class="iconfont icon-date"></i>14 Sep 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/613b02d044eaada739b51d31.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>MobileNetV2: 倒残差与线性瓶颈.</p>
+</blockquote>
+
+<ul>
+  <li>paper：MobileNetV2: Inverted Residuals and Linear Bottlenecks</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1801.04381">link</a></li>
+</ul>
+
+<h1 id="1-linear-bottleneck">1. Linear Bottleneck</h1>
+<p><strong>MobileNet</strong>使用深度可分离卷积代替了普通卷积，减少了网络计算量和参数量，提高了网络运算速度。然而在实际训练中，深度卷积部分的卷积核训练后容易变成稀疏的，即大部分值为$0$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/613b05bf44eaada739b9f09a.jpg" alt="" /></p>
+
+<p>作者认为，这一现象是激活函数<strong>ReLU</strong>导致的。为此作者进行了实验分析。对于二维空间中的螺旋线，通过随机矩阵$T$将其映射到高维空间，在高维空间中应用<strong>ReLU</strong>激活函数，再用逆矩阵$T^{-1}$恢复数据。实验结果表明，映射到较低维空间的特征应用<strong>ReLU</strong>后会损失较多信息；而对高维空间的特征应用<strong>ReLU</strong>后信息损失较小。</p>
+
+<p><img src="https://pic.imgdb.cn/item/613b07b644eaada739bd0140.jpg" alt="" /></p>
+
+<p>上述现象可以解释为什么深度可分离卷积中的深度卷积的卷积核学习效果较差。由于深度卷积的输入通常是上一层的输出经过<strong>ReLU</strong>的结果，导致信息损失。为此，作者将网络每一个模块最后一层逐点卷积后面的<strong>ReLU</strong>去掉（相当于应用线性激活函数），将其称作<strong>Linear Bottleneck</strong>。</p>
+
+<h1 id="2-inverted-residual">2. Inverted Residual</h1>
+<p><strong>MobileNet</strong>中的深度可分离卷积模块首先使用深度卷积，然而深度卷积不改变特征的通道数，导致经过深度卷积处理的特征维度较低，通过<strong>ReLU</strong>后仍然会产生信息损失。而<strong>ReLU</strong>能增加网络非线性，不可能全部去除，因此作者在深度卷积之前额外增加了逐点卷积(即$1\times 1$卷积)增加特征通道数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/613b0c6b44eaada739c4dfae.jpg" alt="" /></p>
+
+<p>增加的这一层被称为<strong>expansion layer</strong>。改进后的深度可分离模块如上图所示。该模块首先对输入特征进行通道扩张(相当于解压缩)，然后使用深度卷积进行处理(相当于过滤)，最后对特征进行通道降维(相当于压缩)。额外引入了残差链接。</p>
+
+<p><img src="https://pic.imgdb.cn/item/613b0de144eaada739c70c43.jpg" alt="" /></p>
+
+<p>对比<strong>ResNet</strong>网络模块和<strong>MobileNet V2</strong>网络模块，都采用了$1\times 1 -&gt; 3 \times 3 -&gt; 1\times 1$卷积和残差连接的形式。然而，<strong>ResNet</strong>网络模块沿通道维度先降维再升维，而<strong>MobileNet V2</strong>网络模块沿通道维度先升维再降维。因此后者被称为<strong>inverted residual</strong>。</p>
+
+<h1 id="3-mobilenet-v2">3. MobileNet V2</h1>
+<p>结合线性瓶颈和倒残差，<strong>MobileNet V2</strong>中的深度可分离卷积模块定义如下。注意每一次卷积后都使用了<strong>Batch Norm</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/613b0f7c44eaada739c96ce9.jpg" alt="" /></p>
+
+<p><strong>MobileNet V2</strong>的结构如下。<strong>MobileNet V2</strong>具有$54$层，而<strong>MobileNet</strong>具有$28$层。尽管前者层数更多，但计算量和参数量更少，且表现更好。</p>
+
+<p><img src="https://pic.imgdb.cn/item/613b104844eaada739ca99bd.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/09/15/mobilenetv3.html" class="read-next-link"></a>
+        <section>
+          <span>Searching for MobileNetV3</span>
+          <p>  使用神经结构搜索寻找MobileNet V3.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/613b11fe44eaada739cd1a26.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/09/13/mobilenetv1.html" class="read-next-link"></a>
+          <section>
+            <span>MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications</span>
+            <p>  MobileNet: 使用深度可分离卷积构造轻量网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/613ab6b344eaada739491b51.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

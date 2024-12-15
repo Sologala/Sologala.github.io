@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adding Conditional Control to Text-to-Image Diffusion Models - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Adding Conditional Control to Text-to-Image Diffusion Models">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Adding Conditional Control to Text-to-Image Diffusion Models - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/03/05/controlnet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Adding Conditional Control to Text-to-Image Diffusion Models</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-03-05"><i class="iconfont icon-date"></i>05 Mar 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/66a89854d9c307b7e9f085a1.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>向文本到图像扩散模型添加条件控制.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2302.05543">Adding Conditional Control to Text-to-Image Diffusion Models</a></li>
+</ul>
+
+<p>这项工作提出了<strong>ControlNet</strong>，可以实现大型预训练文本到图像扩散模型的条件控制。<strong>ControlNet</strong>可以通过各种条件输入来控制<strong>Stable Diffusion</strong>，包括边缘、<strong>Hough</strong>线、用户涂鸦、人体关键点、分割图、形状法线、深度等。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66a8a4d3d9c307b7e9fd3ea7.png" alt="" /></p>
+
+<p><strong>ControlNet</strong>向神经网络的模块中引入额外的条件。对于一个训练好的网络模块\(\mathcal{F}(\cdot; \Theta)\)，将输入特征映射$x$转换为另一个特征映射$y$:</p>
+
+\[y = \mathcal{F}(x; \Theta)\]
+
+<p><strong>ControlNet</strong>冻结原始模块的参数$\Theta$，并拷贝该模块为具有参数$\Theta_c$的可训练版本。将拷贝模块通过两个零卷积\(\mathcal{Z}\)（参数初始化为$0$的$1\times 1$卷积）连接到原模块：</p>
+
+\[y_c = \mathcal{F}(x; \Theta) + \mathcal{Z}(\mathcal{F}(x+\mathcal{Z}(c; \Theta_1); \Theta_c); \Theta_2)\]
+
+<p><img src="https://pic.imgdb.cn/item/66a8aaf9d9c307b7e901e311.png" alt="" /></p>
+
+<p>零卷积保证了训练的初始阶段不会引入有害的训练噪声，保留了大型预训练模型的功能，并能够通过额外参数进一步学习。</p>
+
+<p>将<strong>ControlNet</strong>引入<strong>Stable Diffusion</strong>如图所示。<strong>Stable Diffusion</strong>是典型的<strong>U-net</strong>结构，使用<strong>ControlNet</strong>创建了<strong>Stable Diffusion</strong>的12个编码块和1个中间块的可训练副本。由于原始参数是冻结的，不需要梯度计算来进行微调，能够加快训练速度并节省<strong>GPU</strong>内存。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66a8acd4d9c307b7e904af82.png" alt="" /></p>
+
+<p><strong>ControlNet</strong>使用由4 × 4卷积核、步长为2的4个卷积层组成的网络(由ReLU激活，分别使用16、32、64、128个通道，用高斯初始化并与完整模型联合训练)将图像空间条件$c_i$编码为特征空间条件向量$c_f$。</p>
+
+<p>在训练过程中，由于零卷积不会给网络增加噪声，因此模型应该总是能够预测高质量的图像。实验观察到，模型不是逐渐学习控制条件，而是在不到10K的优化步骤内突然成功地根据输入条件生成图像，作者称之为“突然收敛现象”。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66ac8ed7d9c307b7e92781f9.png" alt="" /></p>
+
+<p>作者对<strong>ControlNet</strong>的添加形式进行消融实验（零卷积、常规卷积核直接添加），结果显示当替换零卷积时，<strong>ControlNet</strong>的性能下降，这表明在微调期间预训练模型的知识被破坏。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66ac90e3d9c307b7e929b124.png" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/03/06/layoutdiffuse.html" class="read-next-link"></a>
+        <section>
+          <span>LayoutDiffuse: Adapting Foundational Diffusion Models for Layout-to-Image Generation</span>
+          <p>  LayoutDiffuse：调整基础扩散模型实现布局到图像生成.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6736eafbd29ded1a8c5ab380.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/03/04/reco.html" class="read-next-link"></a>
+          <section>
+            <span>ReCo: Region-Controlled Text-to-Image Generation</span>
+            <p>  ReCo: 区域控制的文本到图像生成.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/66559975d9c307b7e9ae2b97.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Few-shot Object Counting and Detection - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Few-shot Object Counting and Detection">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Few-shot Object Counting and Detection - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/05/08/countingdetr.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Few-shot Object Counting and Detection</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-05-08"><i class="iconfont icon-date"></i>08 May 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/667d22f7d9c307b7e961e00b.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>少样本目标计数与检测.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2207.10988">Few-shot Object Counting and Detection</a></li>
+</ul>
+
+<p>本文旨在解决少样本目标计数与检测任务（<strong>Few-Shot object Counting and Detection，FSCD</strong>）。在训练阶段，标签是图像中几个示例边界框和所有目标的点注释；在测试阶段，给定给定目标类的几个示例边界框，计数和检测该目标类的所有目标。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667d2470d9c307b7e96495ac.png" alt="" /></p>
+
+<p>作者提出了基于不确定性感知点的少样本目标检测与计数模型<strong>Counting-DETR</strong>。该模型采用一种两阶段训练策略，首先在几个样例边界框上预训练，然后用预训练网络以点标注为查询点生成伪边界框，最后使用这些边界框作为监督来训练目标检测。考虑到伪边界框的不确定性，引入了不确定性损失来正则化边界框的学习。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667d260fd9c307b7e9674e6a.png" alt="" /></p>
+
+<p>首先使用<strong>CNN</strong>主干从输入图像$I$中提取特征映射$F^I$，然后在样本边界框$B_k$的中心提取样本特征向量$f^B_k$，通过对这些特征向量进行平均得到样本特征向量$f^B=\sum_k f^B_k / K$。将样本特征向量$f^B$集成到图像特征$F^I$中，生成样本集成特征映射$F^A$：</p>
+
+\[F^A = W_{proj} * [F^I;F^I\otimes f^B]\]
+
+<p><strong>Counting-DETR</strong>以样本集成的特征映射$F^A$和$M$个查询点\(\{p_m\}^M_{m=1}\)作为输入，并预测每个查询点$p_m$的边界框$b_m$。查询点是代表物体位置的初始猜测的2D点。</p>
+
+<p>然后使用解码器预测代表该目标在特定位置是否存在的分类分数s，以及将该目标的边界框$µ$进行回归。对于每一对匹配的标签和预测边界框，使用Focal损失、L1损失和GIoU损失的组合作为训练损失函数。</p>
+
+<p>此外，<strong>Counting-DETR</strong>还估计了在伪边界框监督下训练时的不确定性$σ$。这种不确定性用于正则化边界框的学习，使得在具有高不确定性的预测中产生较小的损失。这一损失来源于以拉普拉斯分布为特征的预测边界框$\mu$分布与伪边界框$\tilde{\mu}$分布之间的最大似然估计(<strong>MLE</strong>)：</p>
+
+\[L_{uncertainty} = \frac{1}{2} \sum_{o \in \{x,y,w,h\}} \frac{|\mu_o-\tilde{\mu}_0|}{\sigma_o} + \log \sigma_o\]
+
+<p>作者对第一阶段生成的伪边界框进行可视化：</p>
+
+<p><img src="https://pic.imgdb.cn/item/667d29ecd9c307b7e96db897.png" alt="" /></p>
+
+<p>此外作者引入了两个用于少样本目标计数与检测的新数据集。</p>
+<ul>
+  <li><strong>FSC-147</strong>数据集是一个包含147个类别和6135张图像的计数数据集，每个图像提供了所有目标的点注释和三个示例框，此数据集不包含所有目标的边界框注释。作者通过为验证集和测试集的所有目标提供边界框注释来扩展<strong>FSC-147</strong>数据集，新数据集命名为<strong>FSCD-147</strong>。</li>
+  <li><strong>FSCD-LVIS</strong>数据集包含6196张图像和377个类，提取自<strong>LVIS</strong>数据集。对于每个图像，过滤掉面积小于20像素、或宽度或高度小于4像素的所有实例。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/667d2ad0d9c307b7e9701ae5.png" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/05/09/reprpn.html" class="read-next-link"></a>
+        <section>
+          <span>Exemplar Free Class Agnostic Counting</span>
+          <p>  无需样例的类别无关计数.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/667d2e4bd9c307b7e975b0b5.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/05/07/rcc.html" class="read-next-link"></a>
+          <section>
+            <span>Learning to Count Anything: Reference-less Class-agnostic Counting with Weak Supervision</span>
+            <p>  学习任意计数：弱监督的无参考类别无关计数.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/667d17b2d9c307b7e94d8654.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

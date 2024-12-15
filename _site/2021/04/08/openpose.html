@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/04/08/openpose.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-04-08"><i class="iconfont icon-date"></i>08 Apr 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/649bdb111ddac507cca0d7eb.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>使用部位亲和场实现实时多人2D姿态估计.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1611.08050">Realtime Multi-Person 2D Pose Estimation using Part Affinity Fields</a></li>
+</ul>
+
+<p>本文作者提出了一种多人<strong>2D</strong>姿态估计方法<strong>OpenPose</strong>。<strong>OpenPose</strong>是一种自下而上的多人姿态估计方法，这类方法首先检测图像中的所有人体关键点（比如说手、肘、肩等），再将检测到的关键点位置相互匹配连接，以组合成多人的姿态。在匹配关键点时，<strong>OpenPose</strong>引入了<strong>部位亲和场(Part Affinity Field, PAF)</strong>，将识别到的身体部位与图像中的每个人相关联。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649bdc921ddac507cca3b598.jpg" alt="" /></p>
+
+<p><strong>OpenPose</strong>使用卷积神经网络从输入图像中提取部位置信图与部位亲和场，然后通过二分匹配将关节点组合成图像中所有人的全身姿势。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649bde451ddac507cca66b23.jpg" alt="" /></p>
+
+<h2 id="1-部位置信图-part-confidence-map">1. 部位置信图 Part Confidence Map</h2>
+
+<p><strong>部位置信图(PCM)</strong>是指人体关节点的热力图，用于表征人体关节点的位置。预先指定人体的$J$个关节点，则<strong>PCM</strong>具有$J+1$个通道，最后一个通道作为背景。增加背景通道能增加监督信息，有利于网络更好地学习。</p>
+
+<p>每个关节点的位置是通过高斯核创建的。首先为每个人$k$生成个人置信图：</p>
+
+\[\mathbf{S}^*_{j,k}(\mathbf{p}) = \exp\left( -\frac{||\mathbf{p}-\mathbf{x}_{j,k}||_2^2}{\sigma^2} \right)\]
+
+<p>其中\(\mathbf{x}_{j,k}\)是第$k$个人的第$j$个关节点的真实位置，$\sigma$用于控制峰值的传播。</p>
+
+<p>生成个人置信图后，整体的部位置信图是通过最大值算子对单个人的置信度图进行聚合：</p>
+
+\[\mathbf{S}^*_{j}(\mathbf{p}) = \max_k \mathbf{S}^*_{j,k}(\mathbf{p})\]
+
+<p>取置信图的最大值而不是平均值，以便附近峰值的精度保持不同，如下图所示。在测试时，预测置信度图，并通过执行非极大值抑制来获得候选的关键身体部位点。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649be3a21ddac507ccb1a287.jpg" alt="" /></p>
+
+<h2 id="2-部位亲和场-part-affinity-field">2. 部位亲和场 Part Affinity Field</h2>
+
+<p><strong>部位亲和场(PAF)</strong>是用于编码肢体支撑区域的位置和方向信息的<strong>2D</strong>向量场。<strong>OpenPose</strong>首先对关节进行人为配对（共$19$个关节对），在每对关节点之间生成一个<strong>PAF</strong>，每个<strong>PAF</strong>对应一个人体骨骼（包含耳部-肩部的虚拟骨骼）。由于<strong>PAF</strong>是<strong>2D</strong>向量，因此<strong>PAF</strong>的输出通道数为$2\times 19=38$。对于属于特定肢体的区域中的每个像素，<strong>2D</strong>向量编码从肢体的一个部分指向另一部分的方向。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649be93a1ddac507ccbd39e1.jpg" alt="" /></p>
+
+<p>在构造关节对$j_1,j_2$的<strong>PAF</strong>时，如果点$p$在骨骼$c=j_1\to j_2$上，则<strong>PAF</strong>值是从$j_1$指向$j_2$的单位向量；对于所有其他点，<strong>PAF</strong>值是零向量。</p>
+
+\[\mathbf{L}^*_{c,k}(\mathbf{p}) =
+\begin{cases}
+\mathbf{v} = \frac{\mathbf{x}_{j_2,k}-\mathbf{x}_{j_1,k}}{||\mathbf{x}_{j_2,k}-\mathbf{x}_{j_1,k}||_2} , &amp; \mathbf{p} \in c \\
+\mathbf{0}, &amp; \text{otherwise}
+\end{cases}\]
+
+<p>骨骼$c$上的点集定义为两个关节点之间的矩形区域。矩形区域的长度为两关节点之间的直线距离$l_{c,k}$，宽度为指定参数$2\sigma_l$，则点集判据为：</p>
+
+\[0 \leq \mathbf{v} \cdot (\mathbf{p}-\mathbf{x}_{j_1,k}) \leq l_{c,k} \quad \text{and} \quad |\mathbf{v}_{⊥} \cdot (\mathbf{p}-\mathbf{x}_{j_1,k}) | \leq \sigma_l\]
+
+<p><img src="https://pic.imgdb.cn/item/649be9b71ddac507ccbe347f.jpg" alt="" /></p>
+
+<p>最终的每个骨骼$c$的<strong>PAF</strong>，取$K$个人的<strong>PAF</strong>的平均值：</p>
+
+\[\mathbf{L}^*_{c}(\mathbf{p}) = \frac{1}{n_c(\mathbf{p})} \sum_k \mathbf{L}^*_{c,k}(\mathbf{p})\]
+
+<p>其中\(n_c(\mathbf{p})\)表示\(\mathbf{p}\)点处非零向量的个数。</p>
+
+<h2 id="3-部位关联-part-association">3. 部位关联 Part Association</h2>
+
+<p>通过<strong>部位置信图(PCM)</strong>与<strong>部位亲和场(PAF)</strong>可以执行部位关联，这是通过沿着连接候选关节对位置的线段计算对应<strong>PAF</strong>上的线积分来实现的。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649bed171ddac507ccc4d7e8.jpg" alt="" /></p>
+
+<p>对于两个候选关节位置\(\mathbf{d}_{j_1},\mathbf{d}_{j_2}\)，沿着线段对$c=j_1\to j_2$的<strong>PAF</strong>进行线积分，以测量其关联的置信度：</p>
+
+\[E_{j_1j_2} = \int_{u=0}^{u=1} \mathbf{L}_{c}((1-u)\mathbf{d}_{j_1}+u\mathbf{d}_{j_2}) \cdot \frac{\mathbf{d}_{j_2}-\mathbf{d}_{j_1}}{||\mathbf{d}_{j_2}-\mathbf{d}_{j_1}||_2} du\]
+
+<p>线积分计算量较大，实践中通过对$u$的均匀间隔值进行采样和求和来近似积分。</p>
+
+<p>上述计算得到的$E_{j_1j_2}$给出了一个关键点$j_1$到另一个关键点$j_2$可能存在连接的置信度。由于关节点的连接顺序是已知的，因此找到候选关节点集合$D_{j_1},D_{j_2}$之间的最佳关联可以构建为一个<a href="https://0809zheng.github.io/2022/06/20/matching.html#3-%E4%BA%8C%E5%88%86%E5%8C%B9%E9%85%8D%E4%B8%8E%E5%8C%88%E7%89%99%E5%88%A9%E7%AE%97%E6%B3%95">二分匹配问题</a>并求解：</p>
+
+\[\begin{aligned}
+\max _{\mathcal{Z}_c}\quad &amp;E_c=\max _{\mathcal{Z}_c} \sum_{m \in \mathcal{D}_{j_1}} \sum_{n \in \mathcal{D}_{j_2}} E_{m n} \cdot z_{j_1 j_2}^{m n} \\
+\text { s.t. } \quad &amp;\forall m \in \mathcal{D}_{j_1}, \sum_{n \in \mathcal{D}_{j_2}} z_{j_1 j_2}^{m n} \leq 1 \\
+&amp;\forall n \in \mathcal{D}_{j_2}, \sum_{m \in \mathcal{D}_{j_1}} z_{j_1 j_2}^{m n} \leq 1
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># heatmap_avg: 部位置信图 [H, W, 18+1]
+# paf_avg    : 部位亲和场 [H, W, 19x2]
+</span>
+<span class="n">all_peaks</span> <span class="o">=</span> <span class="p">[]</span>    <span class="c1"># 存储筛选后的关节点
+</span><span class="n">peak_counter</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># 对候选关节点进行非极大值抑制
+</span><span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">18</span><span class="p">):</span>
+    <span class="n">map_ori</span> <span class="o">=</span> <span class="n">heatmap_avg</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">part</span><span class="p">]</span>
+    <span class="kn">from</span> <span class="nn">scipy.ndimage.filters</span> <span class="kn">import</span> <span class="n">gaussian_filter</span>
+    <span class="n">one_heatmap</span> <span class="o">=</span> <span class="n">gaussian_filter</span><span class="p">(</span><span class="n">map_ori</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">map_left</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">one_heatmap</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">map_left</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">one_heatmap</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">map_right</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">one_heatmap</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">map_right</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">one_heatmap</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
+    <span class="n">map_up</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">one_heatmap</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">map_up</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">one_heatmap</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">map_down</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">one_heatmap</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">map_down</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">one_heatmap</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+
+    <span class="n">peaks_binary</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">logical_and</span><span class="p">.</span><span class="nb">reduce</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">one_heatmap</span> <span class="o">&gt;=</span> <span class="n">map_left</span><span class="p">,</span> <span class="n">one_heatmap</span> <span class="o">&gt;=</span> <span class="n">map_right</span><span class="p">,</span> <span class="n">one_heatmap</span> <span class="o">&gt;=</span> <span class="n">map_up</span><span class="p">,</span> <span class="n">one_heatmap</span> <span class="o">&gt;=</span> <span class="n">map_down</span><span class="p">,</span> <span class="n">one_heatmap</span> <span class="o">&gt;</span> <span class="n">thre1</span><span class="p">))</span>
+    <span class="n">peaks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">peaks_binary</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="p">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">peaks_binary</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>  <span class="c1"># note reverse
+</span>    <span class="n">peaks_with_score</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="p">(</span><span class="n">map_ori</span><span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]],)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">peaks</span><span class="p">]</span>
+    <span class="n">peak_id</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">peak_counter</span><span class="p">,</span> <span class="n">peak_counter</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">))</span>
+    <span class="n">peaks_with_score_and_id</span> <span class="o">=</span> <span class="p">[</span><span class="n">peaks_with_score</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">peak_id</span><span class="p">[</span><span class="n">i</span><span class="p">],)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">peak_id</span><span class="p">))]</span>
+
+    <span class="n">all_peaks</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">peaks_with_score_and_id</span><span class="p">)</span>
+    <span class="n">peak_counter</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span>
+
+<span class="c1"># find connection in the specified sequence, center 29 is in the position 15
+</span><span class="n">limbSeq</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> \
+           <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">],</span> <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">],</span> <span class="p">[</span><span class="mi">15</span><span class="p">,</span> <span class="mi">17</span><span class="p">],</span> \
+           <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span><span class="p">],</span> <span class="p">[</span><span class="mi">16</span><span class="p">,</span> <span class="mi">18</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">],</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">18</span><span class="p">]]</span>
+<span class="c1"># the middle joints heatmap correpondence
+</span><span class="n">mapIdx</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">31</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> <span class="p">[</span><span class="mi">39</span><span class="p">,</span> <span class="mi">40</span><span class="p">],</span> <span class="p">[</span><span class="mi">33</span><span class="p">,</span> <span class="mi">34</span><span class="p">],</span> <span class="p">[</span><span class="mi">35</span><span class="p">,</span> <span class="mi">36</span><span class="p">],</span> <span class="p">[</span><span class="mi">41</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="p">[</span><span class="mi">43</span><span class="p">,</span> <span class="mi">44</span><span class="p">],</span> <span class="p">[</span><span class="mi">19</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="p">[</span><span class="mi">21</span><span class="p">,</span> <span class="mi">22</span><span class="p">],</span> \
+          <span class="p">[</span><span class="mi">23</span><span class="p">,</span> <span class="mi">24</span><span class="p">],</span> <span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">26</span><span class="p">],</span> <span class="p">[</span><span class="mi">27</span><span class="p">,</span> <span class="mi">28</span><span class="p">],</span> <span class="p">[</span><span class="mi">29</span><span class="p">,</span> <span class="mi">30</span><span class="p">],</span> <span class="p">[</span><span class="mi">47</span><span class="p">,</span> <span class="mi">48</span><span class="p">],</span> <span class="p">[</span><span class="mi">49</span><span class="p">,</span> <span class="mi">50</span><span class="p">],</span> <span class="p">[</span><span class="mi">53</span><span class="p">,</span> <span class="mi">54</span><span class="p">],</span> <span class="p">[</span><span class="mi">51</span><span class="p">,</span> <span class="mi">52</span><span class="p">],</span> \
+          <span class="p">[</span><span class="mi">55</span><span class="p">,</span> <span class="mi">56</span><span class="p">],</span> <span class="p">[</span><span class="mi">37</span><span class="p">,</span> <span class="mi">38</span><span class="p">],</span> <span class="p">[</span><span class="mi">45</span><span class="p">,</span> <span class="mi">46</span><span class="p">]]</span>
+
+<span class="n">connection_all</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># 存储关节点的连接关系
+</span><span class="n">special_k</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">mid_num</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="c1"># 部位关联
+</span><span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mapIdx</span><span class="p">)):</span>
+    <span class="n">score_mid</span> <span class="o">=</span> <span class="n">paf_avg</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">[</span><span class="n">x</span> <span class="o">-</span> <span class="mi">19</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">mapIdx</span><span class="p">[</span><span class="n">k</span><span class="p">]]]</span>
+    <span class="n">candA</span> <span class="o">=</span> <span class="n">all_peaks</span><span class="p">[</span><span class="n">limbSeq</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">candB</span> <span class="o">=</span> <span class="n">all_peaks</span><span class="p">[</span><span class="n">limbSeq</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">nA</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">candA</span><span class="p">)</span>
+    <span class="n">nB</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">candB</span><span class="p">)</span>
+    <span class="n">indexA</span><span class="p">,</span> <span class="n">indexB</span> <span class="o">=</span> <span class="n">limbSeq</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">nA</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">nB</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">connection_candidate</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nA</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nB</span><span class="p">):</span>
+                <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">candB</span><span class="p">[</span><span class="n">j</span><span class="p">][:</span><span class="mi">2</span><span class="p">],</span> <span class="n">candA</span><span class="p">[</span><span class="n">i</span><span class="p">][:</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">norm</span> <span class="o">=</span> <span class="n">math</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">vec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">vec</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">norm</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">norm</span><span class="p">)</span>
+                <span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">divide</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">norm</span><span class="p">)</span>
+
+                <span class="n">startend</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">candA</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">candB</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">mid_num</span><span class="p">),</span> \
+                                    <span class="n">np</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">candA</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">candB</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">mid_num</span><span class="p">)))</span>
+
+                <span class="n">vec_x</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="n">score_mid</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">startend</span><span class="p">[</span><span class="n">I</span><span class="p">][</span><span class="mi">1</span><span class="p">])),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">startend</span><span class="p">[</span><span class="n">I</span><span class="p">][</span><span class="mi">0</span><span class="p">])),</span> <span class="mi">0</span><span class="p">]</span> \
+                                  <span class="k">for</span> <span class="n">I</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">startend</span><span class="p">))])</span>
+                <span class="n">vec_y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="n">score_mid</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">startend</span><span class="p">[</span><span class="n">I</span><span class="p">][</span><span class="mi">1</span><span class="p">])),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">startend</span><span class="p">[</span><span class="n">I</span><span class="p">][</span><span class="mi">0</span><span class="p">])),</span> <span class="mi">1</span><span class="p">]</span> \
+                                  <span class="k">for</span> <span class="n">I</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">startend</span><span class="p">))])</span>
+
+                <span class="n">score_midpts</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">vec_x</span><span class="p">,</span> <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="p">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">vec_y</span><span class="p">,</span> <span class="n">vec</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">score_with_dist_prior</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">score_midpts</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">score_midpts</span><span class="p">)</span> <span class="o">+</span> <span class="nb">min</span><span class="p">(</span>
+                    <span class="mf">0.5</span> <span class="o">*</span> <span class="n">oriImg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">norm</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">criterion1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">score_midpts</span> <span class="o">&gt;</span> <span class="n">thre2</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.8</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">score_midpts</span><span class="p">)</span>
+                <span class="n">criterion2</span> <span class="o">=</span> <span class="n">score_with_dist_prior</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">criterion1</span> <span class="ow">and</span> <span class="n">criterion2</span><span class="p">:</span>
+                    <span class="n">connection_candidate</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">score_with_dist_prior</span><span class="p">,</span> <span class="n">score_with_dist_prior</span> <span class="o">+</span> <span class="n">candA</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">candB</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">2</span><span class="p">]])</span>
+
+        <span class="n">connection_candidate</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">connection_candidate</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">connection</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">connection_candidate</span><span class="p">)):</span>
+            <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">connection_candidate</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">connection</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="ow">and</span> <span class="n">j</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">connection</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]):</span>
+                <span class="n">connection</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">connection</span><span class="p">,</span> <span class="p">[</span><span class="n">candA</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="n">candB</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="n">s</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]])</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">min</span><span class="p">(</span><span class="n">nA</span><span class="p">,</span> <span class="n">nB</span><span class="p">)):</span>
+                    <span class="k">break</span>
+
+        <span class="n">connection_all</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">special_k</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="n">connection_all</span><span class="p">.</span><span class="n">append</span><span class="p">([])</span>
+
+<span class="c1"># subset: n*20 array, 0-17 is the index in candidate, 18 is the total score, 19 is the total parts
+# candidate: x, y, score, id
+</span><span class="n">subset</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
+<span class="n">candidate</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="n">item</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">all_peaks</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">])</span>
+
+<span class="c1"># 根据部位关联结果解析每个人的关节点
+</span><span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mapIdx</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">special_k</span><span class="p">:</span>
+        <span class="n">partAs</span> <span class="o">=</span> <span class="n">connection_all</span><span class="p">[</span><span class="n">k</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">partBs</span> <span class="o">=</span> <span class="n">connection_all</span><span class="p">[</span><span class="n">k</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">indexA</span><span class="p">,</span> <span class="n">indexB</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">limbSeq</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">connection_all</span><span class="p">[</span><span class="n">k</span><span class="p">])):</span>  <span class="c1"># = 1:size(temp,1)
+</span>            <span class="n">found</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">subset_idx</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subset</span><span class="p">)):</span>  <span class="c1"># 1:size(subset,1):
+</span>                <span class="k">if</span> <span class="n">subset</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">indexA</span><span class="p">]</span> <span class="o">==</span> <span class="n">partAs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">or</span> <span class="n">subset</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">indexB</span><span class="p">]</span> <span class="o">==</span> <span class="n">partBs</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">subset_idx</span><span class="p">[</span><span class="n">found</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
+                    <span class="n">found</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">found</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">subset_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">subset</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">indexB</span><span class="p">]</span> <span class="o">!=</span> <span class="n">partBs</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">subset</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">indexB</span><span class="p">]</span> <span class="o">=</span> <span class="n">partBs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">subset</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">subset</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">candidate</span><span class="p">[</span><span class="n">partBs</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">connection_all</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">found</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># if found 2 and disjoint, merge them
+</span>                <span class="n">j1</span><span class="p">,</span> <span class="n">j2</span> <span class="o">=</span> <span class="n">subset_idx</span>
+                <span class="n">membership</span> <span class="o">=</span> <span class="p">((</span><span class="n">subset</span><span class="p">[</span><span class="n">j1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">subset</span><span class="p">[</span><span class="n">j2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">membership</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># merge
+</span>                    <span class="n">subset</span><span class="p">[</span><span class="n">j1</span><span class="p">][:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">subset</span><span class="p">[</span><span class="n">j2</span><span class="p">][:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">subset</span><span class="p">[</span><span class="n">j1</span><span class="p">][</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">+=</span> <span class="n">subset</span><span class="p">[</span><span class="n">j2</span><span class="p">][</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+                    <span class="n">subset</span><span class="p">[</span><span class="n">j1</span><span class="p">][</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">connection_all</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">subset</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">delete</span><span class="p">(</span><span class="n">subset</span><span class="p">,</span> <span class="n">j2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># as like found == 1
+</span>                    <span class="n">subset</span><span class="p">[</span><span class="n">j1</span><span class="p">][</span><span class="n">indexB</span><span class="p">]</span> <span class="o">=</span> <span class="n">partBs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">subset</span><span class="p">[</span><span class="n">j1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">subset</span><span class="p">[</span><span class="n">j1</span><span class="p">][</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">candidate</span><span class="p">[</span><span class="n">partBs</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">connection_all</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">found</span> <span class="ow">and</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">17</span><span class="p">:</span> <span class="c1"># if find no partA in the subset, create a new subset
+</span>                <span class="n">row</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">indexA</span><span class="p">]</span> <span class="o">=</span> <span class="n">partAs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">indexB</span><span class="p">]</span> <span class="o">=</span> <span class="n">partBs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+                <span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">candidate</span><span class="p">[</span><span class="n">connection_all</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">].</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="n">connection_all</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">subset</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">subset</span><span class="p">,</span> <span class="n">row</span><span class="p">])</span>
+<span class="c1"># delete some rows of subset which has few parts occur
+</span><span class="n">deleteIdx</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">subset</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="n">subset</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">4</span> <span class="ow">or</span> <span class="n">subset</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">subset</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.4</span><span class="p">:</span>
+        <span class="n">deleteIdx</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="n">subset</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">delete</span><span class="p">(</span><span class="n">subset</span><span class="p">,</span> <span class="n">deleteIdx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="4-网络结构">4. 网络结构</h2>
+
+<p><strong>OpenPose</strong>首先通过<strong>VGGNet</strong>提取特征$F$。网络主体部分可以分为<strong>部位置信图(PCM)</strong>预测部分与<strong>部位亲和场(PAF)</strong>预测部分，在每个阶段中两个预测部分是并行的。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649bf4df1ddac507ccd37845.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">make_layers</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">no_relu_layers</span><span class="p">):</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">layer_name</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">block</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s">'pool'</span> <span class="ow">in</span> <span class="n">layer_name</span><span class="p">:</span>
+            <span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stride</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                    <span class="n">padding</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">((</span><span class="n">layer_name</span><span class="p">,</span> <span class="n">layer</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">conv2d</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                               <span class="n">kernel_size</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">stride</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                               <span class="n">padding</span><span class="o">=</span><span class="n">v</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+            <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">((</span><span class="n">layer_name</span><span class="p">,</span> <span class="n">conv2d</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">layer_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">no_relu_layers</span><span class="p">:</span>
+                <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">((</span><span class="s">'relu_'</span><span class="o">+</span><span class="n">layer_name</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span><span class="n">layers</span><span class="p">))</span>
+
+<span class="k">class</span> <span class="nc">bodypose_model</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">bodypose_model</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="c1"># these layers have no relu layer
+</span>        <span class="n">no_relu_layers</span> <span class="o">=</span> <span class="p">[</span><span class="s">'conv5_5_CPM_L1'</span><span class="p">,</span> <span class="s">'conv5_5_CPM_L2'</span><span class="p">,</span> <span class="s">'Mconv7_stage2_L1'</span><span class="p">,</span>\
+                          <span class="s">'Mconv7_stage2_L2'</span><span class="p">,</span> <span class="s">'Mconv7_stage3_L1'</span><span class="p">,</span> <span class="s">'Mconv7_stage3_L2'</span><span class="p">,</span>\
+                          <span class="s">'Mconv7_stage4_L1'</span><span class="p">,</span> <span class="s">'Mconv7_stage4_L2'</span><span class="p">,</span> <span class="s">'Mconv7_stage5_L1'</span><span class="p">,</span>\
+                          <span class="s">'Mconv7_stage5_L2'</span><span class="p">,</span> <span class="s">'Mconv7_stage6_L1'</span><span class="p">,</span> <span class="s">'Mconv7_stage6_L1'</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">block0</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([</span>
+                      <span class="p">(</span><span class="s">'conv1_1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv1_2'</span><span class="p">,</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'pool1_stage1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv2_1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv2_2'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'pool2_stage1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv3_1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv3_2'</span><span class="p">,</span> <span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv3_3'</span><span class="p">,</span> <span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv3_4'</span><span class="p">,</span> <span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'pool3_stage1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv4_1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv4_2'</span><span class="p">,</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv4_3_CPM'</span><span class="p">,</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                      <span class="p">(</span><span class="s">'conv4_4_CPM'</span><span class="p">,</span> <span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+                  <span class="p">])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">model0</span> <span class="o">=</span> <span class="n">make_layers</span><span class="p">(</span><span class="n">block0</span><span class="p">,</span> <span class="n">no_relu_layers</span><span class="p">)</span>
+
+        <span class="c1"># Stage 1
+</span>        <span class="n">block1_1</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([</span>
+                        <span class="p">(</span><span class="s">'conv5_1_CPM_L1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                        <span class="p">(</span><span class="s">'conv5_2_CPM_L1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                        <span class="p">(</span><span class="s">'conv5_3_CPM_L1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                        <span class="p">(</span><span class="s">'conv5_4_CPM_L1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                        <span class="p">(</span><span class="s">'conv5_5_CPM_L1'</span><span class="p">,</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">38</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+                    <span class="p">])</span>
+
+        <span class="n">block1_2</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([</span>
+                        <span class="p">(</span><span class="s">'conv5_1_CPM_L2'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                        <span class="p">(</span><span class="s">'conv5_2_CPM_L2'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                        <span class="p">(</span><span class="s">'conv5_3_CPM_L2'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]),</span>
+                        <span class="p">(</span><span class="s">'conv5_4_CPM_L2'</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                        <span class="p">(</span><span class="s">'conv5_5_CPM_L2'</span><span class="p">,</span> <span class="p">[</span><span class="mi">512</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+                    <span class="p">])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block1_1'</span><span class="p">]</span> <span class="o">=</span> <span class="n">block1_1</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block1_2'</span><span class="p">]</span> <span class="o">=</span> <span class="n">block1_2</span>
+
+        <span class="c1"># Stages 2 - 6
+</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block%d_1'</span> <span class="o">%</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([</span>
+                    <span class="p">(</span><span class="s">'Mconv1_stage%d_L1'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">185</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv2_stage%d_L1'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv3_stage%d_L1'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv4_stage%d_L1'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv5_stage%d_L1'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv6_stage%d_L1'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv7_stage%d_L1'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">38</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="p">])</span>
+
+            <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block%d_2'</span> <span class="o">%</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([</span>
+                    <span class="p">(</span><span class="s">'Mconv1_stage%d_L2'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">185</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv2_stage%d_L2'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv3_stage%d_L2'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv4_stage%d_L2'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv5_stage%d_L2'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv6_stage%d_L2'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+                    <span class="p">(</span><span class="s">'Mconv7_stage%d_L2'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">no_relu_layers</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">out1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model0</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">out1_1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block1_1'</span><span class="p">](</span><span class="n">out1</span><span class="p">)</span>
+        <span class="n">out1_2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block1_2'</span><span class="p">](</span><span class="n">out1</span><span class="p">)</span>
+        <span class="n">out2</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">out1_1</span><span class="p">,</span> <span class="n">out1_2</span><span class="p">,</span> <span class="n">out1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">out2_1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block2_1'</span><span class="p">](</span><span class="n">out2</span><span class="p">)</span>
+        <span class="n">out2_2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block2_2'</span><span class="p">](</span><span class="n">out2</span><span class="p">)</span>
+        <span class="n">out3</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">out2_1</span><span class="p">,</span> <span class="n">out2_2</span><span class="p">,</span> <span class="n">out1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">out3_1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block3_1'</span><span class="p">](</span><span class="n">out3</span><span class="p">)</span>
+        <span class="n">out3_2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block3_2'</span><span class="p">](</span><span class="n">out3</span><span class="p">)</span>
+        <span class="n">out4</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">out3_1</span><span class="p">,</span> <span class="n">out3_2</span><span class="p">,</span> <span class="n">out1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">out4_1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block4_1'</span><span class="p">](</span><span class="n">out4</span><span class="p">)</span>
+        <span class="n">out4_2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block4_2'</span><span class="p">](</span><span class="n">out4</span><span class="p">)</span>
+        <span class="n">out5</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">out4_1</span><span class="p">,</span> <span class="n">out4_2</span><span class="p">,</span> <span class="n">out1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">out5_1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block5_1'</span><span class="p">](</span><span class="n">out5</span><span class="p">)</span>
+        <span class="n">out5_2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block5_2'</span><span class="p">](</span><span class="n">out5</span><span class="p">)</span>
+        <span class="n">out6</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">out5_1</span><span class="p">,</span> <span class="n">out5_2</span><span class="p">,</span> <span class="n">out1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">out6_1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block6_1'</span><span class="p">](</span><span class="n">out6</span><span class="p">)</span>
+        <span class="n">out6_2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">blocks</span><span class="p">[</span><span class="s">'block6_2'</span><span class="p">](</span><span class="n">out6</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out6_1</span><span class="p">,</span> <span class="n">out6_2</span>
+</code></pre></div></div>
+
+<p>此外对于每个阶段的输出，还引入了中间监督。对于每个阶段的输出，构造损失函数：</p>
+
+\[\begin{aligned}
+f_{\mathbf{S}}^t &amp; =\sum_{j=1}^J \sum_{\mathbf{p}} \mathbf{W}(\mathbf{p}) \cdot\left\|\mathbf{S}_j^t(\mathbf{p})-\mathbf{S}_j^*(\mathbf{p})\right\|_2^2 \\
+f_{\mathbf{L}}^t &amp; =\sum_{c=1}^C \sum_{\mathbf{p}} \mathbf{W}(\mathbf{p}) \cdot\left\|\mathbf{L}_c^t(\mathbf{p})-\mathbf{L}_c^*(\mathbf{p})\right\|_2^2
+\end{aligned}\]
+
+<p>其中$W$是一个二进制<strong>mask</strong>矩阵，当点$p$处缺少标注时为$0$。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/04/09/alphapose.html" class="read-next-link"></a>
+        <section>
+          <span>RMPE: Regional Multi-person Pose Estimation</span>
+          <p>  RMPE：基于区域的多人姿态估计.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64a7644e1ddac507cc9416e0.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/04/07/prm.html" class="read-next-link"></a>
+          <section>
+            <span>Learning Feature Pyramids for Human Pose Estimation</span>
+            <p>  学习人体姿态估计中的特征金字塔.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/649b9d701ddac507cc377802.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

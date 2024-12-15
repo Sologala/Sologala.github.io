@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>绘制混淆矩阵 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="绘制混淆矩阵">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="绘制混淆矩阵 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/06/24/confusion.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>绘制混淆矩阵</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-06-24"><i class="iconfont icon-date"></i>24 Jun 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60d55b6a844ef46bb200dffc.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Draw Confusion Matrix.</p>
+</blockquote>
+
+<h3 id="混淆矩阵简介">混淆矩阵简介</h3>
+<p>在机器学习领域，<strong>混淆矩阵(confusion matrix)</strong>通常用于评估监督学习中分类任务算法的性能（这个概念对应于非监督学习中的<strong>匹配矩阵 matching matrix</strong>）。混淆矩阵不仅能够显示每个类别的识别准确率，还能够显示将某个类别识别为其他类别的错误率。</p>
+
+<h3 id="混淆矩阵的获取">混淆矩阵的获取</h3>
+<p>可以使用<code class="language-plaintext highlighter-rouge">sklearn</code>库计算混淆矩阵。其中<code class="language-plaintext highlighter-rouge">label_y</code>和<code class="language-plaintext highlighter-rouge">pred_y</code>都是$n \times 1$的张量，表示每个样本的真实类别和预测类别(用自然数表示)。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span>
+<span class="n">cm</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">label_y</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,)</span>
+</code></pre></div></div>
+
+<h3 id="混淆矩阵的绘制">混淆矩阵的绘制</h3>
+<p>绘制混淆矩阵可以使用下列函数，其中<code class="language-plaintext highlighter-rouge">cm</code>是混淆矩阵的数值，<code class="language-plaintext highlighter-rouge">classes</code>是类别对应的名称列表。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">confusion_metrix</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">classes</span><span class="p">):</span>
+    <span class="c1"># 对混淆矩阵进行归一化
+</span>    <span class="n">cm</span> <span class="o">=</span> <span class="n">cm</span><span class="p">.</span><span class="n">astype</span><span class="p">(</span><span class="s">'float'</span><span class="p">)</span> <span class="o">/</span> <span class="n">cm</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="p">.</span><span class="n">newaxis</span><span class="p">]</span>
+    
+    <span class="c1"># 在混淆矩阵中显示每格的概率值
+</span>    <span class="n">ind_array</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">))</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">ind_array</span><span class="p">,</span> <span class="n">ind_array</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">x_val</span><span class="p">,</span> <span class="n">y_val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">y</span><span class="p">.</span><span class="n">flatten</span><span class="p">()):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">cm</span><span class="p">[</span><span class="n">y_val</span><span class="p">][</span><span class="n">x_val</span><span class="p">]</span>
+        <span class="n">plt</span><span class="p">.</span><span class="n">text</span><span class="p">(</span><span class="n">x_val</span><span class="p">,</span> <span class="n">y_val</span><span class="p">,</span> <span class="s">"%0.2f"</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,),</span> <span class="n">color</span><span class="o">=</span><span class="s">'white'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s">'center'</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s">'center'</span><span class="p">)</span>
+
+    <span class="c1"># 绘制混淆矩阵
+</span>    <span class="n">plt</span><span class="p">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s">'nearest'</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s">'binary'</span><span class="p">)</span>
+
+    <span class="c1"># 显示渐变色条
+</span>    <span class="n">plt</span><span class="p">.</span><span class="n">colorbar</span><span class="p">()</span>
+
+    <span class="n">num_local</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">)))</span>    
+    <span class="n">plt</span><span class="p">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">num_local</span><span class="p">,</span> <span class="n">classes</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fontproperties</span> <span class="o">=</span> <span class="s">'Times New Roman'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>    <span class="c1"># 将标签印在x轴坐标上
+</span>    <span class="n">plt</span><span class="p">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">num_local</span><span class="p">,</span> <span class="n">classes</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontproperties</span> <span class="o">=</span> <span class="s">'Times New Roman'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>    <span class="c1"># 将标签印在y轴坐标上，旋转90°
+</span>    
+    <span class="c1"># 把图像原点设置成左上角
+</span>    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="n">gca</span><span class="p">()</span>  <span class="c1">#获取到当前坐标轴信息
+</span>    <span class="n">ax</span><span class="p">.</span><span class="n">xaxis</span><span class="p">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s">'top'</span><span class="p">)</span>  <span class="c1">#将X坐标轴移到上面
+</span>    
+
+    <span class="n">font1</span> <span class="o">=</span> <span class="p">{</span><span class="s">'family'</span><span class="p">:</span> <span class="s">'Times New Roman'</span><span class="p">,</span>
+             <span class="s">'weight'</span><span class="p">:</span> <span class="s">'normal'</span><span class="p">,</span>
+             <span class="s">'size'</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+             <span class="p">}</span>
+
+    <span class="c1"># 显示x,y轴标签。x轴标签用图像标题代替，以此显示在上方。
+</span>    <span class="n">plt</span><span class="p">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">'True label'</span><span class="p">,</span> <span class="n">font1</span><span class="p">)</span>    
+<span class="c1">#    plt.xlabel('Predicted label', font1)
+</span>    <span class="n">plt</span><span class="p">.</span><span class="n">title</span><span class="p">(</span><span class="s">'Predicted label'</span><span class="p">,</span> <span class="n">font1</span><span class="p">)</span>
+    
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="n">gcf</span><span class="p">()</span>
+    <span class="n">plt</span><span class="p">.</span><span class="n">margins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">fig</span><span class="p">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    
+    <span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">fig</span><span class="p">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">"./confusion_matrix.pdf"</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s">'pdf'</span><span class="p">,</span> <span class="n">transparent</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>通过上述函数绘制的混淆矩阵如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60d55b6a844ef46bb200dffc.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/06/25/peclr.html" class="read-next-link"></a>
+        <section>
+          <span>PeCLR: Self-Supervised 3D Hand Pose Estimation from monocular RGB via Equivariant Contrastive Learning</span>
+          <p>  PeCLR：通过等变对比学习实现单目RGB自监督3D手部姿态估计.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/668f7fcad9c307b7e9db1829.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/06/23/giraffe.html" class="read-next-link"></a>
+          <section>
+            <span>GIRAFFE: Representing Scenes as Compositional Generative Neural Feature Fields</span>
+            <p>  GIRAFFE：将场景表示为组合的生成式神经特征场.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60d2d225844ef46bb2e43728.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

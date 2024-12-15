@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cGANs with Projection Discriminator - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="cGANs with Projection Discriminator">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="cGANs with Projection Discriminator - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/05/24/cgan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>cGANs with Projection Discriminator</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-05-24"><i class="iconfont icon-date"></i>24 May 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/639f0e64b1fccdcd36d4458a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>通过投影判别器构造条件生成对抗网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1802.05637">cGANs with Projection Discriminator</a></li>
+</ul>
+
+<p>在<a href="https://0809zheng.github.io/2022/02/01/gan.html#a-%E6%9D%A1%E4%BB%B6%E7%94%9F%E6%88%90-conditional-generation">条件生成对抗网络</a>中，有许多不同的判别器构造形式：</p>
+<ul>
+  <li>在<strong>cGAN</strong>中，把标签和数据在输入端拼接起来，一起输入判别器，输出数据为真实数据的概率。</li>
+  <li>也可以把标签和数据在判别器隐藏层中的特征拼接起来，输出数据为真实数据的概率。</li>
+  <li>在<strong>AC-GAN</strong>中，判别器同时执行真假区分和分类：一部分输出表示输入数据为真实数据的概率，用于构造对抗损失；另一部分输出表示类别的概率，用于构造分类损失。</li>
+  <li>本文作者设计了一种投影判别器(<strong>Projection Discriminator</strong>)，输入数据首先经过网络$\phi$提取特征，然后把特征分成两路：一路与编码后的类别标签$y$做点乘；另一路通过网络$\psi$映射成向量。最后两路相加作为判别器最终的输出。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/639f0eacb1fccdcd36d4b369.jpg" alt="" /></p>
+
+<p>条件生成网络的目标函数为：</p>
+
+\[\begin{aligned} \mathop{ \min}_{G} \mathop{\max}_{D}  \Bbb{E}_{x,y \text{~} P_{data}(x,y)}[\log D(x,y)] + \Bbb{E}_{x,y \text{~} P_{G}(x,y)}[\log(1-D(x,y))] \end{aligned}\]
+
+<p>判别器$D$的最优值$D^{*}$可以通过计算被积表达式的极值\(\frac{\partial L(G,D)}{\partial D} = 0\)得到：</p>
+
+\[\begin{aligned} D^*(x,y) &amp;= \frac{P_{data}(x,y)}{P_{data}(x,y)+P_{G}(x,y)} \end{aligned}\]
+
+<p>通常的判别器是二分类器，区分数据是真实数据还是生成数据，因此输出结果代表数据真实程度的概率，通过应用<strong>Sigmoid</strong>函数实现：$D(x,y) = 1/(1+\exp(-f(x,y)))$，其中$f(x,y)$为网络最后一层的输出特征。则有如下等式：</p>
+
+\[\frac{1}{1+e^{-f(x,y)}} = \frac{P_{data}(x,y)}{P_{data}(x,y)+P_{G}(x,y)}\]
+
+<p>整理得：</p>
+
+\[\begin{aligned} f(x,y) &amp;= \log \frac{P_{data}(x,y)}{P_{G}(x,y)} \\ &amp;= \log \frac{P_{data}(y|x)P_{data}(x)}{P_{G}(y|x)P_{G}(x)} \\ &amp;= \log \frac{P_{data}(y|x)}{P_{G}(y|x)} + \log \frac{P_{data}(x)}{P_{G}(x)} \end{aligned}\]
+
+<p>上式第一项$\log \frac{P_{data}(y|x)}{P_{G}(y|x)}$对输入数据的类别进行了判断。分子为当输入数据$x$是真实数据时属于类别$y$的概率；分母为当输入数据$x$是生成数据时属于类别$y$的概率。两者的比值越高，表明$x$是真实数据时，属于类别$y$的概率越大。</p>
+
+<p>上式第二项$\log \frac{P_{data}(x)}{P_{G}(x)}$对输入数据的真实性进行了判断。分子为输入数据$x$是真实数据的概率；分母为输入数据$x$是生成数据的概率。两者的比值越高，表明$x$是真实数据的概率越大。</p>
+
+<p>下面进一步表示输出类别的条件概率。对于一个$C$分类器，通常用<strong>softmax</strong>函数计算属于各个类别的概率：</p>
+
+\[\begin{aligned} P(y=c|x) &amp;= \frac{\exp(v_c^T\phi(x))}{\sum_{c=1}^C\exp(v_c^T\phi(x))} = \frac{\exp(v_c^T\phi(x))}{Z(\phi(x))} \end{aligned}\]
+
+<p>其中$\phi(x)$表示网络倒数第二层的特征，$v$是网络最后一层的权重参数，$Z$是配分函数。则第一项$\log \frac{P_{data}(y|x)}{P_{G}(y|x)}$进一步表示为：</p>
+
+\[\begin{aligned}  \log \frac{P_{data}(y|x)}{P_{G}(y|x)} &amp;= \log P_{data}(y|x) - \log  P_{G}(y|x) \\ &amp;= \log \frac{\exp({v_c^{P_{data}}}^T\phi(x))}{Z^{P_{data}}(\phi(x))}-\log \frac{\exp({v_c^{P_{G}}}^T\phi(x))}{Z^{P_{G}}(\phi(x))} \\ &amp;= (v_c^{P_{data}}-v_c^{P_{G}})^T\phi(x) - (\log Z^{P_{data}}(\phi(x)) - \log Z^{P_{G}}(\phi(x))) \end{aligned}\]
+
+<p>将上式代入判别器特征$f(x,y)$的表达式：</p>
+
+\[\begin{aligned} f(x,y) &amp;= \log \frac{P_{data}(y|x)}{P_{G}(y|x)} + \log \frac{P_{data}(x)}{P_{G}(x)} \\ &amp;= (v_c^{P_{data}}-v_c^{P_{G}})^T\phi(x) - (\log Z^{P_{data}}(\phi(x)) - \log Z^{P_{G}}(\phi(x))) + \log \frac{P_{data}(x)}{P_{G}(x)} \end{aligned}\]
+
+<p>令：</p>
+
+\[\begin{aligned} v_c &amp; = v_c^{P_{data}}-v_c^{P_{G}} \\ \psi(\phi(x))&amp;=  - (\log Z^{P_{data}}(\phi(x)) - \log Z^{P_{G}}(\phi(x))) + \log \frac{P_{data}(x)}{P_{G}(x)} \end{aligned}\]
+
+<p>可得最终判别器特征$f(x,y)$的表达式：</p>
+
+\[f(x,y=c) = v_c^T\phi(x) + \psi(\phi(x))\]
+
+<p>其中$v_c$可以由类别$c$的嵌入向量表示。根据上述公式可设计本文所提的投影判别器。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/05/25/sagan.html" class="read-next-link"></a>
+        <section>
+          <span>Self-Attention Generative Adversarial Networks</span>
+          <p>  SAGAN：自注意力生成对抗网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/639fbf39b1fccdcd36c8fcc8.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/05/23/stackgan.html" class="read-next-link"></a>
+          <section>
+            <span>StackGAN: Text to Photo-realistic Image Synthesis with Stacked Generative Adversarial Networks</span>
+            <p>  StackGAN: 通过堆叠生成对抗网络进行文本图像合成.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/639edb32b1fccdcd3669f26b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

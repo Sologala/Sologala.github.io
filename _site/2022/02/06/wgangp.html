@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improved Training of Wasserstein GANs - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Improved Training of Wasserstein GANs">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Improved Training of Wasserstein GANs - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/02/06/wgangp.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Improved Training of Wasserstein GANs</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-02-06"><i class="iconfont icon-date"></i>06 Feb 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic1.imgdb.cn/item/634405b216f2c2beb151bbad.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>WGAN-GP：在WGAN中引入梯度惩罚.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1704.00028">Improved Training of Wasserstein GANs</a></li>
+</ul>
+
+<h1 id="1-wgan与lipschitz约束">1. WGAN与Lipschitz约束</h1>
+
+<p>在<a href="https://0809zheng.github.io/2022/02/04/wgan.html"><font color="Blue">Wasserstein GAN</font></a>中，作者采用<strong>Wasserstein</strong>距离构造了<strong>GAN</strong>的目标函数，优化目标为真实分布\(P_{data}\)和生成分布$P_G$之间的<strong>Wasserstein</strong>距离：</p>
+
+\[\mathop{\min}_{G} \mathop{\max}_{D, ||D||_L \leq K} \{ \Bbb{E}_{x \text{~} P_{data}(x)}[D(x)]-\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)] \}\]
+
+<p>或写作交替优化的形式：</p>
+
+\[\begin{aligned} θ_D &amp;\leftarrow \mathop{\arg \max}_{\theta_D} \frac{1}{n} \sum_{i=1}^{n} { D(x^i)} - \frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))}  \\ \theta_G &amp;\leftarrow \mathop{\arg \min}_{\theta_G} -\frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))} \end{aligned}\]
+
+<p>其中要求判别器$D$是$K$阶<strong>Lipschitz</strong>连续的，即应满足：</p>
+
+\[| D(x_1)-D(x_2) | ≤K | x_1-x_2 |\]
+
+<p><strong>Lipschitz</strong>连续性保证了函数的输出变化相对输入变化是缓慢的。若没有该限制，优化过程可能会使函数的输出趋向正负无穷。</p>
+
+<h3 id="-lipschitz连续性">⚪ Lipschitz连续性</h3>
+
+<p>一般地，一个实值函数$f$是$K$阶<a href="https://0809zheng.github.io/2022/10/11/lipschitz.html">Lipschitz连续</a>的，是指存在一个实数$K\geq 0$，使得对\(\forall x_1,x_2 \in \Bbb{R}\)，有：</p>
+
+\[| f(x_1)-f(x_2) | ≤K | x_1-x_2 |\]
+
+<p>通常一个连续可微函数满足<strong>Lipschitz</strong>连续，这是因为其微分(用$\frac{|f(x_1)-f(x_2)|}{|x_1-x_2|}$近似)是有界的。但是一个<strong>Lipschitz</strong>连续函数不一定是处处可微的，比如$f(x) = |x|$。</p>
+
+<h3 id="-实现lipschitz连续性">⚪ 实现Lipschitz连续性</h3>
+
+<p>在实践中把判别器$D(\cdot)$约束为<strong>Lipschitz</strong>连续函数是比较困难的。</p>
+
+<p>在<strong>WGAN</strong>中，通过<strong>weight clipping</strong>实现该约束：在每次梯度更新后，把判别器$D$的参数$θ_D$的取值限制在$[-c,c]$之间（$c$常取$0.01$）：</p>
+
+\[\begin{aligned}  θ_D &amp;\leftarrow\text{clip}(\theta_D,-c,c)  \end{aligned}\]
+
+<p>然而该做法也有一些问题。若$c$值取得太大，则模型训练容易不稳定，收敛速度慢；若$c$值取得太小，则容易造成梯度消失。</p>
+
+<h1 id="2-wgan-gp">2. WGAN-GP</h1>
+
+<p>本文作者提出引入梯度惩罚项（<strong>gradient penalty</strong>）来实现<strong>Lipschitz</strong>约束。</p>
+
+<p>若$D$是$1$阶<strong>Lipschitz</strong>函数，则对\(\forall x_1,x_2 \in \Bbb{R}\)，有：</p>
+
+\[| D(x_1)-D(x_2) | ≤ | x_1-x_2 |\]
+
+<p>将其作为惩罚项引入判别器的目标函数：</p>
+
+\[\begin{aligned} θ_D \leftarrow \mathop{\arg \max}_{\theta_D}&amp; \frac{1}{n} \sum_{i=1}^{n} { D(x^i)} - \frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))} \\&amp;- \frac{\lambda}{n} \sum_{i,j}^{} \max(\frac{| D(x_i)-D(x_j) |}{| x_i-x_j |},1) \end{aligned}\]
+
+<p>或写作：</p>
+
+\[\begin{aligned} θ_D \leftarrow \mathop{\arg \max}_{\theta_D} &amp;\frac{1}{n} \sum_{i=1}^{n} { D(x^i)} - \frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))}\\&amp; - \frac{\lambda}{n} \sum_{i,j}^{} (\frac{| D(x_i)-D(x_j) |}{| x_i-x_j |}-1)^2 \end{aligned}\]
+
+<p>上式引入的差分形式的惩罚项计算量比较大；因此考虑将其替换为梯度形式；即约束$D$在任意位置的梯度的模小于等于$1$。</p>
+
+\[\begin{aligned} θ_D \leftarrow \mathop{\arg \max}_{\theta_D}&amp; \frac{1}{n} \sum_{i=1}^{n} { D(x^i)} - \frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))} \\&amp;- \lambda \max(||\frac{\partial D(x)}{\partial x}||,1) \end{aligned}\]
+
+<p>或写作：</p>
+
+\[\begin{aligned} θ_D \leftarrow \mathop{\arg \max}_{\theta_D} &amp;\frac{1}{n} \sum_{i=1}^{n} { D(x^i)} - \frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))} \\&amp;- \lambda (||\frac{\partial D(x)}{\partial x}||-1)^2 \end{aligned}\]
+
+<p>理论上应该对$D(x)$的所有自变量取值进行计算并取平均，在实践中采用对真实样本和生成样本之间的随机插值：</p>
+
+<p><img src="https://pic1.imgdb.cn/item/63428fd716f2c2beb1981aed.jpg" alt="" /></p>
+
+<p>\(P_{penalty}\)定义为从\(P_{data}\)和\(P_G\)中各抽取一个样本，再在其连线上抽取的样本。这样的操作是合理的，因为直观上，优化过程是使\(P_G\)靠近\(P_{data}\)，样本点大多从这两个分布之间选取，而不是整个空间。</p>
+
+<p>当真实样本的类别数比较多时，梯度惩罚的效果比较差。这是因为线性插值的梯度惩罚只能保证在一小块数据空间上满足，当类别数比较多时，不同类别之间进行插值往往会落在满足<strong>Lipschitz</strong>约束的空间之外。</p>
+
+<p>最终使用梯度惩罚实现<strong>Lipschitz</strong>约束的<strong>Wasserstein Generative Adversarial Nets - Gradient Penalty (WGAN-GP)</strong>的判别器目标为：</p>
+
+\[\begin{aligned} θ_D \leftarrow &amp; \mathop{\arg \max}_{\theta_D} \frac{1}{n} \sum_{i=1}^{n} { D(x^i)} - \frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))} \\&amp; - \frac{\lambda}{n} \sum_{i=1}^{n} \max(||\frac{\partial D(x)}{\partial x}||_{x = \epsilon_ix^i+(1-\epsilon_i)G(z^i)},1) \end{aligned}\]
+
+<p>或写作：</p>
+
+\[\begin{aligned}  θ_D \leftarrow &amp; \mathop{\arg \max}_{\theta_D} \frac{1}{n} \sum_{i=1}^{n} { D(x^i)} - \frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))} \\ &amp;- \frac{\lambda}{n} \sum_{i=1}^{n} (||\frac{\partial D(x)}{\partial x}||_{x = \epsilon_ix^i+(1-\epsilon_i)G(z^i)}-1)^2 \end{aligned}\]
+
+<p>其中$\epsilon_i$是从$U[0,1]$中采样的随机数。</p>
+
+<p><strong>WGAN-GP</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/eriklindernoren/PyTorch-GAN/tree/master/implementations/wgan_gp">PyTorch-GAN</a>。</p>
+
+<p>下面给出梯度惩罚项的计算过程。可以使用<a href="https://0809zheng.github.io/2022/10/10/autograd.html">torch.autograd.grad()</a>方法实现网络对<strong>输入变量</strong>的求导。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">compute_gradient_penalty</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">real_samples</span><span class="p">,</span> <span class="n">fake_samples</span><span class="p">):</span>
+    <span class="s">"""Calculates the gradient penalty loss for WGAN GP"""</span>
+    <span class="c1"># Random weight term for interpolation between real and fake samples
+</span>    <span class="n">epsilon</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">real_samples</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+    <span class="c1"># Get random interpolation between real and fake samples
+</span>    <span class="n">interpolates</span> <span class="o">=</span> <span class="p">(</span><span class="n">epsilon</span> <span class="o">*</span> <span class="n">real_samples</span> <span class="o">+</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">fake_samples</span><span class="p">)).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">d_interpolates</span> <span class="o">=</span> <span class="n">D</span><span class="p">(</span><span class="n">interpolates</span><span class="p">)</span>
+    <span class="c1"># Get gradient w.r.t. interpolates
+</span>    <span class="n">gradients</span> <span class="o">=</span> <span class="n">autograd</span><span class="p">.</span><span class="n">grad</span><span class="p">(</span>
+        <span class="n">outputs</span><span class="o">=</span><span class="n">d_interpolates</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="o">=</span><span class="n">interpolates</span><span class="p">,</span>
+        <span class="n">grad_outputs</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">d_interpolates</span><span class="p">).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span>
+        <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">retain_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">only_inputs</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">gradients</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">gradients</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">gradient_penalty</span> <span class="o">=</span> <span class="p">((</span><span class="n">gradients</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">gradient_penalty</span>
+</code></pre></div></div>
+
+<p>下面给出参数更新过程：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">n_epochs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">real_imgs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+
+        <span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">opt</span><span class="p">.</span><span class="n">latent_dim</span><span class="p">)</span> 
+        <span class="n">gen_imgs</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>            
+
+        <span class="c1"># 训练判别器
+</span>        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="c1"># 真实图像得分
+</span>        <span class="n">real_validity</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">)</span>
+        <span class="c1"># 生成图像得分
+</span>        <span class="n">gen_validity</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">.</span><span class="n">detach</span><span class="p">())</span>
+        <span class="c1"># 梯度惩罚项
+</span>        <span class="n">gradient_penalty</span> <span class="o">=</span> <span class="n">compute_gradient_penalty</span><span class="p">(</span><span class="n">discriminator</span><span class="p">,</span> <span class="n">real_imgs</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">gen_imgs</span><span class="p">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">d_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">real_validity</span><span class="p">)</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">gen_validity</span><span class="p">)</span> <span class="o">+</span> <span class="n">opt</span><span class="p">.</span><span class="n">lambda_gp</span><span class="o">*</span><span class="n">gradient_penalty</span>
+        <span class="n">d_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="c1"># 训练生成器
+</span>        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">opt</span><span class="p">.</span><span class="n">d_iter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+           <span class="n">optimizer_G</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">g_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">))</span>
+            <span class="n">g_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer_G</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div></div>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/02/07/fgan.html" class="read-next-link"></a>
+        <section>
+          <span>f-GAN: Training Generative Neural Samplers using Variational Divergence Minimization</span>
+          <p>  fGAN：通过f散度构造GAN.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic1.imgdb.cn/item/6344cf4f16f2c2beb19594f3.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/02/05/dcgan.html" class="read-next-link"></a>
+          <section>
+            <span>Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks</span>
+            <p>  DCGAN：使用深度卷积神经网络构造GAN.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/634272f816f2c2beb164f55f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

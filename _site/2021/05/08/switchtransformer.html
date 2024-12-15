@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/05/08/switchtransformer.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-05-08"><i class="iconfont icon-date"></i>08 May 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6095f70ad1a9ae528f3875f6.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Switch Transformer：训练万亿级参数的语言模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2101.03961">link</a></li>
+</ul>
+
+<p>在<strong>NLP</strong>领域，模型的大小(用模型的参数量衡量)通常与模型的性能成正比。<strong>GPT-3</strong>模型具有$1750$亿参数($175$ <strong>billion</strong>)，使用<strong>稀疏注意力(sparse attention)</strong>运算，这类运算很难发挥<strong>GPU</strong>等硬件的性能。作者提出了<strong>Switch Transformer</strong>，采用<strong>稀疏路由(sparse routing)</strong>设计网络结构，但计算上仍然是密集的，充分使用<strong>GPU</strong>等硬件的性能，可以训练出具有$1.6$万亿参数($1.6$ <strong>trillion</strong>)的语言模型。</p>
+
+<p><strong>Switch Transformer</strong>是按照<strong>MoE</strong>结构范式设计的，采用特殊的分布式训练设置和一些训练技巧，分别介绍如下。</p>
+
+<h2 id="mixture-of-expert-moe">Mixture of Expert (MoE)</h2>
+
+<p><strong>混合专家系统(Mixture of Expert, MoE)</strong>是一种神经网络的设计范式，于上世纪$90$年代被提出。<strong>MoE</strong>是指根据数据的不同产生方式分别训练不同子模型，每个模型被称为一个<strong>专家(expert)</strong>，对于每次数据输入使用一个门控模块决定使用哪个专家，模型的实际输出为各个专家输出的加权组合。每个专家通常具有不同的网络结构。</p>
+
+<p>在深度学习中，模型对于输入通常重复使用相同的模型参数。将<strong>MoE</strong>的思想引入，设计一个具有<strong>稀疏激活(sparsely-activated)</strong>特征的模型。尽管模型本身具有较多的参数量，但对于每次输入只激活其中的一部分，并没有额外的计算量。这个过程是通过动态路由实现的。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60963ae3d1a9ae528fe78188.jpg" alt="" /></p>
+
+<h2 id="partitioning-strategy">Partitioning Strategy</h2>
+
+<p><img src="https://pic.imgdb.cn/item/60963b55d1a9ae528fec84ff.jpg" alt="" /></p>
+
+<p>在深度学习中，可能会出现由于模型过大或数据集过大，无法在单张<strong>GPU</strong>或单个<strong>core</strong>上训练的情况。选择合适的分布式训练方法能够有效加快训练过程，减少训练难度。模型参数和数据集的分布式训练在<strong>MoE</strong>范式下有以下几种形式：</p>
+<ul>
+  <li>数据并行(<strong>data parallelism</strong>)：模型参数在所有<strong>core</strong>上共享；数据被划分到每个<strong>core</strong>上；</li>
+  <li>模型并行(<strong>model parallelism</strong>)：模型参数被划分到每个<strong>core</strong>上；数据在所有<strong>core</strong>上共享；</li>
+  <li>数据和模型并行(<strong>data and model parallelism</strong>)：模型参数被划分到每组<strong>core</strong>上，而在不同组之间共享；数据被划分到每组<strong>core</strong>上，而在不同组之间共享；</li>
+  <li>专家和数据并行(<strong>expert and data parallelism</strong>)：模型参数在每个<strong>core</strong>上都不同，对应不同的专家；数据被划分到每个<strong>core</strong>上；</li>
+  <li>专家,模型和数据并行(<strong>expert, model and data parallelism</strong>)：模型参数被划分到每组<strong>core</strong>上，而在不同组之间不同，对应不同的专家；数据被划分到每组<strong>core</strong>上，而在不同组之间共享。</li>
+</ul>
+
+<h2 id="switch-transformer">Switch Transformer</h2>
+
+<p>将<strong>MoE</strong>引入<strong>Transformer</strong>的过程如下。</p>
+
+<p><strong>Transformer</strong>的主体部分是由多头自注意力层<strong>MHA</strong>和前向传播层<strong>FFN</strong>堆叠组合而成。<strong>MHA</strong>实现不同<strong>token</strong>之间的交互，<strong>FFN</strong>是对每个<strong>token</strong>进行非线性变换，其输出作为下一层的输入，可以看作其实现了不同层之间的交互。</p>
+
+<p>由于<strong>FFN</strong>通常具有更多参数，因此将其作为专家。通过设置多个<strong>FFN</strong>，对于每个输入<strong>token</strong>计算一个线性得分，将其作为路由选择合适的<strong>FFN</strong>。对于模型整体，由于引入多个<strong>FFN</strong>增加的模型的参数量，但每次计算中只使用了其中一个<strong>FFN</strong>，并没有增加计算量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60963ffdd1a9ae528f22f16c.jpg" alt="" /></p>
+
+<p>作者还提出了一些使训练更稳定的技巧：</p>
+<ol>
+  <li>精度转换。在<strong>float16</strong>精度下训练使得模型不稳定。作者提出，在计算路由时将数据扩张为<strong>float32</strong>精度，计算结束后再恢复成<strong>float16</strong>精度，能够提高模型训练的稳定性。</li>
+  <li>更小的参数初始化。作者提出，将模型参数初始化为原来的$1/10$，能够提高模型训练的稳定性。</li>
+  <li>正则化。作者提出，采用<strong>expert dropout</strong>，即在专家层采用更大的<strong>dropout rate</strong>($0.4$,其余层设置为$0.1$)，能够提高模型训练的稳定性。</li>
+</ol>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/05/12/litehrnet.html" class="read-next-link"></a>
+        <section>
+          <span>Lite-HRNet: A Lightweight High-Resolution Network</span>
+          <p>  Lite-HRNet：轻量级高分辨率网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/668e3dffd9c307b7e97aab0c.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/05/04/boneloss.html" class="read-next-link"></a>
+          <section>
+            <span>Weakly-Supervised Mesh-Convolutional Hand Reconstruction in the Wild</span>
+            <p>  自然场景中的弱监督网格卷积手部重构.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64d214301ddac507cc115a7f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

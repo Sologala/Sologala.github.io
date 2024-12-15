@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improve Vision Transformers Training by Suppressing Over-smoothing - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Improve Vision Transformers Training by Suppressing Over-smoothing">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Improve Vision Transformers Training by Suppressing Over-smoothing - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/24/oversmooth.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Improve Vision Transformers Training by Suppressing Over-smoothing</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-24"><i class="iconfont icon-date"></i>24 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/643bc7a30d2dde5777c4843d.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>通过抑制过度平滑改进视觉Transformer.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2104.12753">Improve Vision Transformers Training by Suppressing Over-smoothing</a></li>
+</ul>
+
+<p>直接在视觉任务上训练视觉<strong>Transformer</strong>模型容易产生不稳定和次优的结果。之前有的工作通过加入卷积以更有效地提取<strong>low-level</strong>的特征，从而加速和稳定视觉<strong>Transformer</strong>模型的训练，这相当于改变了<strong>Transformer</strong>的结构。而本文所做的工作是在不改变原有<strong>Transformer</strong>模型任何结构的前提下通过改变训练方式来稳定训练。</p>
+
+<p>本文作者把视觉<strong>Transformer</strong>模型训练不稳定的原因归结为：过平滑问题 (<strong>Over-smoothing problem</strong>)，即：不同<strong>token</strong>之间的相似性随着模型的加深而增加，深层<strong>self-attention</strong>层趋向于把输入图片的不同<strong>patch</strong>映射成差不多的<strong>latent representation</strong>。</p>
+
+<p>图片划分成<strong>patch</strong>之后，每个<strong>patch</strong>会经过一个<strong>Transformer Block</strong>层得到<strong>token</strong>，不同的<strong>pacth</strong>对应着不同的<strong>token</strong>。但是，当模型越来越深时，不同的<strong>token</strong>之间的相似性越来越大，大到甚至无法有效地进行区分了。作者称这种现象为过平滑问题。</p>
+
+<p>作者首先定义了一种不同<strong>patch representation</strong>之间的<strong>Layer-wise cosine similarity</strong>：假设输入图片$x$及其对应的<strong>patch representation</strong>为$h=(h^{cls},h_1,…,h_n)$，定义<strong>smoothness</strong>为它的<strong>patch representation</strong>中所有<strong>token</strong>之间的<strong>cosine similarity</strong>：</p>
+
+\[\cos Sim(h) = \frac{1}{n(n-1)}\sum_{i \neq j} \frac{h_i^Th_j}{\left\|h_i \right\| \left\|h_j \right\|}\]
+
+<p>如下图a所示为所有层的<strong>cosine similarity</strong>值，可以观察到随着层数的加深，<strong>DeiT</strong>模型的<strong>cosine similarity</strong>越来越大。一个<strong>24</strong>层的<strong>DeiT-Base</strong>模型的最后一层的不同<strong>token</strong>之间的<strong>pairwise</strong>相似度达到了<strong>0.9</strong>，表明所学到的<strong>patch representation</strong>之间的高度相关性和重复性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643bc9a50d2dde5777c6b332.jpg" alt="" /></p>
+
+<p>此外，作者还通过另外一个指标来描述这种相似性：<strong>Layer-wise standard deviation</strong>。通常希望每一层的某一个<strong>patch</strong>，它<strong>attend to</strong>其他所有<strong>patch</strong>的程度是不一样的，这样才能捕获到图片中有意义的区域的信息。<strong>Layer-wise standard deviation</strong>就是为了衡量这种能力的大小。假设某个<strong>patch</strong> $h_i$，其<strong>softmax attention score</strong>为$S(h_i)\in R^n$，这是一个$n$维的向量，将其求标准差来表示相似度的大小，相似度越小，标准差就越大。每一个<strong>layer</strong>能求出来$n$个标准差。将它们取平均值来代表这一层的不同<strong>token</strong>之间的相似度的大小，如上图b所示。</p>
+
+<p>从结果可以看出，传统的<strong>Transformer</strong>模型每一层的不同<strong>token</strong>之间的<strong>standard deviation</strong>都很小，表示相似度都很大，也就造成了<strong>over-smoothing</strong>的问题。但是在<strong>NLP</strong>模型中，每个<strong>patch</strong>都有其对应的<strong>label</strong>，所以不同的<strong>token</strong>之间的相似性不易变得很大，也就不容易出现<strong>over-smoothing</strong>的问题。</p>
+
+<p>为了解决<strong>over-smoothing</strong>问题，作者提出了一系列方法：</p>
+
+<h3 id="-添加相似度罚项">⚪ 添加相似度罚项</h3>
+
+<p>最直接的避免每一层的不同<strong>token</strong>之间的相似度过大的办法是添加惩罚项，基于此作者使用了一个新的<strong>loss</strong>函数，对于最后一层的<strong>patch representation</strong> $h=(h^{cls},h_1,…,h_n)$来讲：</p>
+
+\[\mathcal{l}_{cos}= \frac{1}{n(n-1)}\sum_{i \neq j} \frac{h_i^Th_j}{\left\|h_i \right\| \left\|h_j \right\|}\]
+
+<p>来最小化相似性。这种做法可以看做是增加最后一层的<strong>patch representation</strong>的表达能力。</p>
+
+<h3 id="-patch-contrastive-loss">⚪ Patch Contrastive Loss</h3>
+
+<p>作者认为浅层的<strong>patch</strong>应该与深层对应的那个的<strong>patch</strong>的值比较接近，这样一来<strong>patch</strong>之间的区分度就能够在整个网络中维持住。对于一个给定的图片，假设$e$是第$1$层的<strong>patch representations</strong>，而$h$是最后$1$层的<strong>patch representations</strong>，作者使用对比学习的损失：</p>
+
+\[\mathcal{l}_{cons} = -\frac{1}{n} \sum_{i=1}^n \log \frac{\exp(e_i^Th_i)}{\exp(e_i^Th_i)+\exp(e_i^T(\sum_{j=1}^nh_i/n))}\]
+
+<p>来迫使浅层和深层相对应的<strong>patch representations</strong>接近，而与其他的<strong>patch representations</strong>疏远。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643bcc650d2dde5777c9a2b7.jpg" alt="" /></p>
+
+<h3 id="-patch-mixing-loss">⚪ Patch Mixing Loss</h3>
+
+<p>作者希望每个<strong>patch</strong>都能有监督信息，这样一来就可以使用<strong>CutMix</strong>这个数据增强策略。具体而言是给每个<strong>patch</strong>的向量通过一个共享的分类器得到分类的结果，这些<strong>patch</strong>都会有对应的监督信息，所以模型能够学习到更具有信息量的<strong>patch representation</strong>。</p>
+
+<p><strong>Patch Mixing Loss</strong>定义为：</p>
+
+\[\mathcal{l}_{token} = \frac{1}{n} \sum_{i=1}^n \mathcal{l}_{ce}(g(h_i),y_i)\]
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/25/refiner.html" class="read-next-link"></a>
+        <section>
+          <span>Refiner: Refining Self-attention for Vision Transformers</span>
+          <p>  Refiner：精炼视觉Transformer中的自注意力机制.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/643fbd7f0d2dde5777147f3c.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/23/twins.html" class="read-next-link"></a>
+          <section>
+            <span>Twins: Revisiting the Design of Spatial Attention in Vision Transformers</span>
+            <p>  Twins：重新思考视觉Transformer中的空间注意力设计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/643b693a0d2dde5777518446.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

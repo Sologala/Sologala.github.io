@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Back-Projection Networks For Super-Resolution - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Deep Back-Projection Networks For Super-Resolution">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Deep Back-Projection Networks For Super-Resolution - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/08/02/dbpn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Deep Back-Projection Networks For Super-Resolution</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-08-02"><i class="iconfont icon-date"></i>02 Aug 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f43c9c2160a154a6741b21c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DBPN：一种反复下采样与上采样的超分辨率模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Deep Back-Projection Networks For Super-Resolution</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1803.02735">link</a></li>
+</ul>
+
+<h1 id="相关工作">相关工作</h1>
+<p>作者总结了图像超分辨率的相关工作，并将模型划分为四种：</p>
+
+<p><img src="https://pic.downk.cc/item/5f43c9ae160a154a6741a280.jpg" alt="" /></p>
+
+<ol>
+  <li><strong>Predefined upsampling</strong>：首先对图像进行上采样（如<strong>Bicubic</strong>），再通过卷积网络增加细节，如SRCNN, VDSR, DRRN；</li>
+  <li><strong>Single upsampling</strong>：先通过卷积网络提取丰富的特征，再通过单次上采样增加分辨率，如FSRCNN, ESPCN, EDSR；</li>
+  <li><strong>Progressive upsampling</strong>：通过拉普拉斯金字塔网络逐渐增加分辨率，如LapSRN；</li>
+  <li><strong>Iterative up and downsampling</strong>：循环地进行上采样和下采样，增加丰富的特征信息，如DBPN。</li>
+</ol>
+
+<h1 id="网络结构">网络结构</h1>
+
+<h2 id="1-projection-units">1. Projection units</h2>
+
+<p><img src="https://pic.downk.cc/item/5f43d04d160a154a67474cbd.jpg" alt="" /></p>
+
+<p><strong>Projection</strong>包括<strong>Up-Projection</strong>和<strong>Down-Projection</strong>。</p>
+
+<h3 id="1up-projection">（1）Up-Projection</h3>
+
+<p><img src="https://pic.downk.cc/item/5f43d0ca160a154a6747bdc3.jpg" alt="" /></p>
+
+<p>先对<strong>L</strong>特征进行上采样和下采样，得到残差信号；对残差信号进行上采样，融合之前上采样得到的特征，最终得到上采样的特征。</p>
+
+<h3 id="2down-projection">（2）Down-Projection</h3>
+
+<p><img src="https://pic.downk.cc/item/5f43d0e0160a154a6747d2bf.jpg" alt="" /></p>
+
+<p>先对<strong>H</strong>特征进行下采样和上采样，得到残差信号；对残差信号进行下采样，融合之前下采样得到的特征，最终得到下采样的特征。</p>
+
+<h2 id="2-dense-projection-units">2. Dense projection units</h2>
+
+<p><img src="https://pic.downk.cc/item/5f43d199160a154a674883e2.jpg" alt="" /></p>
+
+<p>作者引入了<strong>DenseNet</strong>中的<strong>dense connections</strong>，即每一层特征均使用之前的所有特征，称为<strong>Dense DBPN（D-DBPN）</strong>。</p>
+
+<p>作者没有使用原网络中的<strong>dropout</strong>和<strong>batchnorm</strong>，并引入了$1×1$卷积进行通道压缩。</p>
+
+<h2 id="3-network-architecture">3. Network architecture</h2>
+
+<p><img src="https://pic.downk.cc/item/5f43cec8160a154a6745e72d.jpg" alt="" /></p>
+
+<p>网络主要由三部分构成：</p>
+<ol>
+  <li><strong>Initial feature extraction</strong>：对输入图像使用若干$3×3$和$1×1$卷积提取特征；</li>
+  <li><strong>Back-projection stages</strong>：对特征进行反复下采样和上采样，得到若干重构的特征$H^1,…,H^t$；</li>
+  <li><strong>Reconstruction</strong>：对所有重构特征$H^1,…,H^t$进行最后的重构，得到输出<strong>SR</strong>。</li>
+</ol>
+
+<h1 id="实验结果">实验结果</h1>
+<p>实验设置：</p>
+<ul>
+  <li>训练集：DIV2K, Flickr, ImageNet</li>
+  <li>训练尺寸：裁剪32×32, batchsize20</li>
+</ul>
+
+<p>作者首先验证了模型深度对结果的影响。具体地，作者设置了$L(t=6)$、$M(t=4)$、$S(t=2)$三个大小的模型：</p>
+
+<p><img src="https://pic.downk.cc/item/5f43d3be160a154a674a8908.jpg" alt="" /></p>
+
+<p>作者对比了不同模型的参数量和性能指标：</p>
+
+<p><img src="https://pic.downk.cc/item/5f43d421160a154a674ae190.jpg" alt="" /></p>
+
+<p>作者可视化了$H^1,…,H^t$每一层学习到的特征：</p>
+
+<p><img src="https://pic.downk.cc/item/5f43d484160a154a674b3d62.jpg" alt="" /></p>
+
+<p>作者验证了<strong>dense connections</strong>的有效性：</p>
+
+<p><img src="https://pic.downk.cc/item/5f43d4b0160a154a674b6763.jpg" alt="" /></p>
+
+<p>作者发现，模型尤其在较大倍数（如$×8$）的任务中表现更好：</p>
+
+<p><img src="https://pic.downk.cc/item/5f43d4fb160a154a674bb380.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/08/03/srcnn.html" class="read-next-link"></a>
+        <section>
+          <span>Image Super-Resolution Using Deep Convolutional Networks</span>
+          <p>  SRCNN：图像超分辨率的开山之作.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f44653b160a154a67d2ee79.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/08/01/rcan.html" class="read-next-link"></a>
+          <section>
+            <span>Image Super-Resolution Using Very Deep Residual Channel Attention Networks</span>
+            <p>  RCAN：残差通道注意力网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f43acf4160a154a67279065.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

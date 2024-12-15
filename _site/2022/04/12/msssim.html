@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning to Generate Images with Perceptual Similarity Metrics - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Learning to Generate Images with Perceptual Similarity Metrics">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Learning to Generate Images with Perceptual Similarity Metrics - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/12/msssim.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Learning to Generate Images with Perceptual Similarity Metrics</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-12"><i class="iconfont icon-date"></i>12 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/628b5b840947543129a4c70a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>使用多尺度结构相似性度量MS-SSIM学习图像生成.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1511.06409">Learning to Generate Images with Perceptual Similarity Metrics</a></li>
+</ul>
+
+<h1 id="1-结构相似性度量-ssim">1. 结构相似性度量 SSIM</h1>
+
+<p><strong>结构相似性度量（Structural Similarity Metric, SSIM）</strong>匹配两幅图像（$x$和$y$）中的亮度（$I$）、对比度（$C$）和结构（$S$）信息：</p>
+
+\[I(x,y) = \frac{2\mu_x\mu_y+C_1}{\mu_x^2+\mu_y^2+C_1} \\ C(x,y) = \frac{2\sigma_x\sigma_y+C_2}{\sigma_x^2+\sigma_y^2+C_2} \\ S(x,y) = \frac{\sigma_{xy}+C_3}{\sigma_x\sigma_y+C_3}\]
+
+<p>其中$µ_x$、$µ_y$、$σ_x$和$σ_y$表示以$x$或$y$为中心的局部图像窗口中像素强度的平均值或标准差。在文中选择$x$或$y$任一侧$5$个像素的正方形邻域，得到$11×11$的窗口。$σ_{xy}$表示以$x$和$y$为中心的窗口中相应像素之间的相关系数。常数$C_1$、$C_2$和$C_3$是为数值稳定性添加的较小值。<strong>SSIM</strong>将三个函数组合起来：</p>
+
+\[\text{SSIM}(x,y) = I(x,y)^{\alpha} C(x,y)^{\beta} S(x,y)^{\gamma}\]
+
+<h1 id="2-多尺度结构相似性度量-ms-ssim">2. 多尺度结构相似性度量 MS-SSIM</h1>
+
+<p><strong>SSIM</strong>假设图像采样密度和观察距离是固定的，仅适用于特定范围的图像比例。<strong>多尺度结构相似性度量(MS-SSIM)</strong>是一种同时在多个尺度上运行的<strong>SSIM</strong>变体。对输入图像$x$和$y$使用低通滤波器以2的因子进行迭代下采样，尺度$j$表示以$2^{j-1}$的因子进行下采样。对比度$C(x,y)$和结构$S(x,y)$分量应用于所有尺度，而亮度分量$I(x,y)$仅应用于最粗略的尺度$M$。<strong>MI-SSIM</strong>定义如下：</p>
+
+\[\text{MI-SSIM}(x,y) = I_M(x,y)^{\alpha_M} \prod_{j=1}^{M} C_j(x,y)^{\beta_j} S_j(x,y)^{\gamma_j}\]
+
+<p>在实验中下采样程度设置为$M=5$，所有权重设置为$\alpha_M=\beta_j=\gamma_j=1$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MSSIM</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+                 <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span>
+                 <span class="n">size_average</span><span class="p">:</span><span class="nb">bool</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="s">"""
+        Computes the differentiable MS-SSIM loss
+        :param in_channels: (Int)
+        :param window_size: (Int)
+        :param size_average: (Bool)
+        """</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MSSIM</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">window_size</span> <span class="o">=</span> <span class="n">window_size</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">size_average</span> <span class="o">=</span> <span class="n">size_average</span>
+
+    <span class="k">def</span> <span class="nf">gaussian_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_size</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">kernel</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">exp</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">window_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+                               <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">window_size</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">kernel</span><span class="o">/</span><span class="n">kernel</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">create_window</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">):</span>
+        <span class="n">_1D_window</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">gaussian_window</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">_2D_window</span> <span class="o">=</span> <span class="n">_1D_window</span><span class="p">.</span><span class="n">mm</span><span class="p">(</span><span class="n">_1D_window</span><span class="p">.</span><span class="n">t</span><span class="p">()).</span><span class="nb">float</span><span class="p">().</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="n">_2D_window</span><span class="p">.</span><span class="n">expand</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">window_size</span><span class="p">,</span> <span class="n">window_size</span><span class="p">).</span><span class="n">contiguous</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">window</span>
+
+    <span class="k">def</span> <span class="nf">ssim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">img1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+             <span class="n">img2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+             <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+             <span class="n">in_channel</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+             <span class="n">size_average</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+
+        <span class="n">device</span> <span class="o">=</span> <span class="n">img1</span><span class="p">.</span><span class="n">device</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">create_window</span><span class="p">(</span><span class="n">window_size</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">mu1</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span> <span class="n">window_size</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channel</span><span class="p">)</span>
+        <span class="n">mu2</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">img2</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span> <span class="n">window_size</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channel</span><span class="p">)</span>
+
+        <span class="n">mu1_sq</span> <span class="o">=</span> <span class="n">mu1</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">mu2_sq</span> <span class="o">=</span> <span class="n">mu2</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">mu1_mu2</span> <span class="o">=</span> <span class="n">mu1</span> <span class="o">*</span> <span class="n">mu2</span>
+
+        <span class="n">sigma1_sq</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">img1</span> <span class="o">*</span> <span class="n">img1</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">window_size</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channel</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu1_sq</span>
+        <span class="n">sigma2_sq</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">img2</span> <span class="o">*</span> <span class="n">img2</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">window_size</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channel</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu2_sq</span>
+        <span class="n">sigma12</span>   <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">img1</span> <span class="o">*</span> <span class="n">img2</span><span class="p">,</span> <span class="n">window</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">window_size</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channel</span><span class="p">)</span> <span class="o">-</span> <span class="n">mu1_mu2</span>
+
+        <span class="n">img_range</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="c1">#img1.max() - img1.min() # Dynamic range
+</span>        <span class="n">C1</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.01</span> <span class="o">*</span> <span class="n">img_range</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">C2</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.03</span> <span class="o">*</span> <span class="n">img_range</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="n">v1</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">sigma12</span> <span class="o">+</span> <span class="n">C2</span>
+        <span class="n">v2</span> <span class="o">=</span> <span class="n">sigma1_sq</span> <span class="o">+</span> <span class="n">sigma2_sq</span> <span class="o">+</span> <span class="n">C2</span>
+        <span class="n">cs</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">v1</span> <span class="o">/</span> <span class="n">v2</span><span class="p">)</span>  <span class="c1"># contrast sensitivity
+</span>
+        <span class="n">ssim_map</span> <span class="o">=</span> <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">mu1_mu2</span> <span class="o">+</span> <span class="n">C1</span><span class="p">)</span> <span class="o">*</span> <span class="n">v1</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">mu1_sq</span> <span class="o">+</span> <span class="n">mu2_sq</span> <span class="o">+</span> <span class="n">C1</span><span class="p">)</span> <span class="o">*</span> <span class="n">v2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">size_average</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">ssim_map</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">ssim_map</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="p">,</span> <span class="n">cs</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">img2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">img1</span><span class="p">.</span><span class="n">device</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">FloatTensor</span><span class="p">([</span><span class="mf">0.0448</span><span class="p">,</span> <span class="mf">0.2856</span><span class="p">,</span> <span class="mf">0.3001</span><span class="p">,</span> <span class="mf">0.2363</span><span class="p">,</span> <span class="mf">0.1333</span><span class="p">]).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">levels</span> <span class="o">=</span> <span class="n">weights</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">mssim</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">mcs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">levels</span><span class="p">):</span>
+            <span class="n">sim</span><span class="p">,</span> <span class="n">cs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">ssim</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">img2</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="p">.</span><span class="n">window_size</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="p">.</span><span class="n">size_average</span><span class="p">)</span>
+            <span class="n">mssim</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">sim</span><span class="p">)</span>
+            <span class="n">mcs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
+
+            <span class="n">img1</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">avg_pool2d</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="n">img2</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">avg_pool2d</span><span class="p">(</span><span class="n">img2</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="n">mssim</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">mssim</span><span class="p">)</span>
+        <span class="n">mcs</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">mcs</span><span class="p">)</span>
+
+        <span class="c1"># # Normalize (to avoid NaNs during training unstable models, not compliant with original definition)
+</span>        <span class="c1"># if normalize:
+</span>        <span class="c1">#     mssim = (mssim + 1) / 2
+</span>        <span class="c1">#     mcs = (mcs + 1) / 2
+</span>
+        <span class="n">pow1</span> <span class="o">=</span> <span class="n">mcs</span> <span class="o">**</span> <span class="n">weights</span>
+        <span class="n">pow2</span> <span class="o">=</span> <span class="n">mssim</span> <span class="o">**</span> <span class="n">weights</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">prod</span><span class="p">(</span><span class="n">pow1</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">pow2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">output</span>
+</code></pre></div></div>
+
+<h1 id="3-el-vae">3. EL-VAE</h1>
+<p>作者将感知损失<strong>MS-SSIM</strong>引入<strong>VAE</strong>，构造了<strong>Expected-Loss VAE (EL-VAE)</strong>。<strong>EL-VAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/mssim_vae.py">PyTorch-VAE</a>，与标准<strong>VAE</strong>的主要区别在于构造重构损失时使用<strong>MS-SSIM</strong>替代均方误差：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">self</span><span class="p">.</span><span class="n">mssim_loss</span> <span class="o">=</span> <span class="n">MSSIM</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">,</span>
+                        <span class="n">window_size</span><span class="p">,</span>
+                        <span class="n">size_average</span><span class="p">)</span>
+<span class="n">recons_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">mssim_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+<span class="n">kld_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="n">exp</span><span class="p">(),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">recons_loss</span> <span class="o">+</span> <span class="n">kld_weight</span> <span class="o">*</span> <span class="n">kld_loss</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/13/logcosh.html" class="read-next-link"></a>
+        <section>
+          <span>Log Hyperbolic Cosine Loss Improves Variational Auto-Encoder</span>
+          <p>  使用对数双曲余弦损失改进变分自编码器.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/628c82e309475431298117da.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/11/jointvae.html" class="read-next-link"></a>
+          <section>
+            <span>Learning Disentangled Joint Continuous and Discrete Representations</span>
+            <p>  Joint VAE：学习解耦的联合连续和离散表示.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/628a18bc094754312915b04f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

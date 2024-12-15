@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>k近邻算法(k-Nearest Neighbor, kNN) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="k近邻算法(k-Nearest Neighbor, kNN)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="k近邻算法(k-Nearest Neighbor, kNN) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/23/knn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>k近邻算法(k-Nearest Neighbor, kNN)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-23"><i class="iconfont icon-date"></i>23 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60cdbf50844ef46bb2ec654a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>k-Nearest Neighbor.</p>
+</blockquote>
+
+<p><strong>k近邻算法(k-Nearest Neighbor,kNN)</strong>是一种简单的分类方法。给定一个训练数据集，对于一个新的数据样本，在训练数据集中搜索与该样本最邻近的$k$个样本，并将这$k$个样本的结果通过分类决策得到最终的输出结果。该算法需要注意的事项如下：</p>
+<ol>
+  <li>$k$值的选择：$k$值过小会使得模型的<strong>近似误差(approximation error)</strong>较小而<strong>估计误差(estimation error)</strong>较大，容易过拟合，这意味着模型复杂度较高；$k$值过大会使得模型的近似误差较大而估计误差较小，这意味着模型复杂度较低；通常通过交叉验证选择$k$值。</li>
+  <li>距离度量：距离度量用于衡量样本点之间的距离，一般使用欧式距离，也可使用<a href="https://0809zheng.github.io/2021/02/08/distance.html">其他距离度量</a>。</li>
+  <li>分类决策规则：<strong>kNN</strong>常使用<strong>多数表决规则(majority voting rule)</strong>，即邻域内出现最多的类别作为最终的输出类别。</li>
+</ol>
+
+<p><strong>kNN</strong>可以看作是对数据空间的一种划分。对于数据空间中的每一个数据样本，距离该样本比其他所有样本更近的空间位置被划分到同一个区域中，该区域的类别由该样本点决定。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60cdbf50844ef46bb2ec654a.jpg" alt="" /></p>
+
+<p><strong>kNN</strong>算法没有显式的训练过程，而是在训练阶段把样本保存起来，待接受到测试样本后在进行处理。这类方法称为<strong>懒惰学习(lazy learning)</strong>以区别于通常的<strong>急切学习(eager learning)</strong>。</p>
+
+<p><strong>kNN</strong>算法实现简单，训练复杂度$O(1)$；但测试复杂度$O(N)$；其测试时间远大于训练时间，且距离评估指标容易受图像背景、颜色分布等影响，分类准确率较低。</p>
+
+<p>为了提高算法效率，在计算<strong>kNN</strong>中的样本距离时，引入矩阵计算(可以被<strong>GPU</strong>等硬件加速)。若$m$个特征维度为$d$的训练样本表示为矩阵$X \in \Bbb{R}^{m \times d}$；$n$个查询样本表示为矩阵$Y \in \Bbb{R}^{n \times d}$，样本间的<strong>L2</strong>距离表示为矩阵$L \in \Bbb{R}^{m \times n}$。则第$i$个训练样本和第$j$个查询样本之间的距离计算为：</p>
+
+\[l_{ij} = \sqrt{\sum_{k=1}^{d} (x_{ik}-y_{jk})^2} = \sqrt{\sum_{k=1}^{d} (x_{ik}^2+y_{jk}^2-2x_{ik}y_{jk})} = \sqrt{\sum_{k=1}^{d} x_{ik}^2+ \sum_{k=1}^{d} y_{jk}^2-2 \sum_{k=1}^{d} x_{ik}y_{jk}}\]
+
+<p>使用<strong>numpy</strong>将上述距离计算表示为矩阵运算：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span>
+    <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span>
+    <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">Y</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span>
+    <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">.</span><span class="n">T</span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/24/lda.html" class="read-next-link"></a>
+        <section>
+          <span>线性判别分析(Linear Discriminant Analysis, LDA)</span>
+          <p>  Linear Discriminant Analysis.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5e95b7cac2a9a83be5deb0bd.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/22/boosttree.html" class="read-next-link"></a>
+          <section>
+            <span>提升树(Boosting Tree)</span>
+            <p>  Boosting Tree.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63a7f0dc08b6830163d71677.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

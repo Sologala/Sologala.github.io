@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Means聚类 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="K-Means聚类">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="K-Means聚类 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/05/02/kmeans.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>K-Means聚类</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-05-02"><i class="iconfont icon-date"></i>02 May 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5eb37405c2a9a83be5dcba4a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>K-Means Clustering.</p>
+</blockquote>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>K-means</li>
+  <li>K-medoids</li>
+</ol>
+
+<h1 id="1-k-means">1. K-means</h1>
+
+<h2 id="1k-means算法的流程">（1）K-Means算法的流程</h2>
+
+<p>假设共有$N$个样本点$x_1,…,x_N$，需要将其划分为$K$类。记每一类的<strong>聚类中心（cluster centroid）</strong>为$μ_1,…,μ_K$。</p>
+
+<p>定义<strong>失真函数（distortion function）</strong>(也叫<strong>畸变函数</strong>)，用来选择合适的聚类中心以及对每个样本进行正确的分类:</p>
+
+\[J = \frac{1}{N} \sum_{n=1}^{N} {\sum_{k=1}^{K} {[x_n \in k](x_n-μ_k)^2}}\]
+
+<p>这是一个组合优化问题，采用交替优化的方法：</p>
+<ul>
+  <li><strong>簇分配（cluster assignment）</strong>：固定聚类中心，把每个样本按照距离划分到最近的类别（即固定$μ$，最小化$J$）；</li>
+  <li><strong>移动聚类中心（move centroid）</strong>：固定样本类别，每一类的聚类中心由该类的样本均值确定（即固定每个样本的类别$k$，最小化$J$）。</li>
+</ul>
+
+<p>该算法还需要选择初始聚类中心，可随机选择其中$K$个样本。</p>
+
+<h2 id="2k-means算法的图示">（2）K-Means算法的图示</h2>
+
+<ol>
+  <li>随机选择$k$个初始聚类中心；
+<img src="https://pic.downk.cc/item/5eb22057c2a9a83be5a9fd0b.jpg" alt="" /></li>
+  <li>把每个样本点划分到与其最近的聚类中心所属的类别；
+<img src="https://pic.downk.cc/item/5eb22082c2a9a83be5aa19de.jpg" alt="" /></li>
+  <li>更新聚类中心为每一个聚类的均值：
+<img src="https://pic.downk.cc/item/5eb220c7c2a9a83be5aa3ff0.jpg" alt="" /></li>
+  <li>重复步骤$2$和$3$，直至数据的划分不再变化。</li>
+</ol>
+
+<h2 id="2k-means算法的缺点">（2）K-Means算法的缺点：</h2>
+
+<h3 id="i">i.</h3>
+<p><strong>K-Means</strong>需要预先给定类别数$K$，可用<strong>肘部法则（elbow method）</strong>选定。即根据不同的$K$画出失真函数曲线$J$,选取“肘部”的$K$作为最终的类别数：</p>
+
+<p><img src="https://pic.downk.cc/item/5ee0dc78c2a9a83be5de65c4.jpg" alt="" /></p>
+
+<h3 id="ii">ii.</h3>
+<p>由于采用交替优化的方法，容易陷入局部最优；选择初始聚类中心对结果影响较大:</p>
+
+<p><img src="https://pic.downk.cc/item/5ee0dccbc2a9a83be5dee50a.jpg" alt="" /></p>
+
+<p>为防止陷入局部极小值，<strong>K-Means</strong>常循环进行$50$至$1000$次，选择其中失真函数$J$最小的结果。</p>
+
+<h3 id="iii">iii.</h3>
+<p>需要多次遍历样本集合，计算复杂度高；</p>
+
+<h3 id="iv">iv.</h3>
+<p>只能找到类球形的类，不能发现任意的类；
+<img src="https://pic.downk.cc/item/5eb22193c2a9a83be5aabc23.jpg" alt="" /></p>
+
+<h3 id="v">v.</h3>
+<p>对噪声敏感。</p>
+
+<h1 id="2-k-medoids">2. K-medoids</h1>
+<p><strong>K-Means</strong>与<strong>K-Medoids</strong>算法过程类似，区别在于：</p>
+<ul>
+  <li><strong>K-Means</strong>算法用聚类的均值作为新的聚类中心；</li>
+  <li><strong>K-Medoids</strong>算法用类内最靠近中心的数据点作为新的聚类中心。</li>
+</ul>
+
+<p><strong>K-Medoids</strong>算法对<strong>outlier</strong>不敏感。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/05/03/hierarchical-clustering.html" class="read-next-link"></a>
+        <section>
+          <span>层次聚类</span>
+          <p>  Hierarchical Clustering.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5eb376e3c2a9a83be5dfbdb8.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/05/01/network-compression.html" class="read-next-link"></a>
+          <section>
+            <span>网络压缩</span>
+            <p>  Network Compression.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

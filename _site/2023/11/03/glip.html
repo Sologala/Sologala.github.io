@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grounded Language-Image Pre-training - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Grounded Language-Image Pre-training">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Grounded Language-Image Pre-training - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/11/03/glip.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Grounded Language-Image Pre-training</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-11-03"><i class="iconfont icon-date"></i>03 Nov 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/655c4ff6c458853aeff430a1.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>对齐语言-图像预训练.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2112.03857">Grounded Language-Image Pre-training</a></li>
+</ul>
+
+<p>本文构建了句子中的短语与图像中的对象之间的细粒度对应关系，提出一种对齐语言-图像预训练方法<strong>GLIP（Grounded Language-Image Pre-training）</strong>。该方法统一了目标检测与短语对齐任务，把目标检测模型的检测框目标分类得分替换为短语对齐得分，通过大量图像-文本数据扩展视觉概念，能够零样本或少样本迁移到不同下游检测任务中。</p>
+
+<p><img src="https://pic.imgdb.cn/item/655c52d7c458853aeffe210a.jpg" alt="" /></p>
+
+<p>在通常的目标检测模型中，模型从图像中提取一系列边界框特征$O\in R^{N\times d}$，再把这些特征通过映射头$W\in R^{c\times d}$映射为类别得分，并进一步构造类别得分（通常是交叉熵）：</p>
+
+\[O=Enc_I(Img),S_{cls} = OW^T,L_{cls} = loss(S_{cls};T)\]
+
+<p>本文不再把目标检测看作对边界框特征的分类任务，而是把检测看作一个短语对齐（<strong>grounding</strong>）任务。把检测类别通过<code class="language-plaintext highlighter-rouge">'. '</code>连接构造提示：</p>
+
+\[Prompt = '\text{cls1. cls2. cls3.}'\]
+
+<p>进一步计算边界框特征$O\in R^{N\times d}$与短语中的单词特征$P\in R^{M\times d}$之间的对齐得分：</p>
+
+\[O=Enc_I(Img), P=Enc_L(Prompt),S_{ground}=OP^T\]
+
+<p>在上述过程中，图像特征与文本特征是由单独的编码器分别编码的，之后融合计算对齐分数。本文进一步引入了图像和文本编码器的深度融合。使用<strong>DyHead</strong>作为图像编码器，<strong>BERT</strong>作为文本编码器，则构造深度融合编码器：</p>
+
+\[\begin{aligned}
+&amp; O_{\mathrm{t2i}}^{i},P_{\mathrm{i2t}}^{i}=\text{X-MHA}(O^{i},P^{i}),i\in\{0,1,..,L-1\}\\
+&amp;O^{i+1}=\text{DyHeadModule}(O^{i}+O_{t2i}^{i}),O=O^{L}\\
+&amp;P^{i+1}=\text{BERTLayer}(P^{i}+P_{i2t}^{i}),P=P^{L}
+\end{aligned}\]
+
+<p>其中$O^0,P^0$分别来自主干视觉网络与预训练语言模型（<strong>BERT</strong>），通过额外增加$L$个<strong>DyHead</strong>模块与<strong>BERT</strong>层实现多模态特征的融合。融合过程是由跨模态多头注意力模块（<strong>X-MHA</strong>）实现的，每个头通过关注另一个模态来计算该模态的上下文向量：</p>
+
+\[\begin{aligned}
+&amp;O^{(q)}=O W^{(q,I)},P^{(q)}=P W^{(q,L)},A tt n=O^{(q)}(P^{(q)})^{\top}/\sqrt{d}\\
+&amp;P^{(v)}=P W^{(v,L)},\ O_{t2i}=\mathrm{SoftMax}(A tt n)P^{(v)}W^{(o u t,I)}\\
+&amp;O^{(v)}=O W^{(v,I)},\ P_{i2t}=\mathrm{SoftMax}(A t t n^{\top})O^{(v)}W^{(o u t,L)}
+\end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/655c6111c458853aef2d9091.jpg" alt="" /></p>
+
+<p>作者训练了五个<strong>GLIP</strong>的变体以进行结构消融。预训练数据包括检测数据集、短语对齐数据集<strong>GoldG</strong>与图像描述数据集。测试数据集包括$80$类的检测数据集<strong>COCO</strong>，超过$1000$类的检测数据集<strong>LVIS</strong>，短语对齐数据集<strong>Flickr30K</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/655c65bdc458853aef3c824e.jpg" alt="" /></p>
+
+<p>由于<strong>Objects365</strong>涵盖了<strong>COCO</strong>中的所有类别，因此模型零样本迁移到<strong>COCO</strong>后性能超过了监督训练的目标检测模型。</p>
+
+<p><img src="https://pic.imgdb.cn/item/655c678dc458853aef426f17.jpg" alt="" /></p>
+
+<p>数据集<strong>LVIS</strong>上的检测结果表示，通过引入文本信息扩展了数据的语义丰富性，能够显著地帮助模型识别长尾物体。</p>
+
+<p><img src="https://pic.imgdb.cn/item/655c685bc458853aef44ba3f.jpg" alt="" /></p>
+
+<p>数据集<strong>Flickr30K</strong>上的结果表示，检测数据的添加有助于短语对齐任务，再次说明两个任务之间具有协同性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/655c68e3c458853aef465015.jpg" alt="" /></p>
+
+<p>为了评估模型在开集目标检测任务中的迁移性能，作者构造了一个<strong>Object Detection in the Wild (ODinW)</strong>数据集，该数据集由$13$个不同领域的检测任务数据组成。</p>
+
+<p>在微调模型时作者改变了特定任务的标注数据的数量，从<strong>zero-shot</strong>(没有提供数据)到<strong>X-shot</strong>(每个类别提供至少<strong>X</strong>个标签)，再到使用训练集中的所有数据。结果表明，<strong>GLIP</strong>具有数据高效性，能在显著减少特定任务数据的情况下达到相同的性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/655c6a48c458853aef4aaad9.jpg" alt="" /></p>
+
+<p>作者进一步分析了<strong>GLIP</strong>变体在<strong>5</strong>个不同数据集上的<strong>zero-shot</strong>性能。发现引入短语对齐数据对某些测试新概念的任务带来了显着改善，例如在<strong>Pothole</strong>和<strong>EgoHands</strong>上，没有短语对齐数据的模型(<strong>A&amp;B</strong>)表现非常糟糕。</p>
+
+<p><img src="https://pic.imgdb.cn/item/655c6ad8c458853aef4c8561.jpg" alt="" /></p>
+
+<p><strong>GLIP</strong>的输出严重依赖于语言输入，因此作者提出了一种有效的任务迁移的方法：对于任何新的类别，用户可以在文本提示中使用表达性描述，通过添加属性或语言上下文注入领域知识，帮助<strong>GLIP</strong>迁移。</p>
+
+<p><img src="https://pic.imgdb.cn/item/655c6b59c458853aef4e8455.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/11/04/osodd.html" class="read-next-link"></a>
+        <section>
+          <span>Towards Open-Set Object Detection and Discovery</span>
+          <p>  面向开集目标检测与挖掘.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/655c6d2bc458853aef539ec2.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/11/02/groundingdino.html" class="read-next-link"></a>
+          <section>
+            <span>Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection</span>
+            <p>  Grounding DINO：结合DINO与GLIP用于开集目标检测.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/65548c7fc458853aef25cb7e.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

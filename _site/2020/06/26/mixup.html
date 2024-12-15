@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mixup: Beyond Empirical Risk Minimization - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="mixup: Beyond Empirical Risk Minimization">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="mixup: Beyond Empirical Risk Minimization - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/06/26/mixup.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>mixup: Beyond Empirical Risk Minimization</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-06-26"><i class="iconfont icon-date"></i>26 Jun 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f09ac1a14195aa594471088.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>mixup：样本对插值的经验风险最小化.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1710.09412">mixup: Beyond Empirical Risk Minimization</a></li>
+</ul>
+
+<p>大型神经网络可能对样本集过拟合，表现为对训练样本具有记忆性，并且对对抗样本非常敏感。作者提出了<strong>mixup</strong>作为一种数据增强方法，用于缓解以上问题。<strong>mixup</strong>表示为成对样本及其标签的凸组合。实验表明该方法能够有效地提高网络的通用性，减小了对训练样本的记忆，增强了模型对对抗样本的鲁棒性，并进一步提高了<strong>GAN</strong>的训练稳定性。</p>
+
+<h1 id="1-mixup的提出">1. mixup的提出</h1>
+
+<p>神经网络的训练目标是在训练数据集上实现平均误差最小化，即经验风险最小化(<strong>empirical risk minimization, ERM</strong>)原则。学习理论指出如果学习器的大小(如参数量或<strong>VC</strong>复杂度)不随训练数据的数量增强而增加，则<strong>ERM</strong>的收敛性可以得到保证。然而<strong>*ERM</strong>无法保证在与训练数据不同的测试集分布上的泛化性。这是因为<strong>ERM</strong>允许大型神经网络记忆训练数据，当其在训练分布之外的数据上评估时，预测结果会有大幅度的改变。</p>
+
+<p>数据增强是指在类似但不同于训练数据的数据集上进行训练的方法，即邻近风险最小化(<strong>vicinal risk minimization, VRM</strong>)原则。<strong>VRM</strong>是指通过人类知识构建训练数据中每个样本附近的邻域区域，然后从训练样本的邻域分布中采样额外的样本，以扩大训练样本的分布范围。虽然数据增强能够提高模型的泛化性，但它依赖于数据集，需要一定的专家知识。此外数据增强只能产生相同类别的样本，不能建立不同类样本之间的邻近关系。</p>
+
+<p>作者提出了<strong>mixup</strong>作为一种数据扩充方法，其先验假设是特征向量的线性插值将导致目标标签的线性插值，因此使用两个样本的凸组合构造新的样本：</p>
+
+\[\hat{x} = λx_i + (1-λ)x_j\]
+
+\[\hat{y} = λy_i + (1-λ)y_j\]
+
+<h1 id="2-mixup的建模">2. mixup的建模</h1>
+
+<p>监督学习是指寻找一个函数$f \in \mathcal{F}$描述服从联合分布$P(X,Y)$的特征向量$X$和目标向量$Y$之间的关系。定义损失函数$\mathcal{l}$衡量预测结果$f(x)$和实际目标$y$之间的差异。对于数据分布$P$中的样本$(x,y)$，目标是最小化损失函数的平均值，即期望风险(<strong>expected risk</strong>)：</p>
+
+\[R(f) = \int_{}^{} \mathcal{l}(f(x),y)dP(x,y)\]
+
+<p>在实践中分布$P$是未知的，因此从分布中采样训练数据\(\mathcal{D}=\{(x_i,y_i)\}_{i=1}^n\)，通过训练样本近似$P$的经验分布(<strong>empirical distribution</strong>)：</p>
+
+\[P_{\delta}(x,y) = \frac{1}{n}\sum_{i=1}^{n}\delta(x=x_i,y=y_i)\]
+
+<p>进一步可以用经验风险(<strong>empirical risk</strong>)代替期望风险：</p>
+
+\[R_{\delta}(f) = \int_{}^{} \mathcal{l}(f(x),y)dP_{\delta}(x,y)=\frac{1}{n}\sum_{i=1}^{n}\mathcal{l}(f(x_i),y_i)\]
+
+<p>通过最小化上式学习函数$f$的过程即为经验风险最小化<strong>ERM</strong>原则。对分布$P$的近似还有其它形式，比如在邻近风险最小化<strong>VRM</strong>原则中，分布$P$近似为：</p>
+
+\[P_{\nu}(\tilde{x},\tilde{y}) = \frac{1}{n}\sum_{i=1}^{n}\nu(\tilde{x},\tilde{y}|x_i,y_i)\]
+
+<p>其中$\nu$是邻近分布(<strong>vicinity distribution</strong>)，用于衡量样本$(\tilde{x},\tilde{y})$出现在样本$(x_i,y_i)$附近的概率。常用的邻近分布有高斯邻近$\nu(\tilde{x},\tilde{y}|x_i,y_i)=\mathcal{N}(\tilde{x}-x_i,\sigma^2)\delta(\tilde{y}=y_i)$，即对训练样本增加高斯噪声。</p>
+
+<p>从分布$P$的近似中采样训练数据\(\mathcal{D}_{\nu}=\{(\tilde{x}_i,\tilde{y}_i)\}_{i=1}^m\)，则目标为最小化经验邻近风险(<strong>empirical vicinal risk</strong>)：</p>
+
+\[R_{\nu}(f) = \frac{1}{m}\sum_{i=1}^{m}\mathcal{l}(f(\tilde{x}_i),\tilde{y}_i)\]
+
+<p>这篇论文的主要贡献是提出了一种通用的邻近分布，即<strong>mixup</strong>：</p>
+
+\[\mu(\tilde{x},\tilde{y}|x_i,y_i) = \frac{1}{n}\sum_{j}^{n}\Bbb{E}_{\lambda} [\delta(\tilde{x}=\lambda \cdot x_i+(1-\lambda) \cdot x_j,\tilde{y}=\lambda \cdot y_i+(1-\lambda) \cdot y_j)]\]
+
+<p>其中$\lambda\text{~Beta}(\alpha,\alpha)$。超参数$\alpha$控制两个样本的插值强度，当$\alpha=0$时$\lambda=1$，上式恢复为<strong>ERM</strong>。</p>
+
+<p><strong>mixup</strong>实现简单，计算开销少。使用<strong>Pytorch</strong>实现<strong>mixup</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># y1, y2 should be one-hot vectors
+</span><span class="k">for</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">),</span> <span class="p">(</span><span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">loader1</span><span class="p">,</span> <span class="n">loader2</span><span class="p">):</span>
+    <span class="n">lam</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">beta</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">lam</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">*</span> <span class="n">x2</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">lam</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">lam</span><span class="p">)</span> <span class="o">*</span> <span class="n">y2</span><span class="p">)</span>
+    <span class="n">optimizer</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">loss</span><span class="p">(</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y</span><span class="p">).</span><span class="n">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>作者进一步指出，构造三个及以上样本的凸组合不能再带来进一步的增益。在实践中可以使用单个数据加载器提供的一个<strong>minibatch</strong>，随机打乱后将<strong>mixup</strong>应用在相邻的样本之间，这样做能够减少<strong>I/O</strong>需求。实验发现，仅在相同类别的样本中使用<strong>mixup</strong>不能显著地提高性能。</p>
+
+<p><strong>mixup</strong>能够有效地减少对训练样本之外的样本预测的振荡，且复合奥卡姆剃刀的归纳偏置。
+对于下图所示的样本集，绿色表示类别0，橙色表示类别1。经验风险最小化<strong>ERM</strong>构造了硬分类的决策边界，蓝色区域代表模型分类为1的区域；而<strong>mixup</strong>实现软分类的决策边界，对于中间的区域，从一个类别过渡到另一个类别，提供更平滑的不确定性估计。</p>
+
+<p><img src="https://pic.downk.cc/item/5f09bd5d14195aa5944cae85.jpg" alt="" /></p>
+
+<p>作者在相同的训练条件下分别按照<strong>ERM</strong>和<strong>mixup</strong>训练模型。左图统计了对于插值样本$x=x_i+(1-\lambda) \cdot x_j$，预测结果不属于\(\{y_i,y_j\}\)的预测遗漏统计值，结果表明<strong>mixup</strong>具有更少的预测遗漏。右图表示对于插值样本，<strong>mixup</strong>具有更小的梯度范数。结果表明<strong>mixup</strong>模型预测和模型训练时更稳定。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61ea130e2ab3f51d9127f613.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/06/27/ws.html" class="read-next-link"></a>
+        <section>
+          <span>Weight Standardization</span>
+          <p>  深度学习中的权重标准化方法.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f03d29314195aa59458569c.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/06/20/detr.html" class="read-next-link"></a>
+          <section>
+            <span>DETR：End-to-End Object Detection with Transformers</span>
+            <p>  DETR: 使用Transformer实现端到端目标检测.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5eedb67d14195aa594885979.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

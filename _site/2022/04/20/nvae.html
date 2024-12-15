@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVAE: A Deep Hierarchical Variational Autoencoder - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="NVAE: A Deep Hierarchical Variational Autoencoder">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="NVAE: A Deep Hierarchical Variational Autoencoder - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/20/nvae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>NVAE: A Deep Hierarchical Variational Autoencoder</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-20"><i class="iconfont icon-date"></i>20 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6295b1dd094754312923da18.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Nouveau VAE: 深度层次变分自编码器.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2007.03898">NVAE: A Deep Hierarchical Variational Autoencoder</a></li>
+</ul>
+
+<h1 id="1-nouveau-vae">1. Nouveau VAE</h1>
+
+<p>变分自编码器(<strong>VAE</strong>)优化<strong>对数似然的变分下界</strong>:</p>
+
+\[\mathcal{L} =  KL[q(z|x)||p(z)]+\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x | z)]\]
+
+<p><strong>VAE</strong>需要建模$q(z|x),p(z),p(x|z)$。建模要求是概率能写出解析表达式，并且方便采样。最常用的建模方法是各分量独立的高斯分布：</p>
+
+\[q(z|x) = \mathcal{N}(\mu_1,\sigma_1^{2}),p(z) = \mathcal{N}(0,I),p(x|z) = \mathcal{N}(\mu_2,\sigma_2^{2})\]
+
+<p>然而各分量独立的高斯分布不能拟合任意复杂的分布，<strong>VAE</strong>的优化目标无法达到$KL(q(x,z)||p(x,z))=0$。这意味从理论来讲让$p(x,z),q(x,z)$相互逼近只能得到一个平均的结果，因此<strong>VAE</strong>生成的图像通常比较模糊。</p>
+
+<p><strong>Nouveau VAE</strong>设计的出发点便是增强$q(z|x),p(z),p(x|z)$这几个分布的建模。为了保证生成过程的并行性，$p(x|z)$仍然采用高斯分布\(\mathcal{N}(\mu_2,\sigma_2^{2})\)。</p>
+
+<p>对于后验分布$q(z|x)$与先验分布$p(z)$，将其建模为自回归模型。具体地，对隐变量进行分组\(z=\{z_1,z_2,\cdots z_L\}\)，然后构造:</p>
+
+\[\begin{aligned} p(z)&amp; = \prod_{l=1}^{L} p(z_l|z_{\lt l}) = p(z_1)p(z_2|z_1)p(z_3|z_1z_2)\cdots p(z_L|z_1z_2\cdots z_{L-1}) \\ q(z|x) &amp;= \prod_{l=1}^{L} q(z_l|z_{\lt l},x) = q(z_1|x)q(z_2|z_1,x)q(z_3|z_1z_2,x)\cdots q(z_L|z_1z_2\cdots z_{L-1},x) \end{aligned}\]
+
+<p>注意到$z_l$仍然是向量。对$p(z_l|z_{\lt l}),q(z_l|z_{\lt l},x)$仍然建模为高斯分布，则$q(z|x),p(z)$建模为自回归高斯模型。</p>
+
+<p><strong>Nouveau VAE</strong>给出了一种对$p(z_l|z_{\lt l}),q(z_l|z_{\lt l},x)$建模的相对设计。即建模先验分布$p(z)$的均值和方差，建模后验分布$q(z|x)$与先验分布$p(z)$均值方差的相对值。</p>
+
+\[\begin{aligned} p(z_l|z_{\lt l}) &amp;= \mathcal{N}(z_l;\mu(z_{\lt l}),\sigma^{2}(z_{\lt l})) \\ q(z_l|z_{\lt l},x) &amp;= \mathcal{N}(z_l;\mu(z_{\lt l})+\Delta \mu(z_{\lt l},x),\sigma^{2}(z_{\lt l})\otimes \Delta \sigma^{2}(z_{\lt l},x)) \end{aligned}\]
+
+<p>这种设计能使得训练更加稳定。此时后验分布$q(z|x)$与先验分布$p(z)$的<strong>KL</strong>散度项为：</p>
+
+\[\begin{aligned} KL(q(z|x)||p(z))&amp; = KL(\prod_{l=1}^{L} q(z_l|z_{\lt l},x)||\prod_{l=1}^{L} p(z_l|z_{\lt l})) \\ &amp;= \Bbb{E}_{\prod_{l=1}^{L} q(z_l|z_{\lt l},x)}[\log \frac{\prod_{l=1}^{L} q(z_l|z_{\lt l},x)}{\prod_{l=1}^{L} p(z_l|z_{\lt l})}] = \Bbb{E}_{\prod_{l=1}^{L} q(z_l|z_{\lt l},x)}[\sum_{l=1}^{L}\log \frac{ q(z_l|z_{\lt l},x)}{p(z_l|z_{\lt l})}] \\ &amp;= \Bbb{E}_{\prod_{l=1}^{L} q(z_l|z_{\lt l},x)}[\log \frac{ q(z_1|x)}{p(z_1)}]+\Bbb{E}_{\prod_{l=1}^{L} q(z_l|z_{\lt l},x)}[\sum_{l=2}^{L}\log \frac{ q(z_l|z_{\lt l},x)}{p(z_l|z_{\lt l})}] \\ &amp;= \Bbb{E}_{ q(z_1|x)}[\log \frac{ q(z_1|x)}{p(z_1)}]+\sum_{l=2}^{L} \Bbb{E}_{\prod_{l=1}^{l} q(z_l|z_{\lt l},x)}[\log \frac{ q(z_l|z_{\lt l},x)}{p(z_l|z_{\lt l})}] \\ &amp;= KL(q(z_1|x)||p(z_1))+\sum_{l=2}^{L} \Bbb{E}_{ q(z_{\lt l}|x)}[KL( q(z_l|z_{\lt l},x)||p(z_l|z_{\lt l}))] \end{aligned}\]
+
+<p>其中$p(z_l|z_{\lt l}),q(z_l|z_{\lt l},x)$的<strong>KL</strong>散度项为：</p>
+
+\[KL(q(z_l|z_{\lt l},x)||p(z_l|z_{\lt l})) = \frac{1}{2}\sum_{i=1}^{|z_l|}(-\log \Delta \sigma_{(i)}^2 + \frac{\Delta \mu_{(i)}^2}{\sigma_{(i)}^2}+\Delta \sigma_{(i)}^2-1)\]
+
+<h1 id="2-实现技巧">2. 实现技巧</h1>
+
+<h3 id="-层次设计">⚪ 层次设计</h3>
+
+<p><strong>Nouveau VAE</strong>对隐变量进行分组\(z=\{z_1,z_2,\cdots z_L\}\)，其结构设计为多层次的编码器-解码器结构。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6295b20d09475431292410e6.jpg" alt="" /></p>
+
+<p>编码器经过层次编码，得到最顶层的编码向量$z_1$，然后再逐渐从顶层往回走，逐步得到底层特征$z_2,\cdots,z_L$；解码器也是自上而下地生成$z_1,z_2,\cdots,z_L$。其中$r$代表残差模块，$h$代表可训练参数，蓝色部分是参数共享的。</p>
+
+<h3 id="-残差模块">⚪ 残差模块</h3>
+
+<p>作者设计了残差模块，用到了深度可分离卷积、<strong>BatchNorm</strong>、<strong>Swish</strong>激活函数等结构。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6295b2370947543129244afc.jpg" alt="" /></p>
+
+<p>值得一提的是很多生成模型已经弃用<strong>BatchNorm</strong>，改用<strong>LayerNorm</strong>或<strong>WeightNorm</strong>，因为实验发现用<strong>BatchNorm</strong>会损失性能。作者认为<strong>BatchNorm</strong>对训练有帮助，但对预测有害，因为预测阶段所使用的滑动平均均值方差不够好。作者提出在模型训练完后，通过多次采样同样<strong>batch_size</strong>的样本来重新估算均值方差，能够保证<strong>BatchNorm</strong>的预测性能。此外，为了保证训练的稳定性，为<strong>BatchNorm</strong>中$γ$的模长增加一个正则项。</p>
+
+<p>作者为每一个卷积层增加了<strong>谱正则化</strong>，使得模型的<strong>Lipschitz</strong>常数变小，进而使得模型的损失<strong>Landscape</strong>更为光滑，有利于模型稳定训练。</p>
+
+<h1 id="3-实验分析">3. 实验分析</h1>
+
+<p>作者给出了<strong>Nouveau VAE</strong>在<strong>CelebA HQ</strong>和<strong>FFHQ</strong>上的生成效结果。值得一提的是<strong>Nouveau VAE</strong>是第一个<strong>FFHQ</strong>数据集($256\times 256$)上进行图像生成的<strong>VAE</strong>类模型。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6295b428094754312926d3c2.jpg" alt="" /></p>
+
+<p>下表给出了<strong>Nouveau VAE</strong>的训练成本。以<strong>FFHQ</strong>数据集上训练的模型为例，隐变量共有$4+4+4+8+16=36$组，每组隐变量大小分别是{$82,162,322,642,1282$}$×20$。则生成一张$256×256×3$(约$20$万个元素)的FFHQ图像，需要总大小为$(4×82+4×162+4×322+8×642+16×1282)×20=6005760$维的随机变量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6295b506094754312927e9ac.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/21/tdvae.html" class="read-next-link"></a>
+        <section>
+          <span>Temporal Difference Variational Auto-Encoder</span>
+          <p>  TD-VAE: 时间差分变分自编码器.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62adb1ac09475431290cdc09.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/19/svae.html" class="read-next-link"></a>
+          <section>
+            <span>Hyperspherical Variational Auto-Encoders</span>
+            <p>  Hyperspherical VAE: 为隐变量引入vMF分布.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62933e7a09475431294dbcc3.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

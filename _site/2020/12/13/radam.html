@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>On the Variance of the Adaptive Learning Rate and Beyond - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="On the Variance of the Adaptive Learning Rate and Beyond">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="On the Variance of the Adaptive Learning Rate and Beyond - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/13/radam.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>On the Variance of the Adaptive Learning Rate and Beyond</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-13"><i class="iconfont icon-date"></i>13 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6203463d2ab3f51d91e1c16d.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Radam：修正Adam算法中自适应学习率的早期方差.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1908.03265">On the Variance of the Adaptive Learning Rate and Beyond</a></li>
+</ul>
+
+<p>对于<strong>Adam</strong>等自适应随机优化算法，学习率<strong>warmup</strong>(即在最初几次训练中使用较小的学习率)能够稳定训练、加速收敛、提高泛化能力。作者认为在这些自适应优化算法中，自适应学习率的方差在早期阶段比较大，使用<strong>warmup</strong>能够减少方差。作者进一步提出了一种修正的<strong>Adam</strong>算法(<strong>rectified Adam, Radam</strong>)，显式地修正自适应学习率的方差。</p>
+
+<h2 id="1-发现问题adam与warmup">1. 发现问题：Adam与warmup</h2>
+
+<p>下图展示了使用<strong>Transformer</strong>在<strong>DE-EN WSLT’14</strong>数据集上训练神经机器翻译模型时的损失曲线，当移除学习率<strong>warmup</strong>时，训练损失从$3$增加到$10$，这说明自适应优化算法在没有<strong>warmup</strong>时可能会收敛到不好的局部最优解。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62047c412ab3f51d91dfdaa5.jpg" alt="" /></p>
+
+<p>作者进一步绘制了每轮训练中梯度绝对值的直方图，并沿<strong>Y</strong>轴将所有轮数的梯度直方图堆叠起来。图中结果显示，当不采用<strong>warmup</strong>时在训练早期的梯度分布会发生比较明显的扭曲，这意味着经过几轮更新后可能陷入了糟糕的局部最优。当应用<strong>warmup</strong>后，梯度绝对值的分布相对稳定。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6204be562ab3f51d912380da.jpg" alt="" /></p>
+
+<h2 id="2-分析问题自适应学习率的方差">2. 分析问题：自适应学习率的方差</h2>
+
+<p><a href="https://0809zheng.github.io/2020/12/09/adam.html"><font color="Blue">Adam</font></a>算法使用了偏差修正过的指数滑动平均的动量$m_t$和自适应学习率$l_t$：</p>
+
+\[m_t = \frac{\beta_1m_{t-1}+(1-\beta_1)g_t}{1-\beta_1^t} = \frac{(1-\beta_1)\sum_{i=1}^{t}\beta_1^{t-i}g_{i}}{1-\beta_1^t}\]
+
+\[l_t  = \sqrt{\frac{1-\beta_2^t}{\beta_2m_{t-1}+(1-\beta_2)g_t^2}} = \sqrt{\frac{1-\beta_2^t}{(1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}g_{i}^2}}\]
+
+\[\theta_t = \theta_{t-1} - \alpha_t m_t l_t\]
+
+<p>作者认为，由于训练早期阶段处理的样本量较少，导致自适应学习率的方差过大。以$t=1$为例，对应的自适应学习率$l_1 = \sqrt{\frac{1}{g_{1}^2}}$。假设$g_1$服从高斯分布$\mathcal{N}(0,\sigma^2)$，则$\text{Var}[\sqrt{\frac{1}{g_{1}^2}}]$是发散的。作者假设<strong>Adam</strong>等自适应随机优化算法的不收敛问题来自更新早期阶段自适应学习率的无界方差。</p>
+
+<p>为了进一步验证上述假设，作者设计了两种<strong>Adam</strong>的变体，均可以降低早期自适应学习率的方差。</p>
+<ul>
+  <li><strong>Adam-2k</strong>：只在训练的前$2000$轮更新自适应学习率$l_t$，相当于在训练早期额外使用$2000$次样本，从而解决早期缺乏足够的数据样本的问题。</li>
+  <li><strong>Adam-eps</strong>：在自适应学习率的分母上使用一个比较大的数值$\epsilon=1e-4$(标准的<strong>Adam</strong>使用$\epsilon=1e-8$)，从而减少自适应学习率的方差。</li>
+</ul>
+
+<p>上述两种方法均减小了训练过程中梯度分布的失真，这进一步证明了通过减小自适应学习率的方差可以缓解收敛问题。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6204f2fb2ab3f51d9162acad.jpg" alt="" /></p>
+
+<h2 id="3-自适应学习率l_t的方差公式textvarl_t">3. 自适应学习率$l_t$的方差公式$\text{Var}[l_t]$</h2>
+
+<p>下面寻找自适应学习率$l_t$的方差公式$\text{Var}[l_t]$。为简化讨论，用简单平均<strong>SMA</strong>代替自适应学习率计算中的指数滑动平均<strong>EMA</strong>：</p>
+
+\[l_t = \sqrt{\frac{1-\beta_2^t}{(1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}g_{i}^2}} ≈\sqrt{\frac{t}{\sum_{i=1}^{t}g_{i}^2}}\]
+
+<p>仍然假设$g_t$服从高斯分布$\mathcal{N}(0,\sigma^2)$，则变量$\frac{t}{\sum_{i=1}^{t}g_{i}^2}$服从<strong>scaled inverse chi-square</strong>分布$\chi^2(t,\frac{1}{\sigma^2})$，作者假设变量$\frac{1-\beta_2^t}{(1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}g_{i}^2}$也服从类似的分布$\chi^2(\rho_t,\frac{1}{\sigma^2})$，下面求解$\rho_t$。</p>
+
+<p>对于$\chi^2(\rho_t,\frac{1}{\sigma^2})$，构造一个服从该分布的随机变量$\frac{\rho_t}{\sum_{i=1}^{\rho_t}g_{t+1-i}^2}$。若两个随机变量$\frac{1-\beta_2^t}{(1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}g_{i}^2}$和$\frac{\rho_t}{\sum_{i=1}^{\rho_t}g_{t+1-i}^2}$具有相同的分布，则对于$g_i^2=i$，有：</p>
+
+\[\frac{1-\beta_2^t}{(1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}{i}} = \frac{\rho_t}{\sum_{i=1}^{\rho_t}{t+1-i}}\]
+
+<p>解上式得：</p>
+
+\[\rho_t = \frac{2}{1-\beta_2} - 1 -  \frac{2t\beta_2^t}{1-\beta_2^t}\]
+
+<p>特别地，有：</p>
+
+\[\rho_∞ = \frac{2}{1-\beta_2} - 1\]
+
+<p>对于分布$l_t^2$~$\chi^2(\rho_t,\frac{1}{\sigma^2})$，当$\rho_t&gt;4$时，有如下结论：</p>
+
+\[\text{Var}[l_t] = \frac{1}{\sigma^2}(\frac{\rho_t}{\rho_t-2}-\frac{\rho_t 2^{2\rho_t-5}}{\pi}\mathcal{B}(\frac{\rho_t-1}{x},\frac{\rho_t-1}{x})^2)\]
+
+<p>其中$\mathcal{B}(\cdot)$是<strong>beta</strong>函数。注意到$\text{Var}[l_t]$随$\rho_t$增加而单调减少。当$\rho = \rho_∞$时取得最小方差：</p>
+
+\[\text{Var}[l_t]_{min} =\text{Var}[l_t]|_{\rho = \rho_∞}\]
+
+<h2 id="4-修正自适应学习率的方差">4. 修正自适应学习率的方差</h2>
+
+<p>根据上述分析，自适应学习率$l_t$的方差具有最小值\(\text{Var}[l_t]\|_{\rho = \rho_∞}\)。在每轮更新中，为自适应学习率引入修正系数$r_t$，从而控制每轮的自适应学习率$r_tl_t$的方差均为最小方差：</p>
+
+\[\text{Var}[r_tl_t] = \text{Var}[l_t]|_{\rho = \rho_∞}\]
+
+<p>因此修正系数$r_t$计算为：</p>
+
+\[r_t = \sqrt{\frac{\text{Var}[l_t]|_{\rho = \rho_∞}}{\text{Var}[l_t]}}\]
+
+<p>方差$\text{Var}[l_t]$的计算使用一阶近似：</p>
+
+\[\text{Var}[l_t] = \frac{1}{\sigma^2}(\frac{\rho_t}{\rho_t-2}-\frac{\rho_t 2^{2\rho_t-5}}{\pi}\mathcal{B}(\frac{\rho_t-1}{x},\frac{\rho_t-1}{x})^2) \\ ≈ \frac{\rho_t}{2(\rho_t-2)(\rho_t-4)\sigma^2}\]
+
+<p>下图展示了解析形式和一阶近似的曲线，两者的差异远小于它们本身的值，这说明一阶近似是足够精确的。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6205c3a92ab3f51d9105eede.jpg" alt="" /></p>
+
+<p>则修正系数$r_t$计算为：</p>
+
+\[r_t = \sqrt{\frac{(\rho_t-4)(\rho_t-2)\rho_∞}{(\rho_∞-4)(\rho_∞-2)\rho_t}}\]
+
+<p>注意到上述推导仅在$\rho_t&gt;4$时成立。</p>
+
+<p>作者进一步进行了仿真实验，从$\mathcal{N}(\mu,1)$中采样$g_t$，绘制方差$\text{Var}[l_t]$和$\text{Var}[r_tl_t]$随更新轮数的变化曲线。仿真结果显示自适应学习率在早期阶段具有较大的方差，而校正后的自适应学习率具有相对一致的方差。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6205c5e92ab3f51d9107e139.jpg" alt="" /></p>
+
+<h2 id="5-radam">5. Radam</h2>
+<p>综上所述，<strong>Radam</strong>算法的流程如下。</p>
+
+<p>首先计算自适应学习率的平方$l_t^2$的最大自由度：</p>
+
+\[\rho_∞ = \frac{2}{1-\beta_2} - 1\]
+
+<p>对于第$t$轮更新，计算自适应学习率的平方$l_t^2$的自由度：</p>
+
+\[\rho_t = \rho_∞ -  \frac{2t\beta_2^t}{1-\beta_2^t}\]
+
+<p>当$\rho_t&gt;4$时，对自适应学习率进行修正。计算修正系数$r_t$：</p>
+
+\[r_t = \sqrt{\frac{(\rho_t-4)(\rho_t-2)\rho_∞}{(\rho_∞-4)(\rho_∞-2)\rho_t}}\]
+
+<p>则参数更新为：</p>
+
+\[\theta_t = \theta_{t-1} - \alpha_t m_t r_tl_t\]
+
+<p>当$\rho_t\leq 4$时，只使用动量$m_t$进行更新：</p>
+
+\[\theta_t = \theta_{t-1} - \alpha_t m_t\]
+
+<p><img src="https://pic.imgdb.cn/item/6205197c2ab3f51d918b9538.jpg" alt="" /></p>
+
+<h2 id="5-实验分析">5. 实验分析</h2>
+
+<p>作者在语言模型和图像分类任务上分别测试了<strong>Radam</strong>算法的性能。在语言模型上，虽然修正项使<strong>Radam</strong>在最初的几次更新中比<strong>Adam</strong>慢，但它允许<strong>Radam</strong>在之后更快地收敛，并获得更好的性能。在图像分类上，尽管<strong>Radam</strong>的测试精度并没有没有优于<strong>SGD</strong>，但它会带来更好的训练精度。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6205c6c52ab3f51d910896a8.jpg" alt="" /></p>
+
+<p>作者测试了在不同学习率设置下<strong>Radam</strong>的表现。实验结果表明，通过校正自适应学习率的方差，<strong>Radam</strong>提高了模型在较大范围内的学习率设置下训练的鲁棒性，实现了一致的模型性能；而<strong>Adam</strong>和<strong>SGD</strong>对学习率更敏感。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6205c81d2ab3f51d9109c282.jpg" alt="" /></p>
+
+<p>作者也比较了<strong>Radam</strong>和<strong>warmup</strong>的效果。<strong>warmup</strong>具有更多的超参数，对预热轮数和学习率的选择比较敏感。例如，将学习率设置为$0.1$时，$100$轮预热的<strong>Adam</strong>精度为$90.13$，而<strong>Radam</strong>的精度为$91.06$，且具有更少的超参数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6205cb492ab3f51d910c8efd.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/14/lookahead.html" class="read-next-link"></a>
+        <section>
+          <span>Lookahead Optimizer: k steps forward, 1 step back</span>
+          <p>  Lookahead：快权重更新k次，慢权重更新1次.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/620a1a5c2ab3f51d91a95333.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/12/nadam.html" class="read-next-link"></a>
+          <section>
+            <span>Incorporating Nesterov Momentum into Adam</span>
+            <p>  Nadam：将Nesterov动量引入Adam算法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/620089762ab3f51d917ee290.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

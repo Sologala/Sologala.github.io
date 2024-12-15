@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用tifffile库处理tiff格式图像 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="使用tifffile库处理tiff格式图像">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="使用tifffile库处理tiff格式图像 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/10/21/tiffile.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>使用tifffile库处理tiff格式图像</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-10-21"><i class="iconfont icon-date"></i>21 Oct 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Precessing tiff-files via tifffile.</p>
+</blockquote>
+
+<h1 id="1-tiff格式图像">1. tiff格式图像</h1>
+<p><strong>标签图像文件格式（Tag Image File Format，TIFF）</strong>是图像处理中常用的格式之一。其图像格式很复杂，但由于它对图像信息的存放灵活多变，可以支持很多色彩系统，而且独立于操作系统，因此得到了广泛应用。在各种地理信息系统、摄影测量与遥感等应用中，要求图像具有地理编码信息，例如图像所在的坐标系、比例尺、图像上点的坐标、经纬度、长度单位及角度单位等等。</p>
+
+<p>遥感图像通常尺寸较大（分辨率较高），通道数较多（用于存储不同的波段信息），携带经纬度等地理信息，通常用<strong>tiff</strong>格式存储。</p>
+
+<p><strong>tiff</strong>格式的遥感图像通常包含大于$3$的通道，分别存储不同波段（可见光波段、红外波段等）和透明度信息。并且常用$8$位（$0$~$255$）或$16$位（$0$~$65535$）精度存储。</p>
+
+<h1 id="2-tifffile库">2. tifffile库</h1>
+<ul>
+  <li>官方网站：<a href="https://pypi.org/project/tifffile/">PyPI</a></li>
+</ul>
+
+<p><strong>tifffile</strong>库是基于<strong>numpy</strong>库的<strong>tiff</strong>格式文件处理库，可实现：</p>
+<ol>
+  <li>将<strong>numpy</strong>数组存储为<strong>tiff</strong>格式文件；</li>
+  <li>读取<strong>tiff</strong>格式文件。</li>
+</ol>
+
+<h1 id="3-将tiff格式图像转换成png格式">3. 将tiff格式图像转换成png格式</h1>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import cv2
+import numpy as np
+import tifffile as tif
+
+def tif2png(imgpath):
+    img = tif.imread(imgpath)# 读取图片 imgpath为图片所在位置
+    
+    # 将图片数据类型转换为无符号8位
+    img = img/img.max()
+    img =img*255-0.001 # 减去0.001防止变成负整型
+    img =img.astype(np.uint8)
+    print(img.shape) # 显示图片大小和通道数  通道数可能大于3
+    b = img[:, :, 0] # 蓝通道
+    g = img[:, :, 1] # 绿通道
+    r = img[:, :, 2] # 红通道
+    nir = img[:, :, 3] # 近红外通道
+    
+    # 通道拼接
+    rgb=  np.dstack([r,g,b])
+    
+    # 存储png格式图像
+    cv2.imwrite("image.png", rgb)
+    '''
+    cv2.waitKey(0) # 窗口等待响应
+    cv2.destroyAllWindows() # 消除窗口
+    '''
+    
+if __name__ == "__main__":
+    tif2png('image.tif')
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/10/22/baam.html" class="read-next-link"></a>
+        <section>
+          <span>BA^2M: A Batch Aware Attention Module for Image Classification</span>
+          <p>  BA^2M：图像分类的批量注意力模块.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63b3a9febe43e0d30e71559e.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/10/20/we.html" class="read-next-link"></a>
+          <section>
+            <span>Weight Excitation: Built-in Attention Mechanisms in Convolutional Neural Networks</span>
+            <p>  权重激励：卷积神经网络中的内部注意力机制.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63b38e93be43e0d30e470f4b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

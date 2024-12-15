@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spectral Normalization for Generative Adversarial Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Spectral Normalization for Generative Adversarial Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Spectral Normalization for Generative Adversarial Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/02/08/sngan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Spectral Normalization for Generative Adversarial Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-02-08"><i class="iconfont icon-date"></i>08 Feb 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic1.imgdb.cn/item/634624c716f2c2beb1cfd9e2.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SN-GAN：在WGAN中引入谱归一化.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1802.05957">Spectral Normalization for Generative Adversarial Networks</a></li>
+</ul>
+
+<h1 id="1-wgan与lipschitz约束">1. WGAN与Lipschitz约束</h1>
+
+<p>在<a href="https://0809zheng.github.io/2022/02/04/wgan.html"><font color="Blue">Wasserstein GAN</font></a>中，作者采用<strong>Wasserstein</strong>距离构造了<strong>GAN</strong>的目标函数，优化目标为真实分布\(P_{data}\)和生成分布$P_G$之间的<strong>Wasserstein</strong>距离：</p>
+
+\[\mathop{\min}_{G} \mathop{\max}_{D, ||D||_L \leq K} \{ \Bbb{E}_{x \text{~} P_{data}(x)}[D(x)]-\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)] \}\]
+
+<p>或写作交替优化的形式：</p>
+
+\[\begin{aligned} θ_D &amp;\leftarrow \mathop{\arg \max}_{\theta_D} \frac{1}{n} \sum_{i=1}^{n} { D(x^i)} - \frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))}  \\ \theta_G &amp;\leftarrow \mathop{\arg \min}_{\theta_G} -\frac{1}{n} \sum_{i=1}^{n} {D(G(z^i))} \end{aligned}\]
+
+<p>其中要求判别器$D$是$K$阶<strong>Lipschitz</strong>连续的，即应满足：</p>
+
+\[|| D(x_1)-D(x_2) || ≤K || x_1-x_2 ||\]
+
+<p><strong>Lipschitz</strong>连续性保证了函数的输出变化相对输入变化是缓慢的。若没有该限制，优化过程可能会使函数的输出趋向正负无穷。</p>
+
+<h3 id="-lipschitz连续性">⚪ Lipschitz连续性</h3>
+
+<p>一般地，一个实值函数$f$是$K$阶<a href="https://0809zheng.github.io/2022/10/11/lipschitz.html">Lipschitz连续</a>的，是指存在一个实数$K\geq 0$，使得对\(\forall x_1,x_2 \in \Bbb{R}\)，有：</p>
+
+\[|| f(x_1)-f(x_2) || ≤K || x_1-x_2 ||\]
+
+<p>通常一个连续可微函数满足<strong>Lipschitz</strong>连续，这是因为其微分(用$\frac{|f(x_1)-f(x_2)|}{|x_1-x_2|}$近似)是有界的。但是一个<strong>Lipschitz</strong>连续函数不一定是处处可微的，比如$f(x) = |x|$。</p>
+
+<h1 id="2-实现lipschitz连续性">2. 实现Lipschitz连续性</h1>
+
+<p>若神经网络具有<strong>Lipschitz</strong>连续性，意味着该网络对输入扰动不敏感，具有更好的泛化性。下面讨论如何对判别器$D$施加<strong>Lipschitz</strong>约束。</p>
+
+<p>假设判别器$D(x)$具有参数$W$，则<strong>Lipschitz</strong>常数$K$通常是由参数$W$决定的，此时<strong>Lipschitz</strong>约束为：</p>
+
+\[|| D_W(x_1)-D_W(x_2) ||\leq K(W) || x_1-x_2 ||\]
+
+<p>首先考虑判别器为单层全连接层$D_W(x)=\sigma(Wx)$，其中$\sigma$是激活函数，对应<strong>Lipschitz</strong>约束：</p>
+
+\[|| \sigma(Wx_1)-\sigma(Wx_2) || \leq K(W) || x_1-x_2 ||\]
+
+<p>对$\sigma(Wx)$进行<a href="https://0809zheng.github.io/2021/08/20/taylor.html">Taylor展开</a>并取一阶近似可得：</p>
+
+\[||  \frac{\partial \sigma}{\partial Wx} W(x_1-x_2) || \leq K(W) || x_1-x_2 ||\]
+
+<p>$\frac{\partial \sigma}{\partial Wx}$表示激活函数的导数。通常激活函数的导数是有界的，比如<strong>ReLU</strong>函数的导数范围是$[0,1]$；因此这一项可以被忽略。则全连接层的<strong>Lipschitz</strong>约束为：</p>
+
+\[||  W(x_1-x_2) || \leq K(W) || x_1-x_2 ||\]
+
+<p>上式对全连接层的参数$W$进行了约束。在实践中全连接网络是由全连接层组合而成，而卷积网络、循环网络等也可以表示为特殊的全连接网络，因此上述分析具有一般性。</p>
+
+<h1 id="3-矩阵范数问题">3. 矩阵范数问题</h1>
+
+<p>全连接层的<strong>Lipschitz</strong>约束可以转化为一个矩阵范数问题（由向量范数诱导出来的矩阵范数，作用相当于向量的模长），定义为：</p>
+
+\[||W||_2 = \mathop{\max}_{x \neq 0} \frac{||Wx||}{||x||}\]
+
+<p>当$W$为方阵时，上述矩阵范数称为<strong>谱范数(spectral norm)</strong>。此时问题转化为：</p>
+
+\[||  W(x_1-x_2) || \leq ||W||_2 \cdot || x_1-x_2 ||\]
+
+<p>谱范数$||W||_2$等于$W^TW$的最大特征值(主特征值)的平方根；若$W$为方阵，则$||W||_2$等于$W$的最大特征值的绝对值。</p>
+
+<h3 id="-谱范数的证明">⚪ 谱范数的证明</h3>
+
+<p>谱范数$||W||_2$的平方为：</p>
+
+\[||W||_2^2 = \mathop{\max}_{x \neq 0} \frac{x^TW^TWx}{x^Tx}\]
+
+<p>上式右端为<a href="https://0809zheng.github.io/2021/06/22/rayleigh.html">瑞利商(Rayleigh Quotient)</a>，取值范围是：</p>
+
+\[\lambda_{min}≤\frac{x^TW^TWx}{x^Tx}≤\lambda_{max}\]
+
+<p>因此谱范数$||W||_2$的平方的取值为$W^TW$的最大特征值。</p>
+
+<h3 id="-谱范数的计算幂迭代">⚪ 谱范数的计算：幂迭代</h3>
+
+<p>$W^TW$的最大特征值可以通过<strong>幂迭代(power iteration)</strong>方法求解。</p>
+
+<p>迭代格式1：</p>
+
+\[u \leftarrow \frac{(W^TW)u}{||(W^TW)u||}, ||W||_2^2 ≈ u^TW^TWu\]
+
+<p>迭代格式2：</p>
+
+\[v \leftarrow \frac{W^Tu}{||W^Tu||},u \leftarrow \frac{Wv}{||Wv||}, ||W||_2 ≈ u^TWv\]
+
+<p>其中$u,v$可以初始化为全$1$向量。下面以迭代格式1为例简单证明迭代过程收敛，记$A=W^TW$，初始化$u^{(0)}$，若$A$可对角化，则$A$的特征向量\(\{v_1 v_2  \cdots v_n\}\)构成一组完备的基，$u^{(0)}$可由这组基表示：</p>
+
+\[u^{(0)} = c_1v_1+c_2v_2+\cdots c_nv_n\]
+
+<p>先不考虑迭代中分母的归一化，则迭代过程$u \leftarrow Au$经过$t$次后为：</p>
+
+\[A^tu^{(0)} = c_1A^tv_1+c_2A^tv_2+\cdots c_nA^tv_n\]
+
+<p>注意到$Av=\lambda v$，则有：</p>
+
+\[A^tu^{(0)} = c_1\lambda_1^tv_1+c_2\lambda_2^tv_2+\cdots c_n\lambda_n^tv_n\]
+
+<p>不失一般性地假设$\lambda_1$为最大特征值，则有：</p>
+
+\[\frac{A^tu^{(0)}}{\lambda_1^t} = c_1v_1+c_2(\frac{\lambda_2}{\lambda_1})^tv_2+\cdots c_n(\frac{\lambda_n}{\lambda_1})^tv_n\]
+
+<p>注意到当$t \to \infty$时，$(\frac{\lambda_2}{\lambda_1})^t,\cdots (\frac{\lambda_n}{\lambda_1})^t \to 0$。则有：</p>
+
+\[\frac{A^tu^{(0)}}{\lambda_1^t} ≈ c_1v_1\]
+
+<p>上述结果表明当迭代次数$t$足够大时，$A^tu^{(0)}$提供了最大特征根对应的特征向量的近似方向，对其归一化后相当于单位特征向量：</p>
+
+\[\begin{aligned} u &amp;= \frac{A^tu^{(0)}}{||A^tu^{(0)}||} \\ A u &amp;≈ \lambda_1 u \end{aligned}\]
+
+<p>因此可求$A=W^TW$的最大特征值：</p>
+
+\[u^T A u ≈ \lambda_1\]
+
+<h1 id="4-谱归一化">4. 谱归一化</h1>
+
+<p><strong>谱归一化（Spectral Normalization）</strong>是指使用谱范数对网络参数进行归一化：</p>
+
+\[W \leftarrow \frac{W}{||W||_2^2}\]
+
+<p>根据前述分析，如果激活函数的导数是有界的，应用谱归一化约束参数后，可以精确地使网络满足<strong>Lipschiitz</strong>连续性：</p>
+
+\[|| D_W(x_1)-D_W(x_2) ||\leq K(W) || x_1-x_2 ||\]
+
+<h1 id="5-hinge损失">5. Hinge损失</h1>
+
+<p><a href="https://0809zheng.github.io/2022/02/04/wgan.html"><font color="Blue">WGAN</font></a>构造的目标函数为：</p>
+
+\[\begin{aligned} (D^*, G^*) &amp; \leftarrow \mathop{ \min}_{G} \mathop{ \max}_{D,\|D\|_L \leq K} \Bbb{E}_{x \text{~} P_{data}(x)}[D(x)]-\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)]  \end{aligned}\]
+
+<p>若将谱归一化应用到网络，则自动满足<strong>Lipschiitz</strong>约束\(\|D\|_L \leq K\)，目标函数简化为：</p>
+
+\[\begin{aligned} (D^*, G^*) &amp; \leftarrow \mathop{ \min}_{G} \mathop{ \max}_{D} \Bbb{E}_{x \text{~} P_{data}(x)}[D(x)]-\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)]  \end{aligned}\]
+
+<p>直接优化上式容易导致数值不稳定。在没有约束的情况下对于真实样本有$D(x) \to + \infty$，对于生成样本有$D(x) \to - \infty$。</p>
+
+<p>因此考虑在优化判别器时分别对真实样本和生成样本设置一个阈值，可以通过<strong>hinge loss</strong>的形式实现：</p>
+
+\[\begin{aligned} D^* &amp; \leftarrow \mathop{ \max}_{D} \Bbb{E}_{x \text{~} P_{data}(x)}[\max(0,1-D(x))]-\Bbb{E}_{x \text{~} P_{G}(x)}[\max(0,1+D(x))]  \end{aligned}\]
+
+<p>其中左式只有$1-D(x)&gt;0$才有意义，从而约束对于真实样本$D(x) &lt; 1$，同时$D(x)$取值尽可能大；右式只有$1+D(x)&gt;0$才有意义，从而约束对于生成样本$D(x) &gt; -1$，同时$D(x)$取值尽可能小。</p>
+
+<h1 id="6-sn-gan">6. SN-GAN</h1>
+
+<p>作者将谱归一化应用到生成对抗网络，并将损失函数修改为<strong>hinge loss</strong>形式，从而构造了<strong>spectrally normalized GAN(SN-GAN)</strong>。其目标函数如下：</p>
+
+\[\begin{aligned} D^* &amp; \leftarrow \mathop{ \max}_{D} \Bbb{E}_{x \text{~} P_{data}(x)}[\max(0,1-D(x))]-\Bbb{E}_{x \text{~} P_{G}(x)}[\max(0,1+D(x))] \\  G^* &amp; \leftarrow \mathop{ \min}_{G} -\Bbb{E}_{x \text{~} P_{G}(x)}[D(x)] \end{aligned}\]
+
+<p>在<strong>pytorch</strong>实现时，对判别器应用谱归一化的代码如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">discriminator</span> <span class="o">=</span> <span class="n">Discriminator</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">add_sn</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m</span><span class="p">.</span><span class="n">named_children</span><span class="p">():</span>
+             <span class="n">m</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">add_sn</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">)):</span>
+             <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">utils</span><span class="p">.</span><span class="n">spectral_norm</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+             <span class="k">return</span> <span class="n">m</span>
+
+<span class="n">discriminator</span> <span class="o">=</span> <span class="n">add_sn</span><span class="p">(</span><span class="n">discriminator</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>损失函数的计算和参数更新过程如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">n_epochs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">real_imgs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+
+        <span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">opt</span><span class="p">.</span><span class="n">latent_dim</span><span class="p">)</span> 
+        <span class="n">gen_imgs</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>  
+
+        <span class="c1"># 训练判别器
+</span>        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">real_validaty</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">discriminator</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">),</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">fake_validaty</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">.</span><span class="n">detach</span><span class="p">()),</span> <span class="nb">min</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">d_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">real_validaty</span><span class="p">)</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fake_validaty</span><span class="p">)</span>
+        <span class="n">d_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="c1"># 训练生成器
+</span>        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">opt</span><span class="p">.</span><span class="n">d_iter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">optimizer_G</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">fake_validaty</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">)</span>
+            <span class="n">g_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">fake_validaty</span><span class="p">)</span>
+            <span class="n">g_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer_G</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/02/09/wgandiv.html" class="read-next-link"></a>
+        <section>
+          <span>Wasserstein Divergence for GANs</span>
+          <p>  WGAN-div：通过Wasserstein散度构造GAN.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic1.imgdb.cn/item/6347cb0516f2c2beb185bc69.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/02/07/fgan.html" class="read-next-link"></a>
+          <section>
+            <span>f-GAN: Training Generative Neural Samplers using Variational Divergence Minimization</span>
+            <p>  fGAN：通过f散度构造GAN.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/6344cf4f16f2c2beb19594f3.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

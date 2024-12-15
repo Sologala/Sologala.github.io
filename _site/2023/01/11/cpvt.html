@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do We Really Need Explicit Position Encodings for Vision Transformers? - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Do We Really Need Explicit Position Encodings for Vision Transformers?">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Do We Really Need Explicit Position Encodings for Vision Transformers? - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/11/cpvt.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Do We Really Need Explicit Position Encodings for Vision Transformers?</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-11"><i class="iconfont icon-date"></i>11 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63fda35df144a01007ac3b6c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>视觉Transformer真的需要显式位置编码吗？</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2102.10882">Do We Really Need Explicit Position Encodings for Vision Transformers?</a></li>
+</ul>
+
+<p><strong>self-attention</strong>结构的特点是可以建模一整个输入序列的信息，并能根据图片的内容来动态调整感受野，但是<strong>self-attention</strong>具有<strong>排列不变性 (permutation-invariant)</strong>，即无法建模输入序列的顺序信息，输入这个序列顺序的调整是不会影响输出结果的。<strong>Transformer</strong>引入了位置编码机制。位置编码在图像识别任务中的作用是保持像素间的空间位置关系，建模像素点前后左右的位置信息。位置编码可以设置为可学习的，也可以设置为不可学习的正弦函数。</p>
+
+<p>位置编码的缺点是长度往往是固定的。比如输入图片的大小是<strong>224×224</strong>的，分成大小为<strong>16×16</strong>的<strong>patch</strong>，那么序列长度是<strong>196</strong>。所以训练时把位置编码的长度也设置为<strong>196</strong>。但是后续进行迁移学习时输入图片是<strong>384×384</strong>的，分成大小为<strong>16×16</strong>的<strong>patch</strong>，那么序列长度是<strong>576</strong>。此时长度<strong>196</strong>的位置编码就不够了。如果直接去掉位置编码会严重地影响分类性能，因为输入序列的位置信息丢失了。</p>
+
+<p>本文提出了一种新的位置编码策略<strong>CPVT</strong>，既能解决传统位置编码不可变长度的局限性，又能起到位置编码的作用。<strong>CPVT</strong>能自动生成一种包含位置信息的编码<strong>PEG</strong>，编码过程是即时的 (<strong>on-the-fly</strong>)，能够灵活地把位置信息引入<strong>Transformer</strong>中。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fda563f144a01007aee896.jpg" alt="" /></p>
+
+<p><strong>CPVT</strong>生成编码是通过<strong>Positional Encoding Generator (PEG)</strong>实现的。首先把输入\(X \in \mathbb{R}^{B \times N \times C}\) <strong>reshape</strong>回<strong>3D</strong>的张量\(X^{\prime} \in \mathbb{R}^{B \times C \times H \times W}\)，然后通过深度卷积处理该张量，再把输出变为\(X^{\prime \prime} \in \mathbb{R}^{B \times N \times C}\)，与输入$X$连接后作为输出。整个过程中<strong>class token</strong> \(Y \in \mathbb{R}^{B \times C}\)保持不变。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fda737f144a01007b1d329.jpg" alt="" /></p>
+
+<p>卷积操作的卷积核大小$k \geq 3$，零填充$p=\frac{k-1}{2}$。<strong>PEG</strong>的卷积部分以<strong>zero-padding</strong>作为参考点，以卷积操作提取相对位置信息，借助卷积得到适用于<strong>Transformer</strong>的可变长度的位置编码。可视化使用<strong>CPVT</strong>以后<strong>的attention maps</strong>，最左上方的格子关注的点在左上，而最左下方的格子关注的点在左下，以此类推，所以<strong>CPVT</strong>依然能够学习到<strong>local information</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fda84bf144a01007b354f4.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PEG</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+    <span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">cls_token</span><span class="p">,</span> <span class="n">feat_token</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span>
+    <span class="n">cnn_feat</span> <span class="o">=</span> <span class="n">feat_token</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj</span><span class="p">(</span><span class="n">cnn_feat</span><span class="p">)</span> <span class="o">+</span> <span class="n">cnn_feat</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">((</span><span class="n">cls_token</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/12/crossvit.html" class="read-next-link"></a>
+        <section>
+          <span>CrossViT: Cross-Attention Multi-Scale Vision Transformer for Image Classification</span>
+          <p>  CrossViT：图像分类的交叉注意力多尺度视觉Transformer.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/641813c8a682492fccc34710.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/10/vt.html" class="read-next-link"></a>
+          <section>
+            <span>Visual Transformers: Token-based Image Representation and Processing for Computer Vision</span>
+            <p>  VT：基于Token的图像表示和处理.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63fb0e2ff144a01007f0c788.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

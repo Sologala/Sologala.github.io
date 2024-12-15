@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DropBlock: A regularization method for convolutional networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="DropBlock: A regularization method for convolutional networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="DropBlock: A regularization method for convolutional networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/06/dropblock.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>DropBlock: A regularization method for convolutional networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-06"><i class="iconfont icon-date"></i>06 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic2.imgdb.cn/item/645b65d60d2dde57777f593b.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DropBlock：一种卷积神经网络的正则化方法.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1810.12890">DropBlock: A regularization method for convolutional networks</a></li>
+</ul>
+
+<p><strong>DropBlock</strong>是一种用于<strong>CNN</strong>的正则化方法。普通的<strong>DropOut</strong>只是随机屏蔽掉一部分特征，而<strong>DropBlock</strong>是随机屏蔽掉一部分连续区域，如下图所示。图像是一个<strong>2D</strong>结构，像素或者特征点之间在空间上存在依赖关系，这样普通的<strong>DropOut</strong>在屏蔽语义就不够有效，但是<strong>DropBlock</strong>这样屏蔽连续区域块就能有效移除某些语义信息，比如狗的头，从而起到有效的正则化作用。<strong>DropBlock</strong>和<strong>CutOut</strong>有点类似，只不过<strong>CutOut</strong>是用于图像的一种数据增强方法，而<strong>DropBlock</strong>是用在<strong>CNN</strong>的特征上的一种正则化手段。</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645b663d0d2dde57778035de.jpg" alt="" /></p>
+
+<p><strong>DropBlock</strong>的原理很简单，它和<strong>DropOut</strong>的最大区别是就是屏蔽的地方是一个连续的方块区域，其伪代码如下所示：</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645b66970d2dde577780ef12.jpg" alt="" /></p>
+
+<p><strong>DropBlock</strong>有两个主要参数：<strong>block_size</strong>和$\gamma$，其中<strong>block_size</strong>为方块区域的边长，而$\gamma$控制被屏蔽的特征数量大小。对于<strong>DropBlock</strong>，首先要用参数为$\gamma$的伯努利分布生成一个<strong>center mask</strong>，这个<strong>center mask</strong>产生的是要屏蔽的<strong>block</strong>的中心点，然后将<strong>mask</strong>中的每个点扩展到<strong>block_size</strong>大小的方块区域，从而生成最终的<strong>block mask</strong>。</p>
+
+<p>假定输入的特征大小为$(N,C,H,W)$，那么<strong>center mask</strong>的大小应该为\((N,C,H-\text{block size}+1,W-\text{block size}+1)\)，而<strong>block mask</strong>的大小为\((N,C,\text{block size},\text{block size})\)。</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645b68ab0d2dde5777837943.jpg" alt="" /></p>
+
+<p>对于<strong>DropBlock</strong>，往往像<strong>DropOut</strong>那样直接设置一个<strong>keep_prob</strong>（或者<strong>drop_prob</strong>），这个概率值控制特征被屏蔽的量。此时需要将<strong>keep_prob</strong>转换为$\gamma$，两个参数带来的效果应该是等价的，所以有：</p>
+
+\[(1- \text{keep prob}) \times \text{feat size}^2 = \gamma \times \text{block size}^2 \times (\text{feat size}-\text{block size}+1)^2\]
+
+<p>其中<strong>feat size</strong>是特征图的大小，给定<strong>keep_prob</strong>后可以算出$\gamma$：</p>
+
+\[\gamma = \frac{(1- \text{keep prob}) \times \text{feat size}^2}{\text{block size}^2 \times (\text{feat size}-\text{block size}+1)^2}\]
+
+<p><strong>DropBlock</strong>往往采用较大的<strong>keep_prob</strong>，如下图所示采用<strong>0.9</strong>的效果是最好的。另外，论文中发现对<strong>keep_prob</strong>采用一个线性递减的<strong>scheduler</strong>可以进一步增加效果：<strong>keep_prob</strong>从<strong>1.0</strong>线性递减到设定值如<strong>0.9</strong>。</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645b6a1a0d2dde5777849ad4.jpg" alt="" /></p>
+
+<p>对于<strong>block_size</strong>，实验发现采用<strong>block_size=7</strong>效果是最好的，如下所示： ​</p>
+
+<p><img src="https://pic2.imgdb.cn/item/645b6a410d2dde577784bf2f.jpg" alt="" /></p>
+
+<p>在实现上，可以先对<strong>center mask</strong>进行<strong>padding</strong>，然后用一个<strong>kernel_size</strong>为<strong>block_size</strong>的<strong>max pooling</strong>来得到<strong>block mask</strong>。最后将特征乘以<strong>block mask</strong>即可，不过和<strong>DropOut</strong>类似，为了保证训练和测试的一致性，还需要对特征进行归一化：乘以<strong>count(block mask)/count_ones(block mask)</strong>。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DropBlock2d</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="s">"""
+    Args:
+        p (float): Probability of an element to be dropped.
+        block_size (int): Size of the block to drop.
+        inplace (bool): If set to ``True``, will do this operation in-place. Default: ``False``
+    """</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">block_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s">"drop probability has to be between 0 and 1, but got </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">block_size</span> <span class="o">=</span> <span class="n">block_size</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">inplace</span> <span class="o">=</span> <span class="n">inplace</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="s">"""
+        Args:
+            input (Tensor): Input feature map on which some areas will be randomly
+                dropped.
+        Returns:
+            Tensor: The tensor after DropBlock layer.
+        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="p">.</span><span class="n">training</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">input</span>
+
+        <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="c1"># compute the gamma of Bernoulli distribution
+</span>        <span class="n">gamma</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">p</span> <span class="o">*</span> <span class="n">H</span> <span class="o">*</span> <span class="n">W</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="bp">self</span><span class="p">.</span><span class="n">block_size</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">H</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">block_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">W</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">block_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="n">mask_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">block_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">W</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">block_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">bernoulli</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">full</span><span class="p">(</span><span class="n">mask_shape</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="nb">input</span><span class="p">.</span><span class="n">device</span><span class="p">))</span>
+
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">pad</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="p">.</span><span class="n">block_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">max_pool2d</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">block_size</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">block_size</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">block_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">mask</span>
+        <span class="n">normalize_scale</span> <span class="o">=</span> <span class="n">mask</span><span class="p">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1e-6</span> <span class="o">+</span> <span class="n">mask</span><span class="p">.</span><span class="nb">sum</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">inplace</span><span class="p">:</span>
+            <span class="nb">input</span><span class="p">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">mask</span> <span class="o">*</span> <span class="n">normalize_scale</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span> <span class="o">*</span> <span class="n">mask</span> <span class="o">*</span> <span class="n">normalize_scale</span>
+        <span class="k">return</span> <span class="nb">input</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="sa">f</span><span class="s">"</span><span class="si">{</span><span class="bp">self</span><span class="p">.</span><span class="n">__class__</span><span class="p">.</span><span class="n">__name__</span><span class="si">}</span><span class="s">(p=</span><span class="si">{</span><span class="bp">self</span><span class="p">.</span><span class="n">p</span><span class="si">}</span><span class="s">, block_size=</span><span class="si">{</span><span class="bp">self</span><span class="p">.</span><span class="n">block_size</span><span class="si">}</span><span class="s">, inplace=</span><span class="si">{</span><span class="bp">self</span><span class="p">.</span><span class="n">inplace</span><span class="si">}</span><span class="s">)"</span>
+        <span class="k">return</span> <span class="n">s</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/07/sknet.html" class="read-next-link"></a>
+        <section>
+          <span>Selective Kernel Networks</span>
+          <p>  SKNet：卷积核选择网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f558283160a154a673cf3bf.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/05/frelu.html" class="read-next-link"></a>
+          <section>
+            <span>Funnel Activation for Visual Recognition</span>
+            <p>  FReLU：为视觉任务设计的激活函数.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fec67353ffa7d37b3ae1a1a.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

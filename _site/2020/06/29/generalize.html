@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do ImageNet Classifiers Generalize to ImageNet? - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Do ImageNet Classifiers Generalize to ImageNet?">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Do ImageNet Classifiers Generalize to ImageNet? - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/06/29/generalize.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Do ImageNet Classifiers Generalize to ImageNet?</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-06-29"><i class="iconfont icon-date"></i>29 Jun 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ef959ea14195aa59406cdd0.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>一篇讨论图像分类模型泛化能力的文章.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Do ImageNet Classifiers Generalize to ImageNet?</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1902.10811?context=cs.CV">link</a></li>
+</ul>
+
+<p>本文研究的问题是，对一个图像分类模型，在一个数据集上训练后测试得到准确率，将其应用到另一个测试数据集上会有怎样的表现。</p>
+
+<h1 id="初步的实验结果和假设">初步的实验结果和假设</h1>
+
+<p><img src="https://pic.downk.cc/item/5ef97edb14195aa59410a308.jpg" alt="" /></p>
+
+<p>把数据集划分成训练集和测试集，经过训练后在测试集上取得了很高的测试准确率，然后构造一个新的测试集，测试模型在其上的准确率。如上图所示，在CIFAR-10和ImageNet两个数据集上进行试验。</p>
+
+<p>假设基准为在原测试集上测试的准确率等于在新测试集上测试的准确率，用图中的黑色虚线表示。当实验结果出现在虚线下时，表明模型出现了一定程度的过拟合。</p>
+
+<p>观察实验结果，发现两个现象：</p>
+<ol>
+  <li>新测试集上的准确率相比于原测试集有显著的下降；</li>
+  <li>模型准确率近似于斜率大于1的线性函数。</li>
+</ol>
+
+<p>若用$D$表示原测试集所属的数据分布，$S$表示原测试集；用$D’$表示新测试集所属的数据分布，$S’$表示新测试集；将模型在原测试集上的表现和新测试集上的表现差异拆分为：</p>
+
+<p><img src="https://pic.downk.cc/item/5ef9813814195aa59411359e.jpg" alt="" /></p>
+
+<ul>
+  <li><strong>Adaptivity gap</strong>：原测试集采样带来的误差</li>
+  <li><strong>Distribution gap</strong>：两个数据集分布不同带来的误差。是造成<strong>gap</strong>的主要原因。</li>
+  <li><strong>Generalization gap</strong>：新测试集采样带来的误差</li>
+</ul>
+
+<h1 id="进一步的实验">进一步的实验</h1>
+<p>作者在<strong>MTurk</strong>上以问卷调查的形式构造新的测试集。具体地，每次向实验者提供一些图像和一个类别，让实验者勾选出类别对应的图像。每一个类别图像根据实验者的勾选频率构造新的数据集，采用三种抽样策略：</p>
+<ul>
+  <li><strong>MatchedFrequency</strong>：每一类首先估计勾选频率分布，按照该分布进行抽样；</li>
+  <li><strong>Threshold0.7</strong>：每一类在勾选频率大于0.7的图像中随机选择10张；</li>
+  <li><strong>TopImages</strong>：每一类选择10张勾选频率最高的图像。</li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5ef9850f14195aa5941259b6.jpg" alt="" /></p>
+
+<p>实验结果显示，人类更擅长区分的数据，模型泛化能达到更好的结果。</p>
+
+<h1 id="线性拟合模型">线性拟合模型</h1>
+<p>作者假设模型在原测试集上的表现$α_1$与模型在新测试集上的表现$α_2$呈线性关系，即：</p>
+
+\[α_2 = u·α_1+v\]
+
+<p>假设第$i$个样本具有分类困难度$τ_i$，第$j$个模型具有能力$s_j$。当$s_j»τ_i$时分类准确率是1，反之是0。采用均值为$μ$、方差为$σ^2$的高斯分布的累积分布函数建模：</p>
+
+\[ξ_j(τ) = Φ(s_j-τ)\]
+
+<p>经推导可得线性模型的参数：</p>
+
+\[u = \frac{\sqrt{σ_1^2+1}}{\sqrt{σ_2^2+1}}\]
+
+\[v = \frac{μ_1-μ_2}{\sqrt{σ_2^2+1}}\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/06/30/jukebox.html" class="read-next-link"></a>
+        <section>
+          <span>Jukebox: A Generative Model for Music</span>
+          <p>  使用VQ-VAE(向量量化的变分自编码器)进行音乐生成.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5efab0b814195aa59471fc2b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/06/28/groupnorm.html" class="read-next-link"></a>
+          <section>
+            <span>Group Normalization</span>
+            <p>  深度学习中的组归一化方法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f02876214195aa594bff838.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

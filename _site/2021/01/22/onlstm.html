@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordered Neurons: Integrating Tree Structures into Recurrent Neural Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Ordered Neurons: Integrating Tree Structures into Recurrent Neural Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Ordered Neurons: Integrating Tree Structures into Recurrent Neural Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/01/22/onlstm.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Ordered Neurons: Integrating Tree Structures into Recurrent Neural Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-01-22"><i class="iconfont icon-date"></i>22 Jan 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63b63136be43e0d30e4a1e3e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>ON-LSTM：把树结构整合进循环神经网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1810.09536">Ordered Neurons: Integrating Tree Structures into Recurrent Neural Networks</a></li>
+</ul>
+
+<p>本文作者设计了<strong>ON-LSTM</strong>，通过有序神经元(<strong>Ordered Neuron</strong>)把层级结构（树结构）整合到<strong>LSTM</strong>中，从而允许<strong>LSTM</strong>能自动学习到层级结构信息；不仅提高了语言模型的效果，还可以无监督地学习到句子的句法结构。</p>
+
+<h1 id="1-lstm与层级结构">1. LSTM与层级结构</h1>
+
+<p><strong>LSTM</strong>网络引入了输入门$i$ (<strong>input gate</strong>)、遗忘门$f$ (<strong>forget gate</strong>)，和输出门$o$ (<strong>output gate</strong>)；并把输入和隐状态整合为记忆状态$c$（<strong>cell state</strong>）；根据遗忘门和输入门更新记忆状态后，根据输出门更新隐状态。</p>
+
+\[\begin{aligned} i_t &amp;= \sigma(W_{i}x_t+U_{i}h_{t-1}+b_i) \\ f_t &amp;= \sigma(W_{f}x_t+U_{f}h_{t-1}+b_f) \\ o_t &amp;= \sigma(W_{o}x_t+U_{o}h_{t-1}+b_o) \\ \hat{c}_t &amp;= \text{tanh}(W_{c}x_t+U_{c}h_{t-1}+b_c) \\ c_t &amp;= f_t \odot c_{t-1} + i_t \odot \hat{c}_t \\ h_{t} &amp;= o_t \odot \text{tanh}(c_t) \end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/63b6331dbe43e0d30e4d1001.jpg" alt="" /></p>
+
+<p><strong>LSTM</strong>的神经元是无序的，比如遗忘门$f_t$是一个向量，如果把<strong>LSTM</strong>运算过程中涉及到的所有向量的位置按照同一方式重新打乱，并相应地打乱权重的顺序，则输出结果只是原向量的重新排序，信息量不变。</p>
+
+<p>一个自然语义句子通常能表示为一些层级结构，这些结构能够抽象为句法信息。层级越低代表语言中颗粒度越小的结构，而层级越高则代表颗粒度越粗的结构，比如在中文句子中，“字”可以认为是最低层级的结构，然后依次是词、词组、短语等。层级越高，颗粒度越粗，那么它在句子中的跨度就越大。</p>
+
+<p><strong>ON-LSTM</strong>希望能够模型在训练的过程中自然地学习到这种层级结构，实现过程是把记忆状态神经元$c_t$排序，用于表示一些特定的结构，从而用神经元的序信息表示层级结构。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b63498be43e0d30e4f7bc3.jpg" alt="" /></p>
+
+<h1 id="2-on-lstm的更新过程">2. ON-LSTM的更新过程</h1>
+
+<p><strong>ON-LSTM</strong>在编码时能区分高低层级的信息；高层级的信息对应的编码区间保留更久，而低层级的信息在对应的区间更容易被遗忘。</p>
+
+<p>假设<strong>ON-LSTM</strong>中的神经元$c_t$都排好序，$c_t$中索引值越小的元素表示越低层级的信息，而索引值越大的元素表示越高层级的信息。</p>
+
+<p><strong>ON-LSTM</strong>在每个时刻把输入和隐状态整合为记忆状态的方式与<strong>LSTM</strong>相同：</p>
+
+\[\begin{aligned} \hat{c}_t &amp;= \text{tanh}(W_{c}x_t+U_{c}h_{t-1}+b_c) \end{aligned}\]
+
+<p>每次在更新$c_t$之前，首先预测两个整数$d_f$和$d_i$，分别表示历史信息$h_{t−1}$和当前输入$x_t$的层级。</p>
+
+<p>若$d_f&lt;d_i$，表明当前输入$x_t$的层级要高于历史信息$h_{t−1}$的层级，因此把当前输入信息整合到$[d_f,d_i]$的层级中：</p>
+
+\[c_t = \begin{pmatrix} \hat{c}_{t,&lt;d_f} \\ f_{t,[d_f,d_i]} \odot c_{t-1,[d_f,d_i]} + i_{t,[d_f,d_i]} \odot \hat{c}_{t,[d_f,d_i]} \\ c_{t-1,&gt;d_i} \end{pmatrix}\]
+
+<p>对于当前输入\(\hat{c}_t\)，更容易影响低层信息，所以当前输入影响的范围是$[0,d_i]$；对于历史信息$c_{t−1}$，保留的是高层信息，所以影响的范围是$[d_f,d_{\max}]$；在重叠部分$[d_f,d_i]$，通过<strong>LSTM</strong>的形式更新记忆状态。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b63946be43e0d30e56f3bf.jpg" alt="" /></p>
+
+<p>若$d_f&gt;d_i$，表明当前输入$x_t$的层级和历史信息$h_{t−1}$的层级没有重叠，因此$(d_i,d_f)$区间保持初始状态(全零)：</p>
+
+\[c_t = \begin{pmatrix} \hat{c}_{t,\leq d_i} \\ 0_{(d_i,d_f)} \\ c_{t-1,\geq d_f} \end{pmatrix}\]
+
+<p><strong>ON-LSTM</strong>将神经元排序之后，通过位置的前后来表示信息层级的高低，然后在更新神经元时，先分别预测历史的层级$d_f$和输入的层级$d_i$，通过这两个层级来对神经元实行分区间更新。</p>
+
+<p><strong>ON-LSTM</strong>的分区间更新如图所示。图中上方$c_{t-1}$为历史信息，黄色部分为历史信息层级；下方$\hat{c}_t$为当前输入，绿色部分为输入信息层级；中间$c_t$为当前整合的输出，黄色是直接复制的历史信息，绿色是直接复制的输入信息，紫色是按照<strong>LSTM</strong>方式融合的交集信息，白色是互不相关的全零状态。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b64c50be43e0d30e73426f.jpg" alt="" /></p>
+
+<p>基于这种更新方式，高层信息就可能保留相当长的距离（高层直接复制历史信息，导致历史信息可能不断被复制而不改变）；而低层信息在每一步输入时都可能被更新（低层直接复制输入，而输入是不断改变的）。通过信息分级嵌入了层级结构：分组更新时更高的组信息传得更远（跨度更大），更低的组信息跨度更小，这些不同的跨度就形成了输入序列的层级结构。</p>
+
+<p>引入记号$1_k$，表示第$k$位为$1$的<strong>one-hot</strong>向量，则可把$d_f&lt;d_i$和$d_f&gt;d_i$两种情况下的$c_t$更新公式合并。定义<strong>cumsum</strong>操作：</p>
+
+\[\text{cumsum}([x_1,x_2,\cdots x_n]) =[x_1,x_1+x_2,\cdots, x_1+x_2+\cdots +x_n]\]
+
+<p>则定义\(\tilde{f}_t\)用于标记$c_{t-1}$中的历史信息层级，称为<strong>主遗忘门（master forget gate）</strong>：</p>
+
+\[\tilde{f}_t = \text{cumsum}(1_{d_f})\]
+
+<p>并定义\(\tilde{i}_t\)用于标记\(\hat{c}_t\)中的输入信息层级，称为<strong>主输入门（master input gate）</strong>:</p>
+
+\[\tilde{i}_t = 1- \text{cumsum}(1_{d_i})\]
+
+<p>两个层级的交集$w_t$计算为：</p>
+
+\[w_t = \tilde{f}_t \odot \tilde{i}_t\]
+
+<p>则$c_t$更新公式统一写做：</p>
+
+\[c_t = w_t\odot (f_t \odot c_{t-1} + i_t \odot \hat{c}_t) + (\tilde{f}_t-w_t) \cdot c_{t-1} + (\tilde{i}_t-w_t) \cdot \hat{c}_t\]
+
+<p><strong>one-hot</strong>向量\(1_{d_f}\)和\(1_{d_i}\)的构造过程是不可导的，根据<a href="https://0809zheng.github.io/2021/11/16/mollifier.html">函数的光滑化</a>结论，<strong>one-hot</strong>向量的光滑近似函数为<strong>softmax</strong>函数，则\(1_{d_f}\)和\(1_{d_i}\)构造为：</p>
+
+\[\begin{aligned} 1_{d_f} &amp;≈ \text{softmax}(W_{\tilde{f}}x_t+U_{\tilde{f}}h_{t-1}+b_{\tilde{f}}) \\ 1_{d_i} &amp;≈ \text{softmax}(W_{\tilde{i}}x_t+U_{\tilde{i}}h_{t-1}+b_{\tilde{i}}) \end{aligned}\]
+
+<p>至此，<strong>ON-LSTM</strong>的完整更新过程为：</p>
+
+\[\begin{aligned} i_t &amp;= \sigma(W_{i}x_t+U_{i}h_{t-1}+b_i) \\ f_t &amp;= \sigma(W_{f}x_t+U_{f}h_{t-1}+b_f) \\ o_t &amp;= \sigma(W_{o}x_t+U_{o}h_{t-1}+b_o) \\ \hat{c}_t &amp;= \text{tanh}(W_{c}x_t+U_{c}h_{t-1}+b_c) \\ \tilde{f}_t &amp;= \text{cumsum}(\text{softmax}(W_{\tilde{f}}x_t+U_{\tilde{f}}h_{t-1}+b_{\tilde{f}})) \\ \tilde{i}_t &amp;= 1- \text{cumsum}(\text{softmax}(W_{\tilde{i}}x_t+U_{\tilde{i}}h_{t-1}+b_{\tilde{i}})) \\ w_t &amp;= \tilde{f}_t \odot \tilde{i}_t \\ c_t &amp;= w_t\odot (f_t \odot c_{t-1} + i_t \odot \hat{c}_t) + (\tilde{f}_t-w_t) \cdot c_{t-1} + (\tilde{i}_t-w_t) \cdot \hat{c}_t \\ h_{t} &amp;= o_t \odot \text{tanh}(c_t) \end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/63b6749ebe43e0d30eb12cec.jpg" alt="" /></p>
+
+<h1 id="3-实验分析">3. 实验分析</h1>
+
+<p>主遗忘门\(\tilde{f}_t\)和主输入门\(\tilde{i}_t\)分别代表$c_{t-1}$中的历史信息层级和\(\hat{c}_t\)中的输入信息层级，而序列的层级结构的总层级数一般不会太大，因此这两个向量的长度不应该太大。但是这两个向量需要与$f_t$等做逐元素点乘，而<strong>LSTM</strong>中神经元的特征维度通常比较大。为了解决这个矛盾，把隐层神经元数目$n$分解为$n=pq$，然后构造具有$p$个神经元的\(\tilde{f}_t,\tilde{i}_t\)，再把其中的每个神经元重复$q$次。这样既减少了层级的总数，同时还减少了模型的参数量。</p>
+
+<p>作者汇报了语言模型、句法评价、逻辑推理等任务上的性能表现：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b675f6be43e0d30eb37f8d.jpg" alt="" /></p>
+
+<p><strong>ON-LSTM</strong>能够无监督地从训练好的模型（比如语言模型）中提取输入序列的层级树结构。提取的思路如下：</p>
+
+<p>历史信息的层级向量\(1_{d_f}\)构造为：</p>
+
+\[\begin{aligned} 1_{d_f} &amp;≈ \text{softmax}(W_{\tilde{f}}x_t+U_{\tilde{f}}h_{t-1}+b_{\tilde{f}})  \end{aligned}\]
+
+<p>则$d_f$应为：</p>
+
+\[d_f = \mathop{\arg\max}_{k} 1_{d_f}[k]\]
+
+<p>根据<a href="https://0809zheng.github.io/2021/11/16/mollifier.html">函数的光滑化</a>结论，<strong>argmax</strong>的光滑近似函数为:</p>
+
+\[\begin{aligned} \mathop{\arg\max}_{k} 1_{d_f}[k] ≈&amp; \sum_{k=1}^n k \times 1_{d_f}[k] \\ =&amp; 1_{d_f}[1] + 2\times 1_{d_f}[2] + \cdots + n \times 1_{d_f}[n] \\ =&amp; (n+1) \times (1_{d_f}[1]+1_{d_f}[2]+\cdots + 1_{d_f}[n]) \\ &amp;- 1_{d_f}[1] - (1_{d_f}[1]+  1_{d_f}[2]) - \cdots\\ &amp; - (1_{d_f}[1]+1_{d_f}[2]+\cdots + 1_{d_f}[n]) \\ = &amp;n+1-\sum_{k=1}^n \text{cumsum}(1_{d_f}[k]) \\ = &amp;n+1-\sum_{k=1}^n \tilde{f}_t[k] \end{aligned}\]
+
+<p>因此可以用以下序列表示输入序列的层级变化：</p>
+
+\[\{d_{f,t}\}_{t=1}^{\text{SequenceLength}} = \{(n+1-\sum_{k=1}^n \tilde{f}_t[k])\}_{t=1}^{\text{SequenceLength}}\]
+
+<p>给定输入序列\(\{x_t\}\)和预训练的<strong>ON-LSTM</strong>，按上式输出对应的层级序列\(\{d_{f,t}\}\)，则可使用<strong>贪心</strong>算法来析出层次结构：</p>
+
+<p>找出层级序列中最大值所在的下标$k$，把输入序列分区为$[x_{t&lt;k},[x_k,x_{t&gt;k}]]$。然后对子序列$x_{t&lt;k}$和$x_{t&gt;k}$重复上述步骤，直到每个子序列长度为$1$。</p>
+
+<p>层级序列的最高层级对应着此处包含的历史信息最少，与前面所有内容的联系最为薄弱，最有可能是一个新的子结构的开始。通过递归处理从而逐渐得到输入序列隐含的嵌套结构。</p>
+
+<p>作者训练了一个三层<strong>ON-LSTM</strong>，然后使用中间层的$\tilde{f}_t$计算层级，跟标注的句法结构对比准确率比较高：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b67c75be43e0d30ebff5cd.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/01/23/knet.html" class="read-next-link"></a>
+        <section>
+          <span>K-Net: Towards Unified Image Segmentation</span>
+          <p>  K-Net: 面向统一的图像分割.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64104e62ebf10e5d5333ff27.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/01/21/metasoftmax.html" class="read-next-link"></a>
+          <section>
+            <span>Balanced Meta-Softmax for Long-Tailed Visual Recognition</span>
+            <p>  BALMS: 长尾图像分类中的平衡元Softmax函数.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62611470239250f7c50a364f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

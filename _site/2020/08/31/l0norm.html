@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Sparse Neural Networks through L0 Regularization - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Learning Sparse Neural Networks through L0 Regularization">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Learning Sparse Neural Networks through L0 Regularization - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/08/31/l0norm.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Learning Sparse Neural Networks through L0 Regularization</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-08-31"><i class="iconfont icon-date"></i>31 Aug 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6496be3d1ddac507cc9991fc.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>通过L0正则化学习稀疏神经网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1712.01312">Learning Sparse Neural Networks through L0 Regularization</a></li>
+</ul>
+
+<p>本文作者提出了一种神经网络的$L_0$范数正则化方法，即在训练过程中鼓励网络的权重为零。若训练数据为\(\{(x_i,y_i)\}_{i=1}^N\)，则对神经网络$h(\theta)$引入$L_0$范数正则化：</p>
+
+\[\begin{aligned}
+\mathcal{R}(\theta) &amp;= \frac{1}{N} \left( \sum_{i=1}^N\mathcal{L}(h(x_i;\theta),y_i) \right)+\lambda ||\theta||_0 \\
+||\theta||_0 &amp;= \sum_{j=1}^{|\theta|} \mathbb{I}[\theta_j \neq 0]
+\end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/6496cba41ddac507ccacf050.jpg" alt="" /></p>
+
+<p>考虑到$L_0$范数无法直接求导，因此上述正则化过程无法直接应用到神经网络中。需要寻找该正则化目标的一个连续近似。</p>
+
+<p>对参数$\theta$进行重参数化：</p>
+
+\[\theta_j = \tilde{\theta}_jz_j,z_j = \{0,1\},||\theta||_0 = \sum_{j=1}^{|\theta|} z_j\]
+
+<p>该重参数化过程相当于为参数$\theta$的每一个元素$\theta_j$引入了一个二元门控标量$z_j$，则$L_0$范数衡量参数中所有开启的门的数量。</p>
+
+\[\begin{aligned}
+\mathcal{R}(\tilde{\theta}) &amp;= \frac{1}{N} \left( \sum_{i=1}^N\mathcal{L}(h(x_i;\tilde{\theta} \odot z),y_i) \right)+\lambda \sum_{j=1}^{|\theta|} z_j
+\end{aligned}\]
+
+<p>给定任意连续随机变量$s$，则可以构造$z$如下：</p>
+
+\[z = \min(1, \max(0, s))\]
+
+<p>连续随机变量$s$的累积分布函数$Q(s)$是可求的，则对$z$的非零约束可以转化为：</p>
+
+\[q(z\neq 0) = 1-Q(s \leq 0)\]
+
+<p>至此$L_0$范数正则化表示为：</p>
+
+\[\begin{aligned}
+\mathcal{R}(\tilde{\theta}) &amp;= \frac{1}{N} \left( \sum_{i=1}^N\mathcal{L}(h(x_i;\tilde{\theta} \odot \min(1, \max(0, s))),y_i) \right)+\lambda \sum_{j=1}^{|\theta|} (1-Q(s_j \leq 0))
+\end{aligned}\]
+
+<p>连续随机变量$s$被设置为服从<strong>hard concrete</strong>分布：首先从均匀分布$U[0,1]$中采样$u$，经过一系列变换获得$s$与$z$：</p>
+
+\[\begin{aligned}
+u &amp; \sim U[0,1] \\
+s &amp;= \text{sigmoid}((\log u - \log(1-u) + \log \alpha)/\beta) \\
+\overline{s} &amp;= s(\zeta - \gamma) + \gamma \\
+z &amp;= \min(1, \max(0, \overline{s}))
+\end{aligned}\]
+
+<p>其中$\log \alpha$是位置参数，$\beta$是温度参数，当$\beta \to 0$时$s$服从伯努利分布。$\gamma &lt; 0, \zeta &gt; 1$把分布的取值拉伸到$[\gamma,\zeta]$，并应用<strong>hard-sigmoid</strong>构造$z$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64bf84651ddac507cce638cc.jpg" alt="" /></p>
+
+<p>此时$L_0$范数损失项计算为：</p>
+
+\[\begin{aligned}
+1-Q(\overline{s} \leq 0) &amp;= Q(\overline{s} &gt; 0) = Q(s(\zeta - \gamma) + \gamma &gt; 0) \\
+&amp;= Q(s &gt; \frac{- \gamma}{\zeta-\gamma}) \\
+&amp;= Q(\text{sigmoid}((\log u - \log(1-u) + \log \alpha)/\beta)  &gt; \frac{- \gamma}{\zeta-\gamma}) \\
+&amp;= Q(u &gt; \left(1+e^{\log \alpha - \beta \log \frac{-\gamma}{\zeta}}\right)^{-1}) \\
+&amp;= 1-\left(1+e^{\log \alpha - \beta \log \frac{-\gamma}{\zeta}}\right)^{-1} \\
+&amp;= \frac{1}{1 + e^{-(\log \alpha - \beta \log \frac{-\gamma}{\zeta})}}\\
+&amp;= \text{sigmoid}(\log \alpha - \beta \log \frac{-\gamma}{\zeta})
+\end{aligned}\]
+
+<p>至此$L_0$范数正则化表示为：</p>
+
+\[\begin{aligned}
+\mathcal{R}(\tilde{\theta}) &amp;= \frac{1}{N} \left( \sum_{i=1}^N\mathcal{L}(h(x_i;\tilde{\theta} \odot z),y_i) \right)+\lambda \sum_{j=1}^{|\theta|} \text{sigmoid}(\log \alpha_j - \beta \log \frac{-\gamma}{\zeta})
+\end{aligned}\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/01/images.html" class="read-next-link"></a>
+        <section>
+          <span>批量处理文件夹内的图片</span>
+          <p>  Handle images from the file.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/08/27/SR.html" class="read-next-link"></a>
+          <section>
+            <span>图像超分辨率(Super Resolution)</span>
+            <p>  Image Super Resolution.本文目录：  问题阐述  降级模型  传统方法：基于插值的方法、...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f47223b160a154a672d2333.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

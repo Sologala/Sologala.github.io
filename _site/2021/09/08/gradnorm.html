@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GradNorm: Gradient Normalization for Adaptive Loss Balancing in Deep Multitask Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="GradNorm: Gradient Normalization for Adaptive Loss Balancing in Deep Multitask Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="GradNorm: Gradient Normalization for Adaptive Loss Balancing in Deep Multitask Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/09/08/gradnorm.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>GradNorm: Gradient Normalization for Adaptive Loss Balancing in Deep Multitask Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-09-08"><i class="iconfont icon-date"></i>08 Sep 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6136cc8844eaada739fa0fb9.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>GradNorm: 使用梯度标准化调整多任务损失权重.</p>
+</blockquote>
+
+<ul>
+  <li>paper：GradNorm: Gradient Normalization for Adaptive Loss Balancing in Deep Multitask Networks</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1711.02257">link</a></li>
+</ul>
+
+<p>在多任务学习的损失优化过程中，可能会遇到两个问题：</p>
+<ol>
+  <li>不同任务的损失量级(<strong>magnitude</strong>)不同，损失量级较大的任务在梯度反向传播中占主导地位，导致模型忽视其他任务；</li>
+  <li>不同任务的学习难度不同，导致收敛速度不同。</li>
+</ol>
+
+<p>多任务损失通常表示为所有任务损失的加权和：</p>
+
+\[L(t) = \sum_{i}^{}w_i(t)L_i(t)\]
+
+<p>作者将上述损失$L(t)$称为<strong>label loss</strong>，用于更新模型参数$W$；额外引入<strong>gradient loss</strong>，即将损失权重$w_i$也看做优化参数，在每轮更新中构造损失权重$w_i$的损失$L_{\text{grad}}$，并进行梯度更新。因此第$t$轮中参数更新如下：</p>
+
+\[W(t+1) \gets W(t)-\alpha \nabla_{W}L(t)\]
+
+\[w_i(t+1) \gets w_i(t)-\lambda \nabla_{w_i}L_{\text{grad}}\]
+
+<p><img src="https://pic.imgdb.cn/item/6136d5f444eaada73907c85d.jpg" alt="" /></p>
+
+<p><strong>Gradient Normalization</strong>的出发点如上图所示。不同任务反向传播的梯度量级不同，因此额外构造损失权重的损失$L_{\text{grad}}$，用于调整梯度量级。$L_{\text{grad}}$同时考虑了不同任务的梯度量级和训练速度。</p>
+
+<p>定义$G_W^{(i)}(t)$为第$t$轮训练中第$i$个任务上梯度标准化的值，用于衡量该任务损失对应梯度的量级，计算为该任务的加权损失梯度的<strong>L2</strong>范数；$G_W^{(i)}(t)$越大，表示该任务的梯度占主导地位。</p>
+
+\[G_W^{(i)}(t) = || \nabla_W w_i(t)L_i(t) ||_2\]
+
+<p>定义$\overline{G}_W(t)$为第$t$轮训练中所有任务全局梯度标准化的值，计算为所有任务梯度标准化的均值：</p>
+
+\[\overline{G}_W(t) = E_{\text{task}}[G_W^{(i)}(t)]\]
+
+<p>定义$\tilde{L}_i(t)$为第$t$轮训练中第$i$个任务的训练速度，计算为当前损失$L_i(t)$与初始损失$L_i(0)$之比；$\tilde{L}_i(t)$越大，表示该任务的训练速度越慢。</p>
+
+\[\tilde{L}_i(t) = \frac{L_i(t)}{L_i(0)}\]
+
+<p>定义$r_i(t)$为第$t$轮训练中第$i$个任务的相对训练速度，计算为该任务的训练速度\(\tilde{L}_i(t)\)与平均训练速度(所有任务训练速度的均值\(E_{\text{task}}[\tilde{L}_i(t)]\))之比；$r_i(t)$越大，表示该任务在所有任务中训练速度较慢。</p>
+
+\[r_i(t) = \frac{\tilde{L}_i(t)}{E_{\text{task}}[\tilde{L}_i(t)]}\]
+
+<p>$L_{\text{grad}}$可以表示为：</p>
+
+\[L_{\text{grad}}(t;w_i(t)) = \sum_{i}^{} | G_W^{(i)}(t)-\overline{G}_W(t) \times [r_i(t)]^{\alpha} |_1\]
+
+<p>直观上，第$i$个任务的梯度量级$G_W^{(i)}(t)$与平均梯度量级\(\overline{G}_W(t)\)差距越大，说明该任务占据主导地位，导致\(L_{\text{grad}}\)增大，则应该降低该任务的损失权重。</p>
+
+<p>$r_i(t)$衡量该任务的学习难度。任务学习难度越小，对应$r_i(t)$越小，则该任务的梯度量级应该减小，对应该任务的损失权重减小。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/09/10/lightweight.html" class="read-next-link"></a>
+        <section>
+          <span>轻量级(LightWeight)卷积神经网络</span>
+          <p>  Lightweight Convolutional Neural Networks.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6183331c2ab3f51d915b0c47.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/09/07/lbtw.html" class="read-next-link"></a>
+          <section>
+            <span>Loss-Balanced Task Weighting to Reduce Negative Transfer in Multi-Task Learning</span>
+            <p>  通过损失平衡任务加权解决多任务学习中的负迁移.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6136c05b44eaada739e9e678.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

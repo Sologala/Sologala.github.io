@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimating the Optimal Covariance with Imperfect Mean in Diffusion Probabilistic Models - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Estimating the Optimal Covariance with Imperfect Mean in Diffusion Probabilistic Models">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Estimating the Optimal Covariance with Imperfect Mean in Diffusion Probabilistic Models - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/06/07/extended_analytic.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Estimating the Optimal Covariance with Imperfect Mean in Diffusion Probabilistic Models</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-06-07"><i class="iconfont icon-date"></i>07 Jun 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6435207a0d2dde57777a7f09.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>扩散概率模型中具有不准确均值的最优协方差估计.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2206.07309">Estimating the Optimal Covariance with Imperfect Mean in Diffusion Probabilistic Models</a></li>
+</ul>
+
+<p><a href="https://0809zheng.github.io/2022/06/06/analytic.html"><font color="Blue">Analytic-DPM</font></a>给出了已经训练好的生成扩散模型的最优方差的一个解析估计，实验显示该估计结果确实能有效提高扩散模型的生成质量。</p>
+
+<p><strong>扩散模型 (Diffusion Model)</strong>是一类深度生成模型。这类模型首先定义前向扩散过程，向数据中逐渐地添加随机噪声；然后学习反向扩散过程，从噪声中构造所需的数据样本。</p>
+
+<p>对于一个训练完成的扩散模型，在采样（反向扩散）过程中，我们希望求解\(q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t}\right)\)。一种常见的求解方法是首先通过\(\mathbf{x}_{t}\)构造\(\mathbf{x}_{0}\)，然后计算：</p>
+
+\[\begin{aligned}
+q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t},\mathbf{x}_0\right) \approx q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t},\mathbf{x}_0=\frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}}{\sqrt{\bar{\alpha}_t}}\right)
+\end{aligned}\]
+
+<p>然而从\(\mathbf{x}_{t}\)构造\(\mathbf{x}_{0}\)并不是完全准确的，因此应该用概率分布而非确定性的函数来描述它。事实上，严格地有：</p>
+
+\[\begin{aligned}
+q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t}\right) = \int q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t},\mathbf{x}_0\right) q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right) d \mathbf{x}_0
+\end{aligned}\]
+
+<p>注意到\(q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)\)是未知的，因此用正态分布\(\mathcal{N}\left(\mathbf{x}_0 ; \bar{\mu}(\mathbf{x}_{t}),\bar{\sigma}_t^2 \mathbf{I}\right)\)进行近似。</p>
+
+<p>用正态分布\(\mathcal{N}\left(\mathbf{x}_0 ; \bar{\mu}(\mathbf{x}_{t}),\bar{\sigma}_t^2 \mathbf{I}\right)\)近似\(q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)\)，落脚于分别近似\(q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)\)的均值和方差：</p>
+
+\[\begin{aligned}
+\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right) &amp;= \frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)}{\sqrt{\bar{\alpha}_t}} \\
+\hat{\sigma}_t^2 &amp;= \frac{1-\bar{\alpha}_t}{\bar{\alpha}_t} \left(1-\frac{1}{d}\mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)} \left[ ||\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ||^2 \right] \right)
+\end{aligned}\]
+
+<h2 id="-extended-analytic-dpm">⚪ Extended-Analytic-DPM</h2>
+
+<p>值得一提的是，方差估计\(\hat{\sigma}_t^2\)是建立在均值\(\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)\)精确估计的基础上。然而\(\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)\)是通过网络学习得到的（更具体地，\(\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)\)是由神经网络近似的），因此均值是一种<strong>Imperfect Mean</strong>。本文作者讨论如何在<strong>Imperfect Mean</strong>下改进估计结果。</p>
+
+<p>假设均值\(\bar{\mu}(\mathbf{x}_{t})\)已经训练完成，则分布\(\mathcal{N}\left(\mathbf{x}_0 ; \bar{\mu}(\mathbf{x}_{t}),\bar{\sigma}_t^2 \mathbf{I}\right)\)的未知参数还有\(\bar{\sigma}_t^2\)。考虑其负对数似然：</p>
+
+\[\begin{aligned}
+&amp;\mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ -\log \mathcal{N}\left(\mathbf{x}_0 ; \bar{\mu}(\mathbf{x}_{t}),\bar{\sigma}_t^2 \mathbf{I}\right) \right] \\
+= &amp;\frac{\mathbb{E}_{\mathbf{x}_t,\mathbf{x}_0 \sim q\left(\mathbf{x}_{0}\right)q\left(\mathbf{x}_t \mid \mathbf{x}_{0}\right)} \left[ ||\mathbf{x}_0  -\bar{\mu}(\mathbf{x}_{t})||^2\right]}{2\bar{\sigma}_t^2} + \frac{1}{2} \log \bar{\sigma}_t^2 + \frac{1}{2} \log 2\pi
+\end{aligned}\]
+
+<p>上式取得最小值对应：</p>
+
+\[\begin{aligned}
+\bar{\sigma}_t^2 &amp;= \mathbb{E}_{\mathbf{x}_t,\mathbf{x}_0 \sim q\left(\mathbf{x}_{0}\right)q\left(\mathbf{x}_t \mid \mathbf{x}_{0}\right)} \left[ ||\mathbf{x}_0  -\bar{\mu}(\mathbf{x}_{t})||^2\right] \\
+&amp;= \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_{0}\right), \boldsymbol{\epsilon}\sim \mathcal{N}\left(\mathbf{0}, \mathbf{I}\right)}\left[\left\| \frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}}{\sqrt{\bar{\alpha}_t}} - \frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)}{\sqrt{\bar{\alpha}_t}} \right\|^2\right] \\
+&amp;= \frac{1-\bar{\alpha}_t}{\bar{\alpha}_t}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_{0}\right), \boldsymbol{\epsilon}\sim \mathcal{N}\left(\mathbf{0}, \mathbf{I}\right)}\left[\left\| \boldsymbol{\epsilon}-\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \right\|^2\right] \\
+\end{aligned}\]
+
+<p>如果把方差\(\bar{\sigma}_t^2\)也建模为\(\mathbf{x}_t\)的函数\(\bar{\sigma}_t^2(\mathbf{x}_t)\)，则可以构建目标函数：</p>
+
+\[\begin{aligned}
+\bar{\sigma}_t^2(\mathbf{x}_t) &amp;= \frac{1-\bar{\alpha}_t}{\bar{\alpha}_t}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_{0}| \mathbf{x}_t\right)}\left[\left( \boldsymbol{\epsilon}_t-\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \right)^2\right] \\
+&amp;= \frac{1-\bar{\alpha}_t}{\bar{\alpha}_t}\mathop{\arg\min}_{\mathbb{g}}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_{0}| \mathbf{x}_t\right)}\left[\left\| \left(\boldsymbol{\epsilon}_t-\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \right)^2-\mathbb{g}\right\|^2\right] \\
+&amp;= \frac{1-\bar{\alpha}_t}{\bar{\alpha}_t}\mathop{\arg\min}_{\mathbb{g}(\mathbf{x}_t)}\mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_{0}| \mathbf{x}_t\right)}\left[\left\| \left(\boldsymbol{\epsilon}_t-\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \right)^2-\mathbb{g}(\mathbf{x}_t)\right\|^2\right] \\
+&amp;= \frac{1-\bar{\alpha}_t}{\bar{\alpha}_t}\mathop{\arg\min}_{\mathbb{g}(\mathbf{x}_t)}\mathbb{E}_{\mathbf{x}_t ,\mathbf{x}_0 \sim q\left(\mathbf{x}_{t}| \mathbf{x}_0\right)q\left(\mathbf{x}_{0}\right)}\left[\left\| \left(\boldsymbol{\epsilon}_t-\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \right)^2-\mathbb{g}(\mathbf{x}_t)\right\|^2\right] \\
+\end{aligned}\]
+
+<p><strong>Extended-Analytic-DPM</strong>提出了两阶段的训练方案，即用原始固定方差的测试训练好均值模型\(\bar{\mu}(\mathbf{x}_{t})\)，然后固定该模型，并重用该模型的大部分参数来学一个方差模型\(\bar{\sigma}_t^2(\mathbf{x}_t)\)。该方法降低了参数量和训练成本，允许重用已经训练好的均值模型，训练过程更加稳定。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/06/08/cond_diffusion.html" class="read-next-link"></a>
+        <section>
+          <span>Diffusion Models Beat GANs on Image Synthesis</span>
+          <p>  在图像合成任务上扩散模型超越了生成对抗网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/643651800d2dde577700c957.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/06/06/analytic.html" class="read-next-link"></a>
+          <section>
+            <span>Analytic-DPM: an Analytic Estimate of the Optimal Reverse Variance in Diffusion Probabilistic Models</span>
+            <p>  Analytic-DPM：扩散概率模型中最优反向方差的分析估计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6433ad680d2dde5777a48bde.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

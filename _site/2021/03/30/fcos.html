@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCOS: A Simple and Strong Anchor-free Object Detector - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="FCOS: A Simple and Strong Anchor-free Object Detector">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="FCOS: A Simple and Strong Anchor-free Object Detector - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/03/30/fcos.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>FCOS: A Simple and Strong Anchor-free Object Detector</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-03-30"><i class="iconfont icon-date"></i>30 Mar 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/64c4bbdf1ddac507cc34185d.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>FCOS：一种简单强力的Anchor-free目标检测器.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2006.09214">FCOS: A Simple and Strong Anchor-free Object Detector</a></li>
+</ul>
+
+<p><strong>FCOS</strong>是一种<strong>Anchor-free</strong>的检测模型，先预测下采样<strong>S</strong>倍的特征图上的各点类别，再预测各点的$l,r,t,b$四个值来确定<strong>bbox</strong>的大小位置，同时提出<strong>center-ness</strong>分支，用于帮助<strong>NMS</strong>抑制低质量框，进一步提高网络的性能表现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64c4bea01ddac507cc39b5c9.jpg" alt="" /></p>
+
+<p><strong>FCOS</strong>的整体结构非常简单，其沿用了<strong>FPN</strong>的结构，在<strong>FPN</strong>的基础上增加了两个更小的特征图<strong>P6</strong>和<strong>P7</strong>，<strong>P6</strong>通过<strong>P5</strong>卷积得到，<strong>P7</strong>通过<strong>P6</strong>卷积得到. 最终<strong>P3-P7</strong>都将被用做检测，并且共享一个检测头。检测头采用<strong>decouple</strong>的形式，分为<strong>Classification</strong>分支和位置预测分支，其中位置预测分支包括<strong>Regression</strong>分支和<strong>Center-ness</strong>分支。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64c4bfc11ddac507cc3bf5b2.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FPN</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">features</span><span class="o">=</span><span class="mi">256</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FPN</span><span class="p">,</span><span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">prj_3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">prj_4</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">prj_5</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">2048</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_3</span> <span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_4</span> <span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_5</span> <span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_out6</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_out7</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">upsamplelike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inputs</span><span class="p">):</span>
+        <span class="n">src</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="k">return</span> <span class="n">F</span><span class="p">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">target</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">target</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span><span class="n">mode</span><span class="o">=</span><span class="s">'nearest'</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">C3</span><span class="p">,</span> <span class="n">C4</span><span class="p">,</span> <span class="n">C5</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="c1">#-------------------------------------#
+</span>        <span class="c1">#   80, 80, 512 -&gt; 80, 80, 256
+</span>        <span class="c1">#   40, 40, 1024 -&gt; 40, 40, 256
+</span>        <span class="c1">#   20, 20, 2048 -&gt; 20, 20, 256
+</span>        <span class="c1">#-------------------------------------#
+</span>        <span class="n">P3</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">prj_3</span><span class="p">(</span><span class="n">C3</span><span class="p">)</span>
+        <span class="n">P4</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">prj_4</span><span class="p">(</span><span class="n">C4</span><span class="p">)</span>
+        <span class="n">P5</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">prj_5</span><span class="p">(</span><span class="n">C5</span><span class="p">)</span>
+            
+        <span class="c1">#------------------------------------------------#
+</span>        <span class="c1">#   20, 20, 256 -&gt; 40, 40, 256 -&gt; 40, 40, 256
+</span>        <span class="c1">#------------------------------------------------#
+</span>        <span class="n">P4</span> <span class="o">=</span> <span class="n">P4</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">upsamplelike</span><span class="p">([</span><span class="n">P5</span><span class="p">,</span> <span class="n">C4</span><span class="p">])</span>
+        <span class="c1">#------------------------------------------------#
+</span>        <span class="c1">#   40, 40, 256 -&gt; 80, 80, 256 -&gt; 80, 80, 256
+</span>        <span class="c1">#------------------------------------------------#
+</span>        <span class="n">P3</span> <span class="o">=</span> <span class="n">P3</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">upsamplelike</span><span class="p">([</span><span class="n">P4</span><span class="p">,</span> <span class="n">C3</span><span class="p">])</span>
+
+        <span class="c1"># 80, 80, 256
+</span>        <span class="n">P3</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_3</span><span class="p">(</span><span class="n">P3</span><span class="p">)</span>
+        <span class="c1"># 40, 40, 256
+</span>        <span class="n">P4</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_4</span><span class="p">(</span><span class="n">P4</span><span class="p">)</span>
+        <span class="c1"># 20, 20, 256
+</span>        <span class="n">P5</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_5</span><span class="p">(</span><span class="n">P5</span><span class="p">)</span>
+
+        <span class="c1"># 10, 10, 256
+</span>        <span class="n">P6</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_out6</span><span class="p">(</span><span class="n">P5</span><span class="p">)</span>
+        <span class="c1"># 5, 5, 256
+</span>        <span class="n">P7</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_out7</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">P6</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">P3</span><span class="p">,</span><span class="n">P4</span><span class="p">,</span><span class="n">P5</span><span class="p">,</span><span class="n">P6</span><span class="p">,</span><span class="n">P7</span><span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">ScaleExp</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_value</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ScaleExp</span><span class="p">,</span><span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">init_value</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">float32</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">scale</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Fcos_Head</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channel</span> <span class="p">,</span><span class="n">num_classes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Fcos_Head</span><span class="p">,</span><span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span>
+        <span class="n">cls_branch</span><span class="o">=</span><span class="p">[]</span>
+        <span class="n">reg_branch</span><span class="o">=</span><span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+            <span class="n">cls_branch</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+            <span class="n">cls_branch</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">GroupNorm</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">)),</span>
+            <span class="n">cls_branch</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+            <span class="n">reg_branch</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+            <span class="n">reg_branch</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">GroupNorm</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">)),</span>
+            <span class="n">reg_branch</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="bp">True</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">cls_conv</span><span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">cls_branch</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">reg_conv</span><span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">reg_branch</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">cls_logits</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">cnt_logits</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">reg_pred</span>   <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+        <span class="n">prior</span> <span class="o">=</span> <span class="mf">0.01</span>
+        <span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">constant_</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cls_logits</span><span class="p">.</span><span class="n">bias</span><span class="p">,</span><span class="o">-</span><span class="n">math</span><span class="p">.</span><span class="n">log</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">prior</span><span class="p">)</span> <span class="o">/</span> <span class="n">prior</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale_exp</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span><span class="n">ScaleExp</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)])</span>
+    
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inputs</span><span class="p">):</span>
+        <span class="n">cls_logits</span>  <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cnt_logits</span>  <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">reg_preds</span>   <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">P</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+            <span class="n">cls_conv_out</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">cls_conv</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+            <span class="n">reg_conv_out</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">reg_conv</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+
+            <span class="n">cls_logits</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cls_logits</span><span class="p">(</span><span class="n">cls_conv_out</span><span class="p">))</span>
+            <span class="n">cnt_logits</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cnt_logits</span><span class="p">(</span><span class="n">reg_conv_out</span><span class="p">))</span>
+            <span class="n">reg_preds</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">scale_exp</span><span class="p">[</span><span class="n">index</span><span class="p">](</span><span class="bp">self</span><span class="p">.</span><span class="n">reg_pred</span><span class="p">(</span><span class="n">reg_conv_out</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">cls_logits</span><span class="p">,</span> <span class="n">cnt_logits</span><span class="p">,</span> <span class="n">reg_preds</span>
+
+
+<span class="k">class</span> <span class="nc">FCOS</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">fpn_out_channels</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span>   <span class="o">=</span> <span class="n">resnet50</span><span class="p">(</span><span class="n">pretrained</span> <span class="o">=</span> <span class="n">pretrained</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fpn</span>        <span class="o">=</span> <span class="n">FPN</span><span class="p">(</span><span class="n">fpn_out_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">head</span>       <span class="o">=</span> <span class="n">Fcos_Head</span><span class="p">(</span><span class="n">fpn_out_channels</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">x</span><span class="p">):</span>
+        <span class="c1">#-------------------------------------#
+</span>        <span class="c1">#   80, 80, 512
+</span>        <span class="c1">#   40, 40, 1024
+</span>        <span class="c1">#   20, 20, 2048
+</span>        <span class="c1">#-------------------------------------#
+</span>        <span class="n">C3</span><span class="p">,</span> <span class="n">C4</span><span class="p">,</span> <span class="n">C5</span>          <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+        <span class="c1">#-------------------------------------#
+</span>        <span class="c1">#   80, 80, 256
+</span>        <span class="c1">#   40, 40, 256
+</span>        <span class="c1">#   20, 20, 256
+</span>        <span class="c1">#   10, 10, 256
+</span>        <span class="c1">#   5, 5, 256
+</span>        <span class="c1">#-------------------------------------#
+</span>        <span class="n">P3</span><span class="p">,</span> <span class="n">P4</span><span class="p">,</span> <span class="n">P5</span><span class="p">,</span> <span class="n">P6</span><span class="p">,</span> <span class="n">P7</span>  <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fpn</span><span class="p">.</span><span class="n">forward</span><span class="p">([</span><span class="n">C3</span><span class="p">,</span> <span class="n">C4</span><span class="p">,</span> <span class="n">C5</span><span class="p">])</span>
+        
+        <span class="n">cls_logits</span><span class="p">,</span> <span class="n">cnt_logits</span><span class="p">,</span> <span class="n">reg_preds</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">.</span><span class="n">forward</span><span class="p">([</span><span class="n">P3</span><span class="p">,</span> <span class="n">P4</span><span class="p">,</span> <span class="n">P5</span><span class="p">,</span> <span class="n">P6</span><span class="p">,</span> <span class="n">P7</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">cls_logits</span><span class="p">,</span> <span class="n">cnt_logits</span><span class="p">,</span> <span class="n">reg_preds</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>对大小为<strong>HxW</strong>的特征图上各点来说，如果其落入了<strong>GT</strong>的中心区域，则视作正样本. 例如，某个<strong>GT</strong>的中心点为$(c_x,c_y)$，则其中心区域为$(c_x-rs,c_y-rs,c_x+rs,c_y+rs)$，只有落入该中心区域内的点才是该<strong>GT</strong>的正样本并赋予该<strong>GT</strong>的类别属性，否则为该<strong>GT</strong>的负样本、赋予背景类别属性。其中$s$为特征图对于原图的下采样率，$r$为自定义的超参数（对于<strong>COCO</strong>数据集设为<strong>1.5</strong>）。</p>
+
+<ul>
+  <li><strong>Classification</strong>分支对大小为<strong>HxW</strong>的特征图上各点预测其类别，类别数为目标物体类别数<strong>C</strong>。因此<strong>Classification</strong>分支的<strong>output</strong>形状为<strong>HxWxC</strong>。</li>
+  <li><strong>Regression</strong>分支对大小为<strong>HxW</strong>的特征图上各点预测$l,r,t,b$四个值，分别代表该点到<strong>bbox</strong>左侧、右侧、顶端和底部的距离. 因此<strong>Regression</strong>分支的<strong>output</strong>形状为<strong>HxWx4</strong>。</li>
+  <li><strong>Center-ness</strong>分支对大小为<strong>HxW</strong>的特征图上各点预测<strong>center-ness score</strong>，用以代表特征图上某点到某<strong>GT</strong>中心的距离. 因此<strong>Center-ness</strong>分支的<strong>output</strong>形状为<strong>HxWx1</strong>。</li>
+</ul>
+
+<p>假设特征图上某点的回归分支四个值的预测目标为$l,r,t,b$，则该点的<strong>center-ness</strong>目标定义为：</p>
+
+\[o_{x,y} = \sqrt{\frac{\min(l,r)}{\max(l,r)}\times \frac{\min(t,b)}{\max(t,b)}}\]
+
+<p><strong>center-ness</strong>的可视化图如下所示，距离<strong>GT</strong>中心点越近，<strong>center-ness</strong>值越大，反之越小:</p>
+
+<p><img src="https://pic.imgdb.cn/item/64c4cadc1ddac507cc5247e2.jpg" alt="" /></p>
+
+<p>在推理时，<strong>center-ness</strong>也被用作类别权重。在<strong>NMS</strong>时，其排序所用的置信度$s$由<strong>center-ness</strong>$o$和类别概率$p$得到：</p>
+
+\[s_{x,y} = \sqrt{p_{x,y} \times o_{x,y}}\]
+
+<p>因此，距离<strong>GT</strong>中心越远的点，其<strong>center-ness</strong>越小，所得到的置信度就越小，因此<strong>NMS</strong>时会倾向于抑制该点. 此外，如下图所示，在对分类概率应用了<strong>center-ness</strong>后，具有低<strong>IoU</strong>但高置信度的检测框也有效的减少了:</p>
+
+<p><img src="https://pic.imgdb.cn/item/64c4cb651ddac507cc534a76.jpg" alt="" /></p>
+
+<p>如果特征图上某点同时落在了多个<strong>GT</strong>的中心区域内，则被称为<strong>ambiguous sample</strong>。<strong>FCOS</strong>简单地把这些重叠<strong>GT</strong>中面积最小的作为该点的回归目标。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/04/01/deeppose.html" class="read-next-link"></a>
+        <section>
+          <span>DeepPose: Human Pose Estimation via Deep Neural Networks</span>
+          <p>  DeepPose：通过深度神经网络实现人体姿态估计.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/649a36df1ddac507cc3a5910.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/03/29/amass.html" class="read-next-link"></a>
+          <section>
+            <span>AMASS: Archive of Motion Capture as Surface Shapes</span>
+            <p>  AMASS：经过SMPL参数标准化的三维人体动作捕捉数据集合.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://img.imgdb.cn/item/60618bf08322e6675cc402c1.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

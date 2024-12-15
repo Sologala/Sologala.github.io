@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预训练语言模型(Pretrained Language Model) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="预训练语言模型(Pretrained Language Model)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="预训练语言模型(Pretrained Language Model) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/27/elmo-bert-gpt.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>预训练语言模型(Pretrained Language Model)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-27"><i class="iconfont icon-date"></i>27 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ea4013dc2a9a83be5b17721.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Pretrained Language Models.</p>
+</blockquote>
+
+<p><strong>预训练语言模型</strong>(<strong>Pretrained Language Models,PLMs</strong>)是一种从大量无标签的语料库中学习通用的自然语言特征表示的方法。笔者认为，预训练模型之于自然语言处理，就好比<strong>backbone</strong>之于计算机视觉。使用预训练语言模型的步骤如下：</p>
+<ol>
+  <li>在大量无标签的语料库上进行特定任务的<strong>预训练</strong>；</li>
+  <li>在下游任务的语料库上进行<strong>微调</strong>。</li>
+</ol>
+
+<p>本文首先介绍预训练语言模型的发展，并介绍常用的预训练语言模型。</p>
+
+<h1 id="1-预训练语言模型的发展">1. 预训练语言模型的发展</h1>
+<p>自然语言处理中对于语言的特征表示应能够从文本语料库中学习到内在语言规则和常识知识，如词义、句法结构、词类、语用学信息等。一种好的语言特征表示应具有与具体任务无关的通用含义，又能够针对具体的任务提供有用的信息。目前对语言的特征表示有两种形式，即<strong>上下文无关的嵌入(non-contextual embedding)</strong>和<strong>上下文相关的嵌入(contextual embedding)</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ebf3395132923bf857acf4.jpg" alt="" /></p>
+
+<h3 id="1-non-contextual-embedding">(1) Non-Contextual Embedding</h3>
+
+<p>上下文无关的嵌入通常是由<strong>词嵌入(word embedding)</strong>实现的，即把句子中的每一个<strong>word</strong>转化成一个词向量：$x \to e_x$。在这类方法中，不同句子中的相同<strong>word</strong>都会被嵌入为同一个词向量，然而相同<strong>word</strong>在不同的句子中位于不同的<strong>token</strong>位置，可能具有不同的含义，如下面两个句子：</p>
+<ul>
+  <li>It is safest to deposit your money in the <strong>bank</strong>.</li>
+  <li>The victim was found lying dead on the river <strong>bank</strong>.</li>
+</ul>
+
+<p>在上面两个句子中<strong>bank</strong>分别表示银行和河岸；因此这种词嵌入无法解决<strong>多义问题</strong>。此外，由于词向量的个数是有限的，对于之前不存在的词，则无法得到相应的词嵌入向量(即<strong>OOV问题</strong>,<strong>out of vocabulary</strong>)。</p>
+
+<p>基于上下文无关的嵌入方法可以被认为是早期的预训练语言模型，代表模型有<strong>Word2Vec</strong>,<strong>CBOW</strong>,<strong>Glove</strong>。这类模型结构简单，尽管是从无标注语料库中训练得到的，也能获得高质量的词向量；其学习到的词向量能够捕捉文本中潜在的语法和语义信息，但这类预训练词向量无法随上下文而动态变化，只是简单地学习”共现词频”，无法理解更高层次的文本概念，如多义性、句法特征、语义角色、指代等。</p>
+
+<h3 id="2-contextual-embedding">(2) Contextual Embedding</h3>
+<p>上下文相关的嵌入是指根据当前文本的上下文，灵活地对每一个<strong>token</strong>位置(注意不是对每一个<strong>word</strong>)进行词嵌入；当文本不同时，同一个<strong>word</strong>也会具有不同的词嵌入向量。这通常是由一个神经网络编码器$f_{enc}(\cdot)$实现的：$[h_1,…,h_T]=f_{enc}([x_1,…,x_T])$。随着<strong>LSTM</strong>,<strong>Transformer</strong>等模型的引入，这种结合上下文信息的预训练语言模型获得了更多的关注。这类预训练语言模型能够根据预训练任务学习包含词的上下文信息的词表示，并用于不同的下游任务中。这类预训练语言模型的优点如下：</p>
+<ol>
+  <li>可以在大规模预训练语料库中学习到<strong>通用语言表示</strong>；</li>
+  <li>可以提供一个更好的下游任务<strong>初始化模型</strong>，提高下游任务的表现并加速收敛；</li>
+  <li>可以看作一种<strong>正则化</strong>，防止模型在小数据集上过拟合。</li>
+</ol>
+
+<h1 id="2-常用的预训练语言模型">2. 常用的预训练语言模型</h1>
+<p>根据预训练的任务不同，预训练语言模型可以划分为以下几类：</p>
+<ul>
+  <li><strong>概率语言建模 Language Modeling(LM)</strong></li>
+</ul>
+
+<p>概率语言建模是自然语言处理中最常见的无监督任务，通常指<strong>自回归(autoregressive)</strong>或单向语言建模，即给定前面所有词预测下一个词：</p>
+
+\[p(x_{1:T}) = \prod_{t=1}^{T} p(x_{t}|x_{0:t-1})\]
+
+<ul>
+  <li><strong>掩码语言建模 Masked Language Modeling(MLM)</strong></li>
+</ul>
+
+<p>掩码语言建模是指从输入序列中遮盖一些<strong>token</strong>(为这些<strong>token</strong>加上<strong>mask</strong>)，然后训练模型通过其余的<strong>token</strong>预测<strong>masked token</strong>。然而这种预训练方法会使预训练和微调之间产生不匹配(<strong>discrepancy</strong>)问题，因为在下游任务中<code class="language-plaintext highlighter-rouge">MASK</code>等预训练中使用的特殊<strong>token</strong>并不存在。这类方法也称为<strong>自编码(autoencoding)</strong>式语言模型。</p>
+
+<ul>
+  <li><strong>序列到序列的掩码语言建模 Seq2Seq Masked Language Modeling(Seq2Seq MLM)</strong></li>
+</ul>
+
+<p>掩码语言建模<strong>MLM</strong>通常用于解决分类问题，即将<strong>masked</strong>序列作为输入，将模型输出送入<strong>softmax</strong>分类器以预测<strong>masked token</strong>。序列到序列的掩码语言建模是指采用编码器-解码器结构，将<strong>masked</strong>序列输入编码器，解码器以自回归的方式顺序生成<strong>masked token</strong>。</p>
+
+<ul>
+  <li><strong>增强掩码语言建模 Enhanced Masked Language Modeling(E-MLM)</strong></li>
+</ul>
+
+<p>增强掩码语言建模<strong>E-MLM</strong>是指在掩码语言建模的过程中使用了一些增强方法。不同的模型使用了不同的增强方法，详见下表。</p>
+
+<ul>
+  <li><strong>排列语言建模 Permuted Language Modeling(PLM)</strong></li>
+</ul>
+
+<p>排列语言建模是指在输入序列的随机排列上进行语言建模。给定输入序列，从所有可能的序列排列中随机抽样一个排列。将该排列序列中的一些<strong>token</strong>选定为目标，训练模型根据其余<strong>token</strong>和目标的正常位置(<strong>natural position</strong>)来预测这些目标<strong>token</strong>。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>预训练模型</th>
+      <th style="text-align: center">结构</th>
+      <th style="text-align: center">预训练任务</th>
+      <th style="text-align: center">参数量(M百万,B十亿)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/01/01/elmo.html">ELMo</a></td>
+      <td style="text-align: center">双向LSTM</td>
+      <td style="text-align: center">LM</td>
+      <td style="text-align: center">-</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/01/03/gpt.html">GPT</a></td>
+      <td style="text-align: center">Transformer解码器</td>
+      <td style="text-align: center">LM</td>
+      <td style="text-align: center">$117$M</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/01/11/gpt2.html">GPT2</a></td>
+      <td style="text-align: center">Transformer解码器</td>
+      <td style="text-align: center">LM</td>
+      <td style="text-align: center">$117$-$1542$M</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/07/13/gpt3.html">GPT3</a></td>
+      <td style="text-align: center">Transformer解码器</td>
+      <td style="text-align: center">LM</td>
+      <td style="text-align: center">$125$M-$175$B</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/01/02/bert.html">BERT</a></td>
+      <td style="text-align: center">Transformer编码器</td>
+      <td style="text-align: center">MLM+相邻句子预测(Next Sentence Prediction)</td>
+      <td style="text-align: center">$110$-$340$M</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/01/14/albert.html">ALBERT</a></td>
+      <td style="text-align: center">Transformer编码器</td>
+      <td style="text-align: center">MLM+句子顺序预测(Sentence-Order Sentence Prediction)</td>
+      <td style="text-align: center">$12$-$235$M</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/01/16/electra.html">ELECTRA</a></td>
+      <td style="text-align: center">Transformer编码器</td>
+      <td style="text-align: center">MLM+替换词检测(Replaced Token Detection)</td>
+      <td style="text-align: center">$14$-$335$M</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2020/12/27/realm.html">REALM</a></td>
+      <td style="text-align: center">Transformer编码器</td>
+      <td style="text-align: center">MLM+知识检索(Knowledge Retrieval)</td>
+      <td style="text-align: center">$330$M</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/08/18/mass.html">MASS</a></td>
+      <td style="text-align: center">Transformer</td>
+      <td style="text-align: center">Seq2Seq MLM</td>
+      <td style="text-align: center">$220$M-$11$B</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/08/17/unilm.html">UniLM</a></td>
+      <td style="text-align: center">Transformer编码器</td>
+      <td style="text-align: center">Seq2Seq MLM</td>
+      <td style="text-align: center">$340$M</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/01/08/t5.html">T5</a></td>
+      <td style="text-align: center">Transformer</td>
+      <td style="text-align: center">Seq2Seq MLM</td>
+      <td style="text-align: center">$220$M-$11$B</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/01/09/t511.html">T5.1.1</a></td>
+      <td style="text-align: center">Transformer</td>
+      <td style="text-align: center">Seq2Seq MLM</td>
+      <td style="text-align: center">$220$M-$11$B</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/01/10/mt5.html">mT5</a></td>
+      <td style="text-align: center">Transformer</td>
+      <td style="text-align: center">Seq2Seq MLM</td>
+      <td style="text-align: center">$300$M-$13$B</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/08/16/roberta.html">RoBERTa</a></td>
+      <td style="text-align: center">Transformer编码器</td>
+      <td style="text-align: center">E-MLM(Dynamic Masking)</td>
+      <td style="text-align: center">$355$M</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/04/02/deberta.html">DeBERTa</a></td>
+      <td style="text-align: center">Transformer编码器</td>
+      <td style="text-align: center">E-MLM(Disentangled Attention+Enhanced Mask Decoder)</td>
+      <td style="text-align: center">$390$M</td>
+    </tr>
+    <tr>
+      <td><a href="https://0809zheng.github.io/2021/08/19/xlnet.html">XLNet</a></td>
+      <td style="text-align: center">Transformer编码器</td>
+      <td style="text-align: center">PLM</td>
+      <td style="text-align: center">$110$-$340$M</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="-参考文献">⚪ 参考文献</h1>
+<ul>
+  <li><a href="https://arxiv.org/abs/2003.08271">Pre-trained Models for Natural Language Processing: A Survey</a>：(arXiv2003)一篇预训练模型的综述。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/01/elmo.html"><font color="Blue">Deep contextualized word representations</font></a>：(arXiv1802)ELMo：使用语言模型进行词嵌入。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/03/gpt.html"><font color="Blue">Improving Language Understanding by Generative Pre-Training</font></a>：(NLPIR2018)GPT：使用生成式预训练模型提高对语言的理解。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/02/bert.html"><font color="Blue">BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding</font></a>：(arXiv1810)BERT：从Transformer中获得上下文的编码表示。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/18/mass.html"><font color="Blue">MASS: Masked Sequence to Sequence Pre-training for Language Generation</font></a>：(arXiv1905)MASS：序列到序列的掩码语言建模。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/17/unilm.html"><font color="Blue">Unified Language Model Pre-training for Natural Language Understanding and Generation</font></a>：(arXiv1905)UniLM：使用BERT实现序列到序列的预训练。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/19/xlnet.html"><font color="Blue">XLNet: Generalized Autoregressive Pretraining for Language Understanding</font></a>：(arXiv1906)XLNet：使用排列语言建模训练语言模型。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/16/roberta.html"><font color="Blue">RoBERTa: A Robustly Optimized BERT Pretraining Approach</font></a>：(arXiv1907)RoBERTa：鲁棒优化的BERT预训练方法。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/14/albert.html"><font color="Blue">ALBERT: A Lite BERT for Self-supervised Learning of Language Representations</font></a>：(arXiv1909)ALBERT：一种轻量型的BERT模型。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/08/t5.html"><font color="Blue">Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer</font></a>：(arXiv1910)T5：编码器-解码器结构的预训练语言模型。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/11/gpt2.html"><font color="Blue">Language Models are Unsupervised Multitask Learners</font></a>：(2019)GPT2：语言模型是无监督的多任务模型。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/27/realm.html"><font color="Blue">REALM: Retrieval-Augmented Language Model Pre-Training</font></a>：(arXiv2002)REALM：通过检索增强预训练语言模型。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/09/t511.html"><font color="Blue">GLU Variants Improve Transformer</font></a>：(arXiv2002)T5.1.1：使用GLU改进预训练语言模型T5。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/16/electra.html"><font color="Blue">ELECTRA: Pre-training Text Encoders as Discriminators Rather Than Generators</font></a>：(arXiv2003)ELECTRA：判别式的预训练语言模型。</li>
+  <li><a href="https://0809zheng.github.io/2020/07/13/gpt3.html"><font color="Blue">Language Models are Few-Shot Learners</font></a>：(arXiv2005)GPT3：语言模型是少样本学习模型。</li>
+  <li><a href="https://0809zheng.github.io/2021/04/02/deberta.html"><font color="Blue">DeBERTa: Decoding-enhanced BERT with Disentangled Attention</font></a>：(arXiv2006)DeBERTa：使用分解注意力机制和增强型掩膜解码器改进预训练语言模型。</li>
+  <li><a href="https://0809zheng.github.io/2021/01/10/mt5.html"><font color="Blue">mT5: A massively multilingual pre-trained text-to-text transformer</font></a>：(arXiv2010)mT5：多语言版本的预训练语言模型T5。</li>
+</ul>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/28/explainable-DL.html" class="read-next-link"></a>
+        <section>
+          <span>深度学习的可解释性</span>
+          <p>  Explainable Deep Learning.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/25/transformer.html" class="read-next-link"></a>
+          <section>
+            <span>Transformer</span>
+            <p>  Transformer，基于Multi-head self-attention的Seq2Seq模型.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ea28751c2a9a83be5467bc1.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

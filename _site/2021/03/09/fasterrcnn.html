@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/03/09/fasterrcnn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-03-09"><i class="iconfont icon-date"></i>09 Mar 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6486c6aa1ddac507cc7e04d6.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Faster R-CNN：通过区域提议网络实现实时目标检测.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1506.01497">Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks</a></li>
+</ul>
+
+<p><a href="https://0809zheng.github.io/2021/03/01/rcnn.html"><font color="blue">R-CNN</font></a>和<a href="https://0809zheng.github.io/2021/03/07/fastrcnn.html"><font color="blue">Fast R-CNN</font></a>通过选择搜索算法生成候选区域，比较耗时。<strong>Faster R-CNN</strong>通过卷积神经网络模型来实现区域提议算法，这是通过在<strong>Fast R-CNN</strong>中引入区域提议网络（<strong>Region Proposal Network, RPN</strong>）实现的。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6486c8f51ddac507cc862f79.jpg" alt="" /></p>
+
+<h1 id="1-faster-rcnn的网络结构">1. Faster RCNN的网络结构</h1>
+
+<p><strong>Faster RCNN</strong>模型的工作流程如下：</p>
+<ol>
+  <li>把任意大小的图像缩放至固定大小（如$800\times 600$）；</li>
+  <li>使用预训练的卷积神经网络提取特征映射（<strong>feature maps</strong>）；</li>
+  <li>通过<strong>RPN</strong>生成区域提议（<strong>region proposals</strong>），即对预设<strong>anchor</strong>进行类别识别（正类或负类）和边界框回归；</li>
+  <li>通过<strong>RoI Pooling</strong>根据特征映射和区域提议提取提议特征映射（<strong>proposal feature map</strong>）；</li>
+  <li>通过全连接层执行提议特征映射的目标类别识别和边界框回归。</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/64880eca1ddac507ccb24436.jpg" alt="" /></p>
+
+<h2 id="1预训练卷积网络">（1）预训练卷积网络</h2>
+
+<p>预训练卷积网络选择在通用的图像分类任务（如$1000$类的<strong>ImageNet</strong>）上预训练的卷积神经网络（如<strong>AlexNet, VGGNet, ResNet</strong>）的特征提取部分（全卷积结构）；以<strong>VGGNet16</strong>模型为例，网络包括$13$个卷积层（<strong>ReLU</strong>激活）和$4$个最大池化层。所有卷积核设置为$3\times 3$，池化步长为$2$；则模型对输入图像进行$2^4=16$倍下采样。若输入尺寸为$800\times 600$，则输出特征尺寸为$50\times 38$。</p>
+
+<h2 id="2rpn">（2）RPN</h2>
+
+<p><strong>RPN</strong>接收下采样的特征映射，使用一个$3 \times 3$卷积层进行特征增强。由于已经人为设置了<strong>anchor</strong>（参考下一节），<strong>RPN</strong>使用两个$1\times 1$卷积分别预测<strong>anchor</strong>的类别（<strong>positive</strong>和<strong>negative</strong>）和<strong>anchor</strong>的边界框位置偏移量。并通过<strong>proposal</strong>层综合<strong>positive anchors</strong>和对应边界框回归偏移量获取<strong>proposals</strong>。这一步已经完成了目标定位功能。</p>
+
+<h3 id="-rpn的前向过程">⚪ RPN的前向过程</h3>
+
+<p>在论文原文中使用的是<strong>ZFNet</strong>，其最后一个卷积层的输出特征维度是$256$，对应特征图上的每个像素都是$256$维特征向量。之后只用$3\times 3$卷积聚合局部空间信息，特征维度保持不变。</p>
+
+<p>由于对特征映射的每个位置预设了$k=9$个<strong>anchor</strong>，因此<strong>RPN</strong>需要在特征的每个像素位置处预测$9$个<strong>anchor</strong>的类别和边界框位置偏移量。通过$1\times 1$卷积层分别预测类别特征（特征维度是$2k=18$）和位置偏移（特征维度是$4k=36$）。</p>
+
+<p>对类别特征应用<strong>softmax</strong>后获得<strong>anchor</strong>的分类结果，通常认为<strong>postive anchors</strong>检测到目标。也有实现用<strong>sigmoid</strong>代替<strong>softmax</strong>，输出$k=9$维度的特征进行分类。在训练时会在<strong>anchor</strong>中随机选取$128$个<strong>postive anchors</strong>和$128$个<strong>negative anchors</strong>进行训练。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">RegionProposalNetwork</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">in_channels</span>     <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> 
+        <span class="n">mid_channels</span>    <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> 
+        <span class="n">ratios</span>          <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+        <span class="n">anchor_scales</span>   <span class="o">=</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span> 
+        <span class="n">feat_stride</span>     <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="n">mode</span>            <span class="o">=</span> <span class="s">"training"</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RegionProposalNetwork</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="c1"># 生成基础先验框，shape为[9, 4]
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">anchor_base</span>    <span class="o">=</span> <span class="n">generate_anchor_base</span><span class="p">(</span><span class="n">anchor_scales</span> <span class="o">=</span> <span class="n">anchor_scales</span><span class="p">,</span> <span class="n">ratios</span> <span class="o">=</span> <span class="n">ratios</span><span class="p">)</span>
+        <span class="n">n_anchor</span>            <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">anchor_base</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># 先进行一个3x3的卷积，可理解为特征整合
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span>  <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">mid_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># 分类预测先验框内部是否包含物体
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">score</span>  <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">mid_channels</span><span class="p">,</span> <span class="n">n_anchor</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># 回归预测对先验框进行调整
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">loc</span>    <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">mid_channels</span><span class="p">,</span> <span class="n">n_anchor</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># 特征点间距步长
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">feat_stride</span>    <span class="o">=</span> <span class="n">feat_stride</span>
+        <span class="c1"># 用于对建议框解码并进行非极大抑制
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">proposal_layer</span> <span class="o">=</span> <span class="n">ProposalCreator</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">img_size</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+        <span class="c1"># 先进行一个3x3的卷积，可理解为特征整合
+</span>        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="c1"># 回归预测对先验框进行调整
+</span>        <span class="n">rpn_locs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">loc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">rpn_locs</span> <span class="o">=</span> <span class="n">rpn_locs</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">contiguous</span><span class="p">().</span><span class="n">view</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="c1"># 分类预测先验框内部是否包含物体
+</span>        <span class="n">rpn_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">score</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">rpn_scores</span> <span class="o">=</span> <span class="n">rpn_scores</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">contiguous</span><span class="p">().</span><span class="n">view</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        
+        <span class="c1"># 进行softmax概率计算，每个先验框只有两个判别结果
+</span>        <span class="c1"># 内部包含物体或者内部不包含物体，rpn_softmax_scores[:, :, 1]的内容为包含物体的概率
+</span>        <span class="n">rpn_softmax_scores</span>  <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">rpn_scores</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rpn_fg_scores</span>       <span class="o">=</span> <span class="n">rpn_softmax_scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">].</span><span class="n">contiguous</span><span class="p">()</span>
+        <span class="n">rpn_fg_scores</span>       <span class="o">=</span> <span class="n">rpn_fg_scores</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># 生成先验框，此时获得的anchor是布满网格点的，当输入图片为600,600,3的时候，shape为(12996, 4)
+</span>        <span class="n">anchor</span> <span class="o">=</span> <span class="n">_enumerate_shifted_anchor</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">anchor_base</span><span class="p">),</span> <span class="bp">self</span><span class="p">.</span><span class="n">feat_stride</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="n">rois</span>        <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">roi_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">roi</span>         <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">proposal_layer</span><span class="p">(</span><span class="n">rpn_locs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">rpn_fg_scores</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">img_size</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="n">batch_index</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">roi</span><span class="p">),))</span>
+            <span class="n">rois</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">roi</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="n">roi_indices</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_index</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+        <span class="n">rois</span>        <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">(</span><span class="n">rois</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">roi_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">(</span><span class="n">roi_indices</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">anchor</span>      <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">anchor</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="nb">float</span><span class="p">().</span><span class="n">to</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">device</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">rpn_locs</span><span class="p">,</span> <span class="n">rpn_scores</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span><span class="p">,</span> <span class="n">anchor</span>
+</code></pre></div></div>
+
+<h3 id="-anchor设置">⚪ Anchor设置</h3>
+
+<p><strong>anchor</strong>是人为定义的先验边界框。对于输出特征上的每个像素，以该像素对应输入图像上的像素为中心，预先设置一系列具有不同尺寸和长宽比的边界框，将其作为检测目标的候选区域。具体地，设置检测框的基础尺寸为$16$，并选定三种尺度($8,16,32$)和三种长宽比($0.5,1,2$)，则每个点会设置$9$个<strong>anchor</strong>；总计在原始图像中设置$50\times 38 \times 9=17100$个<strong>anchor</strong>。注意到部分<strong>anchor</strong>的尺寸可能会超出原图尺寸（表现为负数或者超过$800/600$），因此需要进行<strong>clip</strong>操作。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648816d61ddac507ccc87c93.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 生成基础的先验框
+</span><span class="k">def</span> <span class="nf">generate_anchor_base</span><span class="p">(</span><span class="n">base_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">ratios</span><span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">anchor_scales</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">]):</span>
+    <span class="n">anchor_base</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">ratios</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">anchor_scales</span><span class="p">),</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ratios</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">anchor_scales</span><span class="p">)):</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">base_size</span> <span class="o">*</span> <span class="n">anchor_scales</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ratios</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">base_size</span> <span class="o">*</span> <span class="n">anchor_scales</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">ratios</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+            <span class="n">index</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">anchor_scales</span><span class="p">)</span> <span class="o">+</span> <span class="n">j</span>
+            <span class="n">anchor_base</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">h</span> <span class="o">/</span> <span class="mf">2.</span>
+            <span class="n">anchor_base</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">w</span> <span class="o">/</span> <span class="mf">2.</span>
+            <span class="n">anchor_base</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span> <span class="o">/</span> <span class="mf">2.</span>
+            <span class="n">anchor_base</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span> <span class="o">/</span> <span class="mf">2.</span>
+    <span class="k">return</span> <span class="n">anchor_base</span>
+
+<span class="c1"># 对基础先验框进行拓展对应到所有特征点上
+</span><span class="k">def</span> <span class="nf">_enumerate_shifted_anchor</span><span class="p">(</span><span class="n">anchor_base</span><span class="p">,</span> <span class="n">feat_stride</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">38</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+    <span class="c1"># 计算网格中心点(共N个)
+</span>    <span class="n">shift_x</span>             <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">width</span> <span class="o">*</span> <span class="n">feat_stride</span><span class="p">,</span> <span class="n">feat_stride</span><span class="p">)</span>
+    <span class="n">shift_y</span>             <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span> <span class="o">*</span> <span class="n">feat_stride</span><span class="p">,</span> <span class="n">feat_stride</span><span class="p">)</span>
+    <span class="n">shift_x</span><span class="p">,</span> <span class="n">shift_y</span>    <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">shift_x</span><span class="p">,</span> <span class="n">shift_y</span><span class="p">)</span>
+    <span class="n">shift</span>               <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">stack</span><span class="p">((</span><span class="n">shift_x</span><span class="p">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">shift_y</span><span class="p">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">shift_x</span><span class="p">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">shift_y</span><span class="p">.</span><span class="n">ravel</span><span class="p">(),),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1">#每个网格点上的9个先验框
+</span>    <span class="n">K</span>       <span class="o">=</span> <span class="n">anchor_base</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">N</span>       <span class="o">=</span> <span class="n">shift</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">anchor</span>  <span class="o">=</span> <span class="n">anchor_base</span><span class="p">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span> <span class="o">+</span> <span class="n">shift</span><span class="p">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    
+    <span class="c1"># 所有的先验框
+</span>    <span class="n">anchor</span>  <span class="o">=</span> <span class="n">anchor</span><span class="p">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">N</span> <span class="o">*</span> <span class="n">K</span><span class="p">,</span> <span class="mi">4</span><span class="p">)).</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">anchor</span>
+</code></pre></div></div>
+
+<h3 id="-边界框回归">⚪ 边界框回归</h3>
+
+<p>给定<strong>anchor</strong>预设的边界框坐标$p=(p_x,p_y,p_w,p_h)$及其标签$g=(g_x,g_y,g_w,g_h)$，分别代表边界框的中心位置及其宽度和高度。边界框回归旨在通过一个函数$d(\cdot)$学习中心位置的尺度不变变换以及宽度和高度的对数尺度变换：</p>
+
+\[\begin{aligned}
+\hat{g}_x &amp;= p_wd_x(p) + p_x \\
+\hat{g}_y &amp;= p_hd_y(p) + p_y \\
+\hat{g}_w &amp;= p_w \exp(d_w(p)) \\
+\hat{g}_h &amp;= p_h \exp(d_h(p))
+\end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/64867ddd1ddac507ccde920e.jpg" alt="" /></p>
+
+<p>通过采用上述变换，回归器的输出\(d_i(p),i\in \{x,y,w,h\}\)取值范围为$(-\infty,+\infty)$。回归器学习的目标为：</p>
+
+\[\begin{aligned}
+t_x &amp;= (g_x-p_x)/p_w \\
+t_y &amp;= (g_y-p_y)/p_h \\
+t_w &amp;= \log (g_w/p_w) \\
+t_h &amp;= \log (g_h/p_h) \\
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">loc2bbox</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">loc</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">anchor</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">loc</span><span class="p">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="n">src_width</span>   <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">anchor</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">anchor</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">src_height</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">anchor</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">anchor</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">src_ctr_x</span>   <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">anchor</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">src_width</span>
+    <span class="n">src_ctr_y</span>   <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">anchor</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">src_height</span>
+
+    <span class="n">tx</span>          <span class="o">=</span> <span class="n">loc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">ty</span>          <span class="o">=</span> <span class="n">loc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">tw</span>          <span class="o">=</span> <span class="n">loc</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">th</span>          <span class="o">=</span> <span class="n">loc</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span>
+
+    <span class="n">ctr_x</span> <span class="o">=</span> <span class="n">tx</span> <span class="o">*</span> <span class="n">src_width</span> <span class="o">+</span> <span class="n">src_ctr_x</span>
+    <span class="n">ctr_y</span> <span class="o">=</span> <span class="n">ty</span> <span class="o">*</span> <span class="n">src_height</span> <span class="o">+</span> <span class="n">src_ctr_y</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">tw</span><span class="p">)</span> <span class="o">*</span> <span class="n">src_width</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">th</span><span class="p">)</span> <span class="o">*</span> <span class="n">src_height</span>
+
+    <span class="n">corrected_bbox</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>
+    <span class="n">corrected_bbox</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctr_x</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">w</span>
+    <span class="n">corrected_bbox</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctr_y</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">h</span>
+    <span class="n">corrected_bbox</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctr_x</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">w</span>
+    <span class="n">corrected_bbox</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctr_y</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">h</span>
+
+    <span class="k">return</span> <span class="n">corrected_bbox</span>
+</code></pre></div></div>
+
+<h3 id="-proposal-layer">⚪ Proposal Layer</h3>
+
+<p><strong>Proposal Layer</strong>接收<strong>RPN</strong>的输出（<strong>anchor</strong>类别+边界框偏移量），计算位置修正后的<strong>positive anchor</strong>，并将其投影到卷积网络的特征映射上，提取<strong>proposals</strong>。</p>
+
+<p><strong>Proposal Layer</strong>提取<strong>proposals</strong>的前向过程如下：</p>
+<ol>
+  <li>根据<strong>RPN</strong>的输出边界框偏移量($t_x,t_y,t_w,t_h$)对<strong>anchor</strong>进行边界框回归；</li>
+  <li>对所有<strong>anchor</strong>按照<strong>RPN</strong>的输出正类类别得分由大到小排序，提取前$N=6000$个<strong>anchor</strong>，即提取修正位置后的<strong>positive anchors</strong>；</li>
+  <li>限定超出图像边界的<strong>positive anchors</strong>为图像边界；</li>
+  <li>剔除尺寸非常小($\leq 16$)的<strong>positive anchors</strong>；</li>
+  <li>对剩余的<strong>positive anchors</strong>进行非极大值抑制；</li>
+  <li>最终剩余的<strong>positive anchors</strong>作为<strong>proposals</strong>结果（对应输入图像中的边界框）。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">torchvision.ops</span> <span class="kn">import</span> <span class="n">nms</span>
+
+<span class="k">class</span> <span class="nc">ProposalCreator</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">mode</span><span class="p">,</span> 
+        <span class="n">nms_iou</span>             <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
+        <span class="n">n_train_pre_nms</span>     <span class="o">=</span> <span class="mi">12000</span><span class="p">,</span>
+        <span class="n">n_train_post_nms</span>    <span class="o">=</span> <span class="mi">600</span><span class="p">,</span>
+        <span class="n">n_test_pre_nms</span>      <span class="o">=</span> <span class="mi">3000</span><span class="p">,</span>
+        <span class="n">n_test_post_nms</span>     <span class="o">=</span> <span class="mi">300</span><span class="p">,</span>
+        <span class="n">min_size</span>            <span class="o">=</span> <span class="mi">16</span>
+    
+    <span class="p">):</span>
+        <span class="c1"># 设置预测还是训练
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">mode</span>               <span class="o">=</span> <span class="n">mode</span>
+        <span class="c1"># 建议框非极大抑制的iou大小
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">nms_iou</span>            <span class="o">=</span> <span class="n">nms_iou</span>
+        
+        <span class="c1"># 训练用到的建议框数量
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">n_train_pre_nms</span>    <span class="o">=</span> <span class="n">n_train_pre_nms</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n_train_post_nms</span>   <span class="o">=</span> <span class="n">n_train_post_nms</span>
+        
+        <span class="c1"># 预测用到的建议框数量
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">n_test_pre_nms</span>     <span class="o">=</span> <span class="n">n_test_pre_nms</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n_test_post_nms</span>    <span class="o">=</span> <span class="n">n_test_post_nms</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">min_size</span>           <span class="o">=</span> <span class="n">min_size</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">img_size</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s">"training"</span><span class="p">:</span>
+            <span class="n">n_pre_nms</span>   <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">n_train_pre_nms</span>
+            <span class="n">n_post_nms</span>  <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">n_train_post_nms</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_pre_nms</span>   <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">n_test_pre_nms</span>
+            <span class="n">n_post_nms</span>  <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">n_test_post_nms</span>
+
+        <span class="c1"># 将先验框转换成tensor
+</span>        <span class="n">anchor</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">anchor</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>
+        <span class="c1"># 将RPN网络预测结果转化成建议框
+</span>        <span class="n">roi</span> <span class="o">=</span> <span class="n">loc2bbox</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+        <span class="c1"># 防止建议框超出图像边缘
+</span>        <span class="n">roi</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">roi</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="nb">min</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">max</span> <span class="o">=</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">roi</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">roi</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="nb">min</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">max</span> <span class="o">=</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        
+        <span class="c1"># 建议框的宽高的最小值不可以小于16
+</span>        <span class="n">min_size</span>    <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">min_size</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">keep</span>        <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">where</span><span class="p">(((</span><span class="n">roi</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">roi</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">min_size</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">((</span><span class="n">roi</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">roi</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="n">min_size</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># 将对应的建议框保留下来
+</span>        <span class="n">roi</span>         <span class="o">=</span> <span class="n">roi</span><span class="p">[</span><span class="n">keep</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">score</span>       <span class="o">=</span> <span class="n">score</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+
+        <span class="c1"># 根据得分进行排序，取出建议框
+</span>        <span class="n">order</span>       <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_pre_nms</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">order</span>   <span class="o">=</span> <span class="n">order</span><span class="p">[:</span><span class="n">n_pre_nms</span><span class="p">]</span>
+        <span class="n">roi</span>     <span class="o">=</span> <span class="n">roi</span><span class="p">[</span><span class="n">order</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">score</span>   <span class="o">=</span> <span class="n">score</span><span class="p">[</span><span class="n">order</span><span class="p">]</span>
+
+        <span class="c1"># 对建议框进行非极大抑制
+</span>        <span class="n">keep</span>    <span class="o">=</span> <span class="n">nms</span><span class="p">(</span><span class="n">roi</span><span class="p">,</span> <span class="n">score</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">nms_iou</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_post_nms</span><span class="p">:</span>
+            <span class="n">index_extra</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_post_nms</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">)),</span> <span class="n">replace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">keep</span>        <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">keep</span><span class="p">,</span> <span class="n">keep</span><span class="p">[</span><span class="n">index_extra</span><span class="p">]])</span>
+        <span class="n">keep</span>    <span class="o">=</span> <span class="n">keep</span><span class="p">[:</span><span class="n">n_post_nms</span><span class="p">]</span>
+        <span class="n">roi</span>     <span class="o">=</span> <span class="n">roi</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">roi</span>
+</code></pre></div></div>
+
+<h2 id="3roi-pooling">（3）RoI Pooling</h2>
+
+<p><strong>RoI Pooling</strong>是一种最大池化层，它把图像特征映射中的任意尺寸$H\times W$的区域映射为固定尺寸$h\times w$的特征。在实现时把输入区域划分为$H\times W$的窗口，</p>
+
+<p><img src="https://pic.imgdb.cn/item/6486bf351ddac507cc6c9d03.jpg" alt="" /></p>
+
+<p><strong>RoI Pooling</strong>层接收<strong>Proposal Layer</strong>输出的<strong>proposal</strong>。由于<strong>anchor</strong>是在原始图像尺度上设置的，因此通过下采样率$16$把<strong>proposal</strong>映射到特征映射尺度。再将每个<strong>proposal</strong>对应的特征映射区域划分为固定尺寸（$7 \times 7$）的网格；对网格的每一份都进行最大池化处理。<strong>RoI Pooling</strong>层的输出是固定尺寸（$256\times 7 \times 7$）的特征。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># RoI Pooling的函数调用
+</span><span class="kn">from</span> <span class="nn">torchvision.ops</span> <span class="kn">import</span> <span class="n">roi_pool</span>
+<span class="n">fp</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span> <span class="c1"># [b, c, h, w]
+</span><span class="n">boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]).</span><span class="nb">float</span><span class="p">()</span> <span class="c1"># [batch_id, x1, y1, x2, y2]
+</span><span class="n">pooled_features</span> <span class="o">=</span> <span class="n">roi_pool</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">boxes</span><span class="p">,</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+
+
+<span class="c1"># RoI Pooling的类调用
+</span><span class="kn">from</span> <span class="nn">torchvision.ops</span> <span class="kn">import</span> <span class="n">RoIPool</span>
+<span class="bp">self</span><span class="p">.</span><span class="n">roi</span> <span class="o">=</span> <span class="n">RoIPool</span><span class="p">((</span><span class="n">roi_size</span><span class="p">,</span> <span class="n">roi_size</span><span class="p">),</span> <span class="n">spatial_scale</span><span class="p">)</span>
+<span class="n">pool</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">roi</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">indices_and_rois</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="4分类与回归head">（4）分类与回归Head</h2>
+
+<p>从<strong>RoI Pooling</strong>获取到$256\times 7 \times 7$大小的<strong>proposal feature maps</strong>后，送入后续网络：</p>
+<ul>
+  <li>通过全连接层和<strong>softmax</strong>对<strong>proposals</strong>进行分类；</li>
+  <li>对<strong>proposals</strong>进行边界框回归，获取更高精度的检测框。</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">VGG16RoIHead</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_class</span><span class="p">,</span> <span class="n">roi_size</span><span class="p">,</span> <span class="n">spatial_scale</span><span class="p">,</span> <span class="n">classifier</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VGG16RoIHead</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">classifier</span>
+        <span class="c1"># 对ROIPooling后的的结果进行回归预测
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">cls_loc</span>    <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4096</span><span class="p">,</span> <span class="n">n_class</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="c1"># 对ROIPooling后的的结果进行分类
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">score</span>      <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">4096</span><span class="p">,</span> <span class="n">n_class</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">roi</span> <span class="o">=</span> <span class="n">RoIPool</span><span class="p">((</span><span class="n">roi_size</span><span class="p">,</span> <span class="n">roi_size</span><span class="p">),</span> <span class="n">spatial_scale</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span><span class="p">,</span> <span class="n">img_size</span><span class="p">):</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="n">x</span><span class="p">.</span><span class="n">is_cuda</span><span class="p">:</span>
+            <span class="n">roi_indices</span> <span class="o">=</span> <span class="n">roi_indices</span><span class="p">.</span><span class="n">cuda</span><span class="p">()</span>
+            <span class="n">rois</span> <span class="o">=</span> <span class="n">rois</span><span class="p">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">rois</span>        <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">rois</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">roi_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">roi_indices</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">rois_feature_map</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rois</span><span class="p">)</span>
+        <span class="n">rois_feature_map</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">rois</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span> <span class="o">/</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">rois_feature_map</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]]</span> <span class="o">=</span> <span class="n">rois</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]]</span> <span class="o">/</span> <span class="n">img_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">indices_and_rois</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">roi_indices</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">],</span> <span class="n">rois_feature_map</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># 利用建议框对公用特征层进行截取
+</span>        <span class="n">pool</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">roi</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">indices_and_rois</span><span class="p">)</span>
+        <span class="c1"># 利用classifier网络进行特征提取
+</span>        <span class="n">pool</span> <span class="o">=</span> <span class="n">pool</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">pool</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># 当输入为一张图片的时候，这里获得的f7的shape为[300, 4096]
+</span>        <span class="n">fc7</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">classifier</span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+
+        <span class="n">roi_cls_locs</span>    <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cls_loc</span><span class="p">(</span><span class="n">fc7</span><span class="p">)</span>
+        <span class="n">roi_scores</span>      <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">score</span><span class="p">(</span><span class="n">fc7</span><span class="p">)</span>
+
+        <span class="n">roi_cls_locs</span>    <span class="o">=</span> <span class="n">roi_cls_locs</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">roi_cls_locs</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">roi_scores</span>      <span class="o">=</span> <span class="n">roi_scores</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">roi_scores</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">roi_cls_locs</span><span class="p">,</span> <span class="n">roi_scores</span>
+</code></pre></div></div>
+
+<h2 id="5faster-r-cnn的完整实现">（5）Faster R-CNN的完整实现</h2>
+
+<p><strong>Faster R-CNN</strong>模型的整体结构设置如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FasterRCNN</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>  <span class="n">num_classes</span><span class="p">,</span>  
+                    <span class="n">mode</span> <span class="o">=</span> <span class="s">"training"</span><span class="p">,</span>
+                    <span class="n">feat_stride</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+                    <span class="n">anchor_scales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">],</span>
+                    <span class="n">ratios</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+                    <span class="n">pretrained</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FasterRCNN</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">feat_stride</span> <span class="o">=</span> <span class="n">feat_stride</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">extractor</span><span class="p">,</span> <span class="n">classifier</span> <span class="o">=</span> <span class="n">decom_vgg16</span><span class="p">(</span><span class="n">pretrained</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">rpn</span> <span class="o">=</span> <span class="n">RegionProposalNetwork</span><span class="p">(</span>
+            <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span>
+            <span class="n">ratios</span>          <span class="o">=</span> <span class="n">ratios</span><span class="p">,</span>
+            <span class="n">anchor_scales</span>   <span class="o">=</span> <span class="n">anchor_scales</span><span class="p">,</span>
+            <span class="n">feat_stride</span>     <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">feat_stride</span><span class="p">,</span>
+            <span class="n">mode</span>            <span class="o">=</span> <span class="n">mode</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">head</span> <span class="o">=</span> <span class="n">VGG16RoIHead</span><span class="p">(</span>
+            <span class="n">n_class</span>         <span class="o">=</span> <span class="n">num_classes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">roi_size</span>        <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>
+            <span class="n">spatial_scale</span>   <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">classifier</span>      <span class="o">=</span> <span class="n">classifier</span>
+        <span class="p">)</span>
+            
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">"forward"</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">"forward"</span><span class="p">:</span>
+            <span class="c1"># 获得网络的分类结果和回归结果
+</span>            <span class="n">img_size</span>        <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+            <span class="n">base_feature</span>    <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">extractor</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span><span class="p">,</span> <span class="n">_</span>  <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">rpn</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">base_feature</span><span class="p">,</span> <span class="n">img_size</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="n">roi_cls_locs</span><span class="p">,</span> <span class="n">roi_scores</span>    <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">base_feature</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span><span class="p">,</span> <span class="n">img_size</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">roi_cls_locs</span><span class="p">,</span> <span class="n">roi_scores</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">"extractor"</span><span class="p">:</span>
+            <span class="c1"># 利用主干网络提取特征
+</span>            <span class="n">base_feature</span>    <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">extractor</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">base_feature</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">"rpn"</span><span class="p">:</span>
+            <span class="n">base_feature</span><span class="p">,</span> <span class="n">img_size</span> <span class="o">=</span> <span class="n">x</span>
+            <span class="c1"># 获得建议框
+</span>            <span class="n">rpn_locs</span><span class="p">,</span> <span class="n">rpn_scores</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span><span class="p">,</span> <span class="n">anchor</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">rpn</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">base_feature</span><span class="p">,</span> <span class="n">img_size</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">rpn_locs</span><span class="p">,</span> <span class="n">rpn_scores</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span><span class="p">,</span> <span class="n">anchor</span>
+        <span class="k">elif</span> <span class="n">mode</span> <span class="o">==</span> <span class="s">"head"</span><span class="p">:</span>
+            <span class="n">base_feature</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span><span class="p">,</span> <span class="n">img_size</span> <span class="o">=</span> <span class="n">x</span>
+            <span class="c1"># 获得classifier的分类结果和回归结果
+</span>            <span class="n">roi_cls_locs</span><span class="p">,</span> <span class="n">roi_scores</span>    <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">head</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">base_feature</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span><span class="p">,</span> <span class="n">img_size</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">roi_cls_locs</span><span class="p">,</span> <span class="n">roi_scores</span>
+</code></pre></div></div>
+
+<h1 id="2-faster-rcnn的训练过程">2. Faster RCNN的训练过程</h1>
+
+<p>在原论文中，<strong>Faster R-CNN</strong>模型的训练过程如下：</p>
+<ol>
+  <li>使用预训练的卷积网络提取特征映射，训练<strong>RPN</strong>网络；</li>
+  <li>使用训练好的<strong>RPN</strong>网络收集<strong>proposals</strong>；</li>
+  <li>根据<strong>proposals</strong>第一次训练<strong>Faster R-CNN</strong>模型；</li>
+  <li>第二次训练<strong>RPN</strong>网络；</li>
+  <li>使用训练好的<strong>RPN</strong>网络收集<strong>proposals</strong>；</li>
+  <li>第二次训练<strong>Faster R-CNN</strong>模型。</li>
+</ol>
+
+<p>受当时硬件和开发环境限制，<strong>Faster R-CNN</strong>模型采用上述分步训练过程，以缓解训练过程中的优化困难。如今<strong>Pytorch</strong>等开发环境已经相当成熟，因此<strong>Faster R-CNN</strong>模型可以直接进行端到端训练。</p>
+
+<h3 id="-损失函数">⚪ 损失函数</h3>
+
+<p><strong>Faster R-CNN</strong>模型的损失函数包括<strong>RPN</strong>的分类与回归损失和网络输出的分类与回归损失。</p>
+
+<p><strong>RPN</strong>的输出包括两个部分：每个<strong>anchor</strong>的正类别概率\(\hat{p}_i\)和正类别<strong>anchor</strong>的预测边界框偏移量\(\hat{t}_i\)。类别标签$p$通过计算对应<strong>anchor</strong>与<strong>ground truth</strong>之间的<strong>IoU</strong>区分：<strong>IoU</strong>$&gt;0.7$视为正类；<strong>IoU</strong>$&lt;0.3$视为负类；其余<strong>anchor</strong>丢弃。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">bbox_iou</span><span class="p">(</span><span class="n">bbox_a</span><span class="p">,</span> <span class="n">bbox_b</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">bbox_a</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">4</span> <span class="ow">or</span> <span class="n">bbox_b</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">bbox_a</span><span class="p">,</span> <span class="n">bbox_b</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="nb">IndexError</span>
+    <span class="n">tl</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">bbox_a</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">bbox_b</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">br</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">bbox_a</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">:],</span> <span class="n">bbox_b</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:])</span>
+    <span class="n">area_i</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">prod</span><span class="p">(</span><span class="n">br</span> <span class="o">-</span> <span class="n">tl</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">tl</span> <span class="o">&lt;</span> <span class="n">br</span><span class="p">).</span><span class="nb">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">area_a</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">prod</span><span class="p">(</span><span class="n">bbox_a</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">bbox_a</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">area_b</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">prod</span><span class="p">(</span><span class="n">bbox_b</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">bbox_b</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">area_i</span> <span class="o">/</span> <span class="p">(</span><span class="n">area_a</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">area_b</span> <span class="o">-</span> <span class="n">area_i</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">bbox2loc</span><span class="p">(</span><span class="n">src_bbox</span><span class="p">,</span> <span class="n">dst_bbox</span><span class="p">):</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">src_bbox</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">src_bbox</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">src_bbox</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">src_bbox</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">ctr_x</span> <span class="o">=</span> <span class="n">src_bbox</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">width</span>
+    <span class="n">ctr_y</span> <span class="o">=</span> <span class="n">src_bbox</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">height</span>
+
+    <span class="n">base_width</span> <span class="o">=</span> <span class="n">dst_bbox</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dst_bbox</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">base_height</span> <span class="o">=</span> <span class="n">dst_bbox</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">dst_bbox</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">base_ctr_x</span> <span class="o">=</span> <span class="n">dst_bbox</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">base_width</span>
+    <span class="n">base_ctr_y</span> <span class="o">=</span> <span class="n">dst_bbox</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">base_height</span>
+
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">height</span><span class="p">.</span><span class="n">dtype</span><span class="p">).</span><span class="n">eps</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_ctr_x</span> <span class="o">-</span> <span class="n">ctr_x</span><span class="p">)</span> <span class="o">/</span> <span class="n">width</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_ctr_y</span> <span class="o">-</span> <span class="n">ctr_y</span><span class="p">)</span> <span class="o">/</span> <span class="n">height</span>
+    <span class="n">dw</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">base_width</span> <span class="o">/</span> <span class="n">width</span><span class="p">)</span>
+    <span class="n">dh</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">base_height</span> <span class="o">/</span> <span class="n">height</span><span class="p">)</span>
+
+    <span class="n">loc</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dw</span><span class="p">,</span> <span class="n">dh</span><span class="p">)).</span><span class="n">transpose</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">loc</span>
+
+<span class="k">class</span> <span class="nc">AnchorTargetCreator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_sample</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">pos_iou_thresh</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">neg_iou_thresh</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">pos_ratio</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n_sample</span>       <span class="o">=</span> <span class="n">n_sample</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_iou_thresh</span> <span class="o">=</span> <span class="n">pos_iou_thresh</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">neg_iou_thresh</span> <span class="o">=</span> <span class="n">neg_iou_thresh</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_ratio</span>      <span class="o">=</span> <span class="n">pos_ratio</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bbox</span><span class="p">,</span> <span class="n">anchor</span><span class="p">):</span>
+        <span class="n">argmax_ious</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_create_label</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">bbox</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">label</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">).</span><span class="nb">any</span><span class="p">():</span>
+            <span class="n">loc</span> <span class="o">=</span> <span class="n">bbox2loc</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">bbox</span><span class="p">[</span><span class="n">argmax_ious</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">loc</span><span class="p">,</span> <span class="n">label</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">anchor</span><span class="p">),</span> <span class="n">label</span>
+
+    <span class="k">def</span> <span class="nf">_calc_ious</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+        <span class="c1">#   anchor和bbox的iou
+</span>        <span class="c1">#   获得的ious的shape为[num_anchors, num_gt]
+</span>        <span class="n">ious</span> <span class="o">=</span> <span class="n">bbox_iou</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">bbox</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">anchor</span><span class="p">),</span> <span class="n">np</span><span class="p">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">anchor</span><span class="p">)),</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bbox</span><span class="p">))</span>
+
+        <span class="c1"># 获得每一个先验框最对应的真实框  [num_anchors, ]
+</span>        <span class="n">argmax_ious</span> <span class="o">=</span> <span class="n">ious</span><span class="p">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># 找出每一个先验框最对应的真实框的iou  [num_anchors, ]
+</span>        <span class="n">max_ious</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">ious</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># 获得每一个真实框最对应的先验框  [num_gt, ]
+</span>        <span class="n">gt_argmax_ious</span> <span class="o">=</span> <span class="n">ious</span><span class="p">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># 保证每一个真实框都存在对应的先验框
+</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gt_argmax_ious</span><span class="p">)):</span>
+            <span class="n">argmax_ious</span><span class="p">[</span><span class="n">gt_argmax_ious</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">i</span>
+
+        <span class="k">return</span> <span class="n">argmax_ious</span><span class="p">,</span> <span class="n">max_ious</span><span class="p">,</span> <span class="n">gt_argmax_ious</span>
+        
+    <span class="k">def</span> <span class="nf">_create_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">bbox</span><span class="p">):</span>
+        <span class="c1"># 1是正样本，0是负样本，-1忽略
+</span>        <span class="c1"># 初始化的时候全部设置为-1
+</span>        <span class="n">label</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">anchor</span><span class="p">),),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">label</span><span class="p">.</span><span class="n">fill</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># argmax_ious为每个先验框对应的最大的真实框的序号         [num_anchors, ]
+</span>        <span class="c1"># max_ious为每个先验框对应的最大的真实框的iou             [num_anchors, ]
+</span>        <span class="c1"># gt_argmax_ious为每个真实框对应的最大的先验框的序号      [num_gt, ]
+</span>        <span class="n">argmax_ious</span><span class="p">,</span> <span class="n">max_ious</span><span class="p">,</span> <span class="n">gt_argmax_ious</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_calc_ious</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">bbox</span><span class="p">)</span>
+
+        <span class="c1"># 如果小于门限值则设置为负样本
+</span>        <span class="c1"># 如果大于门限值则设置为正样本
+</span>        <span class="c1"># 每个真实框至少对应一个先验框
+</span>        <span class="n">label</span><span class="p">[</span><span class="n">max_ious</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="p">.</span><span class="n">neg_iou_thresh</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">label</span><span class="p">[</span><span class="n">max_ious</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pos_iou_thresh</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gt_argmax_ious</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">label</span><span class="p">[</span><span class="n">gt_argmax_ious</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># 判断正样本数量是否大于128，如果大于则限制在128
+</span>        <span class="n">n_pos</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">pos_ratio</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">n_sample</span><span class="p">)</span>
+        <span class="n">pos_index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">where</span><span class="p">(</span><span class="n">label</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pos_index</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">n_pos</span><span class="p">:</span>
+            <span class="n">disable_index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">choice</span><span class="p">(</span><span class="n">pos_index</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pos_index</span><span class="p">)</span> <span class="o">-</span> <span class="n">n_pos</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">label</span><span class="p">[</span><span class="n">disable_index</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1"># 平衡正负样本，保持总数量为256
+</span>        <span class="n">n_neg</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">n_sample</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">label</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">neg_index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">where</span><span class="p">(</span><span class="n">label</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neg_index</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">n_neg</span><span class="p">:</span>
+            <span class="n">disable_index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">choice</span><span class="p">(</span><span class="n">neg_index</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">neg_index</span><span class="p">)</span> <span class="o">-</span> <span class="n">n_neg</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">label</span><span class="p">[</span><span class="n">disable_index</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">argmax_ious</span><span class="p">,</span> <span class="n">label</span>
+</code></pre></div></div>
+
+<p><strong>RPN</strong>的总损失函数为：</p>
+
+\[\begin{aligned}
+\mathcal{L}_{RPN}(\hat{p},p,\hat{t},t)&amp;=\frac{1}{N_{cls}}\sum_i\mathcal{L}_{cls}(\hat{p}_i,p_i)+\frac{\lambda}{N_{reg}}\sum_ip_i\mathcal{L}_{reg}(\hat{t}_i,t_i) \\
+\mathcal{L}_{cls}(\hat{p},p) &amp;= -p\log \hat{p}-(1-p) \log(1-\hat{p}) \\
+\mathcal{L}_{reg}(\hat{t},t) &amp;= \sum_{j \in \{x,y,w,h\}}L_1^{smooth}(\hat{t}-t)
+\end{aligned}\]
+
+<p>其中边界框回归损失采用平滑<strong>L1</strong>损失，这是一种鲁棒的损失函数，对离群点不敏感：</p>
+
+\[L_1^{smooth}(x) = \begin{cases}
+0.5x^2, &amp; |x| &lt; 1 \\
+|x| - 0.5, &amp; |x| \geq 1
+\end{cases}\]
+
+<p><img src="https://pic.imgdb.cn/item/6486c27f1ddac507cc756b01.jpg" alt="" /></p>
+
+<p>网络整体的输出包括两个部分：每个<strong>proposal</strong>的预测类别概率分布$p=(p_0,…,p_K)$和标签类别$c$ ($0$表示背景类)，则总损失函数为：</p>
+
+\[\begin{aligned}
+\mathcal{L}(p,c,\hat{t},t)&amp;=\mathcal{L}_{cls}(p,c)+\mathbb{I}(c \neq 0)\mathcal{L}_{box}(\hat{t},t) \\
+\mathcal{L}_{cls}(p,c) &amp;= -\log p_c \\
+\mathcal{L}_{box}(\hat{t},t) &amp;= \sum_{i \in \{x,y,w,h\}}L_1^{smooth}(\hat{t}-t)
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ProposalTargetCreator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_sample</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">pos_ratio</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">pos_iou_thresh</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">neg_iou_thresh_high</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">neg_iou_thresh_low</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n_sample</span> <span class="o">=</span> <span class="n">n_sample</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_ratio</span> <span class="o">=</span> <span class="n">pos_ratio</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_roi_per_image</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">n_sample</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">pos_ratio</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_iou_thresh</span> <span class="o">=</span> <span class="n">pos_iou_thresh</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">neg_iou_thresh_high</span> <span class="o">=</span> <span class="n">neg_iou_thresh_high</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">neg_iou_thresh_low</span> <span class="o">=</span> <span class="n">neg_iou_thresh_low</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">roi</span><span class="p">,</span> <span class="n">bbox</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">loc_normalize_std</span><span class="o">=</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)):</span>
+        <span class="n">roi</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">roi</span><span class="p">.</span><span class="n">detach</span><span class="p">().</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">bbox</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># 计算建议框和真实框的重合程度
+</span>        <span class="n">iou</span> <span class="o">=</span> <span class="n">bbox_iou</span><span class="p">(</span><span class="n">roi</span><span class="p">,</span> <span class="n">bbox</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">gt_assignment</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">roi</span><span class="p">),</span> <span class="n">np</span><span class="p">.</span><span class="n">int32</span><span class="p">)</span>
+            <span class="n">max_iou</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">roi</span><span class="p">))</span>
+            <span class="n">gt_roi_label</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">roi</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># 获得每一个建议框最对应的真实框  [num_roi, ]
+</span>            <span class="n">gt_assignment</span> <span class="o">=</span> <span class="n">iou</span><span class="p">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># 获得每一个建议框最对应的真实框的iou  [num_roi, ]
+</span>            <span class="n">max_iou</span> <span class="o">=</span> <span class="n">iou</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1"># 真实框的标签要+1因为有背景的存在
+</span>            <span class="n">gt_roi_label</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="n">gt_assignment</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="c1">#   满足建议框和真实框重合程度大于pos_iou_thresh的作为正样本
+</span>        <span class="c1">#   将正样本的数量限制在self.pos_roi_per_image以内
+</span>        <span class="n">pos_index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">where</span><span class="p">(</span><span class="n">max_iou</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pos_iou_thresh</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pos_roi_per_this_image</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">pos_roi_per_image</span><span class="p">,</span> <span class="n">pos_index</span><span class="p">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">pos_index</span><span class="p">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pos_index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">choice</span><span class="p">(</span><span class="n">pos_index</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">pos_roi_per_this_image</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="c1">#   满足建议框和真实框重合程度小于neg_iou_thresh_high大于neg_iou_thresh_low作为负样本
+</span>        <span class="c1">#   将正样本的数量和负样本的数量的总和固定成self.n_sample
+</span>        <span class="n">neg_index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">where</span><span class="p">((</span><span class="n">max_iou</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="p">.</span><span class="n">neg_iou_thresh_high</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">max_iou</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="p">.</span><span class="n">neg_iou_thresh_low</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">neg_roi_per_this_image</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">n_sample</span> <span class="o">-</span> <span class="n">pos_roi_per_this_image</span>
+        <span class="n">neg_roi_per_this_image</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">neg_roi_per_this_image</span><span class="p">,</span> <span class="n">neg_index</span><span class="p">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">neg_index</span><span class="p">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">neg_index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">choice</span><span class="p">(</span><span class="n">neg_index</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">neg_roi_per_this_image</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            
+        <span class="n">keep_index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos_index</span><span class="p">,</span> <span class="n">neg_index</span><span class="p">)</span>
+
+        <span class="n">sample_roi</span> <span class="o">=</span> <span class="n">roi</span><span class="p">[</span><span class="n">keep_index</span><span class="p">]</span> <span class="c1"># [n_sample, ]
+</span>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bbox</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sample_roi</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">sample_roi</span><span class="p">),</span> <span class="n">gt_roi_label</span><span class="p">[</span><span class="n">keep_index</span><span class="p">]</span>
+
+        <span class="n">gt_roi_loc</span> <span class="o">=</span> <span class="n">bbox2loc</span><span class="p">(</span><span class="n">sample_roi</span><span class="p">,</span> <span class="n">bbox</span><span class="p">[</span><span class="n">gt_assignment</span><span class="p">[</span><span class="n">keep_index</span><span class="p">]])</span>
+        <span class="n">gt_roi_loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">gt_roi_loc</span> <span class="o">/</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">loc_normalize_std</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">))</span> <span class="c1"># [n_sample, 4]
+</span>
+        <span class="n">gt_roi_label</span> <span class="o">=</span> <span class="n">gt_roi_label</span><span class="p">[</span><span class="n">keep_index</span><span class="p">]</span> <span class="c1"># [n_sample, ]
+</span>        <span class="n">gt_roi_label</span><span class="p">[</span><span class="n">pos_roi_per_this_image</span><span class="p">:]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">sample_roi</span><span class="p">,</span> <span class="n">gt_roi_loc</span><span class="p">,</span> <span class="n">gt_roi_label</span>
+</code></pre></div></div>
+
+<h3 id="-训练过程">⚪ 训练过程</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FasterRCNNTrainer</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_train</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FasterRCNNTrainer</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">model_train</span>    <span class="o">=</span> <span class="n">model_train</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">optimizer</span>      <span class="o">=</span> <span class="n">optimizer</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">rpn_sigma</span>      <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">roi_sigma</span>      <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">anchor_target_creator</span>      <span class="o">=</span> <span class="n">AnchorTargetCreator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">proposal_target_creator</span>    <span class="o">=</span> <span class="n">ProposalTargetCreator</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">loc_normalize_std</span>          <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">]</span>
+
+    <span class="c1"># smooth L1 loss
+</span>    <span class="k">def</span> <span class="nf">_fast_rcnn_loc_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred_loc</span><span class="p">,</span> <span class="n">gt_loc</span><span class="p">,</span> <span class="n">gt_label</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+        <span class="n">pred_loc</span>    <span class="o">=</span> <span class="n">pred_loc</span><span class="p">[</span><span class="n">gt_label</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">gt_loc</span>      <span class="o">=</span> <span class="n">gt_loc</span><span class="p">[</span><span class="n">gt_label</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">sigma_squared</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">regression_diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">gt_loc</span> <span class="o">-</span> <span class="n">pred_loc</span><span class="p">)</span>
+        <span class="n">regression_diff</span> <span class="o">=</span> <span class="n">regression_diff</span><span class="p">.</span><span class="nb">abs</span><span class="p">().</span><span class="nb">float</span><span class="p">()</span>
+        <span class="n">regression_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">regression_diff</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">sigma_squared</span><span class="p">),</span>
+                <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sigma_squared</span> <span class="o">*</span> <span class="n">regression_diff</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">regression_diff</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">sigma_squared</span>
+            <span class="p">)</span>
+        <span class="n">regression_loss</span> <span class="o">=</span> <span class="n">regression_loss</span><span class="p">.</span><span class="nb">sum</span><span class="p">()</span>
+        <span class="n">num_pos</span>         <span class="o">=</span> <span class="p">(</span><span class="n">gt_label</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">).</span><span class="nb">sum</span><span class="p">().</span><span class="nb">float</span><span class="p">()</span>
+        
+        <span class="n">regression_loss</span> <span class="o">/=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">num_pos</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">num_pos</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">regression_loss</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgs</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+        <span class="n">n</span>           <span class="o">=</span> <span class="n">imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">img_size</span>    <span class="o">=</span> <span class="n">imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="c1">#-------------------------------#
+</span>        <span class="c1">#   获取公用特征层
+</span>        <span class="c1">#-------------------------------#
+</span>        <span class="n">base_feature</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model_train</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s">'extractor'</span><span class="p">)</span>
+
+        <span class="c1"># -------------------------------------------------- #
+</span>        <span class="c1">#   利用rpn网络获得调整参数、得分、建议框、先验框
+</span>        <span class="c1"># -------------------------------------------------- #
+</span>        <span class="n">rpn_locs</span><span class="p">,</span> <span class="n">rpn_scores</span><span class="p">,</span> <span class="n">rois</span><span class="p">,</span> <span class="n">roi_indices</span><span class="p">,</span> <span class="n">anchor</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model_train</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">base_feature</span><span class="p">,</span> <span class="n">img_size</span><span class="p">],</span> <span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span><span class="p">,</span> <span class="n">mode</span> <span class="o">=</span> <span class="s">'rpn'</span><span class="p">)</span>
+        
+        <span class="n">rpn_loc_loss_all</span><span class="p">,</span> <span class="n">rpn_cls_loss_all</span><span class="p">,</span> <span class="n">roi_loc_loss_all</span><span class="p">,</span> <span class="n">roi_cls_loss_all</span>  <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">sample_rois</span><span class="p">,</span> <span class="n">sample_indexes</span><span class="p">,</span> <span class="n">gt_roi_locs</span><span class="p">,</span> <span class="n">gt_roi_labels</span>                 <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">bbox</span>        <span class="o">=</span> <span class="n">bboxes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">label</span>       <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">rpn_loc</span>     <span class="o">=</span> <span class="n">rpn_locs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">rpn_score</span>   <span class="o">=</span> <span class="n">rpn_scores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">roi</span>         <span class="o">=</span> <span class="n">rois</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="c1"># -------------------------------------------------- #
+</span>            <span class="c1">#   利用真实框和先验框获得建议框网络应该有的预测结果
+</span>            <span class="c1">#   给每个先验框都打上标签
+</span>            <span class="c1">#   gt_rpn_loc      [num_anchors, 4]
+</span>            <span class="c1">#   gt_rpn_label    [num_anchors, ]
+</span>            <span class="c1"># -------------------------------------------------- #
+</span>            <span class="n">gt_rpn_loc</span><span class="p">,</span> <span class="n">gt_rpn_label</span>    <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">anchor_target_creator</span><span class="p">(</span><span class="n">bbox</span><span class="p">,</span> <span class="n">anchor</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())</span>
+            <span class="n">gt_rpn_loc</span>                  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">gt_rpn_loc</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">rpn_locs</span><span class="p">)</span>
+            <span class="n">gt_rpn_label</span>                <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">gt_rpn_label</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">rpn_locs</span><span class="p">).</span><span class="nb">long</span><span class="p">()</span>
+            <span class="c1"># -------------------------------------------------- #
+</span>            <span class="c1">#   分别计算建议框网络的回归损失和分类损失
+</span>            <span class="c1"># -------------------------------------------------- #
+</span>            <span class="n">rpn_loc_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_fast_rcnn_loc_loss</span><span class="p">(</span><span class="n">rpn_loc</span><span class="p">,</span> <span class="n">gt_rpn_loc</span><span class="p">,</span> <span class="n">gt_rpn_label</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">rpn_sigma</span><span class="p">)</span>
+            <span class="n">rpn_cls_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">rpn_score</span><span class="p">,</span> <span class="n">gt_rpn_label</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+  
+            <span class="n">rpn_loc_loss_all</span> <span class="o">+=</span> <span class="n">rpn_loc_loss</span>
+            <span class="n">rpn_cls_loss_all</span> <span class="o">+=</span> <span class="n">rpn_cls_loss</span>
+            <span class="c1"># ------------------------------------------------------ #
+</span>            <span class="c1">#   利用真实框和建议框获得classifier网络应该有的预测结果
+</span>            <span class="c1">#   获得三个变量，分别是sample_roi, gt_roi_loc, gt_roi_label
+</span>            <span class="c1">#   sample_roi      [n_sample, ]
+</span>            <span class="c1">#   gt_roi_loc      [n_sample, 4]
+</span>            <span class="c1">#   gt_roi_label    [n_sample, ]
+</span>            <span class="c1"># ------------------------------------------------------ #
+</span>            <span class="n">sample_roi</span><span class="p">,</span> <span class="n">gt_roi_loc</span><span class="p">,</span> <span class="n">gt_roi_label</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">proposal_target_creator</span><span class="p">(</span><span class="n">roi</span><span class="p">,</span> <span class="n">bbox</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">loc_normalize_std</span><span class="p">)</span>
+            <span class="n">sample_rois</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">sample_roi</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">rpn_locs</span><span class="p">))</span>
+            <span class="n">sample_indexes</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sample_roi</span><span class="p">)).</span><span class="n">type_as</span><span class="p">(</span><span class="n">rpn_locs</span><span class="p">)</span> <span class="o">*</span> <span class="n">roi_indices</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">gt_roi_locs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">gt_roi_loc</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">rpn_locs</span><span class="p">))</span>
+            <span class="n">gt_roi_labels</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">gt_roi_label</span><span class="p">).</span><span class="n">type_as</span><span class="p">(</span><span class="n">rpn_locs</span><span class="p">).</span><span class="nb">long</span><span class="p">())</span>
+            
+        <span class="n">sample_rois</span>     <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">sample_rois</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">sample_indexes</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">sample_indexes</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">roi_cls_locs</span><span class="p">,</span> <span class="n">roi_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model_train</span><span class="p">([</span><span class="n">base_feature</span><span class="p">,</span> <span class="n">sample_rois</span><span class="p">,</span> <span class="n">sample_indexes</span><span class="p">,</span> <span class="n">img_size</span><span class="p">],</span> <span class="n">mode</span> <span class="o">=</span> <span class="s">'head'</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="c1"># ------------------------------------------------------ #
+</span>            <span class="c1">#   根据建议框的种类，取出对应的回归预测结果
+</span>            <span class="c1"># ------------------------------------------------------ #
+</span>            <span class="n">n_sample</span> <span class="o">=</span> <span class="n">roi_cls_locs</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+            
+            <span class="n">roi_cls_loc</span>     <span class="o">=</span> <span class="n">roi_cls_locs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">roi_score</span>       <span class="o">=</span> <span class="n">roi_scores</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">gt_roi_loc</span>      <span class="o">=</span> <span class="n">gt_roi_locs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">gt_roi_label</span>    <span class="o">=</span> <span class="n">gt_roi_labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            
+            <span class="n">roi_cls_loc</span> <span class="o">=</span> <span class="n">roi_cls_loc</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">n_sample</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+            <span class="n">roi_loc</span>     <span class="o">=</span> <span class="n">roi_cls_loc</span><span class="p">[</span><span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_sample</span><span class="p">),</span> <span class="n">gt_roi_label</span><span class="p">]</span>
+
+            <span class="c1"># -------------------------------------------------- #
+</span>            <span class="c1">#   分别计算Classifier网络的回归损失和分类损失
+</span>            <span class="c1"># -------------------------------------------------- #
+</span>            <span class="n">roi_loc_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_fast_rcnn_loc_loss</span><span class="p">(</span><span class="n">roi_loc</span><span class="p">,</span> <span class="n">gt_roi_loc</span><span class="p">,</span> <span class="n">gt_roi_label</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">roi_sigma</span><span class="p">)</span>
+            <span class="n">roi_cls_loss</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">CrossEntropyLoss</span><span class="p">()(</span><span class="n">roi_score</span><span class="p">,</span> <span class="n">gt_roi_label</span><span class="p">)</span>
+
+            <span class="n">roi_loc_loss_all</span> <span class="o">+=</span> <span class="n">roi_loc_loss</span>
+            <span class="n">roi_cls_loss_all</span> <span class="o">+=</span> <span class="n">roi_cls_loss</span>
+            
+        <span class="n">losses</span> <span class="o">=</span> <span class="p">[</span><span class="n">rpn_loc_loss_all</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">rpn_cls_loss_all</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">roi_loc_loss_all</span><span class="o">/</span><span class="n">n</span><span class="p">,</span> <span class="n">roi_cls_loss_all</span><span class="o">/</span><span class="n">n</span><span class="p">]</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="n">losses</span> <span class="o">+</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">losses</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">losses</span>
+
+    <span class="k">def</span> <span class="nf">train_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgs</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">optimizer</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">losses</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">backward</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">optimizer</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">losses</span>
+</code></pre></div></div>
+
+<p><strong>Faster RCNN</strong>的完整<strong>PyTorch</strong>实现可参考<a href="https://github.com/bubbliiiing/faster-rcnn-pytorch">
+faster-rcnn-pytorch</a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/03/10/cascadercnn.html" class="read-next-link"></a>
+        <section>
+          <span>Cascade R-CNN: Delving into High Quality Object Detection</span>
+          <p>  Cascade R-CNN：高质量目标检测研究.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/648a68801ddac507cc863c31.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/03/08/tnt.html" class="read-next-link"></a>
+          <section>
+            <span>Transformer in Transformer</span>
+            <p>  TNT：对图像块与图像像素同时建模的Transformer.  paper：Transformer in Tr...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://img.imgdb.cn/item/6045cbe5cef1ec5e6f5ab3c0.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

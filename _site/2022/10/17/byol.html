@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap your own latent: A new approach to self-supervised Learning - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Bootstrap your own latent: A new approach to self-supervised Learning">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Bootstrap your own latent: A new approach to self-supervised Learning - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/10/17/byol.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Bootstrap your own latent: A new approach to self-supervised Learning</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-10-17"><i class="iconfont icon-date"></i>17 Oct 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63d8bc2fface21e9ef35012b.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>BYOL：通过在隐空间应用自举法实现自监督学习.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2006.07733">Bootstrap your own latent: A new approach to self-supervised Learning</a></li>
+</ul>
+
+<p><strong>Bootstrap your own latent (BYOL)</strong>是一种不使用负样本的对比学习方法，通过在特征表示空间应用<strong>bootstrapping</strong>方法构造损失函数。</p>
+
+<p><strong>BYOL</strong>使用两个神经网络，分别是参数$\theta$的在线网络<strong>(online network)</strong>和参数$\xi$的目标网络<strong>(target network)</strong>。在线网络通过对比损失更新参数，目标网络的参数$\xi$是在线网络参数$\theta$的<strong>polyak</strong>平均：\(\xi \leftarrow \tau \xi + (1-\tau)\theta\)。</p>
+
+<p>给定图像$x$，<strong>BYOL</strong>损失构造如下：</p>
+<ol>
+  <li>使用同一类数据增强构造图像$x$的两个增强版本$v=t(x),v’=t’(x)$；</li>
+  <li>通过编码网络$f$构造特征表示$y_{\theta}=f_{\theta}(v),y_{\xi}’=f_{\xi}(v’)$；</li>
+  <li>通过映射头$g$构造隐变量\(z_{\theta}=g_{\theta}(y_{\theta}),z'_{\xi}=g_{\xi}(y'_{\xi})\)；</li>
+  <li>通过预测网络$q$构造在线网络的输出$q_{\theta}(z_{\theta})$；</li>
+  <li>对特征$q_{\theta}(z_{\theta})$和$z_{\xi}’$进行<strong>L2</strong>归一化；</li>
+  <li>构造$q_{\theta}(z_{\theta})$和$z_{\xi}’$的均方误差损失\(\mathcal{L}_{\theta}^{\text{BYOL}}\)；</li>
+  <li>交换$v$和$v’$重复上述过程，构造\(q_{\theta}(z'_{\theta})\)和$z_{\xi}$的均方误差损失\(\tilde{\mathcal{L}}_{\theta}^{\text{BYOL}}\)；</li>
+  <li>总损失为\(\mathcal{L}_{\theta}^{\text{BYOL}}+\tilde{\mathcal{L}}_{\theta}^{\text{BYOL}}\)，更新参数$\theta$。</li>
+</ol>
+
+\[\begin{aligned} \mathcal{L}_{\text{BYOL}} &amp;= ||q_{\theta}(z_{\theta})-z'_{\xi}||_2^2 + ||q_{\theta}(z_{\theta}')-z_{\xi}||_2^2 \\ &amp; \propto -2(\frac{&lt;q_{\theta}(z_{\theta}),z'_{\xi}&gt;}{||q_{\theta}(z_{\theta})||_2 \cdot ||z'_{\xi}||_2}+\frac{&lt;q_{\theta}(z'_{\theta}),z_{\xi}&gt;}{||q_{\theta}(z'_{\theta})||_2 \cdot ||z_{\xi}||_2}) \end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/63d8c180face21e9ef442d3e.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/63d8c3f2face21e9ef4ab92a.jpg" alt="" /></p>
+
+<p>作者分别报告了使用<strong>BYOL</strong>进行<strong>ImageNet</strong>图像分类任务时，微调输出线性层和微调整个网络对应的性能表现：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d8cb7eface21e9ef5f60f2.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/63d8cb8cface21e9ef5f87cc.jpg" alt="" /></p>
+
+<p>作者对批量大小和数据增强策略进行消融实验，由于<strong>BYOL</strong>不依赖于负样本，因此对这些超参数不敏感：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d8cbd1face21e9ef605bc4.jpg" alt="" /></p>
+
+<p><strong>BYOL</strong>中编码网络选用<strong>ResNet50</strong>网络，映射头和预测网络选用<strong>MLP</strong>结构。在所有<strong>MLP</strong>的第一个线性层之后使用了<strong>BatchNorm</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d8cc81face21e9ef6280b7.jpg" alt="" /></p>
+
+<p>有<a href="https://generallyintelligent.com/blog/2020-08-24-understanding-self-supervised-contrastive-learning/">博客</a>指出去除这些位置的<strong>BatchNorm</strong>后模型表现与随机参数无异，该博客作者给出的解释是<strong>BatchNorm</strong>同时考虑了一批样本之间的信息，无论样本特征多么相似都会被重新调整为$N(0,1)$分布，相当于任意样本都会与一个平均样本进行对比，从而隐式地构造了对比学习。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d8d30eface21e9ef746a05.jpg" alt="" /></p>
+
+<p>本文作者在<a href="https://arxiv.org/abs/2010.10241">BYOL works even without batch statistics</a>中进行了进一步实验，发现在部分使用<strong>BN</strong>的场合，以及使用负样本的方法中去掉<strong>BN</strong>也会导致性能的严重下降。作者仍然坚持<strong>BYOL</strong>完全不依赖于负样本，因此<strong>BN</strong>隐式地使用平均样本不是<strong>BYOL</strong>成功的关键。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d8d3b6face21e9ef7607f8.jpg" alt="" /></p>
+
+<p>最后两组研究人员达成的一致共识是<strong>BatchNorm</strong>和负样本都能够防止模型崩溃(<strong>model collapse</strong>)，使得模型训练容易。作者进一步尝试了<strong>GroupNorm</strong>和权重标准化方法的组合，该方法没有引入批量统计信息，也使得<strong>BYOL</strong>具有较好的性能；即一个较好的参数初始化也能避免模型崩溃。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63d8d4adface21e9ef786e21.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/10/18/invaspread.html" class="read-next-link"></a>
+        <section>
+          <span>Unsupervised Embedding Learning via Invariant and Spreading Instance Feature</span>
+          <p>  通过不变和扩散的实例特征实现无监督嵌入学习.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63d87f60face21e9ef98b6b0.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/10/16/barlow.html" class="read-next-link"></a>
+          <section>
+            <span>Barlow Twins: Self-Supervised Learning via Redundancy Reduction</span>
+            <p>  Barlow Twins：通过冗余度消除实现自监督学习.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63d7968fface21e9ef09ea56.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

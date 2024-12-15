@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faster Neural Network Training with Data Echoing - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Faster Neural Network Training with Data Echoing">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Faster Neural Network Training with Data Echoing - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/07/06/dataecho.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Faster Neural Network Training with Data Echoing</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-07-06"><i class="iconfont icon-date"></i>06 Jul 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f02b76714195aa594db2e68.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Data Echoing：一种加速模型训练的方法.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Faster Neural Network Training with Data Echoing</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1907.05550v3">link</a></li>
+</ul>
+
+<h1 id="方法介绍">方法介绍</h1>
+<p>训练一个深度学习模型的典型过程如下：</p>
+
+<p><img src="https://pic.downk.cc/item/5f02b7f414195aa594db75a4.jpg" alt="" /></p>
+
+<ol>
+  <li>从实际数据集中读取数据，表示成张量；</li>
+  <li>打乱数据集；</li>
+  <li>进行数据增强；</li>
+  <li>取出一个数据批次；</li>
+  <li>通过梯度下降更新模型参数。</li>
+</ol>
+
+<p>在这个流水线中，通常<strong>上游任务（upstream）</strong>是在<strong>CPU</strong>上进行的，而<strong>下游任务（downstream）</strong>是在<strong>GPU</strong>或<strong>TPU</strong>上进行的；模型对一批数据进行预处理的时间要长于使用数据进行学习的时间；</p>
+
+<p><img src="https://pic.downk.cc/item/5f02b93e14195aa594dc3048.jpg" alt="" /></p>
+
+<p>作者提出了一种<strong>data echoing</strong>的方法，将预处理的数据放入一个<strong>buffer</strong>中，使用数据更新参数时从这个<strong>buffer</strong>直接或再进行一些处理来获得一个批量的数据，不断从<strong>buffer</strong>中采样直到<strong>upstream</strong>处理好了一批新的数据，更新<strong>buffer</strong>。</p>
+
+<p>作者讨论了该方法的一些优势：</p>
+<ol>
+  <li><strong>data echoing</strong>降低了达到相同精度时所需的<strong>upstream</strong>计算量；</li>
+  <li><strong>data echoing</strong>加速了算法运行的<strong>墙上时间(wall time)</strong>，即进程运行的时间总量；</li>
+  <li><strong>data echoing</strong>提供了一系列<strong>echoing factor</strong>，即可选择每读入一组样本后的重复利用次数；</li>
+  <li><strong>data echoing</strong>的有效性决定于将其插入<strong>pipeline</strong>的位置；</li>
+  <li>从<strong>buffer</strong>中采样后进行数据打乱效果会更好；</li>
+  <li><strong>data echoing</strong>可以达到与<strong>baseline</strong>相同的实验效果。</li>
+</ol>
+
+<h1 id="实验">实验</h1>
+<p>作者选择了四个模型，测试分别需要多少新样本才能够达到给定的目标值；</p>
+
+<p><img src="https://pic.downk.cc/item/5f02bcfd14195aa594de0da4.jpg" alt="" /></p>
+
+<p>使用<strong>data echoing</strong>的位置非常关键，这个位置往往选择整个模型的<strong>瓶颈 bottleneck</strong>，用于平衡较慢的<strong>upstream</strong>和较快的<strong>downstream</strong>。在<strong>pipeline</strong>中有以下几个可插入的位置：</p>
+
+<p><img src="https://pic.downk.cc/item/5f02bfe014195aa594df761b.jpg" alt="" /></p>
+
+<ol>
+  <li><strong>example echoing before augmentation</strong></li>
+  <li><strong>example echoing after augmentation</strong></li>
+  <li><strong>batch echoing</strong></li>
+</ol>
+
+<h3 id="插入位置的实验">插入位置的实验</h3>
+
+<p><img src="https://pic.downk.cc/item/5f02c11614195aa594e020d1.jpg" alt="" /></p>
+
+<p>当<strong>echoing factor</strong>设置为$2$时，理论上只需要一半的数据量（图中虚线）；由于重复使用这些样本打破了独立同分布的假设，实际上需要的样本数会更多一些。<strong>data echoing</strong>插入<strong>pipeline</strong>的位置越靠前，实际上经过后续的预处理的样本更符合独立同分布，因此所需的等效样本数越少；但所需的<strong>upstream</strong>计算量越多。</p>
+
+<h3 id="echoing-factor-的实验">echoing factor 的实验</h3>
+
+<p><img src="https://pic.downk.cc/item/5f02c19b14195aa594e05c21.jpg" alt="" /></p>
+
+<p>使用<strong>data echoing</strong>的位置在<strong>example echoing before augmentation</strong>；当逐渐增大<strong>echoing factor</strong>，由于增加了重复样本的可能性，实际所需要的样本量比理论值更多，实际减少的运行时间也比理论值更少。</p>
+
+<h3 id="batch-size-的实验">batch size 的实验</h3>
+
+<p><img src="https://pic.downk.cc/item/5f02c38d14195aa594e12785.jpg" alt="" /></p>
+
+<p>大的<strong>batch size</strong>能够缓解<strong>echoing factor</strong>增大带来的数据重复问题。</p>
+
+<p><img src="https://pic.downk.cc/item/5f02c35314195aa594e10b4f.jpg" alt="" /></p>
+
+<p><strong>batch size</strong>越大，<strong>data echoing</strong>的效果越明显。</p>
+
+<h3 id="shuffle-的实验">shuffle 的实验</h3>
+
+<p><img src="https://pic.downk.cc/item/5f02c45514195aa594e17525.jpg" alt="" /></p>
+
+<p>打乱<strong>buffer</strong>中的数据再采样能够显著减小所需的样本量。</p>
+
+<h3 id="验证集的实验">验证集的实验</h3>
+
+<p><img src="https://pic.downk.cc/item/5f02c4ce14195aa594e1a472.jpg" alt="" /></p>
+
+<p>通过实验证明，使用<strong>data echoing</strong>能够用更少的数据样本实现给定的模型精度。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/07/07/learn-from-one-image.html" class="read-next-link"></a>
+        <section>
+          <span>A critical analysis of self-supervision, or what we can learn from a single image</span>
+          <p>  使用单张图像进行自监督学习.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f03f01514195aa594635775.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/07/05/concept.html" class="read-next-link"></a>
+          <section>
+            <span>Concept Learning with Energy-Based Models</span>
+            <p>  使用能量模型进行概念学习.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f01544b14195aa594fff5af.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

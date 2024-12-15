@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逻辑回归(Logistic Regression) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="逻辑回归(Logistic Regression)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="逻辑回归(Logistic Regression) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/13/logistic-regression.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>逻辑回归(Logistic Regression)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-13"><i class="iconfont icon-date"></i>13 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ed75927c2a9a83be54c53ef.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Logistic Regression.</p>
+</blockquote>
+
+<p>本文目录：</p>
+<ol>
+  <li>逻辑回归模型</li>
+  <li>Logistic函数</li>
+  <li>交叉熵损失</li>
+  <li>梯度下降法</li>
+  <li>核逻辑回归</li>
+</ol>
+
+<h1 id="1-逻辑回归模型">1. 逻辑回归模型</h1>
+<p><strong>逻辑回归(logistic regression)</strong>是一种二分类模型，其思想是通过引入一个函数将线性回归的输出限制在$[0,1]$之间。最理想的函数是<strong>单位阶跃(unit-step)</strong>函数(也称<strong>Heaviside</strong>函数)，但是该函数不连续，因此选用<strong>Logistic函数</strong>$σ(\cdot)$近似替代。</p>
+
+<p>若记每一个样本点$x = (1,x_1,x_2,…,x_d)^T \in \Bbb{R}^{d+1}$，模型权重参数$w = (w_0,w_1,w_2,…,w_d)^T \in \Bbb{R}^{d+1}$，则逻辑回归模型：</p>
+
+\[\hat{y} = σ(\sum_{j=0}^{d} {w_jx_j}) = σ(w^Tx)\]
+
+<h1 id="2-logistic函数">2. Logistic函数</h1>
+<p><strong>Logistic函数</strong>又叫<strong>Sigmoid函数</strong>，其表达式、一阶导数和函数曲线如下：</p>
+
+\[\begin{aligned} σ(x)&amp;= \frac{1}{1+e^{-x}} \\ σ'(x)&amp;= σ(x)(1-σ(x)) \end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/63b2c11d5d94efb26f386038.jpg" alt="" /></p>
+
+<p>注意到引入<strong>Logistic函数</strong>后逻辑回归模型：</p>
+
+\[\hat{y} =  σ(w^Tx) = \frac{1}{1+e^{-w^Tx}}\]
+
+<p>输出$y=\frac{1}{1+e^{-w^Tx}}$表示类别为$1$的概率，$1-y=\frac{e^{-w^Tx}}{1+e^{-w^Tx}}$表示类别为$0$的概率。</p>
+
+<p>$\frac{y}{1-y}$称为<strong>几率(odds)</strong>，表明$输入x$的类别为$1$的相对可能性，<strong>对数几率(log odds, logit)</strong>可表示为：</p>
+
+\[\ln(\frac{y}{1-y}) = w^Tx\]
+
+<p>上式表明逻辑回归是一种广义线性模型，实际上是在用线性回归模型的预测结果去逼近真实标签的对数几率，因此逻辑回归也称作<strong>对数几率回归</strong>。</p>
+
+<h1 id="3-交叉熵损失">3. 交叉熵损失</h1>
+<p>逻辑回归的损失函数为<strong>交叉熵损失(cross-entropy loss)</strong>，可以由<strong>极大似然估计</strong>推导。</p>
+
+<h3 id="1-标签为0和1">(1) 标签为0和1</h3>
+<p>把分类标签设置为\(y \in \{0,+1\}\)。</p>
+
+<p><strong>Logistic函数</strong>把输入压缩到$0$到$1$之间，可以看作对$y$预测的概率：</p>
+
+\[\begin{aligned} P(y=1 | x) &amp;= σ(w^Tx) \\ P(y=0 | x) &amp;= 1-σ(w^Tx) \end{aligned}\]
+
+<p>上式表示预测结果服从<strong>Bernoulli分布</strong>，可以表达为：</p>
+
+\[P(y | x) = {σ(w^Tx)}^{y}{(1-σ(w^Tx))}^{1-y}\]
+
+<p>若样本集\(X=\{x^{(1)},...,x^{(N)}\}\)，标签集\(y=\{y^{(1)},...,y^{(N)}\}\)，列出对数似然方程：</p>
+
+\[\begin{aligned}&amp; \ln( \prod_{i=1}^{N} { {σ(w^T x^{(i)})}^{y^{(i)}} {(1-σ(w^T x^{(i)}))}^{1-y^{(i)}} } ) \\&amp;= \sum_{i=1}^{N} { \ln( {σ(w^Tx^{(i)})}^{y^{(i)}} {(1-σ(w^Tx^{(i)}))}^{1-y^{(i)}} ) } \\&amp; = \sum_{i=1}^{N} { y^{(i)} \ln(σ(w^Tx^{(i)})) + (1-y^{(i)}) \ln(1-σ(w^Tx^{(i)})) } \end{aligned}\]
+
+<p>极大化似然概率等价于极小化以下损失函数：</p>
+
+\[L(w) = \sum_{i=1}^{N} {-y^{(i)}\ln(σ(w^Tx^{(i)})) - (1-y^{(i)})\ln(1-σ(w^Tx^{(i)}))}\]
+
+<p>上式为具有熵的形式($-p\log p$)，因此称为<strong>交叉熵损失(cross-entropy loss)</strong>。</p>
+
+<p>若希望损失函数为零，则需：</p>
+
+\[\begin{cases} w^Tx → +∞, &amp; y=1 \\ w^Tx → -∞, &amp; y=0 \end{cases}\]
+
+<p>此时要求数据集是线性可分的。</p>
+
+<h3 id="2-标签为1">(2) 标签为±1</h3>
+<p>也可以把分类标签设置为\(y \in \{-1,+1\}\)，从而与感知机、支持向量机等模型的书写方式相同。</p>
+
+<p>由<strong>Logistic函数</strong>的性质：$1-σ(x)=σ(-x)$；输出概率为：</p>
+
+\[\begin{aligned} P(y=1 | x) &amp;= σ(w^Tx) \\ P(y=-1 | x) &amp;= 1-σ(w^Tx) = σ(-w^Tx) \end{aligned}\]
+
+<p>或者统一写为：</p>
+
+\[P(y | x) = σ(yw^Tx)\]
+
+<p>若样本集\(X=\{x^{(1)},...,x^{(N)}\}\)，标签集\(y=\{y^{(1)},...,y^{(N)}\}\)，列出对数似然方程：</p>
+
+\[\ln(\prod_{i=1}^{N} {σ(y^{(i)}w^Tx^{(i)})} = \sum_{i=1}^{N} {\ln(σ(y^{(i)}w^Tx^{(i)}))}\]
+
+<p>似然概率极大化，等价于以下损失函数极小化：</p>
+
+\[\begin{aligned} L(w) &amp;= \sum_{i=1}^{N} {-\ln(σ(y^{(i)}w^Tx^{(i)}))} \\&amp;= \sum_{i=1}^{N} {\ln(1+\exp(-y^{(i)}w^Tx^{(i)}))} \end{aligned}\]
+
+<p>上式也为<strong>交叉熵损失(cross-entropy loss)</strong>。</p>
+
+<h3 id="3-损失函数的比较">(3) 损失函数的比较</h3>
+<p>当标签为$±1$时，比较感知机、线性回归和逻辑回归的损失函数：</p>
+<ul>
+  <li>感知机：<strong>0/1损失</strong>：\(E_{0/1}=[\text{sign}(wx)=y]=[\text{sign}(ywx)=1]\)</li>
+  <li>线性回归：<strong>均方误差</strong>：\(E_{sqr}=(wx-y)^2=(ywx-1)^2\)</li>
+  <li>逻辑回归：<strong>交叉熵</strong>：\(E_{ce}=\ln(1+\exp(-ywx))\)</li>
+  <li>以$2$为底的<strong>交叉熵</strong>：\(E_{scaled-ce}=\log_2(1+\exp(-ywx))=\frac{1}{ln2}E_{ce}\)</li>
+</ul>
+
+<p>经过换底后的交叉熵损失和平方损失都是$0/1$损失的上界：</p>
+
+<p><img src="https://pic.downk.cc/item/5ed10ce1c2a9a83be5064c19.jpg" alt="" /></p>
+
+<p>比较可得，$0/1$损失整体更小，但优化困难(<strong>NP-hard</strong>)；均方误差和交叉熵更大，但可以把问题转化成凸优化问题(存在解析解或梯度下降求解)。</p>
+
+<h1 id="4-梯度下降法">4. 梯度下降法</h1>
+
+<p>逻辑回归的损失函数(交叉熵损失)无解析解，是一个无约束的优化问题，可以用梯度下降法求解。</p>
+
+<p>以标签为$0$和$1$的交叉熵损失为例：</p>
+
+\[L(w) = \sum_{i=1}^{N} {-y^{(i)}\ln(σ(w^Tx^{(i)})) - (1-y^{(i)})\ln(1-σ(w^Tx^{(i)}))}\]
+
+<p>求损失$L(w)$的梯度：</p>
+
+\[\begin{aligned} \nabla_w L(w) &amp;= \nabla_w\sum_{i=1}^{N} {-y^{(i)}\ln(σ(w^Tx^{(i)})) - (1-y^{(i)})\ln(1-σ(w^Tx^{(i)}))} \\  &amp;= \sum_{i=1}^{N} {-y^{(i)}\nabla_w\ln(σ(w^Tx^{(i)})) - (1-y^{(i)})\nabla_w\ln(1-σ(w^Tx^{(i)}))}\\  &amp;= \sum_{i=1}^{N} {-y^{(i)}(1-σ(w^Tx^{(i)}))x^{(i)} + (1-y^{(i)})σ(w^Tx^{(i)})x^{(i)}} \\  &amp;= \sum_{i=1}^{N} {-y^{(i)}(1-σ(w^Tx^{(i)}))x^{(i)} + (1-y^{(i)})σ(w^Tx^{(i)})x^{(i)}}\\  &amp;= \sum_{i=1}^{N} {-(y^{(i)}-σ(w^Tx^{(i)}))x^{(i)}}\\  &amp;= -X^{T}(Y-σ(w^TX)) \end{aligned}\]
+
+<p>因此参数$w$的更新过程为：</p>
+
+\[w^{(t+1)} \leftarrow w^{(t)} +\eta X^{T}(Y-σ(w^TX))\]
+
+<h1 id="5-核逻辑回归">5. 核逻辑回归</h1>
+<p>将<a href="https://0809zheng.github.io/2021/07/23/kernel.html">核方法</a>引入逻辑回归，可以得到<strong>核逻辑回归(kernelized logistic regression)</strong>，从而把线性模型转换成非线性模型。</p>
+
+<p>使用$L2$正则化的逻辑回归的损失函数（标签为$0$和$1$）如下：</p>
+
+\[L(w) = \sum_{i=1}^{N} {-y^{(i)}\ln(σ(w^Tx^{(i)})) - (1-y^{(i)})\ln(1-σ(w^Tx^{(i)}))} + \frac{λ}{N}w^Tw\]
+
+<p>由表示定理，权重最优解可以表示为：</p>
+
+\[w^* = \sum_{n=1}^{N} {β_nx^{(n)}}\]
+
+<p>代入损失函数为：</p>
+
+\[L(β) = \sum_{i=1}^{N} {-y^{(i)}\ln(σ(\sum_{n=1}^{N} {β_n{x^{(n)}}^Tx^{(i)}})) - (1-y^{(i)})\ln(1-σ(\sum_{n=1}^{N} {β_n{x^{(n)}}^Tx^{(i)}}))} \\ + \frac{λ}{N}\sum_{i=1}^{N} {\sum_{j=1}^{N} {β_iβ_j{x^{(i)}}^Tx^{(j)}}}\]
+
+<p>引入核函数\(K(x,x')={φ(x)}^Tφ(x')\)来代替样本的特征转换和内积运算，则核逻辑回归的损失函数为：</p>
+
+\[L(β) = \sum_{i=1}^{N} {-y^{(i)}\ln(σ(\sum_{n=1}^{N} {β_nK(x^{(n)},x^{(i)})})) - (1-y^{(i)})\ln(1-σ(\sum_{n=1}^{N} {β_nK(x^{(n)},x^{(i)})}))} \\ + \frac{λ}{N}\sum_{i=1}^{N} {\sum_{j=1}^{N} {β_iβ_jK(x^{(i)},x^{(j)})}}\]
+
+<p>这是一个无约束的优化问题，可以用梯度下降法求解。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/14/SVM.html" class="read-next-link"></a>
+        <section>
+          <span>支持向量机(Support Vector Machine, SVM)</span>
+          <p>  Support Vector Machine.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/5ed75966c2a9a83be54cb0f5.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/12/regression.html" class="read-next-link"></a>
+          <section>
+            <span>线性回归(Linear Regression)</span>
+            <p>  Linear Regression.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ed758f4c2a9a83be54c0e00.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

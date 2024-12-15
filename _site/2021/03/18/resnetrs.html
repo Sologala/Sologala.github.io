@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revisiting ResNets: Improved Training and Scaling Strategies - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Revisiting ResNets: Improved Training and Scaling Strategies">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Revisiting ResNets: Improved Training and Scaling Strategies - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/03/18/resnetrs.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Revisiting ResNets: Improved Training and Scaling Strategies</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-03-18"><i class="iconfont icon-date"></i>18 Mar 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63ac289408b6830163fd8412.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>ResNet-RS：改进ResNet的训练和策略.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2103.07579">Revisiting ResNets: Improved Training and Scaling Strategies</a></li>
+</ul>
+
+<p>一个模型的综合性能，一般是由网络结构、训练方法及缩放策略三方面综合决定的。大部分工作一般都着重强调其结构的改进，而很少提及同时被引入的非常重要的训练方式及缩放策略等问题。另一方面，这些采用先进训练策略的新模型，总是拿来与旧训练方式下的经典模型（如<strong>ResNet</strong>）进行比较，这是不公平的对比。</p>
+
+<p>本文作者通过对经典模型<strong>ResNet</strong>加入目前新的训练及正则方式，并通过合理的缩放方式，提出了改进版的<strong>ResNet</strong>网络系列：<strong>ResNet-RS</strong>。</p>
+
+<p>实验结果表明，通过添加更新的训练方法及小的结果改进，可以使得<strong>ResNet</strong>网络精度提高至<strong>sota</strong>级别；通过所提缩放策略，可以获得更优的精度-速度权衡的系列网络，整体性能全面超越由神经结构搜索获得的<strong>EfficientNet</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63ac295a08b6830163fecc50.jpg" alt="" /></p>
+
+<h3 id="-改进网络结构">⚪ 改进网络结构</h3>
+
+<ul>
+  <li>将<strong>ResNet</strong>主干网络中的<strong>7x7</strong>卷积变为<strong>3</strong>个<strong>3x3</strong>卷积；</li>
+  <li>交换下采样模块的支路中前两个卷积的步长；</li>
+  <li>将下采样模块的跳跃连接中<strong>s=2</strong>的<strong>1x1</strong>卷积换成<strong>s=2</strong>的<strong>2x2</strong>池化+<strong>1x1</strong>卷积；</li>
+  <li>移除<strong>s=2</strong>的<strong>3x3</strong>最大池化并在下一个下采样模块中进行下调分辨率。</li>
+  <li>加入<strong>ratio=0.25</strong>的<strong>SE-Block</strong>。</li>
+</ul>
+
+<h3 id="-改进训练方法">⚪ 改进训练方法</h3>
+
+<p>作者引入一系列改进的训练方法，可以把<strong>ResNet</strong>网络的精度提升到$82.2\%$；再加入结构的微小改进，可以将其精度提升到$83.4\%$。此外，实验指出当与其他正则化方法一起使用时，需要降低权重衰减率。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63ac2aa808b683016300ea72.jpg" alt="" /></p>
+
+<h3 id="-改进缩放策略">⚪ 改进缩放策略</h3>
+
+<p>模型缩放主要有三个维度：<strong>深度</strong>，<strong>宽度</strong>，<strong>分辨率</strong>。作者对这三个维度进行一定范围内的采点试验，来模拟完整的模型缩放-精度变化趋势，并证明了<strong>EfficientNet</strong>中自动搜索所得的三个维度均衡扩增的方法其实是次优的。此外还在三种不同的训练轮数下进行了试验。实验参数设置组合空间如下：</p>
+<ul>
+  <li>宽度 $[0.25, 0.5, 1.0, 1.5, 2.0]$</li>
+  <li>深度 $[26, 50, 101, 200, 300, 350, 400]$</li>
+  <li>分辨率 $[128, 160, 224, 320, 448]$</li>
+  <li>训练轮数 $[10, 100, 350]$</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/63ac2b7608b6830163026ef4.jpg" alt="" /></p>
+
+<p>实验结果表明：</p>
+<ul>
+  <li>不同的训练轮数下，最优的模型缩放策略并不相同：大训练轮数下增加深度效果优于宽度，但在较小的训练轮数下变化宽度效果比深度更突出。</li>
+  <li>增大图像分辨率会出现收益递减的现象。</li>
+  <li>利用较小模型、较低的训练轮数来估计最终精度并不安全。</li>
+  <li>从一个次优的架构，通过单个维度来进行缩放实验，可能会导致最终策略的次优。</li>
+</ul>
+
+<p>作者给出了推荐的缩放策略：</p>
+<ul>
+  <li>在可能出现过拟合问题的大训练轮数下首选扩大深度；否则扩大宽度。</li>
+  <li>缓慢扩大分辨率。</li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/03/19/yolov3.html" class="read-next-link"></a>
+        <section>
+          <span>YOLOv3: An Incremental Improvement</span>
+          <p>  YOLOv3：对YOLOv2模型的增量式改进.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/648bcce21ddac507cc7eb1e7.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/03/17/yolov2.html" class="read-next-link"></a>
+          <section>
+            <span>YOLO9000: Better, Faster, Stronger</span>
+            <p>  YOLOv2和YOLO9000：更好、更快、更强的目标检测器.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/648bbe3d1ddac507cc5add2a.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

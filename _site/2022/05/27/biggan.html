@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Large Scale GAN Training for High Fidelity Natural Image Synthesis - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Large Scale GAN Training for High Fidelity Natural Image Synthesis">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Large Scale GAN Training for High Fidelity Natural Image Synthesis - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/05/27/biggan.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Large Scale GAN Training for High Fidelity Natural Image Synthesis</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-05-27"><i class="iconfont icon-date"></i>27 May 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63a01e5eb1fccdcd36631905.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>BigGAN：用于高保真度自然图像合成的大规模GAN.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1809.11096">Large Scale GAN Training for High Fidelity Natural Image Synthesis</a></li>
+</ul>
+
+<p><strong>BigGAN</strong>整体结构与<a href="https://0809zheng.github.io/2022/05/25/sagan.html"><font color="Blue">SAGAN</font></a>相同，在网络中引入了<a href="https://0809zheng.github.io/2020/11/21/SAinCNN.html">自注意力机制</a>，有助于对图像区域中长距离、多层次的依赖关系进行建模。此外，生成器和判别器均应用了<a href="https://0809zheng.github.io/2022/02/08/sngan.html">谱归一化</a>，使得网络满足<strong>Lipschitz</strong>连续性；训练时遵循<a href="https://0809zheng.github.io/2022/03/24/ttur.html">TTUR</a>原则，判别器$D$和生成器$G$的学习率是不相等的。</p>
+
+<p>在此基础上，<strong>BigGAN</strong>采用了更大的数据批量、截断策略和模型稳定性的控制。</p>
+
+<h2 id="1-更大的数据批量">1. 更大的数据批量</h2>
+
+<p>作者发现简单地将<strong>batch size</strong>增大就可以实现性能上较好的提升，文章做了实验验证，把<strong>batch size</strong>调整到<strong>SAGAN</strong>的$8$倍($2048$)：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a02dcfb1fccdcd3681c554.jpg" alt="" /></p>
+
+<p>增大<strong>batch size</strong>使得每批次数据能覆盖更多模式的结果，为生成和判别网络提供更好的梯度，还会消耗更少的时间训练出更好性能的模型；但也会使得模型的训练稳定性下降。增大<strong>batch size</strong>时，网络每层的通道数也相应的增加，当通道增加一倍时，模型中的参数数量也大约增大一倍。</p>
+
+<p><strong>BigGAN</strong>在<strong>ImageNet</strong>数据集上进行训练，因此在网络中引入条件标签$c$实现条件生成。作者采用共享嵌入的方式，把条件标签投影到每个<strong>BatchNorm</strong>层的仿射参数，并通过条件<strong>BN</strong>实现条件生成过程。在先验分布$z$的嵌入过程中，作者也采用不同层次的嵌入，把先验$z$拆分到每个模块，并与条件嵌入连接，共同作为条件<strong>BN</strong>的输入参数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a02f4ab1fccdcd368500fa.jpg" alt="" /></p>
+
+<h1 id="2-截断技巧-truncation-trick">2. 截断技巧 truncation trick</h1>
+
+<p>在生成图像时，噪声先验$z$一般选择标准正态分布$N(0,I)$或者均匀分布$U[−1,1]$。为了提高生成图像的质量，作者提出了一种<strong>truncation trick</strong>，用于平衡模型生成具体图像或生成不同类型的图像的能力。</p>
+
+<p>截断技巧是指从先验分布$z$采样时，通过设置阈值的方式来截断采样，其中超出范围的采样值被丢弃并重新采样。这个阈值可以根据生成质量指标决定。</p>
+
+<p>通过对阈值的设定，随着阈值的下降（噪声$z$的取值范围越窄）生成的质量会越来越好，但是由于阈值的下降，采样的范围变窄，就会造成生成结果单一化，多样性不足。</p>
+
+<p><img src="https://pic.downk.cc/item/5ed868d3c2a9a83be5ba48c5.jpg" alt="" /></p>
+
+<p>一些较大的模型不适合直接截断，在输入截断噪声时会生成图像中会产生伪影。为了抵消这种影响，可以通过让生成器的权重更加平滑来适应截断的输入噪声，作者引入了生成器权重$W$的正交正则化:</p>
+
+\[R_{\beta}(W) = \beta ||W^TW\odot (1-I)||_F^2\]
+
+<h1 id="3-模型稳定性的控制">3. 模型稳定性的控制</h1>
+
+<p>作者在训练期间监测一系列权重、梯度和损失的统计数据，以寻找可能预示训练崩溃开始的指标。实验发现每个权重矩阵的前三个奇异值$σ_0,σ_1,σ_2$是最有用的，它们可以使用<strong>Alrnoldi</strong>迭代方法进行有效计算。</p>
+
+<p>下图报告了第一个奇异值$σ_0$在应用谱归一化之前在不同网络层中的数值大小。在一些层中，奇异值$σ_0$的数值会快速增大，导致训练崩溃。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a041bfb1fccdcd36a85c81.jpg" alt="" /></p>
+
+<h3 id="-生成器的稳定性">⚪ 生成器的稳定性</h3>
+
+<p>为了缓解生成器的训练崩溃，可以适当调整奇异值$σ_0$的数值来修正权重$W$：</p>
+
+\[W = W - \max(0, \sigma_0-\sigma_{clamp})\nu_0\mu_0^T\]
+
+<p>上述操作是为了将权重的第一个奇异值$σ_0$控制住，防止其数值突然性的爆炸。实验观察到即使在某些情况下可以一定程度地改善网络性能，但没有任何组合可以防止训练崩溃（崩溃无法避免）。</p>
+
+<h3 id="-判别器的稳定性">⚪ 判别器的稳定性</h3>
+
+<p>判别器的奇异值$σ_0$变化是有噪声的，但整个过程是平稳增长。为了去除噪声，可以对判别器的权重应用梯度惩罚：</p>
+
+\[R = \frac{\gamma}{2} E_{p(x)} [||\nabla_x D(x)||_F^2]\]
+
+<p>结果表明对判别器的惩罚足够高，可以实现训练稳定性，但是性能会有显著地下降。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/05/28/selfmod.html" class="read-next-link"></a>
+        <section>
+          <span>On Self Modulation for Generative Adversarial Networks</span>
+          <p>  生成对抗网络的自调制.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63a1177bb1fccdcd36e31b2c.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/05/26/vqgan.html" class="read-next-link"></a>
+          <section>
+            <span>Taming Transformers for High-Resolution Image Synthesis</span>
+            <p>  通过VQGAN和Transformer实现高分辨率图像合成.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63a00f20b1fccdcd3647646e.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

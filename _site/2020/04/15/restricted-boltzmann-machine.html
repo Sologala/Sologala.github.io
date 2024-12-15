@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restricted Boltzmann Machine：受限玻尔兹曼机 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Restricted Boltzmann Machine：受限玻尔兹曼机">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Restricted Boltzmann Machine：受限玻尔兹曼机 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/15/restricted-boltzmann-machine.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>Restricted Boltzmann Machine：受限玻尔兹曼机</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-15"><i class="iconfont icon-date"></i>15 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e9676a8c2a9a83be55aca1e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Restricted Boltzmann Machine.</p>
+</blockquote>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>模型介绍</li>
+  <li>推断</li>
+  <li>学习</li>
+  <li>深度玻尔兹曼机</li>
+</ol>
+
+<h1 id="1-模型介绍">1. 模型介绍</h1>
+<p>全连接的<a href="https://0809zheng.github.io/2020/04/14/boltzmann-machine.html">玻尔兹曼机</a>由于其复杂性，目前为止并没有被广泛使用。</p>
+
+<p><strong>受限玻尔兹曼机(Restricted Boltzmann Machine，RBM)</strong>的神经元也可以分为<strong>可观测变量</strong>$v$和<strong>隐变量</strong>$h$，下图给出了包含4个可观测变量和3个隐变量的受限玻尔兹曼机：</p>
+
+<p><img src="https://pic.downk.cc/item/5e967762c2a9a83be55b6723.jpg" alt="" /></p>
+
+<p>受限玻尔兹曼机的可观测变量和隐变量之间是全连接的，分别用<strong>可观测层</strong>和<strong>隐藏层</strong>表示；但是同一层内的节点没有连接。</p>
+
+<p>一个受限玻尔兹曼机由$K_v$个可观测变量和$K_h$个隐变量组成，模型参数包括：</p>
+<ol>
+  <li>可观测的随机向量\(v \in \Bbb{R}^{K_v}\)</li>
+  <li>隐藏的随机向量\(h \in \Bbb{R}^{K_h}\)</li>
+  <li>权重矩阵\(W \in \Bbb{R}^{K_v×K_h}\)</li>
+  <li>可观测层偏置\(a \in \Bbb{R}^{K_v}\)</li>
+  <li>隐藏层偏置\(b \in \Bbb{R}^{K_h}\)</li>
+</ol>
+
+<p><strong>能量函数</strong>$E(v,h)$定义为：</p>
+
+\[E(v,h) = -(\sum_{i}^{} {a_iv_i} + \sum_{j}^{} {b_jh_j} + \sum_{i,j}^{} {v_iw_{ij}h_j}) = -a^Tv-b^Th-v^TWh\]
+
+<p><strong>联合概率分布</strong>$p(v,h)$定义为：</p>
+
+\[p(v,h) = \frac{1}{Z} exp(-E(v,h)) = \frac{1}{Z} exp(a^Tv) exp(b^Th) exp(v^TWh)\]
+
+<p>其中$Z$是配分函数(Partition Function)。</p>
+
+<p>常见的受限玻尔兹曼机有以下三种：</p>
+<ol>
+  <li><strong>“伯努利-伯努利”受限玻尔兹曼机（Bernoulli-Bernoulli RBM, BB-RBM）</strong>：上面介绍的可观测变量和隐变量都为二值类型的受限玻尔兹曼机;</li>
+  <li><strong>“高斯-伯努利”受限玻尔兹曼机（Gaussian-Bernoulli RBM, GB-RBM）</strong>：可观测变量为高斯分布，隐变量为伯努利分布;</li>
+  <li><strong>“伯努利-高斯”受限玻尔兹曼机（Bernoulli-Gaussian RBM, BG-RBM）</strong>：可观测变量为伯努利分布，隐变量为高斯分布。</li>
+</ol>
+
+<h1 id="2-推断">2. 推断</h1>
+<p><strong>推断(Inference)</strong>问题是指当给定受限玻尔兹曼机的模型参数时，由观测值生成服从联合概率分布$p(v,h)$的样本。</p>
+
+<p>受限玻尔兹曼机的联合概率分布\(p(v,h)\)一般通过MCMC方法（如Gibbs采样）来近似。</p>
+
+<p>在受限玻尔兹曼机的全条件概率中，可观测变量之间互相<strong>条件独立</strong>，隐变量之间也互相<strong>条件独立</strong>：</p>
+
+\[p(v_i \mid v_{-i},h) = p(v_i \mid h)\]
+
+\[p(h_j \mid v,h_{-j}) = p(h_j \mid v)\]
+
+<p>因此，受限玻尔兹曼机可以并行地对所有的可观测变量（或所有的隐变量）同时进行采样，从而可以更快地达到热平衡状态。</p>
+
+<p><strong>全条件概率</strong>计算如下：</p>
+
+\[p(v_i = 1 \mid h) = sigmoid(a_i + \sum_{j}^{} {w_{ij}h_j})\]
+
+\[p(h_j = 1 \mid v) = sigmoid(b_j + \sum_{i}^{} {w_{ij}v_i})\]
+
+<p>也可以写为向量形式，即:</p>
+
+\[p(v = 1 \mid h) = sigmoid(a+Wh)\]
+
+\[p(h = 1 \mid v) = sigmoid(b+W^Tv)\]
+
+<p>受限玻尔兹曼机的<strong>Gibbs采样</strong>过程为：</p>
+<ol>
+  <li>给定或随机初始化一个可观测的向量$v_0$,计算隐变量的概率，并从中采样一个隐向量$h_0$；</li>
+  <li>基于$h_0$计算可观测向量的概率，并从中采样一个可观测的向量$v_1$；</li>
+  <li>重复$t$次，获得$v_t$、$h_t$;</li>
+  <li>当\(t → ∞\)时，\((v_t,h_t)\)的采样分布服从$p(v,h)$分布。</li>
+</ol>
+
+<h1 id="3-学习">3. 学习</h1>
+<p><strong>学习(Learning)</strong>问题是指当给定变量的多组观测值时，学习模型的最优参数。</p>
+
+<p>受限玻尔兹曼机通过最大化似然函数来找到最优的参数$W$,$a$,$b$。</p>
+
+<p>对数似然函数：</p>
+
+\[L(D;W,a,b) = \frac{1}{N} \sum_{n=1}^{N} {logp(\hat{v}^n \mid W,a,b)}\]
+
+<p>计算得对数似然函数对参数的梯度为：</p>
+
+\[\frac{\partial L(D;W,a,b)}{\partial w_{ij}} = E_{\hat{p}(v)}E_{p(h \mid v)}(v_ih_j)-E_{p(v,h)}(v_ih_j)\]
+
+\[\frac{\partial L(D;W,a,b)}{\partial a_{i}} = E_{\hat{p}(v)}E_{p(h \mid v)}(v_i)-E_{p(v,h)}(v_i)\]
+
+\[\frac{\partial L(D;W,a,b)}{\partial b_{j}} = E_{\hat{p}(v)}E_{p(h \mid v)}(h_j)-E_{p(v,h)}(h_j)\]
+
+<h3 id="1-gibbs采样">(1). Gibbs采样</h3>
+<p>上述计算涉及配分函数和期望，很难精确计算。一般通过MCMC方法（如Gibbs采样）来进行近似求解。</p>
+
+<p>以参数$w_{ij}$的梯度为例:</p>
+<ol>
+  <li>对于第一项，固定可观测变量\(v\)，只对隐变量\(h\)进行Gibbs采样，在训练集上所有的训练样本上重复此过程，得到$v_ih_j$的近似期望\((v_ih_j)_{data}\);</li>
+  <li>对于第二项，对所有变量进行Gibbs采样。当达到热平衡状态时，采样$v_ih_j$的值，得到近似期望\((v_ih_j)_{model}\)。</li>
+</ol>
+
+<p>采用<strong>梯度上升法</strong>更新权重：</p>
+
+\[w_{ij} = w_{ij} + α((v_ih_j)_{data} - (v_ih_j)_{model})\]
+
+<p>根据受限玻尔兹曼机的条件独立性，可以对可观测变量和隐变量进行分组轮流采样。</p>
+
+<p>受限玻尔兹曼机的采样效率会比玻尔兹曼机有很大提高，但一般还是需要通过很多步采样才可以采集到符合真实分布的样本。</p>
+
+<h3 id="2-对比散度">(2). 对比散度</h3>
+<p><strong><a href="https://www.researchgate.net/publication/11207765_ARTICLE_Training_Products_of_Experts_by_Minimizing_Contrastive_Divergence">对比散度（Contrastive Divergence）</a></strong>算法使得受限玻尔兹曼机的训练非常高效。</p>
+
+<p>对比散度算法用一个训练样本作为可观测向量的初始值。然后交替对可观测向量和隐向量进行Gibbs采样，不需要等到收敛，只需要$K$步就足够了。</p>
+
+<p>算法的流程如下：</p>
+<ol>
+  <li>初始化可观测的向量$v_0$,计算隐变量的概率，并从中采样一个隐向量$h_0$；</li>
+  <li>基于$h_0$计算可观测向量的概率，并从中采样一个可观测的向量$v_1$；</li>
+  <li>基于$v_1$计算隐变量的概率，并从中采样一个隐向量$h_1$；</li>
+  <li>更新参数：</li>
+</ol>
+
+\[W = W + α(v_0h_0^T - v_1h_1^T)\]
+
+\[a = a + α(v_0 - v_1)\]
+
+\[b = b + α(h_0 - h_1)\]
+
+<p>重复上述步骤，直到满足终止判断条件。</p>
+
+<h1 id="4-深度玻尔兹曼机">4. 深度玻尔兹曼机</h1>
+<p><strong>深度玻尔兹曼机</strong>堆叠多层隐藏层，每两层可以看作一组受限玻尔兹曼机。
+<img src="https://pic.downk.cc/item/5e97db41c2a9a83be538112a.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/16/deep-belief-network.html" class="read-next-link"></a>
+        <section>
+          <span>Deep Belief Network：深度信念网络</span>
+          <p>  Deep Belief Networks.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5e97dbe0c2a9a83be538717b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/14/boltzmann-machine.html" class="read-next-link"></a>
+          <section>
+            <span>Boltzmann Machine：玻尔兹曼机</span>
+            <p>  Boltzmann Machine.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e954cbbc2a9a83be594d120.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

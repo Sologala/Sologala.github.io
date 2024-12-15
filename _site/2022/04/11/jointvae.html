@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Disentangled Joint Continuous and Discrete Representations - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Learning Disentangled Joint Continuous and Discrete Representations">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Learning Disentangled Joint Continuous and Discrete Representations - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/11/jointvae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Learning Disentangled Joint Continuous and Discrete Representations</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-11"><i class="iconfont icon-date"></i>11 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/628a18bc094754312915b04f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Joint VAE：学习解耦的联合连续和离散表示.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1804.00104">Learning Disentangled Joint Continuous and Discrete Representations</a></li>
+</ul>
+
+<h1 id="1-joint-vae">1. Joint VAE</h1>
+
+<p>在<strong>VAE</strong>的解耦模型中，一些方法把隐变量$z$设置为连续形式(如<a href="https://0809zheng.github.io/2020/12/02/bvae.html"><font color="Blue">β-VAE</font></a>中的标准正态分布)，另一些方法把隐变量$z$设置为离散形式(如<a href="https://0809zheng.github.io/2022/04/10/catevae.html"><font color="Blue">Categorical VAE</font></a>中的类别均匀分布)。而本文提出的<strong>Joint VAE</strong>在隐变量中将连续和离散变量结合起来，若$z$是连续变量部分，$c$是离散变量部分，并且假设$z$和$c$是相互独立的，损失函数设置为<a href="https://0809zheng.github.io/2020/12/03/bvae2.html"><font color="Blue">Disentangled β-VAE</font></a>的形式：</p>
+
+\[\mathbb{E}_{z,c \text{~} q(z,c|x)} [-\log p(x|z,c)]+\gamma_z \cdot |KL[q(z|x)||p(z)]-C_z|+\gamma_c \cdot |KL[q(c|x)||p(c)]-C_c|\]
+
+<h3 id="-重构损失">⚪ 重构损失</h3>
+
+<p>重构损失$\mathbb{E}_{z,c \text{~} q(z,c|x)} [-\log p(x|z,c)]$选用均方误差损失：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'mean'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-连续隐变量的正则化项">⚪ 连续隐变量的正则化项</h3>
+
+<p>连续隐变量$z$的先验分布$p(z)$选定为标准正态分布\(\mathcal{N}(0,I)\)，而后验分布人为指定为对角正态分布\(\mathcal{N}(\mu,\sigma^2)\)，两者的KL散度$KL[q(z|x)||p(z)]$具有解析表达式：</p>
+
+\[KL[\mathcal{N}(\mu,\sigma^{2})||\mathcal{N}(0,1)]   = \frac{1}{2}  (-\log \sigma^2 + \mu^2+\sigma^2-1)\]
+
+<p>为了防止KL散度过小使得重构效果变差，控制KL散度的数值在$C_z$左右，且$C_z$随着训练轮数逐渐增大，一方面可以提高重构效果，另一方面保留模型的解耦能力。则正则化项$\gamma_z \cdot |KL[q(z|x)||p(z)]-C_z|$表示为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">self</span><span class="p">.</span><span class="n">cont_gamma</span> <span class="o">=</span> <span class="n">latent_gamma</span> <span class="c1"># float = 30.
+</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_min</span> <span class="o">=</span> <span class="n">latent_min_capacity</span> <span class="c1"># float = 0.
+</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_max</span> <span class="o">=</span> <span class="n">latent_max_capacity</span> <span class="c1"># float = 25.
+</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_iter</span> <span class="o">=</span> <span class="n">latent_num_iter</span> <span class="c1"># int = 25000
+</span>
+<span class="c1"># Compute Continuous loss
+# Adaptively increase the continuous capacity
+</span><span class="n">cont_curr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_max</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">cont_min</span><span class="p">)</span> <span class="o">*</span> \
+            <span class="bp">self</span><span class="p">.</span><span class="n">num_iter</span><span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_iter</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">cont_min</span>
+<span class="n">cont_curr</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">cont_curr</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">cont_max</span><span class="p">)</span>
+
+<span class="n">kld_cont_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="n">exp</span><span class="p">(),</span>
+                                            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                           <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">cont_capacity_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cont_gamma</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">cont_curr</span> <span class="o">-</span> <span class="n">kld_cont_loss</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-离散隐变量的正则化项">⚪ 离散隐变量的正则化项</h3>
+
+<p>离散隐变量$c$的先验分布$p(c)$选定为$k$类离散均匀分布$(1/k,…,1/k)$，而后验分布$q(c|x)$为类别分布(需要归一化)，两者的KL散度$KL[q(c|x)||p(c)]$计算为:</p>
+
+\[KL[q(c|x)||p(c)] = \sum_{c}^{} q(c|x) \log q(c|x)-q(c|x) \log p(c)\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">self</span><span class="p">.</span><span class="n">disc_gamma</span> <span class="o">=</span> <span class="n">categorical_gamma</span> <span class="c1"># float = 30.
+</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_min</span> <span class="o">=</span> <span class="n">categorical_min_capacity</span> <span class="c1"># float = 0.
+</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_max</span> <span class="o">=</span> <span class="n">categorical_max_capacity</span> <span class="c1"># float = 25.
+</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_iter</span> <span class="o">=</span> <span class="n">categorical_num_iter</span> <span class="c1"># int = 25000
+</span>
+<span class="c1"># Adaptively increase the discrinimator capacity
+</span><span class="n">disc_curr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_max</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">disc_min</span><span class="p">)</span> <span class="o">*</span> \
+            <span class="bp">self</span><span class="p">.</span><span class="n">num_iter</span><span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_iter</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">disc_min</span>
+<span class="n">disc_curr</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">disc_curr</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">categorical_dim</span><span class="p">))</span>
+
+<span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">q_p</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Convert the categorical codes into probabilities
+</span><span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-7</span>
+
+<span class="c1"># Entropy of the logits
+</span><span class="n">h1</span> <span class="o">=</span> <span class="n">q_p</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">q_p</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+<span class="c1"># Cross entropy with the categorical distribution
+</span><span class="n">h2</span> <span class="o">=</span> <span class="n">q_p</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">categorical_dim</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+<span class="n">kld_disc_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">h1</span> <span class="o">-</span> <span class="n">h2</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">disc_capacity_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">disc_gamma</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">disc_curr</span> <span class="o">-</span> <span class="n">kld_disc_loss</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>Joint VAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/joint_vae.py">PyTorch-VAE</a>。</p>
+
+<h1 id="2-joint-vae的重参数化">2. Joint VAE的重参数化</h1>
+
+<p><strong>Joint VAE</strong>涉及分别从连续分布$q(z|x)$和离散分布$q(c|x)$中采样的过程，因此需要借助重参数化技巧。</p>
+
+<h3 id="-连续变量的重参数化">⚪ 连续变量的重参数化</h3>
+
+<p>连续分布$q(z|x)$通常选择正态分布：$z\text{~}\mathcal{N}(\mu_{\theta},\sigma_{\theta}^2)$。此时重参数化技巧就是“从$\mathcal{N}(\mu_{\theta},\sigma_{\theta}^2)$中采样$z$”变成“从$\mathcal{N}(0,1)$中采样$\epsilon$，然后计算$\epsilon \cdot \sigma_{\theta}+\mu_{\theta}$”。此时目标函数变为：</p>
+
+\[\Bbb{E}_{z \text{~} \mathcal{N}(\mu_{\theta},\sigma_{\theta}^2)} [f(z)] =  \Bbb{E}_{\epsilon \text{~} \mathcal{N}(0,1)} [f(\epsilon \cdot \sigma_{\theta}+\mu_{\theta})]\]
+
+<p><strong>Pytorch</strong>实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">reparameterize</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span><span class="p">):</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_var</span><span class="p">)</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">std</span>
+</code></pre></div></div>
+
+<h3 id="-离散变量的重参数化">⚪ 离散变量的重参数化</h3>
+
+<p>为实现离散分布$q(c|x)$的重参数化，引入<a href="https://0809zheng.github.io/2022/04/10/catevae.html"><font color="Blue">Gumbel Softmax</font></a>方法。<strong>Gumbel Softmax</strong>方法实现从离散的类别分布中采样的过程，且采样的随机性转移到无参数的均匀分布$U[0,1]$上：</p>
+
+\[softmax (\frac{c_i - \log (-\log \epsilon_i)}{\tau})_{i=1}^k, \quad \epsilon_i\text{~}U[0,1]\]
+
+<p>其中$\tau$为退火参数，其数值越小会使结果越接近<strong>onehot</strong>形式，对应类别分布越尖锐，然而梯度消失情况也越严重。</p>
+
+<p><strong>Pytorch</strong>实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">reparameterize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span><span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="s">"""
+    Gumbel-softmax trick to sample from Categorical Distribution
+    :param c: (Tensor) Latent Codes [B x D x K]
+    :return: (Tensor) [B x D]
+    """</span>
+    <span class="c1"># Sample from Gumbel
+</span>    <span class="n">u</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="o">-</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">u</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+
+    <span class="c1"># Gumbel-Softmax sample
+</span>    <span class="n">s</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">((</span><span class="n">c</span> <span class="o">+</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">latent_dim</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">categorical_dim</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">s</span>
+</code></pre></div></div>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/12/msssim.html" class="read-next-link"></a>
+        <section>
+          <span>Learning to Generate Images with Perceptual Similarity Metrics</span>
+          <p>  使用多尺度结构相似性度量MS-SSIM学习图像生成.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/628b5b840947543129a4c70a.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/10/catevae.html" class="read-next-link"></a>
+          <section>
+            <span>Categorical Reparameterization with Gumbel-Softmax</span>
+            <p>  使用Gumble-Softmax实现离散类别隐变量的重参数化.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62874a8a0947543129406841.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

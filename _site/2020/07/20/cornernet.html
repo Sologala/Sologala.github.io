@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CornerNet: Detecting Objects as Paired Keypoints - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="CornerNet: Detecting Objects as Paired Keypoints">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="CornerNet: Detecting Objects as Paired Keypoints - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/07/20/cornernet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>CornerNet: Detecting Objects as Paired Keypoints</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-07-20"><i class="iconfont icon-date"></i>20 Jul 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f15ac1a14195aa59450bfc6.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>CornerNet：一种anchor-free的目标检测算法.</p>
+</blockquote>
+
+<ul>
+  <li>paper：CornerNet: Detecting Objects as Paired Keypoints</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1808.01244">link</a></li>
+</ul>
+
+<h1 id="模型介绍">模型介绍</h1>
+<p>作者提出了一个anchor-free的目标检测算法：<strong>CornerNet</strong>。</p>
+
+<p><img src="https://pic.downk.cc/item/5f15ac4a14195aa59450d7aa.jpg" alt="" /></p>
+
+<p><strong>CornerNet</strong>由<strong>backbone network</strong>和<strong>prediction module</strong>组成。</p>
+<ul>
+  <li><strong>backbone network</strong>选用<strong>Hourglass Network</strong>，将输入图像提取成特征映射；</li>
+  <li><strong>prediction module</strong>使用了<strong>corner pooling</strong>，将特征映射转化成三个输出，分别为：
+    <ol>
+      <li><strong>heatmaps</strong>：分别预测每一个像素位置是某一类边界框的左上角坐标、右下角坐标的概率；</li>
+      <li><strong>embeddings</strong>：对每一个可能为边界框左上角坐标、右下角坐标的位置进行编码，属于同一个边界框的编码应尽可能接近；否则编码尽可能相差较大；</li>
+      <li><strong>offsets</strong>：把边界框的预测角点回归到像素点上。</li>
+    </ol>
+  </li>
+</ul>
+
+<h1 id="corner-pooling">corner pooling</h1>
+<p>预测边界框的左上角坐标、右下角坐标，在预测点附近并没有出现物体，因此不能仅依赖预测点附近的感受野。作者提出了<strong>corner pooling</strong>，可以获取目标的边界信息。</p>
+
+<p>以<strong>top-left corner pooling</strong>为例，该点的结果由该点右边和下边所有特征点数值最大者决定：</p>
+
+<p><img src="https://pic.downk.cc/item/5f15b29a14195aa59453ff03.jpg" alt="" /></p>
+
+<p><strong>corner pooling</strong>在网络中应用如下，网络还使用了残差连接：</p>
+
+<p><img src="https://pic.downk.cc/item/5f15b32714195aa594543ce4.jpg" alt="" /></p>
+
+<h1 id="损失函数">损失函数</h1>
+<p>数据集在标注<strong>“Ground truth</strong>时并不是仅把目标边界框的左上角和右下角像素位置标注为1，而是使用一个二维高斯分布作为软标注：</p>
+
+<p><img src="https://pic.downk.cc/item/5f15b49e14195aa59454f5de.jpg" alt="" /></p>
+
+<p>网络的损失函数为：</p>
+
+\[L = L_{det} + αL_{pull} + βL_{push} + γL_{off}\]
+
+<ul>
+  <li>$L_{det}$是目标损失，使用交叉熵损失：</li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5f15b4d714195aa59455146d.jpg" alt="" /></p>
+
+<ul>
+  <li>$L_{pull}$用于使同一个边界框的左上角和右下角编码尽可能接近，具体地使其接近二者的平均值：</li>
+</ul>
+
+\[L_{pull} = \frac{1}{N} \sum_{k=1}^{N} {[(e_{t_k}-e_k)^2+(e_{b_k}-e_k)^2]}\]
+
+<ul>
+  <li>$L_{push}$用于使不同边界框的角点编码尽可能远离：</li>
+</ul>
+
+\[L_{push} = \frac{1}{N(N-1)} \sum_{k=1}^{N} {\sum_{j=1,j≠k}^{N} {max(0,Δ-\mid e_k-e_j \mid)}}\]
+
+<ul>
+  <li>$L_{off}$用于对坐标位置进行修正：</li>
+</ul>
+
+\[L_{off} = \frac{1}{N} \sum_{k=1}^{N} {\text{SmoothL1Loss}(o_k,\hat{o}_k)}\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/07/26/adversirial_attack_in_classification.html" class="read-next-link"></a>
+        <section>
+          <span>对抗训练(Adversarial Training)：攻击和防御</span>
+          <p>  Adversarial Training: Attack and Defense.对抗训练(Adversari...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic2.imgdb.cn/item/645df3520d2dde5777316bd4.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/07/18/mvp.html" class="read-next-link"></a>
+          <section>
+            <span>Movement Pruning: Adaptive Sparsity by Fine-Tuning</span>
+            <p>  讨论迁移学习中的权重剪枝.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f12c02914195aa5946e279a.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

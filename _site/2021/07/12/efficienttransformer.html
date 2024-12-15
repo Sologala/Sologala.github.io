@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>降低Transformer的计算复杂度 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="降低Transformer的计算复杂度">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="降低Transformer的计算复杂度 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/07/12/efficienttransformer.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>降低Transformer的计算复杂度</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-07-12"><i class="iconfont icon-date"></i>12 Jul 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60ebbe525132923bf878e6c3.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Efficient Transformers.</p>
+</blockquote>
+
+<p>本文目录：</p>
+<ol>
+  <li>Transformer的计算复杂度</li>
+  <li>改进自注意力机制</li>
+</ol>
+
+<h1 id="1-transformer的计算复杂度">1. Transformer的计算复杂度</h1>
+
+<h2 id="1-transformer的典型结构">(1) Transformer的典型结构</h2>
+<p><img src="https://pic.imgdb.cn/item/60ebbe165132923bf8778fed.jpg" alt="" /></p>
+
+<p>典型的<strong>Transformer</strong>结构如上图所示，其整体计算量来源于模型中的<a href="https://0809zheng.github.io/2020/04/24/self-attention.html">自注意力层</a>和全连接层两部分，本文主要讨论自注意力层的改进。</p>
+
+<h2 id="2-自注意力机制的运算">(2) 自注意力机制的运算</h2>
+
+<p>在衡量计算复杂度时主要考虑<strong>矩阵乘法</strong>。对于矩阵乘法$(a, b)\times(b,c)$，计算复杂度为$O(abc)$。</p>
+
+<p><img src="https://pic.downk.cc/item/5ea28825c2a9a83be5477d93.jpg" alt="" /></p>
+
+<h3 id="-计算查询矩阵q键矩阵k值矩阵v">① 计算查询矩阵Q,键矩阵K,值矩阵V</h3>
+<p>对于经过词嵌入并加入位置编码的输入序列\(X=[x_1,...,x_N] \in \Bbb{R}^{D_x×N}\)，将其通过仿射变换映射为查询矩阵$Q$,键矩阵$K$,值矩阵$V$：</p>
+
+\[Q = W^qX \in \Bbb{R}^{D_k×N}, \quad W^q \in \Bbb{R}^{D_k×D_x}\]
+
+\[K = W^kX \in \Bbb{R}^{D_k×N}, \quad W^k \in \Bbb{R}^{D_k×D_x}\]
+
+\[V = W^vX \in \Bbb{R}^{D_v×N}, \quad W^v \in \Bbb{R}^{D_v×D_x}\]
+
+<p>这一步的计算量为$O(2D_kND_x+D_vND_x)=O(ND_x(2D_k+D_v)))=O(N)$。</p>
+
+<h3 id="-计算注意力矩阵a">② 计算注意力矩阵A</h3>
+<p>根据查询矩阵$Q$和键矩阵$K$计算注意力矩阵\(A \in \Bbb{R}^{N×N}\)(这一步是在计算每个输入与其他输入的相关性)：</p>
+
+\[A = \frac{K^TQ}{\sqrt{D_k}}\]
+
+<p>这一步的计算量为$O(N^2D_k)=O(N^2)$。</p>
+
+<h3 id="-归一化注意力矩阵a">③ 归一化注意力矩阵A</h3>
+
+<p>使用<strong>softmax</strong>函数对注意力矩阵$A$进行归一化：</p>
+
+\[\hat{A} = \text{softmax}(A)_{\text{dim}=1}\]
+
+<p>这一步的计算量为$O(1)$。</p>
+
+<h3 id="-加权求和计算输出h">④ 加权求和计算输出H</h3>
+<p>根据归一化的注意力矩阵$\hat{A}$和值矩阵$V$加权求和计算输出：</p>
+
+\[H = V\hat{A} \in \Bbb{R}^{D_x×N}\]
+
+<p>这一步的计算量为$O(D_xN^2)=O(N^2)$。</p>
+
+<p>根据上述分析可知，自注意力机制的整体运算复杂度为:</p>
+
+\[O(2D_kND_x+D_vND_x+N^2D_k+1+D_xN^2) = O(N^2)\]
+
+<p>其中$N$是输入序列长度。一般地，选择向量的特征维度$D_k=D_v=D_x=d$，在自然语言处理等任务中一般有$N&gt;d$。</p>
+
+<h2 id="3-自注意力层和全连接层的比较">(3) 自注意力层和全连接层的比较</h2>
+<p>通常认为<strong>Transformer</strong>的计算量主要来源于自注意力层，然而全连接层的计算量也不可忽略。下面进行分析。</p>
+
+<p>根据上述分析可知，自注意力层的整体运算复杂度为:</p>
+
+\[O(2D_kND_x+D_vND_x+N^2D_k+1+D_xN^2)\]
+
+<p>其中$N$是输入序列长度。一般地，选择向量的特征维度$D_k=D_v=D_x=d$，在自然语言处理等任务中一般有$N&gt;d$。则自注意力层的计算复杂度简化为：</p>
+
+\[O(2dNd+dNd+N^2d+1+dN^2) = O(3Nd^2+2N^2d)\]
+
+<p><strong>Transformer</strong>中的全连接层一般设置两层，第一层的特征维度$d\to 4d$，第二层的特征维度$4d\to d$。因此全连接层的计算复杂度为：</p>
+
+\[O(Nd4d+N4dd) = O(8Nd^2)\]
+
+<p>若假设自注意力层的计算复杂度超过全连接层，则有：</p>
+
+\[3Nd^2+2N^2d&gt;8Nd^2\]
+
+<p>解上式得$n&gt;2.5d$。对于<strong>base</strong>版本的<strong>Transformer</strong>，$d=768$；则只有序列长度超过$n=1920$时自注意力层的计算量才会超过全连接层。当输入序列长度较小时，模型主要计算量来源于全连接层，其计算复杂度仍然是近似线性的。</p>
+
+<p>综上所述，下述改进<strong>Transformer</strong>效率的工作，大多是在序列长度较大时进行的。而当输入序列长度有限时，这些改进并不明显。</p>
+
+<h1 id="2-改进自注意力机制">2. 改进自注意力机制</h1>
+<p>目前已经有大量改进<strong>Transformer</strong>中的自注意力运算，进而降低其计算复杂度的方法。从第一节的分析中可以看出，<strong>计算自注意力矩阵</strong>以及<strong>加权求和计算输出</strong>这两个步骤引入了$O(N^2)$的计算复杂度。因此可以改进这两个步骤，从而降低计算复杂度。</p>
+
+<h2 id="1-改进注意力矩阵a的计算-稀疏化">(1) 改进注意力矩阵A的计算: 稀疏化</h2>
+<p>这类方法的改进思路是使得注意力矩阵的计算<strong>稀疏化</strong>，即对输入序列中的每一个位置只计算其与一部分位置(而不是全部位置)之间的相关性，表现为注意力矩阵是稀疏的。</p>
+
+<h3 id="-标准自注意力矩阵">① 标准自注意力矩阵</h3>
+
+<p>标准的自注意力机制使用<strong>缩放点积</strong>(<strong>scaled dot-product</strong>)计算注意力矩阵，表示为$A = \frac{K^TQ}{\sqrt{D_k}}$。对于长度为$N$的输入序列，其每一个位置都会和该序列的所有位置进行交互并计算注意力(相关度)，从而得到$N^2$大小的注意力矩阵。该矩阵的第$i$列代表第$i$个输入位置与所有位置的相关性，该矩阵通常是一个<strong>稠密</strong>(<strong>dense</strong>)矩阵。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed16a45132923bf8e602d3.jpg" alt="" /></p>
+
+<h3 id="-一些稀疏化方法">② 一些稀疏化方法</h3>
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/07/13/sparsetransformer.html">Sparse Transformer</a>：窗口注意力+空洞注意力</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/60ed1c745132923bf80f980e.jpg" alt="" /></p>
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/08/11/reformer.html">Reformer</a>：使用局部敏感哈希选择注意力位置</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6115e64d5132923bf86784a5.jpg" alt="" /></p>
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/08/14/longformer.html">Longformer</a>：窗口注意力+空洞注意力+全局注意力</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/61179cb95132923bf8100609.jpg" alt="" /></p>
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/08/08/bigbird.html">Big Bird</a>：随机注意力+窗口注意力+全局注意力</li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5f2e340114195aa594463791.jpg" alt="" /></p>
+
+<h2 id="2-改进输出的加权求和-线性化">(2) 改进输出的加权求和: 线性化</h2>
+<p>这类方法的改进思路是使得自注意力的计算<strong>线性化</strong>。</p>
+
+<h3 id="-从矩阵角度理解线性化">① 从矩阵角度理解线性化</h3>
+<p>标准的<strong>Attention</strong>计算为:</p>
+
+\[\text{Attention}(Q,K,V)=\text{softmax}(\frac{QK^T}{\sqrt{d}})V=\hat{A}V\]
+
+<p>其计算复杂度为$O(N^2d)=O(N^2)$。如下图所示(图中$L$相当于$N$，表示序列长度)：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61138cae5132923bf86415dc.jpg" alt="" /></p>
+
+<p>自注意力的线性化是指通过某种矩阵分解$\hat{A}=Q’{K’}^T$，使得<strong>Attention</strong>计算变为$\hat{A}V=Q’{K’}^TV=Q’({K’}^TV)$。由矩阵乘法的<strong>结合律</strong>，可以先计算$K^TV$，从而使得计算复杂度降低为$O(2Nrd)=O(N)$。因此线性化的关键是寻找合适的矩阵分解。</p>
+
+<h3 id="-从向量角度理解线性化">② 从向量角度理解线性化</h3>
+<p>标准的<strong>Attention</strong>也可以由向量表示。若记查询向量$q$,键向量$k$,值向量$v$；则对于序列的第$i$个输入$x_i$，其输出计算为:</p>
+
+\[(\text{softmax}(\frac{QK^T}{\sqrt{d}})V)_i=\frac{\sum_{j=1}^{N}e^{\frac{q_i^Tk_j}{\sqrt{d}}}v_j}{\sum_{j=1}^{N}e^{\frac{q_i^Tk_j}{\sqrt{d}}}}=\frac{\sum_{j=1}^{N}\text{sim}(q_i,k_j)v_j}{\sum_{j=1}^{N}\text{sim}(q_i,k_j)}\]
+
+<p>上式可以表示为使用输入$x_i$的查询向量$q_i$和所有输入的键向量$k_j$计算相似度函数$\text{sim}(q_i,k_j)≥0$，并对所有输入的值向量$v_j$进行加权求和。对于标准的缩放点积，相似度函数选用：</p>
+
+\[\text{sim}(q_i,k_j) = e^{\frac{q_i^Tk_j}{\sqrt{d}}}\]
+
+<p>若选择合适的相似度函数使得$\text{sim}(q_i,k_j)=\phi(q_i)^T\psi(k_j)$，则有：</p>
+
+\[\frac{\sum_{j=1}^{N}\text{sim}(q_i,k_j)v_j}{\sum_{j=1}^{N}\text{sim}(q_i,k_j)}=\frac{\sum_{j=1}^{N}\phi(q_i)^T\psi(k_j)v_j}{\sum_{j=1}^{N}\phi(q_i)^T\psi(k_j)}=\frac{\phi(q_i)^T\sum_{j=1}^{N}\psi(k_j)v_j^T}{\phi(q_i)^T\sum_{j=1}^{N}\psi(k_j)}\]
+
+<p>注意到通过上述转换，将计算复杂度从$O(N^2)$降为$O(N)$。
+因此线性化的关键是寻找合适的相似度函数。</p>
+
+<h3 id="-一些线性化方法">③ 一些线性化方法</h3>
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/08/15/efficient.html">Efficient Attention</a>：对$Q$的每一行,$K$的每一列进行归一化：</li>
+</ul>
+
+\[\text{Attention}(Q,K,V)==\rho_Q(Q)\rho_K(K)^TV\]
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/07/14/synthesizer.html">Synthesizer</a>：使用全连接神经网络(或随机)生成自注意力矩阵:</li>
+</ul>
+
+\[\text{Attention}(Q,K,V)=\text{FFN}(X)V\]
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/08/13/linformer.html">Linformer</a>：
+为$K$和$V$引入了低秩映射$E,F \in \Bbb{R}^{k \times N}$：</li>
+</ul>
+
+\[\text{Attention}(Q,K,V)=\text{softmax}(\frac{Q(EK)^T}{\sqrt{d}})(FV)\]
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/08/10/linear.html">Linear Transformer</a>：使用线性注意力实现快速自回归的Transformer。</li>
+</ul>
+
+\[\text{sim}(q,k)=(\text{elu}(q)+1)^T(\text{elu}(k)+1), \quad \text{elu}(x)=\begin{cases} x, &amp; x&gt;0 \\ e^x-1, &amp; x≤0 \end{cases}\]
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/08/12/performer.html">Performer</a>：通过随机投影将Attention的复杂度线性化。</li>
+</ul>
+
+\[\text{sim}(q,k) =e^{q\cdot k} = \Bbb{E}_{\omega \text{~} \mathcal{N}(\omega;0,1_d)} [e^{w\cdot q-||q||^2/2}\times e^{w\cdot k-||k||^2/2}] \\ ≈ \frac{1}{\sqrt{m}} \begin{pmatrix} e^{w_1\cdot q-||q||^2/2} \\ e^{w_2\cdot q-||q||^2/2} \\ \cdots \\ e^{w_m\cdot q-||q||^2/2} \end{pmatrix} \cdot \frac{1}{\sqrt{m}} \begin{pmatrix} e^{w_1\cdot k-||k||^2/2} \\ e^{w_2\cdot k-||k||^2/2} \\ \cdots \\ e^{w_m\cdot k-||k||^2/2} \end{pmatrix}  = \tilde{q}\cdot\tilde{k}\]
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/04/29/nystromformer.html">Nyströmformer</a>：使用Nyström方法近似自注意力运算。</li>
+</ul>
+
+\[\text{Attention}(Q,K,V)= (\tilde{F}\times\tilde{A}\times\tilde{B})V\]
+
+\[\tilde{F} =  \text{softmax}(\frac{Q\tilde{K}^T}{\sqrt{d_q}} ) , \tilde{B} =  \text{softmax}(\frac{\tilde{Q}K^T}{\sqrt{d_q}} ), \tilde{A} = \text{softmax}(\frac{\tilde{Q}\tilde{K}^T}{\sqrt{d_q}} )^{-1}\]
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2021/08/09/external.html">External Attention</a>：将$K$和$V$用全局共享的记忆单元$M_k$和$M_v$表示。</li>
+</ul>
+
+\[\text{Attention}(Q,M_k,M_v) = \text{Norm}(Q^TM_k)M_v\]
+
+<ul>
+  <li><a href="https://0809zheng.github.io/2022/03/05/flash.html">FLASH</a>：对输入序列不重叠地分块，并使用局部注意力和全局注意力的混合。</li>
+</ul>
+
+\[\text{Attention}(Q^{quad},K^{quad},V)=\frac{1}{ns} \text{relu}^2(Q_g^{quad}{K_g^{quad}}^T)V_g \\ \text{Attention}(Q^{lin},K^{lin},V) =\frac{1}{n}Q_g^{lin} \sum_{h=1}^{n/c} {K_h^{lin}}^TV_h\]
+
+<h2 id="3-从秩的角度理解自注意力机制的改进">(3) 从秩的角度理解自注意力机制的改进</h2>
+<p>下面从信息损失的角度分析自注意力机制。自注意力机制中最重要的步骤之一是计算自注意力矩阵$A\in \Bbb{R}^{N \times N}$，它是由$Q,K\in \Bbb{R}^{N \times d}$通过$\text{softmax}(QK^T)$计算得到。$N$是输入序列长度，$d$是注意力的<strong>key size</strong>，通常$d&lt;N$。因此矩阵$QK^T$的秩不超过$d$，离满秩$N$差距较大。通常更大的秩能保留更多有效信息，使得信息瓶颈效应更弱。而<strong>softmax</strong>函数计算$e^{QK^T}$，由于指数函数可能会使矩阵的秩增加(比如秩为$0$的全$0$矩阵取指数后变为秩为$1$的全$1$矩阵)，因此<strong>softmax</strong>函数使得注意力矩阵具有<strong>升秩</strong>的可能性，从而提高有效处理信息的能力。</p>
+
+<p>自注意力运算的<strong>线性化</strong>是指寻找近似矩阵$Q’,K’\in \Bbb{R}^{N \times m}$使得$A=Q’{K’}^T$。因此线性自注意力矩阵的秩不超过$m$。为了弥补秩较小带来的损失，通常设置$m&gt;d$，如<strong>Performer</strong>中设置$m=4d$。由于扩大了<strong>key size</strong>，在处理短序列时线性注意力的计算可能会比标准自注意力的计算还要慢。</p>
+
+<p>自注意力矩阵的<strong>稀疏化</strong>则有时能够提高自注意力矩阵的秩。一般而言，稀疏的自注意力矩阵表示输入序列的每一个位置能够显著地与序列中的有限个位置关联。标准<strong>Attention</strong>中的指数运算$e^{QK^T}$能够放大不同$q\cdot k$
+之间的差距，使得自注意力矩阵具有稀疏化的趋势。而线性<strong>Attention</strong>的注意力结果是稠密的，当序列长度$N$较大时，结果趋近于平均池化。</p>
+
+<h1 id="-参考文献">⚪ 参考文献</h1>
+<ul>
+  <li><a href="https://arxiv.org/abs/2009.06732v2">Efficient Transformers: A Survey</a>：(arXiv2009)一篇高效Transformer综述。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/15/efficient.html"><font color="Blue">Efficient Attention: Attention with Linear Complexities</font></a>：(arXiv1812)具有线性复杂度的高效自注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2021/07/13/sparsetransformer.html"><font color="Blue">Generating Long Sequences with Sparse Transformers</font></a>：(arXiv1904)Sparse Transformer：使用稀疏注意力的Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/11/reformer.html"><font color="Blue">Reformer: The Efficient Transformer</font></a>：(arXiv2001)Reformer: 使用局部敏感哈希和可逆FFN实现高效Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/14/longformer.html"><font color="Blue">Longformer: The Long-Document Transformer</font></a>：(arXiv2004)Longformer: 适用于长文本的Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2020/07/14/synthesizer.html"><font color="Blue">Synthesizer: Rethinking Self-Attention in Transformer Models</font></a>：(arXiv2005)Synthesizer：使用合成注意力的Transformer模型。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/13/linformer.html"><font color="Blue">Linformer: Self-Attention with Linear Complexity</font></a>：(arXiv2006)Linformer: 线性复杂度的自注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/10/linear.html"><font color="Blue">Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention</font></a>：(arXiv2006)Linear Transformer: 使用线性注意力实现快速自回归的Transformer。</li>
+  <li><a href="https://0809zheng.github.io/2020/08/08/bigbird.html"><font color="Blue">Big Bird: Transformers for Longer Sequences</font></a>：(arXiv2007)Big Bird：一种应用于长序列的Transformer模型。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/12/performer.html"><font color="Blue">Rethinking Attention with Performers</font></a>：(arXiv2009)Performer: 通过随机投影将Attention的复杂度线性化。</li>
+  <li><a href="https://0809zheng.github.io/2021/04/29/nystromformer.html"><font color="Blue">Nyströmformer: A Nyström-Based Algorithm for Approximating Self-Attention</font></a>：(arXiv2102)Nyströmformer：使用Nyström方法近似自注意力运算。</li>
+  <li><a href="https://0809zheng.github.io/2021/08/09/external.html"><font color="Blue">Beyond Self-attention: External Attention using Two Linear Layers for Visual Tasks</font></a>：(arXiv2105)External Attention: 使用两个外部记忆单元的注意力机制。</li>
+  <li><a href="https://0809zheng.github.io/2022/03/05/flash.html"><font color="Blue">Transformer Quality in Linear Time</font></a>：(arXiv2202)FLASH: 基于门控注意力单元的线性Transformer。</li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/07/13/sparsetransformer.html" class="read-next-link"></a>
+        <section>
+          <span>Generating Long Sequences with Sparse Transformers</span>
+          <p>  Sparse Transformer：使用稀疏注意力的Transformer.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60ed15cd5132923bf8e08880.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/07/10/rdrop.html" class="read-next-link"></a>
+          <section>
+            <span>R-Drop: Regularized Dropout for Neural Networks</span>
+            <p>  R-Drop：正则化的Dropout方法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60e8f1bc5132923bf8797acd.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

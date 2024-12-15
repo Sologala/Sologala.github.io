@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CondConv: Conditionally Parameterized Convolutions for Efficient Inference - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="CondConv: Conditionally Parameterized Convolutions for Efficient Inference">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="CondConv: Conditionally Parameterized Convolutions for Efficient Inference - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/12/22/condconv.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>CondConv: Conditionally Parameterized Convolutions for Efficient Inference</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-12-22"><i class="iconfont icon-date"></i>22 Dec 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63b0e72c2bbf0e7994670e65.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>CondConv：用于高效推理的条件参数化卷积.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1904.04971">CondConv: Conditionally Parameterized Convolutions for Efficient Inference</a></li>
+</ul>
+
+<p>标准的卷积具有参数共享的特点。本文作者设计了<strong>条件参数化卷积(Conditionally Parameterized Convolution, CondConv)</strong>，在卷积层设置多套卷积核，在推断时根据输入决定各套卷积核的权重，最终加权求和得到一个新的卷积核，执行一次卷积。</p>
+
+<p><strong>CondConv</strong>可以等效为一个<strong>混合专家系统(Mixture of Experts, MoE)</strong>，相当于多个标准卷积的线性组合，组合权重通过梯度下降算法学习。通过增大专家数量可以有效地提升模型容量，同时专家只需要进行一次组合，能够保持高效推理。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b0e9ad2bbf0e79947dff95.jpg" alt="" /></p>
+
+<p>各套卷积核的权重是通过全局平均池化和全连接层构造的，并通过<strong>Sigmoid</strong>函数归一化；相当于对卷积核施加注意力模块：</p>
+
+\[\alpha = \text{sigmoid}(\text{GlobalAveragePool}(x)R)\]
+
+<p>在训练过程中，由于每张输入图像的动态卷积核都是不一样的，所以在一个<strong>batch</strong>里并行计算是困难的。<strong>CondConv</strong>的解决方法是首先把<strong>batch</strong>维度堆叠到通道维度，然后通过组卷积实现。</p>
+
+<p><strong>CondConv</strong>所引入的计算量比较有限，每组<strong>CondConv</strong>只相当于多引入了一次乘加操作，能够在不增加过多计算量的前提下提高模型的表现：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b0fe362bbf0e7994327fb0.jpg" alt="" /></p>
+
+<p>作者在<strong>MobileNet</strong>模型的基础上进行实验，分别设置$(1,2,4,8,16,32)$个专家，并调整模型宽度为$(0.25,0.5,0.75,1)$倍，对应的不同模型的乘加计算量和准确率如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b0ec7f2bbf0e79949685cf.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="n">F</span>
+<span class="kn">from</span> <span class="nn">torch.nn.modules.conv</span> <span class="kn">import</span> <span class="n">_ConvNd</span>
+<span class="kn">from</span> <span class="nn">torch.nn.modules.utils</span> <span class="kn">import</span> <span class="n">_pair</span>
+<span class="kn">from</span> <span class="nn">torch.nn.parameter</span> <span class="kn">import</span> <span class="n">Parameter</span>
+
+
+<span class="k">class</span> <span class="nc">_attention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">num_experts</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_attention</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">//</span><span class="n">r</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc_as</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_channels</span><span class="o">//</span><span class="n">r</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">*</span><span class="n">kernel_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc_ac</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_channels</span><span class="o">//</span><span class="n">r</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc_af</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_channels</span><span class="o">//</span><span class="n">r</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc_an</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_channels</span><span class="o">//</span><span class="n">r</span><span class="p">,</span> <span class="n">num_experts</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">_as</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">_ac</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc_ac</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">_af</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc_af</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">_an</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc_an</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">torch</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">_as</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">kernel_size</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">kernel_size</span><span class="p">),</span>
+            <span class="n">torch</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">_ac</span><span class="p">),</span>
+            <span class="n">torch</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">_af</span><span class="p">),</span>
+            <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">_an</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),)</span>
+    
+    
+<span class="k">class</span> <span class="nc">ODConv2D</span><span class="p">(</span><span class="n">_ConvNd</span><span class="p">):</span>
+    <span class="sa">r</span><span class="s">"""
+    in_channels (int): Number of channels in the input image
+    out_channels (int): Number of channels produced by the convolution
+    kernel_size (int or tuple): Size of the convolving kernel
+    stride (int or tuple, optional): Stride of the convolution. Default: 1
+    padding (int or tuple, optional): Zero-padding added to both sides of the input. Default: 0
+    padding_mode (string, optional): ``'zeros'``, ``'reflect'``, ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
+    dilation (int or tuple, optional): Spacing between kernel elements. Default: 1
+    groups (int, optional): Number of blocked connections from input channels to output channels. Default: 1
+    bias (bool, optional): If ``True``, adds a learnable bias to the output. Default: ``True``
+    num_experts (int): Number of experts per layer 
+    """</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">bias</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">padding_mode</span><span class="o">=</span><span class="s">'zeros'</span><span class="p">,</span> <span class="n">num_experts</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span>
+        <span class="n">kernel_size</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">)</span>
+        <span class="n">stride</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span>
+        <span class="n">dilation</span> <span class="o">=</span> <span class="n">_pair</span><span class="p">(</span><span class="n">dilation</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ODConv2D</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span>
+            <span class="bp">False</span><span class="p">,</span> <span class="n">_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">padding_mode</span><span class="p">)</span>
+
+        <span class="c1"># 全局平均池化
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">_avg_pooling</span> <span class="o">=</span> <span class="n">functools</span><span class="p">.</span><span class="n">partial</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="n">adaptive_avg_pool2d</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># 注意力函数
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">_attention_fn</span> <span class="o">=</span> <span class="n">_attention</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">num_experts</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1"># 动态卷积层的权重
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span>
+            <span class="n">num_experts</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">in_channels</span> <span class="o">//</span> <span class="n">groups</span><span class="p">,</span> <span class="o">*</span><span class="n">kernel_size</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">reset_parameters</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_conv_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">padding_mode</span> <span class="o">!=</span> <span class="s">'zeros'</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="n">pad</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">_padding_repeated_twice</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">padding_mode</span><span class="p">),</span>
+                            <span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">bias</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">stride</span><span class="p">,</span>
+                            <span class="n">_pair</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="p">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">groups</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">bias</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">stride</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="p">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">groups</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span> <span class="c1"># [b, c, h, w]
+</span>        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="nb">input</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+            <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># [1, c, h, w]
+</span>            <span class="n">pooled_inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_avg_pooling</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="c1"># [1, c, 1, 1]
+</span>            <span class="n">_as</span><span class="p">,</span> <span class="n">_ac</span><span class="p">,</span> <span class="n">_af</span><span class="p">,</span> <span class="n">_an</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_attention_fn</span><span class="p">(</span><span class="n">pooled_inputs</span><span class="p">)</span>
+            <span class="n">_as</span> <span class="o">=</span> <span class="n">_as</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+            <span class="n">_ac</span> <span class="o">=</span> <span class="n">_ac</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">:,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span>
+            <span class="n">_af</span> <span class="o">=</span> <span class="n">_af</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="p">:,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span>
+            <span class="n">_an</span> <span class="o">=</span> <span class="n">_an</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">]</span>
+            <span class="n">kernels</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">_as</span> <span class="o">*</span> <span class="n">_ac</span> <span class="o">*</span> <span class="n">_af</span> <span class="o">*</span> <span class="n">_an</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_conv_forward</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">kernels</span><span class="p">)</span>
+            <span class="n">res</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/12/23/deformablev2.html" class="read-next-link"></a>
+        <section>
+          <span>Deformable ConvNets v2: More Deformable, Better Results</span>
+          <p>  改进的可变形卷积神经网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63afdd022bbf0e79948839f8.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/12/21/dynamicconv.html" class="read-next-link"></a>
+          <section>
+            <span>Dynamic Convolution: Attention over Convolution Kernels</span>
+            <p>  DynamicConv：卷积核上的注意力.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63b0f93a2bbf0e799406a2d3.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

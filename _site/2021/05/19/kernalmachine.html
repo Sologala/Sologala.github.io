@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Every Model Learned by Gradient Descent Is Approximately a Kernel Machine - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Every Model Learned by Gradient Descent Is Approximately a Kernel Machine">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Every Model Learned by Gradient Descent Is Approximately a Kernel Machine - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/05/19/kernalmachine.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Every Model Learned by Gradient Descent Is Approximately a Kernel Machine</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-05-19"><i class="iconfont icon-date"></i>19 May 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60a383cf6ae4f77d35980995.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>使用梯度下降优化的深度学习模型近似于核方法.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Every Model Learned by Gradient Descent Is Approximately a Kernel Machine</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2012.00152">link</a></li>
+</ul>
+
+<p>通常认为深度学习之所以能够成功，是因为它能够自动从数据中提取新的特征表示，而不是使用手工设计的特征。在本文中，作者认为，通过标准梯度下降算法训练得到的深度网络，在数学上近似等价于核方法，即记录所有训练数据并通过一个相似性函数(核)直接进行预测。这为深度网络的权重提供了一种可解释性：权重是所有训练样本的<strong>叠加态(superposition)</strong>。</p>
+
+<h2 id="1-核方法-kernel-machine">1. 核方法 Kernel Machine</h2>
+<p>核方法通常表示为：</p>
+
+\[y=g(\sum_{i}^{} a_i K(x,x_i)+b)\]
+
+<p>其中$x$为输入的查询数据；$x_i$为训练集中的数据点；$a_i$和$b$是可学习参数，其中$a_i$在监督学习中通常是训练数据的标签；$K$是一个核函数，用于衡量其两个参数的相似性；$g$是可选的非线性函数。</p>
+
+<p>众多核方法的不同主要体现在其选择的核函数不同。</p>
+
+<h2 id="2-路径核-path-kernel">2. 路径核 Path Kernel</h2>
+<p>两个数据点的<strong>路径核(path kernel)</strong>是指两个数据点对应的网络输出$y$相对于网络权重$w$的梯度的点积沿梯度下降路径$c(t)$的积分(假设学习率无穷小，梯度下降是一个连续的过程)：</p>
+
+\[K(x,x') = \int_{c(t)}^{} \Delta_wy(x) \cdot \Delta_wy(x') dt\]
+
+<p>直观上，路径核衡量模型在这两个数据点训练时变化的相似性。下图给出了一种图形解释，在模型梯度下降的整个过程中(从$w_0$到$w_{final}$)，若数据$x_1$与数据$x$相对于权重的梯度的点积的平均值相较于数据$x_2$更大，则可以认为标签$y_2$对预测结果$y$的影响相较于标签$y_1$更大。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60a39c326ae4f77d353b0106.jpg" alt="" /></p>
+
+<h2 id="3-梯度下降-gradient-descent">3. 梯度下降 Gradient Descent</h2>
+<p>梯度下降是一种常用的深度神经网络优化方法。给定网络权重的初始值$w_0$和损失函数$L=\sum_{i}^{} L(y_i^*,y_i)$，梯度下降可以表示为：</p>
+
+\[w_{s+1} = w_s - \epsilon \Delta_w L(w_s)\]
+
+<h2 id="4-使用梯度下降优化的深度网络近似于使用路径核的核方法">4. 使用梯度下降优化的深度网络近似于使用路径核的核方法</h2>
+
+<h3 id="引理">引理</h3>
+<p>函数$f_w(x)$在参数向量$w$上的<strong>正切核(tangent kernel)</strong>计算为：</p>
+
+\[K_{f,w}^{g} (x,x') = \Delta_w f_w(x) \cdot \Delta_w f_w(x')\]
+
+<p>函数$f_w(x)$在曲线$c(t)$上的路径核可以借助正切核表示为：</p>
+
+\[K_{f,c}^{p} (x,x') = \int_{c(t)}^{} K_{f,w}^{g} (x,x') dt\]
+
+<h3 id="本文的主要结论">本文的主要结论</h3>
+<p>假设模型$y=f_w(x)$是在训练集\(\{(x_i,y_i^*)\}_{i=1}^m\)上通过梯度下降算法优化得到的，损失函数为$L=\sum_{i}^{} L(y_i^*,y_i)$，学习率为$\epsilon$。则有：</p>
+
+\[\mathop{\lim}_{\epsilon → 0} y = \sum_{i=1}^{m} a_i K(x,x_i)+b\]
+
+<p>其中$K(x,x_i)$是沿梯度下降路径的路径核，$a_i$沿路径由其正切核加权平均的损失函数相对于输出的负梯度，$b$是初始模型。</p>
+
+<h3 id="证明">证明</h3>
+<p>将梯度下降公式改写为：</p>
+
+\[\frac{w_{s+1} - w_s}{\epsilon} =  - \Delta_w L(w_s)\]
+
+<p>当$\epsilon → 0$，上式变为微分方程：</p>
+
+\[\frac{dw(t)}{dt} = - \Delta_w L(w(t))\]
+
+<p>另一方面，由链式法则，将$w$沿其维度拆分可得：</p>
+
+\[\frac{dy}{dt} = \sum_{j=1}^{d} \frac{\partial y}{\partial w_j} \frac{\partial w_j}{\partial t}\]
+
+<p>将上述两式整合，得：</p>
+
+\[\frac{dy}{dt} = \sum_{j=1}^{d} \frac{\partial y}{\partial w_j} (-\frac{L}{\partial w_j})\]
+
+<p>再次根据链式法则，将损失函数沿所有样本点拆分可得：</p>
+
+\[\frac{dy}{dt} = \sum_{j=1}^{d} \frac{\partial y}{\partial w_j} (-\sum_{i=1}^{m} \frac{L}{\partial y_i} \frac{\partial y_i}{\partial w_j})\]
+
+<p>将上式重排为：</p>
+
+\[\frac{dy}{dt} = -\sum_{i=1}^{m} \frac{L}{\partial y_i} \sum_{j=1}^{d} \frac{\partial y}{\partial w_j} \frac{\partial y_i}{\partial w_j}\]
+
+<p>使用正切核简化上述表达：</p>
+
+\[\frac{dy}{dt} = -\sum_{i=1}^{m} L'(y_i^*,y_i) \sum_{j=1}^{d} K_{f,w(t)}^{g} (x,x_i)\]
+
+<p>解上述微分方程，可以得到输出表达式：</p>
+
+\[\mathop{\lim}_{\epsilon → 0} y = y_0 - \int_{c(t)}^{} \sum_{i=1}^{m} L'(y_i^*,y_i) K_{f,w(t)}^{g} (x,x_i) dt\]
+
+<p>将上式进一步表示为：</p>
+
+\[\mathop{\lim}_{\epsilon → 0} y = y_0 - \sum_{i=1}^{m} \frac{\int_{c(t)}^{} L'(y_i^*,y_i) K_{f,w(t)}^{g} (x,x_i) dt}{\int_{c(t)}^{} K_{f,w(t)}^{g} (x,x_i) dt} \int_{c(t)}^{} K_{f,w(t)}^{g} (x,x_i) dt\]
+
+<p>上式可以记作：</p>
+
+\[\mathop{\lim}_{\epsilon → 0} y = y_0 - \sum_{i=1}^{m} \overline{L'}(y_i^*,y_i) K_{f,c}^{p} (x,x_i) \\ = \sum_{i=1}^{m} a_i K(x,x_i)+b\]
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/05/20/long-tail.html" class="read-next-link"></a>
+        <section>
+          <span>图像长尾分布(Long-Tail Distribution)问题</span>
+          <p>  Long-tail distribution problem in image datasets.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/625fe9c2239250f7c51abe59.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/05/18/uada.html" class="read-next-link"></a>
+          <section>
+            <span>Unsupervised Adversarial Domain Adaptation for Micro-Doppler Based Human Activity Classification</span>
+            <p>  将对抗域适应(ADA)应用于微多普勒人类活动分类.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60a22f696ae4f77d3592f4b1.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

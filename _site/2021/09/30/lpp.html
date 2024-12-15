@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>局部保留投影(Locality Preserving Projection, LPP) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="局部保留投影(Locality Preserving Projection, LPP)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="局部保留投影(Locality Preserving Projection, LPP) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/09/30/lpp.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>局部保留投影(Locality Preserving Projection, LPP)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-09-30"><i class="iconfont icon-date"></i>30 Sep 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic1.imgdb.cn/item/636f092816f2c2beb14f550e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Locality Preserving Projections.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://papers.nips.cc/paper/2003/file/d69116f8b0140cdeb1f99a4d5096ffe4-Paper.pdf">Locality Preserving Projection</a></li>
+</ul>
+
+<p><strong>局部保留投影(Locality Preserving Projection, LPP)</strong>算法是一种线性降维方法。对于高维空间中的样本$X \in \Bbb{R}^{N \times D}$，<strong>LPP</strong>寻找一个投影矩阵$A \in \Bbb{R}^{D \times d}$，从而构造低维空间的降维结果$Y=XA \in \Bbb{R}^{N \times d}$。</p>
+
+<p><strong>LPP</strong>在降维时考虑了样本点之间的相对位置关系。构造一个关系矩阵$W \in \Bbb{R}^{N \times N}$衡量任意两个样本点之间的距离。关系矩阵$W$构造如下：</p>
+
+\[W_{ij} = \begin{cases} e^{-\frac{||x_i-x_j||^2}{t}}, &amp; j\neq i, j \in \text{KNN}(i) \\ 0, &amp; \text{otherwise}  \end{cases}\]
+
+<p>直观地，当点$j$与点$i$距离比较近时，使用径向基函数衡量两者的相对位置关系；并且对点$i$只考虑最接近的$k$个点(使用<strong>kNN</strong>实现)。定义$W_{ii}=0$是为了后续推导方便。</p>
+
+<p>关系矩阵$W$的构造过程为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">cal_pairwise_dist</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="c1">#返回任意两个点之间的欧式距离
+</span>    <span class="n">N</span><span class="p">,</span><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">shape</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">tile_xi</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="mi">1</span><span class="p">),[</span><span class="mi">1</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># [N,N,D]
+</span>    <span class="n">tile_xj</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),[</span><span class="n">N</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="c1"># [N,N,D]
+</span>    <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">((</span><span class="n">tile_xi</span><span class="o">-</span><span class="n">tile_xj</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [N,N]
+</span>    <span class="k">return</span> <span class="n">dist</span>
+    
+<span class="k">def</span> <span class="nf">rbf</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
+    <span class="c1">#径向基函数
+</span>    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">dist</span><span class="o">/</span><span class="n">t</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">cal_rbf_dist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">n_neighbors</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="c1">#计算关系矩阵
+</span>    <span class="n">dist</span> <span class="o">=</span> <span class="n">cal_pairwise_dist</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">dist</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">rbf_dist</span> <span class="o">=</span> <span class="n">rbf</span><span class="p">(</span><span class="n">dist</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="c1">#跳过与样本点与自身的关系
+</span>        <span class="n">index_</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">dist</span><span class="p">[</span><span class="n">i</span><span class="p">])[</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span> <span class="o">+</span> <span class="n">n_neighbors</span><span class="p">]</span>
+        <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">index_</span><span class="p">]</span> <span class="o">=</span> <span class="n">rbf_dist</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">index_</span><span class="p">]</span>
+        <span class="n">W</span><span class="p">[</span><span class="n">index_</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rbf_dist</span><span class="p">[</span><span class="n">index_</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">W</span>
+</code></pre></div></div>
+
+<p><strong>LPP</strong>的优化目标函数如下：</p>
+
+\[\sum_{i,j} (y_i-y_j)^2W_{ij}\]
+
+<p>如果样本点$j$与点$i$的距离比较接近，则$W_{ij}$比较大，通过最小化上述目标使得降维后$y_j$与$y_i$比较接近。如果样本点$j$与点$i$的距离比较远，则$W_{ij}=0$，不再限制降维后$y_j$与$y_i$的关系。</p>
+
+<p>目标函数可进一步写作：</p>
+
+\[\begin{aligned} \sum_{i,j} (y_i-y_j)^2W_{ij} &amp;= \sum_{i,j} (y_i^TW_{ij}y_i+y_j^TW_{ij}y_j-2y_i^TW_{ij}y_j) \\ &amp;= 2\sum_{i,j} y_i^TW_{ij}y_i-2\sum_{i,j}y_i^TW_{ij}y_j \\ &amp;= 2\sum_{i} y_i^T(\sum_{j}W_{ij})y_i-2\sum_{i,j}y_i^TW_{ij}y_j \\ &amp;(\text{记}D_{ii} = \sum_{j}W_{ij}) \\ &amp;= 2(\sum_{i} y_i^TD_{ii}y_i-\sum_{i,j}y_i^TW_{ij}y_j) \end{aligned}\]
+
+<p>记$D=\text{diag}(D_{ii})\in \Bbb{R}^{N \times N}$。首先考虑降维维度是$1$的情况，即$A=a\in \Bbb{R}^{D \times 1}$，则目标函数写作矩阵形式：</p>
+
+\[Y^T(D-W)Y =Y^TLY= a^TX^TLXa\]
+
+<p>其中$L=D-W\in \Bbb{R}^{N \times N}$是样本的拉普拉斯矩阵。</p>
+
+<p>引入约束$Y^TDY=a^TX^TDXa=1$，通过将$Y^TDY$固定为常数，使得当样本的相对关系比较接近时($D$比较接近)，降维结果也比较接近($Y$比较接近)。</p>
+
+<p>则<strong>LPP</strong>的优化问题写作：</p>
+
+\[\begin{aligned} \mathop{\min}_a \quad &amp; a^TX^TLXa \\ \text{s.t.} \quad &amp; a^TX^TDXa=1 \end{aligned}\]
+
+<p>构造拉格朗日函数：</p>
+
+\[L=a^TX^TLXa + \lambda(1-a^TX^TDXa)\]
+
+<p>对上式求极值，得：</p>
+
+\[2X^TLXa  -2\lambda X^TDXa = 0\]
+
+<p>整理得：</p>
+
+\[(X^TDX)^{-1}X^TLXa  = \lambda a\]
+
+<p>因此$a$为矩阵$(X^TDX)^{-1}X^TLX$的最小特征值对应的特征向量。</p>
+
+<p>一般地，当$d&gt;1$时，降维矩阵$A$为矩阵$(X^TDX)^{-1}X^TLX$的$d$个最小的特征值对应的特征向量组成的矩阵。</p>
+
+<p><strong>LPP</strong>的实现过程如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">lpp</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_dims</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">n_neighbors</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">X</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">cal_rbf_dist</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+    <span class="c1">#计算矩阵D和L
+</span>    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">D</span> <span class="o">-</span> <span class="n">W</span>
+
+    <span class="c1">#计算矩阵特征值
+</span>    <span class="n">XTDX</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">T</span><span class="p">,</span> <span class="n">D</span><span class="p">),</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">XTLX</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">T</span><span class="p">,</span> <span class="n">L</span><span class="p">),</span> <span class="n">X</span><span class="p">)</span>
+    <span class="n">eig_val</span><span class="p">,</span> <span class="n">eig_vec</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">eig</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">XDXT</span><span class="p">),</span> <span class="n">XLXT</span><span class="p">))</span>
+
+    <span class="c1">#特征值从小到大排序
+</span>    <span class="n">sort_index_</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">eig_val</span><span class="p">))</span>
+    <span class="n">eig_val</span> <span class="o">=</span> <span class="n">eig_val</span><span class="p">[</span><span class="n">sort_index_</span><span class="p">]</span>
+
+    <span class="c1">#舍弃太小的特征值
+</span>    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">eig_val</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+        <span class="n">j</span><span class="o">+=</span><span class="mi">1</span>
+    <span class="n">sort_index_</span> <span class="o">=</span> <span class="n">sort_index_</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="n">n_dims</span><span class="p">]</span>
+    <span class="n">eig_val_picked</span> <span class="o">=</span> <span class="n">eig_val</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span><span class="o">+</span><span class="n">n_dims</span><span class="p">]</span>
+
+    <span class="c1">#根据特征值对应的特征向量构造降维矩阵A
+</span>    <span class="n">A</span> <span class="o">=</span> <span class="n">eig_vec</span><span class="p">[:,</span> <span class="n">sort_index_</span><span class="p">]</span>
+
+    <span class="c1">#降维
+</span>    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Y</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/10/01/residual.html" class="read-next-link"></a>
+        <section>
+          <span>Residual Attention: A Simple but Effective Method for Multi-Label Recognition</span>
+          <p>  为多标签分类设计的简单有效的残差注意力.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64256741a682492fcc456c96.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/09/29/sluice.html" class="read-next-link"></a>
+          <section>
+            <span>Sluice networks: Learning what to share between loosely related tasks</span>
+            <p>  水闸网络：学习松散相关任务之间的共享表示.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62dd34caf54cd3f9373cb422.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/01/08/t5.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-01-08"><i class="iconfont icon-date"></i>08 Jan 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60ed21125132923bf834851a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>T5：编码器-解码器结构的预训练语言模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1910.10683">Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer</a></li>
+</ul>
+
+<p>本文介绍<strong>Google</strong>提出的预训练语言模型<strong>T5(text-to-text-transfer-transformer)</strong>，该模型使用标准的编码器-解码器结构，构建了无监督+有监督的文本生成预训练任务(将预训练任务都看作<strong>Seq2Seq</strong>任务)，并在大量自然语言处理任务中取得最好的成绩。</p>
+
+<h2 id="1-预训练任务">1. 预训练任务</h2>
+
+<p><strong>T5</strong>的预训练包含<strong>无监督</strong>和<strong>有监督</strong>两部分。无监督部分使用<strong>Google</strong>构建的$800$G语料库<strong>C4</strong>，训练任务采用和<strong>BERT</strong>一样的<strong>mask</strong>语言建模，但将其改成了<strong>Seq2Seq</strong>版本，即采用编码器-解码器结构，将<strong>masked</strong>序列输入编码器，解码器以自回归的方式顺序生成<strong>masked token</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed23435132923bf846986a.jpg" alt="" /></p>
+
+<p>有监督部分则收集了多种不同的自然语言处理监督任务数据，并也统一转化为<strong>Seq2Seq</strong>任务来训练：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed23105132923bf844f375.jpg" alt="" /></p>
+
+<p>值得一提的是，微调<strong>T5</strong>模型时的学习率要比微调<strong>BERT</strong>大$10$倍以上才行(即$10^{−4}$级别，<strong>BERT</strong>一般是$10^{−5}$级别)，这是两者模型架构差异决定的。</p>
+
+<h2 id="2-相对位置编码">2. 相对位置编码</h2>
+
+<p>作者在<strong>T5</strong>模型中使用了一种特殊的相对位置编码。通常对于使用绝对位置编码的自注意力机制运算如下：</p>
+
+\[\begin{aligned} q_i &amp;= (x_i+p_i) W^Q , k_j = (x_j+p_j) W^K ,v_j = (x_j+p_j) W^V  \\ \alpha_{ij} &amp;= \text{softmax}\{(x_i+p_i)W^Q ( (x_j+p_j)W^K)^T \} \\ &amp;=  \text{softmax}\{ x_iW^Q (W^K)^T x_j^T+x_iW^Q (W^K)^T p_j^T+p_iW^Q (W^K)^T x_j^T+p_iW^Q (W^K)^T p_j^T \} \\ z_i &amp;= \sum_{j=1}^{n} \alpha_{ij}(x_jW^V+p_jW^V)  \end{aligned}\]
+
+<p>其中注意力运算这一步骤可以分解成输入-输入($x_i,x_j$)、输入-位置($x_i,p_j$)、位置-输入($p_i,x_j$)、位置-位置($p_i,p_j$)四项注意力的组合。作者假设输入信息与位置信息应该是独立（解耦）的，则它们之间不应该有交互，因此删掉了注意力运算中的输入-位置($x_i,p_j$)和位置-输入($p_i,x_j$)交互项。</p>
+
+<p>此外位置-位置($p_i,p_j$)项得到的结果是依赖于相对位置$(i,j)$的一个标量，将其设置为可训练参数$r_{i,j}$，并移除值向量的位置编码。最终得到的相对位置编码表示为：</p>
+
+\[\begin{aligned}  \alpha_{ij} &amp;=  \text{softmax}\{ x_iW^Q (W^K)^T x_j^T+r_{i,j} \} \\ z_i &amp;= \sum_{j=1}^{n} \alpha_{ij}x_jW^V  \end{aligned}\]
+
+<p>对于$r_{i,j}$，作者设置了一种分桶截断的方法$r_{i,j}=f(i-j)$，即比较邻近的位置需要精细比较，所以分别分配一个独立的位置编码；至于稍远的位置不用区分得太清楚，所以共用一个位置编码；距离越远，共用范围就越大，直到达到指定范围后进行截断。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62c538ee5be16ec74a03087c.jpg" alt="" /></p>
+
+<h2 id="3-超参数选择">3. 超参数选择</h2>
+
+<p>除了在多个自然语言处理任务中取得最好的结果，<strong>T5</strong>还对整个训练流程中的可调的超参数进行了讨论，比如模型架构是采用标准的编码器-解码器结构还是<strong>UniLM</strong>结构，无监督预训练任务是采用<strong>mask</strong>语言建模还是其他方式，随机<strong>mask</strong>的比例应该是多少等，并给出了如下表格：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60ed23905132923bf8491a3a.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/01/09/t511.html" class="read-next-link"></a>
+        <section>
+          <span>GLU Variants Improve Transformer</span>
+          <p>  T5.1.1：使用GLU改进预训练语言模型T5.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60ed2a1c5132923bf880dc2c.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/01/07/3dhuman.html" class="read-next-link"></a>
+          <section>
+            <span>SMPL: A Skinned Multi-Person Linear Model</span>
+            <p>  SMPL：一种蒙皮多人线性模型.  paper：SMPL: A Skinned Multi-Person Li...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ff678e03ffa7d37b3d9189b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

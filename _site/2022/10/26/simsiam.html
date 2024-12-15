@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring Simple Siamese Representation Learning - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Exploring Simple Siamese Representation Learning">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Exploring Simple Siamese Representation Learning - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/10/26/simsiam.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Exploring Simple Siamese Representation Learning</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-10-26"><i class="iconfont icon-date"></i>26 Oct 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63e1b9974757feff339decf6.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SimSiam：探索简单的孪生表示学习.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2011.10566">Exploring Simple Siamese Representation Learning</a></li>
+</ul>
+
+<p><strong>SimSiam</strong>是一种不依赖于负样本的对比学习方法，使用孪生网络$f$从图像$x$的两个增强版本$x_1,x_2$中提取特征$z_1,z_2$，并使用预测头$h$根据一个特征预测另一个特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63e1bb6f4757feff33a0d545.jpg" alt="" /></p>
+
+<p>损失函数设置为负余弦相似度：</p>
+
+\[\begin{aligned} \mathcal{L}_{\text{SimSiam}} = -\frac{1}{2} \frac{h(z_1)}{||h(z_1)||_2} \cdot \frac{sg(z_2)}{||sg(z_2)||_2} -\frac{1}{2} \frac{h(z_2)}{||h(z_2)||_2} \cdot \frac{sg(z_1)}{||sg(z_1)||_2} \end{aligned}\]
+
+<p><strong>SimSiam</strong>的实现过程如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63e1bc794757feff33a2b19e.jpg" alt="" /></p>
+
+<p>作者对比了若干种使用孪生网络的对比学习方法。<strong>SimCLR</strong>同时使用正样本和负样本；<strong>SwAV</strong>通过<strong>SK</strong>算法构造聚类中心；<strong>BYOL</strong>与<strong>SimSiam</strong>类似，主要区别在于前者使用移动平均更新矩编码器参数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63e1bcc54757feff33a3227e.jpg" alt="" /></p>
+
+<p>实验结果表明，在不使用负样本的对比学习中，损失函数中的梯度停止操作$sg(\cdot)$非常重要，否则可能使网络学习到平凡解。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63e1bdda4757feff33a50034.jpg" alt="" /></p>
+
+<p>对于这种基于孪生网络的对比学习方法，作者提出了一种基于期望最大算法(<strong>Expectation-Maximization</strong>)的解释。对于数据样本$x$，通过数据增强变换为\(\mathcal{T}(x)\)，通过任意变换转换为$\eta_x$，则上述对比学习损失为：</p>
+
+\[\mathcal{L}(\theta,\eta) = \Bbb{E}_{x,\mathcal{T}}[||\mathcal{F}_{\theta}(\mathcal{T}(x))-\eta_x||_2^2]\]
+
+<p>最小化上式可以通过迭代地求解以下两个子问题：</p>
+
+\[\begin{aligned} \theta^t &amp; \leftarrow \mathop{\arg \max}_{\theta} \mathcal{L}(\theta,\eta^{t-1}) \\ \eta^t &amp; \leftarrow \mathop{\arg \max}_{\theta} \mathcal{L}(\theta^t,\eta) \end{aligned}\]
+
+<p>固定$\theta^t$时，最优$\eta$为：</p>
+
+\[\eta^t  \leftarrow \mathcal{F}_{\theta^t}(\mathcal{T}(x))\]
+
+<p>代回原式得：</p>
+
+\[\theta^{t+1}  \leftarrow \mathop{\arg \max}_{\theta} \Bbb{E}_{x,\mathcal{T}}[||\mathcal{F}_{\theta}(\mathcal{T}(x))-\mathcal{F}_{\theta^t}(\mathcal{T}'(x))||_2^2]\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/10/27/evolving.html" class="read-next-link"></a>
+        <section>
+          <span>Evolving Losses for Unsupervised Video Representation Learning</span>
+          <p>  无监督视频表示学习的进化损失.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63e204434757feff331abf82.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/10/25/curl.html" class="read-next-link"></a>
+          <section>
+            <span>CURL: Contrastive Unsupervised Representations for Reinforcement Learning</span>
+            <p>  CURL：强化学习的对比无监督表示.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63e0c98f4757feff33456fa8.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

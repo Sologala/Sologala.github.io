@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用Matplotlib绘制训练曲线 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="使用Matplotlib绘制训练曲线">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="使用Matplotlib绘制训练曲线 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/25/curve.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>使用Matplotlib绘制训练曲线</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-25"><i class="iconfont icon-date"></i>25 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f6dd030160a154a67ef3205.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Draw training curves via Matplotlib.</p>
+</blockquote>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import matplotlib.pyplot as plt
+</code></pre></div></div>
+
+<p>本文记录了使用<code class="language-plaintext highlighter-rouge">Matplotlib</code>库制作一个用在论文中的<strong>pdf</strong>格式训练曲线图像的制作流程。</p>
+
+<p>①创建一个<strong>figure</strong>对象，并指定图像大小：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fig = plt.figure(figsize=[10, 8]) #用来控制图像大小 先width 后height
+</code></pre></div></div>
+
+<p>②绘制曲线：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>plt.plot(x, y, label='X', color='red', linewidth=1.1, marker='s', markersize=12, alpha=1)
+</code></pre></div></div>
+<ul>
+  <li><strong>label</strong>：曲线说明</li>
+  <li><strong>color</strong>：曲线颜色</li>
+  <li><strong>linewidth</strong>：曲线宽度</li>
+  <li><strong>marker</strong>：折线顶点标识：方块<strong>s</strong>，三角<strong>V</strong>，原型<strong>o</strong></li>
+  <li><strong>markersize</strong>：标识大小</li>
+  <li><strong>alpha</strong>：透明度</li>
+</ul>
+
+<p>③平滑曲线：采用<strong>tensorboard</strong>中的计算方式，指数加权滑动平均：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def smooth(data, weight=0.8):
+    last = data[0]
+    res= []
+    for point in data:
+        smoothed_val = last * weight + (1 - weight) * point
+        res.append(smoothed_val)
+        last = smoothed_val
+    return res
+</code></pre></div></div>
+
+<p>④设置坐标轴;</p>
+
+<ul>
+  <li>设置坐标范围：
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>plt.axis([x_min, x_max, y_min, y_max])
+</code></pre></div>    </div>
+  </li>
+  <li>设置坐标刻度：
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>plt.xticks((0), ('1'), fontsize=20, fontproperties = 'Times New Roman')
+plt.yticks((0), ('1'), fontsize=20, fontproperties = 'Times New Roman')
+# 第一个元组表示坐标的实际值；第二个元组表示坐标的显示值。
+</code></pre></div>    </div>
+  </li>
+  <li>设置坐标名称：
+    <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>font = {'family': 'Times New Roman',
+       'weight': 'normal',
+       'size': 20,
+       }
+plt.xlabel('axis x', font)
+plt.ylabel('axis y', font)
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<p>需要注意的是，如果坐标名称需要显示$10^3$，则需要使用：<code class="language-plaintext highlighter-rouge">'$10^3$'</code>。</p>
+
+<p>⑤设置背景栅格：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>plt.grid(linestyle='--', color='red', )
+# linestyle也简写为ls；color也简写为c
+</code></pre></div></div>
+
+<p>⑥设置图例：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>font1 = {'family': 'Times New Roman',
+         'weight': 'normal',
+         'size': 20,
+         }
+plt.legend(loc='lower right', prop=font1)
+</code></pre></div></div>
+
+<p>图例位置也可以用数字代替，见下表：</p>
+
+<p><img src="https://pic.downk.cc/item/5f6dd635160a154a67f0abda.jpg" alt="" /></p>
+
+<p>⑦去白边：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fig.tight_layout()
+</code></pre></div></div>
+
+<p>⑧保存为<strong>pdf</strong>格式：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>fig.savefig("XXX.pdf", format='pdf', transparent=True, dpi=300, pad_inches=0)
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/26/addernet.html" class="read-next-link"></a>
+        <section>
+          <span>AdderNet: Do We Really Need Multiplications in Deep Learning?</span>
+          <p>  AdderNet：仅使用加法运算的卷积神经网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f6ee69e160a154a67498aec.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/24/vib.html" class="read-next-link"></a>
+          <section>
+            <span>Deep Variational Information Bottleneck</span>
+            <p>  深度变分信息瓶颈.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/64730d9ff024cca1737e2c0a.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提升树(Boosting Tree) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="提升树(Boosting Tree)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="提升树(Boosting Tree) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/22/boosttree.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>提升树(Boosting Tree)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-22"><i class="iconfont icon-date"></i>22 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63a7f0dc08b6830163d71677.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Boosting Tree.</p>
+</blockquote>
+
+<p><strong>提升树(Boosting Tree)</strong>是一种结合<a href="https://0809zheng.github.io/2020/03/19/decision-tree.html">决策树</a>和<a href="https://0809zheng.github.io/2020/03/18/boosting.html">boosting集成学习</a>的算法，被认为是统计学习中性能最好的方法之一。</p>
+
+<p>提升树把<strong>CART</strong>分类树或回归树做为基函数，提升方法实际采用加法模型（即基函数的线性组合）与前向分步算法。提升树模型可以表示为决策树的加法模型：</p>
+
+\[f_M(x) = \sum_{m=1}^M T(x;\Theta_m)\]
+
+<p>其中$T(x;\Theta)$为决策树，$\Theta$是决策树的参数，$M$是树的个数。</p>
+
+<h1 id="1-前向分步加法模型">1. 前向分步加法模型</h1>
+
+<p><strong>加法模型(additive model)</strong>可以表示为一系列基函数的线性组合：</p>
+
+\[f(x) = \sum_{m=1}^M \beta_m b (x;\theta_m)\]
+
+<p>其中$b (x;\theta)$为基函数，$\theta$是基函数的参数，$\beta_m$是基函数的系数。</p>
+
+<p>给定训练数据$(X,y)$和损失函数$L(y,f(x))$，可以通过经验风险最小化学习加法模型：</p>
+
+\[\mathop{\min}_{\beta_m ,\theta_m} \sum_{i=1}^N L(y_i,\sum_{m=1}^M \beta_m b (x_i;\theta_m))\]
+
+<p>直接求解上式比较复杂，因此采用<strong>前向分布(forward stagewise)</strong>算法。对于加法模型，每一步只学习一个基函数及其系数，从前向后地逐步逼近优化的目标，就可以简化优化的复杂度。因此每一步只需优化以下损失函数：</p>
+
+\[(\beta_m ,\theta_m) = \mathop{\arg \min}_{\beta ,\theta} \sum_{i=1}^N L(y_i,f_{m-1}(x_i)+\beta b (x_i;\theta))\]
+
+<p>则可以逐步构造加法模型：</p>
+
+\[f_{m}(x) = f_{m-1}(x) + \beta_m b (x;\theta_m)\]
+
+<h1 id="2-提升树算法">2. 提升树算法</h1>
+
+<p>提升树算法采用前向分布算法，给定初始提升树$f_0(x)=0$，则第$m$步的提升树模型是：</p>
+
+\[f_{m}(x) = f_{m-1}(x) + T(x;\Theta_m)\]
+
+<p>当前决策树$T$的参数通过经验风险最小化构造：</p>
+
+\[\Theta_m = \mathop{\arg \min}_{\Theta} \sum_{i=1}^N L(y_i,f_{m-1}(x_i)+T (x_i;\Theta))\]
+
+<p>根据所处理的任务和设置的损失函数不同，提升树具有不同的形式。对于二分类任务，损失函数设置为指数损失函数，此时提升树算法是<a href="https://0809zheng.github.io/2020/03/18/boosting.html#2-adaboost">AdaBoost算法</a>的特殊情况，称之为<strong>自适应提升决策树ABDT</strong>；对于回归任务，损失函数设置为平方误差损失函数，此时称为<strong>回归提升树</strong>；对于一般损失函数的一般决策问题，详见<a href="https://0809zheng.github.io/2020/03/21/GBDT.html"><font color="blue">梯度提升决策树GBDT</font></a>。</p>
+
+<h2 id="1-自适应提升决策树-adaptive-boosted-decision-tree">(1) 自适应提升决策树 Adaptive Boosted Decision Tree</h2>
+<p>通常的<strong>AdaBoost</strong>算法是对样本赋予不同的权重，从而训练得到不同的模型。而决策树没有显式地定义损失函数，直接对样本赋予权重的方法实现起来是困难的，因此采用类似<strong>bootstrap</strong>的方法，预先按照样本的权重比例对样本集进行抽样，每次得到一个新的样本集，其中每个样本出现的概率和它的权重是差不多的。</p>
+
+<p>在抽样得到的样本集上训练得到一个子模型$g_t$后，需要确定该子模型在最终模型中所占的权重。当$g_t$分类错误率$ε_t=0$，则表示该模型在该数据集上完全分类正确，对应权重$α_t=+∞$；而决策树不进行剪枝的话，很容易过拟合，实现$ε_t=0$，从而使权重无限大。因此在训练子模型的时候需要对决策树进行剪枝或限制最大深度。</p>
+
+<p>因此自适应提升决策树的主要实现过程为：</p>
+<ul>
+  <li>使用<strong>AdaBoost</strong>算法集成决策树；</li>
+  <li>训练子树时按权重抽样构造数据集；</li>
+  <li>对训练的子树进行剪枝。</li>
+</ul>
+
+<h2 id="2-回归提升树">(2) 回归提升树</h2>
+
+<p>回归提升树的基函数采用回归<strong>CART</strong>模型，把输入空间划分为$M$个互不相交的子区域$R_1,…,R_M$，计算每个子区域$R_m$上的输出值$C_m$，从而构造回归树模型：</p>
+
+\[T (x;\Theta) = \sum_{m=1}^M C_m \cdot I(x \in R_m)\]
+
+<p>回归提升树采用前向分布算法：</p>
+
+\[\begin{aligned} f_0(x)&amp;=0 \\  f_{m}(x) &amp;= f_{m-1}(x) + T(x;\Theta_m), m = 1,...,M \\ f_M(x) &amp;= \sum_{m=1}^M T(x;\Theta_m) \end{aligned}\]
+
+<p>在前向分布算法的第$m$步，给定当前模型$f_{m-1}(x)$，通过最小化平方误差损失$L(y,f(x))=(y-f(x))^2$计算第$m$棵树的参数$\Theta_m$：</p>
+
+\[\begin{aligned} \Theta_m &amp;= \mathop{\arg \min}_{\Theta} \sum_{i=1}^N L(y_i,f_{m-1}(x_i)+T (x_i;\Theta)) \\ &amp;= \mathop{\arg \min}_{\Theta} \sum_{i=1}^N (y_i-f_{m-1}(x_i)-T (x_i;\Theta)) ^2\end{aligned}\]
+
+<p>记$r_m=y-f_{m-1}(x)$是当前模型拟合数据的<strong>残差(Residual)</strong>，因此第$m$棵树的学习目标是拟合当前模型的残差。</p>
+
+<h3 id="-回归提升树的例子">⚪ 回归提升树的例子</h3>
+
+<p>已知如表所示的训练数据，$x$的取值范围为区间$[0.5, 10.5]$，$y$的取值范围为区间$[5.0, 10.0]$，学习这个回归问题的提升树模型，考虑只用决策树桩(由一个根节点直接连接两个叶结点的简单决策树)作为基函数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a7c3ef08b6830163981d1b.jpg" alt="" /></p>
+
+<p>该数据集只有一个切分变量$x$，分别选择$s=1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5$为切分点，把数据分成左右两份。对于每个切分点分别计算两个子集的平均输出$C_1,C_2$，并进一步计算平方误差：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a7c42108b683016398643b.jpg" alt="" /></p>
+
+<p>从结果可得$s=6.5$时平方误差最小，因此选择最优切分点为$s=6.5$，划分成两个子数据集$R_1={1,2,3,4,5,6}$和$R_2={7,8,9,10}$，两个子数据集的输出分别为$\hat{c}_1=6.24,\hat{c}_2=8.91$，对应回归树$T_1$：</p>
+
+\[T_1(x) = \begin{cases} 6.24, &amp; x &lt;6.5 \\ 8.91, &amp; x \geq 6.5 \end{cases}\]
+
+<p>此时加法模型为$f_1(x)=T_1(x)$。使用该加法模型拟合训练数据集，计算得到平方误差损失为$1.93$，如果已经小于定义的终止误差，则停止循环。否则继续构造加法模型。</p>
+
+<p>用$f_1(x)$拟合训练数据的残差$r_2=y-f_{1}(x)$计算为：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a7c43e08b6830163988af0.jpg" alt="" /></p>
+
+<p>根据残差学习回归树$T_2$，学习过程同上，不同切分点的平方误差如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a7c45308b683016398a678.jpg" alt="" /></p>
+
+<p>从结果可得$s=3.5$时平方误差最小，因此选择最优切分点为$s=3.5$，划分成两个子数据集$R_1={1,2,3}$和$R_2={4,5,6,7,8,9,10}$，两个子数据集的输出分别为$\hat{c}_1=-0.52,\hat{c}_2=0.22$，对应回归树$T_2$：</p>
+
+\[T_2(x) = \begin{cases} -0.52, &amp; x &lt;3.5 \\ 0.22, &amp; x \geq 3.5 \end{cases}\]
+
+<p>此时加法模型为$f_2(x)$:</p>
+
+\[f_2(x) = f_1(x)+T_2(x) = \begin{cases} 5.72, &amp; x &lt;3.5 \\ 6.46, &amp; 3.5 \leq x &lt;6.5 \\ 9.13, &amp; x \geq 6.5 \end{cases}\]
+
+<p>递归地构造加法模型，从而实现回归提升树：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a7c47808b683016398dc7b.jpg" alt="" /></p>
+
+<h3 id="-实现回归提升树">⚪ 实现回归提升树</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">class</span> <span class="nc">DisicionStump</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stump</span><span class="p">,</span> <span class="n">mse</span><span class="p">,</span> <span class="n">left_value</span><span class="p">,</span> <span class="n">right_value</span><span class="p">,</span> <span class="n">residual</span><span class="p">):</span>
+        <span class="s">'''决策树桩模型
+        :param stump: 为feature最佳切割点
+        :param mse: 为每棵树的平方误差
+        :param left_value: 为决策树左值
+        :param right_value: 为决策树右值
+        :param residual: 为每棵决策树生成后余下的残差
+        '''</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">stump</span> <span class="o">=</span> <span class="n">stump</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mse</span> <span class="o">=</span> <span class="n">mse</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">left_value</span> <span class="o">=</span> <span class="n">left_value</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">right_value</span> <span class="o">=</span> <span class="n">right_value</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">residual</span> <span class="o">=</span> <span class="n">residual</span>
+
+<span class="k">class</span> <span class="nc">BoostingTree</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Tree_num</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">Tree_num</span> <span class="o">=</span> <span class="n">Tree_num</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="n">stump_list</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">Get_stump_list</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">label</span><span class="p">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="c1"># 生成树并更新残差
+</span>        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">Tree_num</span><span class="p">):</span>
+            <span class="n">Tree</span><span class="p">,</span> <span class="n">residual</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">Get_decision_tree</span><span class="p">(</span><span class="n">stump_list</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">residual</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">Tree</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span>
+
+    <span class="k">def</span> <span class="nf">Get_stump_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">):</span>
+        <span class="s">'''根据feature准备好切分点。例如:
+        feature为[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        切分点为[1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5]
+        '''</span>
+        <span class="c1"># 特征值从小到大排序好,错位相加
+</span>        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span> <span class="n">feature</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="n">stump_list</span> <span class="o">=</span> <span class="p">((</span><span class="n">tmp1</span> <span class="o">+</span> <span class="n">tmp2</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="mi">2</span><span class="p">))[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">stump_list</span>
+    
+    <span class="k">def</span> <span class="nf">Get_decision_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stump_list</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+        <span class="n">best_mse</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">inf</span>
+        <span class="n">best_stump</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># min(stump_list)
+</span>        <span class="n">residual</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">left_value</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">right_value</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># 对特征的每个切分点应用决策桩算法
+</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">shape</span><span class="p">(</span><span class="n">stump_list</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">left_node</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">right_node</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># 根据切分点划分数据
+</span>            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">shape</span><span class="p">(</span><span class="n">feature</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">feature</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">stump_list</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                    <span class="n">left_node</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">right_node</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="c1"># 计算两个子集的平方误差
+</span>            <span class="n">left_mse</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">((</span><span class="n">np</span><span class="p">.</span><span class="n">average</span><span class="p">(</span><span class="n">left_node</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">left_node</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">right_mse</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">((</span><span class="n">np</span><span class="p">.</span><span class="n">average</span><span class="p">(</span><span class="n">right_node</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">right_node</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="c1"># 记录最优决策桩
+</span>            <span class="k">if</span> <span class="n">best_mse</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">left_mse</span> <span class="o">+</span> <span class="n">right_mse</span><span class="p">):</span>
+                <span class="n">best_mse</span> <span class="o">=</span> <span class="n">left_mse</span> <span class="o">+</span> <span class="n">right_mse</span>
+                <span class="n">left_value</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">average</span><span class="p">(</span><span class="n">left_node</span><span class="p">)</span>
+                <span class="n">right_value</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">average</span><span class="p">(</span><span class="n">right_node</span><span class="p">)</span>
+                <span class="n">best_stump</span> <span class="o">=</span> <span class="n">stump_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">left_residual</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">left_node</span><span class="p">)</span> <span class="o">-</span> <span class="n">left_value</span>
+                <span class="n">right_residual</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">right_node</span><span class="p">)</span> <span class="o">-</span> <span class="n">right_value</span>
+                <span class="n">residual</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">left_residual</span><span class="p">,</span> <span class="n">right_residual</span><span class="p">)</span>
+        <span class="n">Tree</span> <span class="o">=</span> <span class="n">DisicionStump</span><span class="p">(</span><span class="n">best_stump</span><span class="p">,</span> <span class="n">best_mse</span><span class="p">,</span> <span class="n">left_value</span><span class="p">,</span> <span class="n">right_value</span><span class="p">,</span> <span class="n">residual</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Tree</span><span class="p">,</span> <span class="n">residual</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">):</span>
+        <span class="n">predict_list</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="c1"># 将每棵树对各个特征预测出来的结果进行相加，相加的最后结果就是最后的预测值
+</span>        <span class="k">for</span> <span class="n">Tree</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">shape</span><span class="p">(</span><span class="n">feature</span><span class="p">)[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">feature</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">Tree</span><span class="p">.</span><span class="n">stump</span><span class="p">:</span>
+                    <span class="n">predict_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">predict_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">Tree</span><span class="p">.</span><span class="n">left_value</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">predict_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">predict_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">Tree</span><span class="p">.</span><span class="n">right_value</span>
+        <span class="k">return</span> <span class="n">predict_list</span>
+    
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
+    <span class="n">feature</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mf">5.56</span><span class="p">,</span> <span class="mf">5.7</span><span class="p">,</span> <span class="mf">5.91</span><span class="p">,</span> <span class="mf">6.4</span><span class="p">,</span> <span class="mf">6.8</span><span class="p">,</span> <span class="mf">7.05</span><span class="p">,</span> <span class="mf">8.9</span><span class="p">,</span> <span class="mf">8.7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mf">9.05</span><span class="p">])</span>
+    <span class="n">mytree</span> <span class="o">=</span> <span class="n">BoostingTree</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">mytree</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">mytree</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">feature</span><span class="p">))</span>
+    <span class="s">"""
+    [5.63       5.63       5.81831019 6.55164352 6.81969907 6.81969907
+     8.95016204 8.95016204 8.95016204 8.95016204]
+    """</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/23/knn.html" class="read-next-link"></a>
+        <section>
+          <span>k近邻算法(k-Nearest Neighbor, kNN)</span>
+          <p>  k-Nearest Neighbor.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60cdbf50844ef46bb2ec654a.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/21/GBDT.html" class="read-next-link"></a>
+          <section>
+            <span>梯度提升决策树(Gradient Boosted Decision Tree, GBDT)</span>
+            <p>  Gradient Boosted Decision Tree.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5efb035714195aa5948c4ccf.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

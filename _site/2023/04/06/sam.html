@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segment Anything - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Segment Anything">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Segment Anything - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/04/06/sam.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Segment Anything</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-04-06"><i class="iconfont icon-date"></i>06 Apr 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/642e6ba6a682492fccbabbb6.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SAM：分割任意模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2304.02643">Segment Anything</a></li>
+  <li>project：<a href="https://segment-anything.com/">Segment Anything Model (SAM): a new AI model from Meta AI that can “cut out” any object, in any image, with a single click</a></li>
+</ul>
+
+<p><strong>SAM (Segment Anything Model)</strong>是一个图像分割的基础模型，模型的设计和训练是通过提示工程实现的，预训练完成后可以对不同的图像分割数据实现零样本的泛化。文章主要讨论了三个问题：</p>
+<ol>
+  <li>什么任务可以实现零样本泛化？</li>
+  <li>什么模型结构能够实现该任务？</li>
+  <li>什么数据可以用于模型预训练？</li>
+</ol>
+
+<h1 id="1-可提示的分割任务-promptable-segmentation-task">1. 可提示的分割任务 promptable segmentation task</h1>
+
+<p>可提示的分割任务的目标是在给定任何分割提示的情况下返回有效的分割掩码。提示应该指定在图像中分割什么，例如提示可以包括标识对象的空间坐标或文本信息。有效输出掩码意味着即使提示不明确，并且可能涉及多个对象，输出也应该是这些对象中至少一个的合理掩码。</p>
+
+<p><img src="https://pic.imgdb.cn/item/642e6ceda682492fccbc5e6d.jpg" alt="" /></p>
+
+<p>对于分割任务，提示可以设置为一组前景/背景点、一个粗略的边界框或<strong>mask</strong>、一段文本等能够提供指示在图像中分割什么内容的信息。可提示的分割任务提出了一种自然的预训练算法，该算法模拟每个训练样本的提示序列（例如点、框、掩码），并将模型的掩码预测与真实标签进行比较。预训练任务赋予了模型在推理时对任何提示做出适当响应的能力，因此下游任务可以通过设计适当的提示来解决。</p>
+
+<h1 id="2-分割任意模型-segment-anything-model">2. 分割任意模型 segment anything model</h1>
+
+<p>可提示的分割模型必须支持灵活的提示输入形式，能够实时计算掩码以允许交互式使用，并且能够处理分割语义的模糊性。<strong>SAM</strong>采用一种简单的设计：一个图像编码器生成图像嵌入，一个提示编码器生成提示嵌入，然后将这两种嵌入组合后通过一个轻量级掩码解码器预测分割掩码。</p>
+
+<p><img src="https://pic.imgdb.cn/item/642e6ea6a682492fccbedb0a.jpg" alt="" /></p>
+
+<ul>
+  <li>图像编码器（<strong>image encoder</strong>）：采用<strong>MAE</strong>预训练的<strong>ViT</strong>模型</li>
+  <li>提示编码器（<strong>prompt encoder</strong>）：稀疏提示（点、框）通过位置编码嵌入后与对应提示类型的学习嵌入相加，文本提示通过<strong>CLIP</strong>的文本编码器嵌入，密集提示（掩码）使用卷积嵌入，并与图像嵌入相加。</li>
+  <li>掩码解码器（<strong>mask decoder</strong>）：采用<strong>Transformer</strong>解码器的修改版。解码器块在两个方向上（提示到图像嵌入，图像到提示嵌入）使用提示自注意力和交叉注意力来更新所有嵌入。在两个解码器块之后对图像嵌入进行上采样，<strong>MLP</strong>把输出映射到动态线性分类器，然后动态线性分类器计算每个图像位置的掩码前景概率。</li>
+</ul>
+
+<p>对于一个输出，如果给出不明确的提示，模型将平均多个有效掩码。为了解决分割结果的模糊性，对单个提示预测多个输出掩码。具体地，为每个提示设置$3$个输出掩码（整体、部分、子部分），模型同时预测每个掩码的置信度得分（估计的<strong>IoU</strong>）。训练时只计算预测掩码的最小损失，采用<strong>Focal</strong>损失和<strong>Dice</strong>损失的线性组合作为损失函数。</p>
+
+<h1 id="3-数据引擎-data-engine">3. 数据引擎 data engine</h1>
+
+<p>作者收集了一个<strong>SA-1B</strong>数据集，并设计如下数据引擎完成收集过程：</p>
+<ol>
+  <li>辅助标注阶段：一组专业标注人员通过交互式分割工具点击前景/背景对象点来进行标注，标注人员可以自由地标记目标。在这个阶段从<strong>120k</strong>张图像中收集了<strong>430</strong>万个标注。</li>
+  <li>半自动阶段：首先使用一个通用的“对象”类别在所有第一阶段图像上训练了一个<strong>Faster R-CNN</strong>，使用该边界框检测器构造置信度较高的掩码，并要求标注人员标注图像中任何其他未标注的目标对象。此阶段在<strong>180k</strong>张图像中额外收集了<strong>590</strong>万个标注。</li>
+  <li>全自动阶段：完全使用模型产生新的标注。使用$32×32$的规则网格提示模型，并为每个点预测一组可能对应于有效对象的掩码，并从中选择置信度高、稳定的掩码，应用非极大值抑制过滤重复掩码。为了进一步提高较小掩码的质量，模型处理了多个重叠的放大图像裁剪。该方法应用于数据集中的所有<strong>1100</strong>万张图像，总共生成了<strong>11</strong>亿个高质量标注。</li>
+</ol>
+
+<p><strong>SA-1B</strong>数据集包含<strong>1100</strong>万张图像，共计<strong>11</strong>亿个高质量掩码标注，这些图像的平均分辨率为$3300 \times 4950$。该数据集是迄今为止最大的图像分割数据集。</p>
+
+<p><img src="https://pic.imgdb.cn/item/642e766fa682492fccc9f676.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/04/07/pointcnn.html" class="read-next-link"></a>
+        <section>
+          <span>PointCNN: Convolution On X-Transformed Points</span>
+          <p>  PointCNN：在X变换点云上的卷积.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/649e1fc91ddac507cc85b553.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/04/05/pointnet.html" class="read-next-link"></a>
+          <section>
+            <span>PointNet: Deep Learning on Point Sets for 3D Classification and Segmentation</span>
+            <p>  PointNet：用于3D点集分类与分割的深度学习模型.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/649d316a1ddac507cc30125f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

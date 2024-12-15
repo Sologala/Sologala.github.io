@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主成分分析(Principal Component Analysis, PCA) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="主成分分析(Principal Component Analysis, PCA)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="主成分分析(Principal Component Analysis, PCA) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/11/PCA.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>主成分分析(Principal Component Analysis, PCA)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-11"><i class="iconfont icon-date"></i>11 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ec4a0b8c2a9a83be52f72f0.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Principal Component Analysis.</p>
+</blockquote>
+
+<p><strong>主成分分析(Principal Component Analysis,PCA)</strong>是一种线性数据降维方法。该算法在降维时去除数据的<strong>相关性</strong>，且最大限度保持原始数据的<strong>方差</strong>信息。</p>
+
+<p>主成分分析的步骤是对归一化数据的协方差矩阵进行特征值分解(或直接对归一化的数据矩阵进行奇异值分解)。</p>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>几何解释</li>
+  <li>线性变换的解释</li>
+  <li>最大投影方差角度</li>
+  <li>最小重构代价角度</li>
+  <li>奇异值分解角度</li>
+  <li>主坐标分析</li>
+  <li>概率主成分分析</li>
+  <li>PCA的实现</li>
+</ol>
+
+<h1 id="1-几何解释">1. 几何解释</h1>
+
+<p><img src="https://pic.downk.cc/item/5ec4a0b8c2a9a83be52f72f0.jpg" alt="" /></p>
+
+<p>如上图所示的二维数据，如果将这些数据投影到一维空间中，选择数据方差最大的方向进行投影，才能最大化数据的差异性，保留更多的原始数据信息。</p>
+
+<p>从概率的角度理解，投影后数据方差越大，表示数据分布越分散，则数据分布概率越分散，每个数据点的概率取值就比较小；此时该分布的信息熵更大，包含更多信息。</p>
+
+<p>由上图可以看出，这$N$个样本点沿着$f_1$轴方向有最大的离散性，$f_1$的方向称为第一个<strong>主成分</strong>。</p>
+
+<p>为了去掉相关性，第二个主成分应该<strong>正交</strong>于第一个主成分。</p>
+
+<p>主成分分析试图在力保数据信息丢失最少的原则下，去除数据的相关性，对高维空间的数据降维处理。</p>
+
+<h1 id="2-线性变换的解释">2. 线性变换的解释</h1>
+<p>若记$N$个样本点\(\{x_1,x_2,...,x_N\},x_n \in \Bbb{R}^d\)，降维后得到\(\{z_1,z_2,...,z_N\},z_n \in \Bbb{R}^k\)，通常降维后的数据维度低于原维度，即$k&lt;d$；</p>
+
+<p>值得一提的是，<strong>PCA</strong>会对原始数据进行归一化，即对每个样本减去所有样本的平均值:</p>
+
+\[x_n = x_n-\overline{x} = x_n-\frac{1}{N}\sum_{n=1}^{N}x_n\]
+
+<p>线性降维可以用一个线性变换矩阵$W \in \Bbb{R}^{k×d}$来表示:</p>
+
+\[z_n = Wx_n\]
+
+<p>对降维后的样本进行<strong>重构</strong>，为减小参数量，选择重构矩阵为$W^T$:</p>
+
+\[x'_n = W^Tz_n = W^TWx_n\]
+
+<p>目标函数为最小化<strong>重构误差</strong>：</p>
+
+\[\mathop{\min}_W  \frac{1}{N} \sum_{n=1}^{N} {(x_n-x'_n)^2} \\= \mathop{\min}_W \frac{1}{N} \sum_{n=1}^{N} {(x_n-W^TWx_n)^2}\]
+
+<p>注意到矩阵$W^TW$是对称矩阵，可以进行相似对角化：</p>
+
+\[W^TW = UΣU^T\]
+
+<p>其中：</p>
+<ul>
+  <li>$U^T$是正交矩阵，表示对一个向量进行旋转，不改变其长度；</li>
+  <li>$Σ$是对角矩阵，由于$W$的秩不超过$k$,$Σ$的秩也不超过$k$,最多有$k$个对角元素不为零；表示对旋转后向量的最多$k$个维度进行长度的缩放，其余维度置零；</li>
+  <li>$U$是正交矩阵，表示对缩放后的向量旋转回原来的方向。</li>
+</ul>
+
+<p>则优化的目标函数进一步表示为：</p>
+
+\[\mathop{\min}_{U,Σ}  \frac{1}{N} \sum_{n=1}^{N} {(x_n-UΣU^Tx_n)^2} \\ = \mathop{\min}_{U,Σ} \frac{1}{N} \sum_{n=1}^{N} {(UIU^Tx_n-UΣU^Tx_n)^2} \\ = \mathop{\min}_{U,Σ} \frac{1}{N} \sum_{n=1}^{N} {(U(I-Σ)U^Tx_n)^2}\]
+
+<p>先求最优的$Σ$：最优的$Σ$使$I-Σ$接近零矩阵，由于$Σ$最多有$k$个对角元素不为零，则最优的$Σ$可以表示为\(Σ= \begin{bmatrix} I_k &amp; 0 \\ 0 &amp; 0 \end{bmatrix}\)，</p>
+
+<p>则优化的目标函数进一步表示为：</p>
+
+\[\mathop{\min}_{U}  \frac{1}{N} \sum_{n=1}^{N} {(U \begin{bmatrix} 0 &amp; 0 \\ 0 &amp; I_{d-k} \\ \end{bmatrix} U^Tx_n)^2}\]
+
+<p>由于$U$是正交矩阵，可以把最小化问题转换成最大化问题：</p>
+
+\[\mathop{\max}_{U}  \frac{1}{N} \sum_{n=1}^{N} {(U \begin{bmatrix} I_k &amp; 0 \\ 0 &amp; 0 \\ \end{bmatrix} U^Tx_n)^2}\]
+
+<p>先考虑$k=1$的情况，此时优化问题为：</p>
+
+\[\mathop{\max}_{U}  \frac{1}{N} \sum_{n=1}^{N} {(UU^Tx_n)^2}  = \mathop{\max}_{u} \frac{1}{N} \sum_{n=1}^{N} {x_n^Tuu^Tuu^Tx_n} \\ = \mathop{\max}_{u} \frac{1}{N} \sum_{n=1}^{N} {x_n^Tuu^Tx_n}  = \mathop{\max}_{u} \frac{1}{N} \sum_{n=1}^{N} {u^Tx_nx_n^Tu}\\ s.t. \quad  u^Tu = 1\]
+
+<p>上述问题等价于求<a href="https://0809zheng.github.io/2021/06/22/rayleigh.html">瑞利商</a>的极值。使用拉格朗日乘数法解上述约束优化问题，定义拉格朗日函数：</p>
+
+\[L(u,λ) = u^Tx_nx_n^Tu + λ(1-u^Tu)\]
+
+<p>上式对$u$求偏导并置$0$，得：</p>
+
+\[\frac{\partial L(u,λ)}{\partial u} = 2x_nx_n^Tu - 2λu = 0\]
+
+<p>解得：</p>
+
+\[x_nx_n^Tu = λu\]
+
+<p>即$u$和$λ$分别是矩阵$XX^T \in \Bbb{R}^{d×d}$的特征向量和特征值，此时优化问题化简为：</p>
+
+\[\mathop{\max}_{U}  \frac{1}{N} \sum_{n=1}^{N} {u^Tλu} = \frac{1}{N} \sum_{n=1}^{N} {λ}\]
+
+<p>$λ$是矩阵$XX^T$最大的特征值。</p>
+
+<p>根据数学归纳法，该结论可推广至$k&gt;1$的情况。当$k&gt;1$时，$λ$是矩阵$XX^T$最大的前$k$个特征值，$u$是与之对应的特征向量。</p>
+
+<p>从重构角度可以选择合适的降维维度$k$。人为设定重构阈值$t$，然后选取使得下式成立的最小$k$值：</p>
+
+\[\frac{\sum_{i=1}^{k} λ_i}{\sum_{i=1}^{d} λ_i} ≥ t\]
+
+<h1 id="3-最大投影方差角度">3. 最大投影方差角度</h1>
+<p>若记$N$个样本点\(\{x_1,x_2,...,x_N\},x_n \in \Bbb{R}^d\)，降维后得到\(\{z_1,z_2,...,z_N\},z_n \in \Bbb{R}^k\)，通常降维后的数据维度低于原维度，即$k&lt;d$；</p>
+
+<p>记原数据空间中的一个单位向量$u$，对原始数据沿该方向进行投影，希望投影差异最大。则每一个样本点$x_n$在该方向上的投影为$u^Tx_n$，这样计算的是“绝对”差异，即所有从原点出发的数据向量投影计算的差异。我们并不关心数据本身的大小，而是希望最大化数据与其数据平均中心的差异，需要对原始数据进行预处理：</p>
+
+\[x_n = x_n-\overline{x} = x_n-\frac{1}{N}\sum_{n=1}^{N}x_n\]
+
+<p>将预处理后的数据投影到$u$方向上，便可以得到在该方向上的投影差异(注意投影结果是<strong>标量</strong>)：</p>
+
+\[u^T(x_n - \overline{x})\]
+
+<p>对投影差异的解释如下。若向量$x_n - \overline{x}$与向量$u$之间的夹角为$\theta$，则将向量$x_n - \overline{x}$直接投影到向量$u$上的长度为$|x_n - \overline{x}|\cdot cos \theta$。直接计算两向量内积$(x_n - \overline{x}) \cdot u=|x_n - \overline{x}|\cdot  |u|\cdot  cos \theta$；当$|u|=1$时两者等价，因此用内积表示投影差异。</p>
+
+<p>定义<strong>投影方差</strong>为所有数据投影差异的平方平均值：</p>
+
+\[J = \frac{1}{N} \sum_{n=1}^{N} {u^T(x_n - \overline{x})(x_n - \overline{x})^Tu}\]
+
+<p>这是一个约束优化问题：</p>
+
+\[\begin{align} \mathop{\max}_{u} \quad &amp; J \\ s.t. \quad &amp; u^Tu = 1 \end{align}\]
+
+<p>上述问题等价于求<a href="https://0809zheng.github.io/2021/06/22/rayleigh.html">瑞利商</a>的极值。使用拉格朗日乘数法解上述约束优化问题，定义拉格朗日函数：</p>
+
+\[L(u,λ) = \frac{1}{N} \sum_{n=1}^{N} {u^T(x_n - \overline{x})(x_n - \overline{x})^Tu} + λ(1-u^Tu)\]
+
+<p>上式对$u$求偏导并置$0$，得：</p>
+
+\[\frac{\partial L(u,λ)}{\partial u} = \frac{2}{N} \sum_{n=1}^{N} {(x_n - \overline{x})(x_n - \overline{x})^T}u - 2λu = 0\]
+
+<p>解得：</p>
+
+\[\frac{1}{N}\sum_{n=1}^{N} {(x_n - \overline{x})(x_n - \overline{x})^T}u = λu\]
+
+<p>记样本的<strong>协方差矩阵</strong>$S=\frac{1}{N}\sum_{n=1}^{N} {(x_n - \overline{x})(x_n - \overline{x})^T} \in \Bbb{R}^{d×d}$，则上式表示为：</p>
+
+\[Su = λu\]
+
+<p>即$u$和$λ$分别是矩阵$S$的特征向量和特征值，此时优化问题化简为：</p>
+
+\[\mathop{\max}_{u} \frac{1}{N} \sum_{n=1}^{N} {u^T(x_n - \overline{x})(x_n - \overline{x})^Tu} = \mathop{\max}_{u} u^TSu = \mathop{\max}_{u} u^Tλu = \mathop{\max}_{u} λ\]
+
+<p>$λ$是矩阵$S$最大的特征值。</p>
+
+<p>值得一提的是，有时也用样本的<strong>散布矩阵(scatter matrix)</strong> $S=\sum_{n=1}^{N} {(x_n - \overline{x})(x_n - \overline{x})^T} \in \Bbb{R}^{d×d}$进行计算。由于散布矩阵和协方差矩阵仅相差一个系数$\frac{1}{N}$，不影响结果，因此以下不做区分。</p>
+
+<h1 id="4-最小重构代价角度">4. 最小重构代价角度</h1>
+<p>若记$N$个样本点\(\{x_1,x_2,...,x_N\},x_n \in \Bbb{R}^d\)，降维后得到\(\{z_1,z_2,...,z_N\},z_n \in \Bbb{R}^k\)，通常降维后的数据维度低于原维度，即$k&lt;d$；</p>
+
+<p>在原向量空间取一组完备的单位正交基\(\{u_1,...,u_d\}\)，其中前$k$维代表降维后的方向。</p>
+
+<p>原向量空间中的数据$x_n$可以表示为（任意向量由基向量线性表示）:</p>
+
+\[x_n = \sum_{i=1}^{d} {(u_i^Tx_n)u_i}\]
+
+<p>注意到此处$u_i^Tx_n$表示将向量$x_n$投影到单位向量$u_i$上的投影长度。</p>
+
+<p>而降维后的数据$\hat{x}_n$表示为：</p>
+
+\[\hat{x}_n = \sum_{i=1}^{k} {(u_i^Tx_n)u_i}\]
+
+<p>定义所有样本的<strong>重构代价</strong>为：</p>
+
+\[J = \frac{1}{N} \sum_{n=1}^{N} {|| x_n-\hat{x}_n ||^2} = \frac{1}{N} \sum_{n=1}^{N} {|| \sum_{i=k+1}^{d} {(u_i^Tx_n)u_i} ||^2} \\ = \frac{1}{N} \sum_{n=1}^{N} \sum_{i=k+1}^{d} {|| (u_i^Tx_n)u_i ||}^2 \quad \text{because }u_iu_j = 0,i≠j\\ = \frac{1}{N} \sum_{n=1}^{N} \sum_{i=k+1}^{d} {(u_i^Tx_n)}^2 \quad \text{because } || u_i ||^2 = 1 \\ = \frac{1}{N} \sum_{n=1}^{N} \sum_{i=k+1}^{d} {u_i^Tx_nx_n^Tu_i} \\ = \sum_{i=k+1}^{d} {u_i^T\frac{1}{N} \sum_{n=1}^{N}{(x_n-\overline{x})(x_n-\overline{x})^T}u_i} = \sum_{i=k+1}^{d} {u_i^TSu_i}\]
+
+<p>其中$S=\frac{1}{N}\sum_{n=1}^{N} {(x_n - \overline{x})(x_n - \overline{x})^T} \in \Bbb{R}^{d×d}$是协方差矩阵。</p>
+
+<p>这是一个约束优化问题：</p>
+
+\[\mathop{\min}_{u} J = \mathop{\min}_{u} \sum_{i=k+1}^{d} {u_i^TSu_i} \\ s.t. \quad u^Tu = 1\]
+
+<p>上述问题等价于求<a href="https://0809zheng.github.io/2021/06/22/rayleigh.html">瑞利商</a>的极值。使用拉格朗日乘数法解上述约束优化问题，可以得到$u_{k+1}$到$u_{d}$是$S$最小的$d-k$个特征值，即$u_{1}$到$u_{k}$是$S$最大的$k$个特征值。</p>
+
+<h1 id="5-奇异值分解角度">5. 奇异值分解角度</h1>
+<p>由上述分析可知，主成分分析可以通过对样本的散布矩阵$S$(或协方差矩阵)进行特征值分解，其最大的前$k$个特征值对应的特征向量就是所求的$k$个主方向。</p>
+
+<p>回顾样本的协方差矩阵$S$计算为：</p>
+
+\[S=\sum_{n=1}^{N} {(x_n - \overline{x})(x_n - \overline{x})^T} \in \Bbb{R}^{d×d} \\ = \begin{pmatrix} x_1-\overline{x} &amp; x_2-\overline{x} &amp; ... &amp; x_n-\overline{x} \\ \end{pmatrix} \begin{pmatrix} x_1-\overline{x} \\ x_2-\overline{x} \\ ... \\ x_n-\overline{x} \\ \end{pmatrix}\]
+
+<p>记样本矩阵$X\in \Bbb{R}^{n \times d}$，单位矩阵$I_n \in \Bbb{R}^{n \times n}$和全$1$矩阵$\Bbb{1}_n \in \Bbb{R}^{n \times 1}$，进行化简：</p>
+
+\[\begin{pmatrix} x_1-\overline{x} &amp; x_2-\overline{x} &amp; ... &amp; x_n-\overline{x} \\ \end{pmatrix} = \begin{pmatrix} x_1 &amp; x_2 &amp; ... &amp; x_n \\ \end{pmatrix} - \begin{pmatrix} \overline{x} &amp; \overline{x} &amp; ... &amp; \overline{x} \\ \end{pmatrix} \\ = X^T - \overline{x} \cdot \Bbb{1}_n^T = X^T - \frac{1}{N} \sum_{i=1}^{N} x_i \cdot \Bbb{1}_n^T = X^T - \frac{1}{N} \begin{pmatrix} x_1 &amp; x_2 &amp; ... &amp; x_n \\ \end{pmatrix} \begin{pmatrix} 1 \\ 1 \\ ... \\ 1 \\ \end{pmatrix} \cdot \Bbb{1}_n^T \\ = X^T - \frac{1}{N} X^T \Bbb{1}_n \Bbb{1}_n^T  = X^T(I_n - \frac{1}{N} \Bbb{1}_n \Bbb{1}_n^T)\]
+
+<p>记<strong>中心矩阵(centering matrix</strong>,该矩阵没找到合适的中文描述,主要用于为散布矩阵提供一个简洁的表达方法)$H=I_n - \frac{1}{N} \Bbb{1}_n \Bbb{1}_n^T$，$H$矩阵是对称的幂等矩阵，其性质如下：</p>
+<ul>
+  <li>$H^T=H$
+    <ol>
+      <li>证明:$H^T=(I_n - \frac{1}{N} \Bbb{1}_n \Bbb{1}_n^T)^T = I_n - \frac{1}{N} \Bbb{1}_n \Bbb{1}_n^T =H$</li>
+    </ol>
+  </li>
+  <li>$H^2=H$
+    <ol>
+      <li>证明:</li>
+    </ol>
+  </li>
+</ul>
+
+\[H^2=(I_n - \frac{1}{N} \Bbb{1}_n \Bbb{1}_n^T)(I_n - \frac{1}{N} \Bbb{1}_n \Bbb{1}_n^T) \\ = I_n - \frac{2}{N} \Bbb{1}_n \Bbb{1}_n^T +  \frac{1}{N^2} \Bbb{1}_n \Bbb{1}_n^T \Bbb{1}_n \Bbb{1}_n^T = I_n - \frac{2}{N} \Bbb{1}_n \Bbb{1}_n^T +  \frac{1}{N^2} \Bbb{1}_n N \Bbb{1}_n^T = I_n - \frac{1}{N} \Bbb{1}_n \Bbb{1}_n^T  =H\]
+
+<p>注意到矩阵$H$相当于对样本矩阵$X$进行预处理，即$\overline{X}=HX$。通过引入矩阵$H$，散布矩阵$S$可以被表示为：</p>
+
+\[S =  X^THH^TX =  X^THHX =  X^THX\]
+
+<p>对散布矩阵$S$进行特征值分解：</p>
+
+\[S=Q \Lambda Q^T \\ Q=(u_1,u_2,...,u_d), \quad \Lambda=diag(\lambda_1,\lambda_2,...,\lambda_d),\lambda_1≥\lambda_2≥...≥\lambda_d\]
+
+<p>取$Q$的前$k$列$Q_k \in \Bbb{R}^{d \times k}$，将样本矩阵的特征维度从$d$降至$k$：</p>
+
+\[X_{\text{dim-reduced}} = HXQ_k\]
+
+<p>在上述流程中，对散布矩阵$S$进行特征值分解有时会有较大的计算量(当特征维度很高时)。若直接对预处理后的样本矩阵$HX$进行奇异值分解：$HX=U \Sigma V^T$。则散布矩阵$S$也可以表示为：</p>
+
+\[S= X^THX = X^TH^THX = V \Sigma^T U^T U \Sigma V^T = V \Sigma^2 V^T \\ S=Q \Lambda Q^T\]
+
+<p>注意到$V=Q$,$\Sigma^2=\Lambda$。因此实践中不直接对散布矩阵$S$进行特征值分解，而是对预处理的样本矩阵$HX$进行奇异值分解，也可以实现线性降维。降维结果可以计算为：</p>
+
+\[X_{\text{dim-reduced}} = HXQ_k = HXV_k = U \Sigma V^T V_k = U \Sigma_k\]
+
+<h1 id="6-主坐标分析">6. 主坐标分析</h1>
+<p>对于样本矩阵$X \in \Bbb{R}^{n \times d}$，有时样本数量小于特征维度($n&lt;d$)，此时对散布矩阵$S=X^TH^THX \in \Bbb{R}^{d \times d}$进行特征值分解会有较大的计算量。</p>
+
+<p>考虑另一矩阵$T = HXX^TH \in \Bbb{R}^{n \times n}$。引入样本矩阵$HX$的奇异值分解$HX=U \Sigma V^T$，则$T$可以被表示为：</p>
+
+\[T = HXX^TH = U \Sigma V^T V \Sigma^T U^T = U \Sigma^2 U^T\]
+
+<p>根据第$5$节的结论，降维结果可以表示为$X_{\text{dim-reduced}} = U \Sigma_k$。因此直接对矩阵$T$进行特征值分解也能得到降维结果。</p>
+
+<p>上述方法被称作<strong>主坐标分析(Principal Coordinate Analysis,PCoA)</strong>。</p>
+
+<p>在<strong>PCA</strong>中计算的协方差矩阵(散布矩阵) $S$衡量样本的不同特征维度之间的相关性，维度为$d \times d$；而<strong>PCoA</strong>中计算的矩阵$T$衡量不同样本之间的相关性，维度为$n \times n$。</p>
+
+<h1 id="7-概率主成分分析">7. 概率主成分分析</h1>
+<p><strong>概率主成分分析(probabilistic PCA)</strong>把原始样本特征$x$看作<strong>观测变量(observed variable)</strong>，把降维后的特征$z$看作<strong>隐变量(latent variable)</strong>。</p>
+
+<p>把特征$z$的先验分布建模成$k$维标准正态分布$N(0,I_k)$，使用<strong>线性高斯模型(linear Gaussian model)</strong>建模特征$z$与$d$维特征$x$的关系：</p>
+
+\[x = wz+\mu+\epsilon\]
+
+<p>其中引入噪声$\epsilon$服从分布$N(0,σ^2I_d)$。</p>
+
+<p><strong>pPCA</strong>主要解决两个问题：</p>
+<ul>
+  <li><strong>学习 learning</strong>：估计模型参数$w$,$\mu$,$σ^2$，通常用<a href="https://0809zheng.github.io/2020/03/26/expectation-maximization.html">EM算法</a>求解。</li>
+  <li><strong>推断 inference</strong>：由样本特征$x$推断特征$z$的后验分布$P(z | x)$。</li>
+</ul>
+
+<p>下面介绍求解后验分布$P(z | x)$的过程。</p>
+
+\[\begin{cases} E(x) = E(wz+\mu+\epsilon) = wE(z)+E(\mu)+E(\epsilon)=\mu \\ D(x) = D(wz+\mu+\epsilon) = w^TwD(z)+D(\mu)+D(\epsilon)=w^Tw+σ^2I_d \end{cases}\]
+
+<p>则数据特征$x$的分布可表示为$P(x) \text{~} N(\mu,w^Tw+σ^2I_d)$；</p>
+
+<p>构造联合分布$P(\begin{bmatrix} x \ z \ \end{bmatrix})$:</p>
+
+\[P(\begin{bmatrix} x \\ z \end{bmatrix}) \text{~} N(\begin{bmatrix} \mu \\ 0 \end{bmatrix},\begin{bmatrix} w^Tw+σ^2I_d &amp; Σ_{xz} \\ Σ_{xz}^T &amp; I_k \end{bmatrix})\]
+
+<p>其中协方差矩阵$Σ_{xz}$计算为：</p>
+
+\[Σ_{xz} = Cov(x,z) = E(x-E(x))E(z-E(z))^T \\ = E(x-\mu)z^T = E(wz+\epsilon)z^T \\ = E(wzz^T+\epsilon z^T) = wE(zz^T) \\ = wD(z) = wI_k = w\]
+
+<p>根据联合分布$P(\begin{bmatrix} x \ z \ \end{bmatrix})$和特征$x$的分布$P(x)$可以求条件分布$P(z | x)$。</p>
+
+<h1 id="8-pca的实现">8. PCA的实现</h1>
+
+<h3 id="-pca-from-scratch">① PCA from scratch</h3>
+<p>由上述介绍，<strong>PCA</strong>的过程是对归一化样本的散布矩阵$S$(或协方差矩阵)进行特征值分解，其最大的前$k$个特征值对应的特征向量就是所求的$k$个主方向。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">PCA</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="c1"># 数据归一化
+</span>    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="c1"># (n, d)
+</span>    <span class="c1"># 计算散布矩阵
+</span>    <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">T</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="c1"># (d, d)
+</span>    <span class="c1"># 计算特征值和特征向量
+</span>    <span class="n">eig_values</span><span class="p">,</span> <span class="n">eig_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">eig</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+    <span class="c1"># 选择前k个最大的特征值标号
+</span>    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">eig_values</span><span class="p">)[:</span><span class="n">k</span><span class="p">]</span>
+    <span class="c1"># 选择对应的特征向量(主方向)
+</span>    <span class="n">PCA_vectors</span> <span class="o">=</span> <span class="n">eig_vectors</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="p">:]</span> <span class="c1"># (k, d)
+</span>    <span class="c1"># 降维
+</span>    <span class="n">reduced_data</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">PCA_vectors</span><span class="p">.</span><span class="n">T</span><span class="p">)</span> <span class="c1"># (n, k)
+</span>    <span class="k">return</span> <span class="n">reduced_data</span>
+</code></pre></div></div>
+
+<h3 id="-pca-from-sklearn">② PCA from sklearn</h3>
+
+<p><strong>PCA</strong>也可以通过<code class="language-plaintext highlighter-rouge">sklearn</code>库快速实现：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_digits</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="n">digits</span> <span class="o">=</span> <span class="n">load_digits</span><span class="p">()</span>
+<span class="n">X_pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">).</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">digits</span><span class="p">.</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_pca</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_pca</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">digits</span><span class="p">.</span><span class="n">target</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">"PCA"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/12/energy.html" class="read-next-link"></a>
+        <section>
+          <span>Energy-based Model：能量模型</span>
+          <p>  Energy-based Model.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic1.imgdb.cn/item/634e48dc16f2c2beb147c676.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/09/autoencoder.html" class="read-next-link"></a>
+          <section>
+            <span>Autoencoder: 自编码器</span>
+            <p>  Auto Encoder.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e8eb7ff504f4bcb040d0c17.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微调 Grounding DINO 和 Label Studio 进行半自动化目标检测标注 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="微调 Grounding DINO 和 Label Studio 进行半自动化目标检测标注">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="微调 Grounding DINO 和 Label Studio 进行半自动化目标检测标注 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/01/19/groundinglabel.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>微调 Grounding DINO 和 Label Studio 进行半自动化目标检测标注</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-01-19"><i class="iconfont icon-date"></i>19 Jan 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/65b9f1c1871b83018ae5a80b.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Semiautomatic Image Annotation with Grounding DINO and Label Studio.</p>
+</blockquote>
+
+<h2 id="0-前言">0. 前言</h2>
+
+<p><a href="https://0809zheng.github.io/2023/11/02/groundingdino.html"><strong>Grounding DINO</strong></a>是一种强大的开集目标检测器，能够根据用户指定的任意类别名称进行目标检测。尽管<strong>Label Studio</strong>官方提供了<strong>Grounding DINO</strong> 和 <strong>Label Studio</strong>结合的<a href="https://github.com/HumanSignal/label-studio-ml-backend/tree/master/label_studio_ml/examples/grounding_dino"><strong>DEMO</strong></a>用于进行开集目标检测的半自动标注，但是目前官方<strong>Grounding DINO</strong>模型并未开源相关的微调接口，从而在面对具体下游任务进行微调<strong>Grounding DINO</strong>、并进行半自动标注的需求时比较困难。</p>
+
+<p><strong>OpenMMLab</strong>社区开源了可以针对<strong>Grounding DINO</strong>模型进行训练和微调的<a href="https://github.com/open-mmlab/mmdetection/blob/main/configs/mm_grounding_dino/README.md"><strong>MM Grounding DINO</strong></a>项目。本项目建立在该项目的基础上，既可以直接使用<strong>MM Grounding DINO</strong>开源的预训练模型进行开集检测的半自动标注工作，也可以针对定制的数据集微调模型之后用于检测标注。</p>
+
+<h2 id="1-环境配置">1. 环境配置</h2>
+
+<p>首先需要创建一个虚拟环境，然后安装 <strong>PyTorch</strong> 和 <strong>MMCV</strong>。接下来安装 <strong>MMDetection</strong>、<strong>Label-Studio</strong> 和 <strong>label-studio-ml-backend</strong>，具体步骤如下：</p>
+
+<p>创建虚拟环境：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">mmdet</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.9</span> <span class="o">-</span><span class="n">y</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">mmdet</span>
+</code></pre></div></div>
+
+<p>安装 <strong>PyTorch</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Linux and Windows CPU only
+</span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.10</span><span class="p">.</span><span class="mi">1</span><span class="o">+</span><span class="n">cpu</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.11</span><span class="p">.</span><span class="mi">2</span><span class="o">+</span><span class="n">cpu</span> <span class="n">torchaudio</span><span class="o">==</span><span class="mf">0.10</span><span class="p">.</span><span class="mi">1</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="p">.</span><span class="n">pytorch</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cpu</span><span class="o">/</span><span class="n">torch_stable</span><span class="p">.</span><span class="n">html</span>
+<span class="c1"># Linux and Windows CUDA 11.3
+</span><span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.10</span><span class="p">.</span><span class="mi">1</span><span class="o">+</span><span class="n">cu113</span> <span class="n">torchvision</span><span class="o">==</span><span class="mf">0.11</span><span class="p">.</span><span class="mi">2</span><span class="o">+</span><span class="n">cu113</span> <span class="n">torchaudio</span><span class="o">==</span><span class="mf">0.10</span><span class="p">.</span><span class="mi">1</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="p">.</span><span class="n">pytorch</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">cu113</span><span class="o">/</span><span class="n">torch_stable</span><span class="p">.</span><span class="n">html</span>
+</code></pre></div></div>
+
+<p>安装 <strong>MMCV</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">openmim</span>
+<span class="n">mim</span> <span class="n">install</span> <span class="s">"mmcv&gt;=2.0.0"</span>
+<span class="c1"># 安装 mmcv 的过程中会自动安装 mmengine
+</span></code></pre></div></div>
+
+<p>安装 <strong>MMDetection</strong>及额外的依赖包：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="nb">open</span><span class="o">-</span><span class="n">mmlab</span><span class="o">/</span><span class="n">mmdetection</span>
+<span class="n">cd</span> <span class="n">mmdetection</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">v</span> <span class="o">-</span><span class="n">e</span> <span class="p">.</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">/</span><span class="n">multimodal</span><span class="p">.</span><span class="n">txt</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">emoji</span> <span class="n">ddd</span><span class="o">-</span><span class="n">dataset</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">lvis</span><span class="o">-</span><span class="n">dataset</span><span class="o">/</span><span class="n">lvis</span><span class="o">-</span><span class="n">api</span><span class="p">.</span><span class="n">git</span><span class="s">"
+</span></code></pre></div></div>
+
+<p>安装 <strong>Label-Studio</strong> 和 <strong>label-studio-ml-backend</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 安装 label-studio 需要一段时间,如果找不到版本请使用官方源
+</span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">anaconda</span> <span class="n">libpq</span> <span class="c1"># 不运行则安装label-studio报错
+</span><span class="n">pip</span> <span class="n">install</span> <span class="n">label</span><span class="o">-</span><span class="n">studio</span><span class="o">==</span><span class="mf">1.7</span><span class="p">.</span><span class="mi">2</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">label</span><span class="o">-</span><span class="n">studio</span><span class="o">-</span><span class="n">ml</span><span class="o">==</span><span class="mf">1.0</span><span class="p">.</span><span class="mi">9</span>
+</code></pre></div></div>
+
+<p>下载<strong>MM Grounding DINO</strong>模型开源的权重：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mkdir</span> <span class="n">workdirs</span>
+<span class="n">cd</span> <span class="n">workdirs</span>
+<span class="n">wget</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="p">.</span><span class="n">openmmlab</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">mmdetection</span><span class="o">/</span><span class="n">v3</span><span class="p">.</span><span class="mi">0</span><span class="o">/</span><span class="n">mm_grounding_dino</span><span class="o">/</span><span class="n">grounding_dino_swin</span><span class="o">-</span><span class="n">t_pretrain_obj365_goldg_grit9m_v3det</span><span class="o">/</span><span class="n">grounding_dino_swin</span><span class="o">-</span><span class="n">t_pretrain_obj365_goldg_grit9m_v3det_20231204_095047</span><span class="o">-</span><span class="n">b448804b</span><span class="p">.</span><span class="n">pth</span>
+<span class="n">cd</span> <span class="p">..</span>
+</code></pre></div></div>
+
+<p>最后需要安装在 <strong>Label Studio</strong> 中使用<strong>Grounding DINO</strong>的<strong>Label Studio ML SDK</strong>模板：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="mi">0809</span><span class="n">zheng</span><span class="o">/</span><span class="n">mm_groundingdino</span>
+</code></pre></div></div>
+
+<h2 id="2-启动服务">2. 启动服务</h2>
+
+<p>启动 <strong>MM Grounding DINO</strong> 后端推理服务：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">label</span><span class="o">-</span><span class="n">studio</span><span class="o">-</span><span class="n">ml</span> <span class="n">start</span> <span class="n">mm_groundingdino</span><span class="o">/</span><span class="n">run_without_docker</span> <span class="o">--</span><span class="k">with</span> \
+<span class="n">config_file</span><span class="o">=</span><span class="p">.</span><span class="o">/</span><span class="n">configs</span><span class="o">/</span><span class="n">mm_grounding_dino</span><span class="o">/</span><span class="n">grounding_dino_swin</span><span class="o">-</span><span class="n">t_pretrain_obj365_goldg_grit9m_v3det</span><span class="p">.</span><span class="n">py</span> \
+<span class="n">checkpoint_file</span><span class="o">=</span><span class="p">.</span><span class="o">/</span><span class="n">workdirs</span><span class="o">/</span><span class="n">grounding_dino_swin</span><span class="o">-</span><span class="n">t_pretrain_obj365_goldg_grit9m_v3det_20231204_095047</span><span class="o">-</span><span class="n">b448804b</span><span class="p">.</span><span class="n">pth</span> \
+<span class="n">device</span><span class="o">=</span><span class="n">cpu</span> \
+<span class="o">--</span><span class="n">port</span> <span class="mi">8003</span>
+<span class="c1"># device=cpu 为使用 CPU 推理，如果使用 GPU 推理，device=cuda:0 
+</span></code></pre></div></div>
+
+<p><img src="https://pic.imgdb.cn/item/65aa3b8b871b83018a504acc.jpg" alt="" /></p>
+
+<p>此时，<strong>MM Grounding DINO</strong> 后端推理服务已经启动，后续在 <strong>Label-Studio Web</strong> 系统中配置 <strong>http://localhost:8003</strong> 后端推理服务即可。</p>
+
+<p>现在启动 <strong>Label-Studio</strong> 网页服务：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">label</span><span class="o">-</span><span class="n">studio</span> <span class="n">start</span>
+</code></pre></div></div>
+
+<p>打开浏览器访问 <strong>http://localhost:8080/</strong> 即可看到 <strong>Label-Studio</strong> 的界面。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa3c0b871b83018a521117.jpg" alt="" /></p>
+
+<h2 id="3-配置服务">3. 配置服务</h2>
+
+<p>注册一个<strong>Label-Studio</strong>用户，然后创建一个 <strong>GroundingDINO-Semiautomatic-Label</strong> 项目。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa3cb9871b83018a547863.jpg" alt="" /></p>
+
+<p>点击 <strong>Data Import</strong> 导入需要标注的图片。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa3cdf871b83018a54f43b.jpg" alt="" /></p>
+
+<p>然后选择 <strong>Object Detection With Bounding Boxes</strong> 模板（<strong>Settings -&gt; Labeling Interface -&gt; Browse Templates</strong>）：</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa3d4c871b83018a566300.jpg" alt="" /></p>
+
+<p>然后将感兴趣的检测类别添加到 <strong>Label-Studio</strong>，然后点击 <strong>Save</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa3d94871b83018a575790.jpg" alt="" /></p>
+
+<p>然后在设置中点击 <strong>Add Model</strong> 添加 <strong>MM Grounding DINO</strong> 后端推理服务（<strong>Settings -&gt; Machine Learning</strong>）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa3de8871b83018a587693.jpg" alt="" /></p>
+
+<p>输入<strong>MM Grounding DINO</strong> 后端推理服务配置 <strong>http://localhost:8003</strong>，打开 <strong>Use for interactive preannotations</strong>，然后点击 <strong>Validate and Save</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa3e75871b83018a5a792f.jpg" alt="" /></p>
+
+<p>看到如下 <strong>Connected</strong> 就说明后端推理服务添加成功。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa439f871b83018a6c5e95.jpg" alt="" /></p>
+
+<p>若报错：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">OSError</span><span class="p">:</span> <span class="n">We</span> <span class="n">couldn</span><span class="s">'t connect to '</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">huggingface</span><span class="p">.</span><span class="n">co</span><span class="s">' to load this file, couldn'</span><span class="n">t</span> <span class="n">find</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">cached</span> <span class="n">files</span> <span class="ow">and</span> <span class="n">it</span> <span class="n">looks</span> <span class="n">like</span> <span class="n">bert</span><span class="o">-</span><span class="n">base</span><span class="o">-</span><span class="n">uncased</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">the</span> <span class="n">path</span> <span class="n">to</span> <span class="n">a</span> <span class="n">directory</span> <span class="n">containing</span> <span class="n">a</span> <span class="nb">file</span> <span class="n">named</span> <span class="n">config</span><span class="p">.</span><span class="n">json</span><span class="p">.</span>
+<span class="n">Checkout</span> <span class="n">your</span> <span class="n">internet</span> <span class="n">connection</span> <span class="ow">or</span> <span class="n">see</span> <span class="n">how</span> <span class="n">to</span> <span class="n">run</span> <span class="n">the</span> <span class="n">library</span> <span class="ow">in</span> <span class="n">offline</span> <span class="n">mode</span> <span class="n">at</span> <span class="s">'https://huggingface.co/docs/transformers/installation#offline-mode'</span><span class="p">.</span>
+</code></pre></div></div>
+
+<p>这是因为<strong>MM Grounding DINO</strong> 采用了 <strong>BERT</strong> 作为语言模型，需要访问 <strong>https://huggingface.co/</strong>, 如果因为网络访问问题遇到连接错误，可以在有网络访问权限的电脑上下载所需文件（<a href="https://huggingface.co/bert-base-uncased"><strong>https://huggingface.co/bert-base-uncased</strong></a>）并保存在本地。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa4184871b83018a6565b5.jpg" alt="" /></p>
+
+<p>最后，修改配置文件（<code class="language-plaintext highlighter-rouge">./configs/mm_grounding_dino/grounding_dino_swin-t_pretrain_obj365.py</code>）中的 <strong>lang_model_name</strong> 字段为本地路径即可。具体请参考以下代码：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># lang_model_name = 'bert-base-uncased'
+</span><span class="n">lang_model_name</span> <span class="o">=</span> <span class="s">'/your/path/to/bert-base-uncased'</span>
+</code></pre></div></div>
+
+<h2 id="4-开始半自动化标注">4. 开始半自动化标注</h2>
+
+<p>选中图片，点击 <strong>Label All Task</strong> 开始标注：</p>
+
+<p><img src="https://pic.imgdb.cn/item/65aa43c3871b83018a6cd7db.jpg" alt="" /></p>
+
+<p>可以看到 <strong>MM Grounding DINO</strong> 后端推理服务已经成功返回了预测结果并显示在图片上；可以手工拖动框，修正一下框的位置，然后点击 <strong>Submit</strong>，本张图片就标注完毕了。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65add30c871b83018ac929bb.jpg" alt="" /></p>
+
+<p><strong>submit</strong> 完毕所有图片后，点击 <strong>exprot</strong> 导出 <strong>COCO</strong> 格式的数据集，就能把标注好的数据集的压缩包导出来了。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65add410871b83018acba551.jpg" alt="" /></p>
+
+<p>打开解压后的文件夹，可以看到标注好的数据集，包含了图片和 <strong>json</strong> 格式的标注文件。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65add49c871b83018acd1520.jpg" alt="" /></p>
+
+<p>如果想在 <strong>Label-Studio</strong> 中使用微调后的 <strong>Grounding DINO</strong>模型，可以参考在启动后端推理服务时，将 <strong>config_file</strong> 和 <strong>checkpoint_file</strong> 替换准备好的配置文件和权重文件即可，例如：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">cd</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">mmetection</span>
+
+<span class="n">label</span><span class="o">-</span><span class="n">studio</span><span class="o">-</span><span class="n">ml</span> <span class="n">start</span> <span class="n">projects</span><span class="o">/</span><span class="n">LabelStudio</span><span class="o">/</span><span class="n">backend_template</span> <span class="o">--</span><span class="k">with</span> \
+<span class="n">config_file</span><span class="o">=</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">groundingdino_config</span><span class="p">.</span><span class="n">py</span> \
+<span class="n">checkpoint_file</span><span class="o">=</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">groundingdino_weights</span><span class="p">.</span><span class="n">pth</span> \
+<span class="n">device</span><span class="o">=</span><span class="n">cpu</span> \
+<span class="o">--</span><span class="n">port</span> <span class="mi">8003</span>
+<span class="c1"># device=cpu 为使用 CPU 推理，如果使用 GPU 推理，device=cuda:0 
+</span></code></pre></div></div>
+
+<h2 id="5-设置docker镜像">5. 设置Docker镜像</h2>
+
+<p>通过 <strong>Docker</strong> 镜像可以把上述应用程序和配置依赖打包好形成一个可交付的运行环境，从而可以在任何物理设备上运行，并将其连接到 <strong>Label Studio</strong> 以执行半自动标注任务。</p>
+
+<p>首先确保环境中已安装<strong>Docker</strong>和 <strong>Label Studio ML SDK</strong>模板：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">cd</span> <span class="n">mmdetection</span><span class="o">/</span><span class="n">mm_groundingdino</span>
+</code></pre></div></div>
+
+<p>该程序的目录结构如下所示：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> mm_groundingdino/
+ ├── _wsgi.py
+ ├── docker-compose.yml
+ ├── Dockerfile
+ ├── io.py
+ ├── mmdetection.py
+ ├── README.md
+ └── requirements.txt
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">_wsgi.py</code>是使用 <strong>Docker</strong> 运行 <strong>ML</strong> 后端的帮助程序文件（通常无需修改）。<code class="language-plaintext highlighter-rouge">docker-compose.yml</code>是配置镜像参数的文件。<code class="language-plaintext highlighter-rouge">Dockerfile</code>是给出<strong>Docker</strong>执行命令的主文件。<code class="language-plaintext highlighter-rouge">requirements.txt</code>是给出模型预测过程的主文件。<code class="language-plaintext highlighter-rouge">requirements.txt</code>是列出<strong>Python</strong>依赖项的文件。<code class="language-plaintext highlighter-rouge">io.py</code>是调整<strong>label studio</strong>中图片下载逻辑的辅助文件文件。</p>
+
+<p>将预先下载的<strong>BERT</strong> 模型（<code class="language-plaintext highlighter-rouge">'/your/path/to/bert-base-uncased'</code>）复制到路径<code class="language-plaintext highlighter-rouge">mm_groundingdino/</code>下。同时将预训练或微调后的<strong>Grounding DINO</strong>模型的 配置文件<strong>config_file</strong> 和 权重文件<strong>checkpoint_file</strong> 复制到路径<code class="language-plaintext highlighter-rouge">mm_groundingdino/</code>下。</p>
+
+<p>修改<code class="language-plaintext highlighter-rouge">Dockerfile</code>中关于配置文件和权重文件的指令：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">COPY</span> <span class="n">grounding_dino_swin</span><span class="o">-</span><span class="n">t_finetune_8xb4_20e_cat</span><span class="p">.</span><span class="n">py</span> <span class="p">.</span>
+<span class="n">COPY</span> <span class="n">best_coco_bbox_mAP_epoch_14</span><span class="p">.</span><span class="n">pth</span> <span class="p">.</span>
+
+<span class="n">ENV</span> <span class="n">checkpoint_file</span><span class="o">=/</span><span class="n">app</span><span class="o">/</span><span class="n">best_coco_bbox_mAP_epoch_14</span><span class="p">.</span><span class="n">pth</span>
+<span class="n">ENV</span> <span class="n">config_file</span><span class="o">=/</span><span class="n">app</span><span class="o">/</span><span class="n">grounding_dino_swin</span><span class="o">-</span><span class="n">t_finetune_8xb4_20e_cat</span><span class="p">.</span><span class="n">py</span>
+</code></pre></div></div>
+
+<p>修改<code class="language-plaintext highlighter-rouge">docker-compose.yml</code>中关于<strong>Label Studio</strong>的配置：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">environment</span><span class="p">:</span>
+    <span class="c1"># Add these variables if you want to access the images stored in Label Studio
+</span>    <span class="o">-</span> <span class="n">LABEL_STUDIO_HOST</span><span class="o">=</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">121.41</span><span class="p">.</span><span class="mf">23.189</span><span class="p">:</span><span class="mi">8082</span> <span class="c1"># Change to http://localhost:8080/
+</span>    <span class="o">-</span> <span class="n">LABEL_STUDIO_ACCESS_TOKEN</span><span class="o">=</span><span class="mi">267559</span><span class="n">dbedb55009e421e8e8733327297a6afefb</span>
+</code></pre></div></div>
+
+<p>其中<code class="language-plaintext highlighter-rouge">LABEL_STUDIO_ACCESS_TOKEN</code>可通过<strong>Account &amp; Settings -&gt; Access Token</strong>查询。</p>
+
+<p>修改<code class="language-plaintext highlighter-rouge">docker-compose.yml</code>中关于端口号的设置：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ports</span><span class="p">:</span>
+    <span class="o">-</span> <span class="mi">9090</span><span class="p">:</span><span class="mi">9090</span> <span class="c1"># Change to XXXX:9090
+</span></code></pre></div></div>
+
+<p>准备工作完成之后，安装镜像（安装速度与网速有关）：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">docker</span> <span class="n">build</span> <span class="o">-</span><span class="n">t</span> <span class="n">mm_groundingdino_server</span><span class="p">:</span><span class="n">v01</span> <span class="p">.</span>
+</code></pre></div></div>
+<p><img src="https://pic.imgdb.cn/item/65b9f10e871b83018ae343a3.jpg" alt="" /></p>
+
+<p>安装完成之后，启动镜像：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">up</span> <span class="c1"># -d 表示后端启动
+</span></code></pre></div></div>
+
+<p><img src="https://pic.imgdb.cn/item/65b9f13b871b83018ae3e2d8.jpg" alt="" /></p>
+
+<p>之后在<strong>Label Studio</strong>中配置后端推理服务 <strong>http://localhost:9090</strong> 即可。</p>
+
+<h3 id="-参考文献">⚪ 参考文献</h3>
+<ul>
+  <li><a href="https://mmdetection.readthedocs.io/zh-cn/latest/user_guides/label_studio.html">使用 MMDETECTION 和 LABEL-STUDIO 进行半自动化目标检测标注</a></li>
+  <li><a href="https://labelstud.io/blog/using-text-prompts-for-image-annotation-with-grounding-dino-and-label-studio/">Using Text Prompts for Image Annotation with Grounding DINO and Label Studio</a></li>
+  <li><a href="https://github.com/HumanSignal/label-studio-ml-backend/tree/master">label-studio-ml-backend: Configs and boilerplates for Label Studio’s Machine Learning backend</a></li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/02/08/expresscount.html" class="read-next-link"></a>
+        <section>
+          <span>Enhancing Zero-shot Counting via Language-guided Exemplar Learning</span>
+          <p>  通过语言引导的模板学习增强零样本计数.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/668207d2d9c307b7e90b8435.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/01/09/echo.html" class="read-next-link"></a>
+          <section>
+            <span>浅评《回声》：衍生的衍生，难有回声</span>
+            <p>  A Brief Review of Echo: Derived Derivatives, Difficult ...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/66b778fed9c307b7e926ae91.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

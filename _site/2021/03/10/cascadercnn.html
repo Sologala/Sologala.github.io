@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cascade R-CNN: Delving into High Quality Object Detection - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Cascade R-CNN: Delving into High Quality Object Detection">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Cascade R-CNN: Delving into High Quality Object Detection - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/03/10/cascadercnn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Cascade R-CNN: Delving into High Quality Object Detection</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-03-10"><i class="iconfont icon-date"></i>10 Mar 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648a68801ddac507cc863c31.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Cascade R-CNN：高质量目标检测研究.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1712.00726">Cascade R-CNN: Delving into High Quality Object Detection</a></li>
+</ul>
+
+<p>在<a href="https://0809zheng.github.io/2021/03/09/fasterrcnn.html"><font color="blue">Faster R-CNN</font></a>等两阶段目标检测网络中，会在两个位置设置<strong>交并比阈值(IoU Threshold)</strong>：在训练时为<strong>RPN</strong>网络设置<strong>IoU</strong>阈值，区分<strong>proposal</strong>是否包含目标（<strong>positive/negative</strong>）；以及在推理时为预测边界框设置<strong>IoU</strong>阈值，区分<strong>TP</strong>和<strong>FP</strong>样本以计算<strong>mAP</strong>。</p>
+<ul>
+  <li>在训练阶段，<strong>RPN</strong>网络从所有<strong>anchor</strong>中提取约$2000$个置信度较高的<strong>proposal</strong>，这些<strong>proposal</strong>被送入<strong>Faster R-CNN</strong>结构中。在<strong>Faster R-CNN</strong>结构中，首先计算每个<strong>proposal</strong>和<strong>Ground Truth</strong>之间的<strong>IoU</strong>，通过人为设定一个<strong>IoU</strong>阈值（通常为$0.5$），把这些<strong>Proposals</strong>分为正样本（前景）和负样本（背景），并对正负样本采样（比例尽量满足$1:3$，总数量通常为$128$）。这些<strong>proposals</strong>被送入到<strong>Roi Pooling</strong>后进行类别分类和边界框回归。</li>
+  <li>在推理阶段，<strong>RPN</strong>网络从所有<strong>anchor</strong>中提取约$300$个置信度较高的<strong>proposal</strong>，这些<strong>proposal</strong>被送入<strong>Faster R-CNN</strong>结构中，直接通过<strong>Roi Pooling</strong>后进行类别分类和边界框回归。</li>
+</ul>
+
+<h2 id="1-rpn中的回归不匹配问题">1. RPN中的回归不匹配问题</h2>
+
+<p>在为<strong>RPN</strong>网络设置<strong>IoU</strong>阈值时，只有当<strong>proposal</strong>边界框和真实目标框的<strong>IoU</strong>超过该阈值时，才认为<strong>proposal</strong>检测到了目标，对这些目标进行边界框回归。通常该阈值设置越高，生成的<strong>proposal</strong>越准确；但是由于提高了阈值，导致正样本的数量呈指数级降低，容易过拟合。而在网络预测时，由于真实目标框是未知的，因此所有<strong>proposal</strong>都被视为正样本用于边界框回归。这导致了在训练和测试阶段中，<strong>RPN</strong>网络边界框回归的不匹配问题：训练阶段的输入<strong>proposal</strong>质量更高，测试阶段的输入<strong>proposal</strong>质量相对较差。</p>
+
+<p>为了提高检测的精度，需要产生更高质量的<strong>proposal</strong>，因此可以考虑在训练时增大<strong>RPN</strong>网络设置的<strong>IoU</strong>阈值。但是直接提高<strong>IoU</strong>阈值会产生以下问题：</p>
+<ul>
+  <li>提高<strong>IoU</strong>阈值会导致满足阈值条件的<strong>proposals</strong>减少，容易导致过拟合。</li>
+  <li>导致在训练和测试阶段中，<strong>RPN</strong>网络边界框回归的不匹配问题。</li>
+</ul>
+
+<p>下图分别表示<strong>RPN</strong>网络输出<strong>proposal</strong>的<strong>IoU</strong>分布以及改变<strong>IoU</strong>阈值对回归和检测精度的影响。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648a6b091ddac507cc894f28.jpg" alt="" /></p>
+
+<h2 id="2-cascade-r-cnn">2. Cascade R-CNN</h2>
+
+<p>上述分析表明单一<strong>IoU</strong>阈值训练出的检测器精度有限，不能对所有的<strong>proposals</strong>进行很好的优化。本文作者设计了<strong>Cascade R-CNN</strong>，通过多阶段结构串联网络，使用不同<strong>IoU</strong>阈值训练多个级联的检测器。具体地，<strong>Cascade R-CNN</strong>使用了四个网络，第一个网络提取特征映射，之后分别使用阈值为$0.5$、$0.6$、$0.7$的检测网络，通过串联的学习获得较高的目标检测精度。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648a6d5a1ddac507cc8cd09c.jpg" alt="" /></p>
+
+<p>下图给出了在三个阶段，边界框回归的样本分布变化。每经过一次回归，样本都更靠近真实边界框一些，质量也就更高一些，样本的分布也在逐渐变化。每个阶段设置不同的<strong>IoU</strong>阈值，可以更好地去除离群点（红色点），适应新的<strong>proposal</strong>分布。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648a6f331ddac507cc8f53a0.jpg" alt="" /></p>
+
+<p>下图给出了在三个阶段，所提<strong>proposal</strong>的<strong>IoU</strong>分布。每个阶段高阈值<strong>proposals</strong>数量逐渐增加，保证具有足够的正样本，不会容易过拟合。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648a710a1ddac507cc924aaa.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/03/11/labelsmoothing.html" class="read-next-link"></a>
+        <section>
+          <span>Rethinking the Inception Architecture for Computer Vision</span>
+          <p>  Label Smooth：数据集的标签平滑技巧.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://img.imgdb.cn/item/604abe5e5aedab222c7cb40c.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/03/09/fasterrcnn.html" class="read-next-link"></a>
+          <section>
+            <span>Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks</span>
+            <p>  Faster R-CNN：通过区域提议网络实现实时目标检测.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6486c6aa1ddac507cc7e04d6.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

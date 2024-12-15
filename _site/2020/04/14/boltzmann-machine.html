@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boltzmann Machine：玻尔兹曼机 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Boltzmann Machine：玻尔兹曼机">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Boltzmann Machine：玻尔兹曼机 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/14/boltzmann-machine.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>Boltzmann Machine：玻尔兹曼机</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-14"><i class="iconfont icon-date"></i>14 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e954cbbc2a9a83be594d120.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Boltzmann Machine.</p>
+</blockquote>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>模型介绍</li>
+  <li>推断</li>
+  <li>学习</li>
+</ol>
+
+<h1 id="1-模型介绍">1. 模型介绍</h1>
+<p><strong>玻尔兹曼机(Boltzmann Machine)</strong>是一个概率无向图模型，具有与<a href="https://0809zheng.github.io/2020/04/13/hopfield-network.html">离散型Hopfield网络</a>相似的特点：</p>
+<ol>
+  <li>每个神经元代表的随机变量是二值的，所有随机变量可以用一个随机向量\(X \in \{0,1\}^K\)表示；</li>
+  <li>所有节点是全连接的；</li>
+  <li>每两个节点之间的连接权重是对称的。</li>
+</ol>
+
+<p>玻尔兹曼机的神经元可以分为<strong>可观测变量(visible variable)</strong>$v$和<strong>隐变量(latent variable)</strong>$h$，下图给出了包含3个可观测变量和3个隐变量的玻尔兹曼机：</p>
+
+<p><img src="https://pic.downk.cc/item/5e952a3dc2a9a83be57fae50.jpg" alt="" /></p>
+
+<p>随机向量\(X = (v,h)\)的联合概率服从<strong>玻尔兹曼分布(Boltzmann Distribution)</strong>:</p>
+
+\[p(x) = \frac{1}{Z} exp(\frac{-E(x)}{T})\]
+
+<p>其中$Z$是归一化因子，称为<strong>配分函数(Partition Function)</strong>;</p>
+
+<p>能量函数$E(x)$定义为：</p>
+
+\[E(x) = -(\sum_{i&lt;j}^{} {w_{ij}x_ix_j} + \sum_{i}^{} {b_{i}x_i})\]
+
+<p>能量函数值越小，则$X$发生的概率越大。</p>
+
+<p>如果令玻尔兹曼机中的每个变量代表一个基本假设，其取值为 1 或 0 分别表示模型接受或拒绝该假设，那么变量之间连接的权重代表了两个假设之间的弱约束关系。</p>
+<ul>
+  <li>一个正的连接权重表示两个假设可以互相支持；</li>
+  <li>一个负的连接权重表示两个假设不能同时被接受。</li>
+</ul>
+
+<p>$T$代表<strong>温度</strong>。</p>
+<ul>
+  <li>温度越高(\(T → ∞\))，$p → 0.5$,每个变量状态的改变十分容易，很快可以达到热平衡;</li>
+  <li>温度越低(\(T → 0\))，当系统能量$E(x)&gt;0$时$p(x=1) → 1$,当系统能量$E(x)&lt;0$时$p(x=0) → 1$,时，玻尔兹曼机退化为Hopfield网络。</li>
+</ul>
+
+<p>与Hopfield网络的比较：</p>
+<ul>
+  <li>Hopfield网络是一种确定性的动力系统，每次状态更新都会使得系统的能量降低；</li>
+  <li>玻尔兹曼机是一种随机性的动力系统，以一定的概率使得系统的能量上升。</li>
+</ul>
+
+<h1 id="2-推断">2. 推断</h1>
+<p><strong>推断(Inference)</strong>问题是指当给定变量之间的连接权重时，根据观测值生成一组二值向量，使得整个网络的能量最低。</p>
+
+<p>在玻尔兹曼机中，配分函数$Z$通常难以计算，因此，联合概率分布\(p(x)\)一般通过MCMC方法（如Gibbs采样）来近似。</p>
+
+<p>玻尔兹曼机的<strong>Gibbs采样</strong>过程为：</p>
+<ol>
+  <li>随机选择一个变量$X_i$,计算其全条件概率\(p(x_i \mid x_{-i})\)；</li>
+  <li>以\(p(x_i = 1 \mid x_{-i})\)的概率将变量设为1，否则设为0；</li>
+  <li>在固定温度$T$的情况下，在运行足够时间之后，玻尔兹曼机会达到热平衡;</li>
+  <li>最终任何全局状态的概率服从玻尔兹曼分布$p(x)$，只与系统的能量有关，与初始状态无关。</li>
+</ol>
+
+<p><strong>全条件概率</strong>\(p(x_i \mid x_{-i})\)计算如下：</p>
+
+\[p(x_i = 1 \mid x_{-i}) = sigmoid(\frac{\sum_{j}^{} {w_{ij}x_j} + b_i}{T})\]
+
+\[p(x_i = 0 \mid x_{-i}) = 1 - p(x_i = 1 \mid x_{-i})\]
+
+<p>玻尔兹曼机采用<strong>模拟退火（Simulated Annealing）</strong>的方法，让系统刚开始在一个比较高的温度下运行达到热平衡，然后逐渐降低，直到系统在一个比较低的温度下运行达到热平衡。</p>
+
+<p>模拟退火是一种寻找<strong>全局最优</strong>的近似方法，可以证明，模拟退火算法所得解依概率收敛到全局最优解。</p>
+
+<h1 id="3-学习">3. 学习</h1>
+<p><strong>学习(Learning)</strong>问题是指当给定变量的多组观测值时，学习模型的最优参数。</p>
+
+<p>假设一个玻尔兹曼机有$K$个变量，包括$K_v$个可观测变量\(v \in \{0,1\}^{K_v}\)和$K_h$个隐变量\(h \in \{0,1\}^{K_h}\)。</p>
+
+<p>给定可观测向量\(D = \{\hat{v}^1,\hat{v}_2,...,\hat{v}^N\}\)为训练集，需要学习参数$W$和$b$使得训练集所有样本的对数似然函数最大：</p>
+
+\[W_{MLE},b_{MLE} = argmax_{(W,b)} L(D;W,b)\]
+
+<p>其中对数似然函数：</p>
+
+\[L(D;W,b) = \frac{1}{N} \sum_{n=1}^{N} {logp(\hat{v}^n \mid W,b)} = \frac{1}{N} \sum_{n=1}^{N} {log\sum_{h}^{} {p(\hat{v}^n,h,W,b)}}\]
+
+<p>计算得对数似然函数对参数的梯度为：</p>
+
+\[\frac{\partial L(D;W,b)}{\partial w_{ij}} = E_{\hat{p}(v)}E_{p(h \mid v)}(x_ix_j)-E_{p(v,h)}(x_ix_j)\]
+
+\[\frac{\partial L(D;W,b)}{\partial b_{i}} = E_{\hat{p}(v)}E_{p(h \mid v)}(x_i)-E_{p(v,h)}(x_i)\]
+
+<p>上述计算涉及配分函数和期望，很难精确计算。玻尔兹曼机一般通过MCMC方法（如吉布斯采样）来进行近似求解。</p>
+
+<p>以参数$w_{ij}$的梯度为例:</p>
+<ol>
+  <li>对于第一项，固定可观测变量\(v\)，只对隐变量\(h\)进行Gibbs采样，在训练集上所有的训练样本上重复此过程，得到$x_ix_j$的近似期望\((x_ix_j)_{data}\);</li>
+  <li>对于第二项，对所有变量进行Gibbs采样。当玻尔兹曼机达到热平衡状态时，采样$x_ix_j$的值，得到近似期望\((x_ix_j)_{model}\)。</li>
+</ol>
+
+<p>采用<strong>梯度上升法</strong>更新权重：</p>
+
+\[w_{ij} = w_{ij} + α((x_ix_j)_{data} - (x_ix_j)_{model})\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/15/restricted-boltzmann-machine.html" class="read-next-link"></a>
+        <section>
+          <span>Restricted Boltzmann Machine：受限玻尔兹曼机</span>
+          <p>  Restricted Boltzmann Machine.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5e9676a8c2a9a83be55aca1e.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/13/hopfield-network.html" class="read-next-link"></a>
+          <section>
+            <span>Hopfield Neural Network：Hopfield神经网络</span>
+            <p>  Hopfield Neural Networks.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e9464d5c2a9a83be50658b8.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

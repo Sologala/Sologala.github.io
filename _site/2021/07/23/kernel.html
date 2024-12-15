@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel Method：核方法 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Kernel Method：核方法">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Kernel Method：核方法 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/07/23/kernel.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>Kernel Method：核方法</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-07-23"><i class="iconfont icon-date"></i>23 Jul 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/611defec4907e2d39c4d5fa5.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Kernel Method.</p>
+</blockquote>
+
+<p><strong>核方法</strong>是指通过<strong>核技巧</strong>把样本输入空间的非线性问题转换为特征空间的线性问题，通过引入<strong>核函数</strong>不显式地定义特征空间和映射函数，而是将优化问题的解表示成核函数的<strong>线性组合</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/611defec4907e2d39c4d5fa5.jpg" alt="" /></p>
+
+<p>对于一个线性模型$f(x)=w^Tx$(忽略了偏置项$b$)，根据<strong>表示定理(representer theorem)</strong>，在满足一定条件时，参数$w$的最优解可以表示为$N$个样本数据的线性组合$w^* = \sum_{i=1}^{N} {\alpha_ix_i}$，故模型的最优解表示为：</p>
+
+\[f^*(x)=\sum_{i=1}^{N} {\alpha_ix_i^Tx}\]
+
+<p>引入映射$\phi:\mathcal{X}→\mathcal{F}$将样本空间$\mathcal{X}$变换到高维的特征空间$\mathcal{F}$，从而将在样本空间中线性不可分的样本在特征空间线性可分(如果原始样本空间为有限维，则一定存在一个高维线性空间使得样本可分)，为模型增加非线性表示能力。则对应的模型最优解为：</p>
+
+\[f^*(x)=\sum_{i=1}^{N} {\alpha_i\phi(x_i)^T\phi(x)}\]
+
+<p>注意到直接计算特征变换$\phi(x)$以及特征变换的内积$\phi(x)^T\phi(x’)$是相当困难的，事实上该特征变换可能会把样本投影到无穷维度的特征空间。由于模型最优解中仅出现了特征变换的内积$\phi(x)^T\phi(x’)$的形式，因此引入<strong>核函数</strong> $\kappa(x,x’) = \phi(x)^T\phi(x’)$，将计算特征变换的内积$\phi(x)^T\phi(x’)$转化为计算核函数的值$\kappa(x,x’)$。</p>
+
+<ul>
+  <li><strong>核技巧(kernel trick)</strong>是指通过一个非线性变换$\phi$把输入空间(如低维的欧式空间)映射到特征空间(如高维的希尔伯特空间)，从而把输入空间的非线性问题转换为特征空间的线性问题。</li>
+  <li><strong>核函数(kernel function)</strong>是指引入函数$\kappa(x,x’)$用来替换特征变换的内积$\phi(x)^T\phi(x’)$计算。</li>
+  <li><strong>核方法(kernel method)</strong>是指满足表示定理的模型的目标函数和最优解只涉及输入之间的内积，通过引入核函数不需要显式地定义特征空间和映射函数，可以直接获得结果。</li>
+</ul>
+
+<p>本文首先介绍<strong>表示定理</strong>，其次介绍如何定义<strong>核函数</strong>，之后介绍一些常用的<strong>核函数</strong>，最后介绍一些引入核方法的机器学习算法。</p>
+
+<h1 id="1-表示定理-representer-theorem">1. 表示定理 Representer Theorem</h1>
+<p>在本文中，我们重点关注线性模型的<strong>表示定理</strong>。事实上，<strong>表示定理</strong>适用于任何模型$h$，只要该模型的优化问题可以表示成如下结构风险(正则项)与经验风险之和：</p>
+
+\[\mathop{\min}_{h \in \mathcal{H}}  \Omega(\|h\|_{\mathcal{H}}) + \frac{1}{N}\sum_{i=1}^{N} {l(y_i),h(x_i))}\]
+
+<p>其中$\mathcal{H}$为核函数$\kappa$对应的再生核希尔伯特空间，$||h||_{\mathcal{H}}$表示$\mathcal{H}$空间中关于$h$的范数。要求$\Omega$是<strong>单调递增</strong>函数，$l$是<strong>非负</strong>损失函数。则上述优化问题的最优解可以表示为核函数的线性组合：</p>
+
+\[h^*(x)=\sum_{i=1}^{N} {\alpha_i\kappa(x_i,x)}\]
+
+<h3 id="一种特殊形式下的证明线性模型l_2正则化">一种特殊形式下的证明：线性模型+$L_2$正则化</h3>
+<p>如果线性模型$f(x)=w^Tx$使用了$L_2$正则化，即优化目标函数为:</p>
+
+\[\mathop{\min}_w \frac{λ}{N}w^Tw + \frac{1}{N}\sum_{i=1}^{N} {l(y_i,w^Tx_i)}\]
+
+<p>则参数$w$的最优解可以表示为<strong>所有样本的线性组合</strong>：</p>
+
+\[w^* = \sum_{i=1}^{N} {\alpha_ix_i}\]
+
+<p>证明如下：</p>
+
+<p>注意到最优解$w^*$与样本$x$具有相同的空间维度。假设最优解由两部分组成：\(w^* = w_{\|}+w_{⊥}\),</p>
+
+<p>其中\(w_{\|}\)平行于样本数据所张成的空间$\text{span}(x_1,…,x_N)$；$w_{⊥}$垂直于样本数据所张成的空间；</p>
+
+<p>则目标函数的第二项：</p>
+
+\[l(y_i,{w^*}^Tx_i) = l(y_i,(w_{||}+w_{⊥})^Tx_i) = l(y_i,w_{||}^Tx_i)\]
+
+<p>且目标函数的第一项：</p>
+
+\[{w^*}^Tw^* = (w_{||}+w_{⊥})^T(w_{||}+w_{⊥}) = w_{||}^Tw_{||}+2w_{||}^Tw_{⊥}+w_{⊥}^Tw_{⊥} \\ = w_{||}^Tw_{||}+w_{⊥}^Tw_{⊥} ≥ w_{||}^Tw_{||}\]
+
+<p>显然参数的一个可选解$w_{||}$比假设最优解$w^*$具有更小的目标函数，因此$w_{||}$是一个满足条件的更优解。故最优参数$w^*$平行于样本数据所张成的空间$\text{span}(x_1,…,x_N)$，即可被样本数据线性表示。</p>
+
+<h1 id="2-核函数的定义">2. 核函数的定义</h1>
+
+<h3 id="定义一">定义一</h3>
+<p>对于函数$\kappa:\mathcal{X} \times \mathcal{X}→\Bbb{R}$，如果存在映射$\phi:\mathcal{X} \times \Bbb{R}, \phi \in \mathcal{H}$，使得：</p>
+
+\[\kappa(x,x')= &lt; \phi(x),\phi(x') &gt;\]
+
+<p>则称$\kappa(x,x’)$为<strong>正定核函数</strong>。</p>
+
+<p>其中$\mathcal{H}$是<strong>希尔伯特空间(Hilbert Space)</strong>，即完备的、可能是无限维的、被赋予内积的线性空间。</p>
+<ul>
+  <li>完备的：对极限是封闭的，即${K_n},\mathop{\lim}_{n→∞}K_n=K\in \mathcal{H}$</li>
+  <li>内积：满足线性、对称性和非负性的内积运算</li>
+  <li>线性空间：对加法和数乘封闭的向量空间</li>
+</ul>
+
+<h3 id="定义二">定义二</h3>
+<p>对于函数$\kappa:\mathcal{X} \times \mathcal{X}→\Bbb{R}$，如果满足下面两条性质：</p>
+<ol>
+  <li>$\kappa(x,x’)$是<strong>对称</strong>函数，即$\kappa(x,x’)=\kappa(x’,x)$</li>
+  <li>对任意样本集\(x=\{x_1,x_2,...,x_N\}^T\)，其<strong>Gram</strong>矩阵(也称为<strong>核矩阵</strong>) $K=[\kappa(x_i,x_j)]_{N×N}$是<strong>半正定</strong>矩阵。</li>
+</ol>
+
+<p>则称$\kappa(x,x’)$为<strong>正定核函数</strong>。</p>
+
+<p>即<strong>一个对称函数所对应的核矩阵半正定</strong>，该函数就能作为核函数，所以称为<strong>正定核函数(positive definite kernel function)</strong>。</p>
+
+<h3 id="两种定义的等价性">两种定义的等价性</h3>
+<p>上述两种<strong>正定核函数</strong>的定义是等价的。下面证明其必要性，即已知$\kappa(x,x’)= &lt; \phi(x),\phi(x’) &gt;$，求证$\kappa(x,x’)$是<strong>对称</strong>函数，且其<strong>Gram</strong>矩阵$是<strong>半正定</strong>矩阵。</p>
+
+<ul>
+  <li>(对称性) 由内积的对称性可得：</li>
+</ul>
+
+\[\kappa(x,x')= &lt; \phi(x),\phi(x') &gt; = &lt; \phi(x'),\phi(x) &gt; = \kappa(x',x)\]
+
+<ul>
+  <li>(正定性) 由正定的定义，引入$\alpha \in \Bbb{R}^N$，则有：</li>
+</ul>
+
+\[\alpha^T K \alpha= [\alpha_1,\alpha_2,...,\alpha_N] [\kappa(x_i,x_j)]_{N×N} [\alpha_1,\alpha_2,...,\alpha_N]^T \\ = \sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i\alpha_j\kappa(x_i,x_j) = \sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i\alpha_j&lt; \phi(x_i),\phi(x_j) &gt; \\ = \sum_{i=1}^{N} \sum_{j=1}^{N} \alpha_i\alpha_j\phi(x_i)^T\phi(x_j) = \sum_{i=1}^{N}\alpha_i\phi(x_i)^T \sum_{j=1}^{N} \alpha_j\phi(x_j) \\ = (\sum_{i=1}^{N}\alpha_i\phi(x_i))^T(\sum_{j=1}^{N} \alpha_j\phi(x_j)) = &lt;\sum_{i=1}^{N}\alpha_i\phi(x_i),\sum_{j=1}^{N} \alpha_j\phi(x_j)&gt; \\ = || \sum_{i=1}^{N}\alpha_i\phi(x_i) ||^2 &gt; 0\]
+
+<h1 id="3-一些常用的核函数">3. 一些常用的核函数</h1>
+<p>对于一个核函数，总能找到一个对应的映射$\phi$，即任何核函数都隐式地定义了一个称为<strong>再生核希尔伯特空间(reproducing kernel Hilbert space)</strong>的特征空间。
+通常希望样本在特征空间内是线性可分的。选择核函数相当于选择了特征空间，因此选择合适的核函数是核方法中的重要问题。下面介绍几个常用的核函数：</p>
+
+<h3 id="1-线性核linear-kernel">(1) 线性核（linear kernel）</h3>
+<p>线性核函数定义为：</p>
+
+\[\kappa(x,x') = x^Tx'\]
+
+<p>其优缺点如下：</p>
+<ul>
+  <li>优点：模型简单、速度快、可解释性好；</li>
+  <li>缺点：无法处理线性不可分的数据集。</li>
+</ul>
+
+<h3 id="2-二项式核binomial-kernel">(2) 二项式核（binomial kernel）</h3>
+<p>对于输入样本\(x = (x_1,x_2,...,x_d)^T\)，定义二阶多项式变换得到的特征向量：</p>
+
+\[z = φ(x) = (1,x_1,...,x_d,x_1^2,x_1x_2,...,x_d^2)^T\]
+
+<p>由核函数的定义：</p>
+
+\[\kappa(x,x') = φ(x)^Tφ(x') = 1 + \sum_{i=1}^{d} {x_i{x'}_i} + \sum_{i=1}^{d} {\sum_{j=1}^{d} {x_i{x'}_ix_j{x'}_j}} \\ = 1 + x^Tx' + (x^Tx')^2\]
+
+<p>对特征变换进行一些修改，可以得到对应的核函数：</p>
+<ul>
+  <li>若特征变换为$φ(x) = (1,\sqrt{2}x_1,…,\sqrt{2}x_d,x_1^2,x_1x_2,…,x_d^2)^T$，则核函数为$\kappa(x,x’) = (1+x^Tx’)^2$</li>
+  <li>若特征变换为$φ(x) = (1,\sqrt{2γ}x_1,…,\sqrt{2γ}x_d,γx_1^2,γx_1x_2,…,γx_d^2)^T$，则核函数为$\kappa(x,x’) = (1+γx^Tx’)^2, \quad γ&gt;0$</li>
+  <li>若特征变换为$φ(x) = (ζ,\sqrt{2ζγ}x_1,…,\sqrt{2ζγ}x_d,γx_1^2,γx_1x_2,…,γx_d^2)^T$，则核函数为$\kappa(x,x’) = (ζ+γx^Tx’)^2, \quad ζ≥0,γ&gt;0$</li>
+</ul>
+
+<p>上面的这些变化对应的特征空间是相同的，但内积是不同的，最终得到的模型也是不同的。</p>
+
+<p><img src="https://pic.downk.cc/item/5ec7a3abc2a9a83be5cc7079.jpg" alt="" /></p>
+
+<h3 id="3-多项式核polynomial-kernel">(3) 多项式核（polynomial kernel）</h3>
+<p>扩展二项式核得到多项式核：</p>
+
+\[\kappa(x,x') = (ζ+γx^Tx')^q, \quad ζ≥0,γ&gt;0\]
+
+<p>其优缺点如下：</p>
+<ul>
+  <li>优点：模型非线性；可以控制阶数$q$；</li>
+  <li>缺点：(由于幂运算)数值稳定性差；需要选择三个超参数。</li>
+</ul>
+
+<h3 id="4-高斯核gaussian-kernel">(4) 高斯核（Gaussian kernel）</h3>
+<p>高斯核又叫<strong>径向基函数(radial basis function, rbf)</strong>，是一种<strong>无限</strong>维度的特征变换，高斯核函数为：</p>
+
+\[\kappa(x,x') = \text{exp}(-γ||x-x'||^2)\]
+
+<p>其中超参数$γ&gt;0$控制高斯函数的<strong>方差</strong>，$γ$取值越大，径向基函数的<strong>径向</strong>越小，模型越容易<strong>过拟合</strong>：</p>
+
+<p><img src="https://pic.downk.cc/item/5ec7a799c2a9a83be5d2284b.jpg" alt="" /></p>
+
+<p>当超参数$γ$趋于无穷大时，高斯核趋近于：</p>
+
+\[\kappa(x,x') = \begin{cases} 0, &amp; x≠x' \\ 1, &amp; x=x' \end{cases}\]
+
+<p>高斯核的优缺点如下：</p>
+<ul>
+  <li>优点：模型更强大；数值稳定性好；只需选择一个超参数；</li>
+  <li>缺点：可解释性差；计算速度慢；容易过拟合。</li>
+</ul>
+
+<p>下面由核函数分析高斯核所对应的特征变换$φ(x)$，为简化过程假设$γ=1$，其中用到了指数函数的<strong>Taylor</strong>展开：</p>
+
+\[\kappa(x,x') = \text{exp}(-||x-x'||^2) = \text{exp}(-x^2)\text{exp}(-{x'}^2)\text{exp}(2xx') \\ = \text{exp}(-x^2)\text{exp}(-{x'}^2) \sum_{n=0}^{∞} {\frac{(2xx')^n}{n!}} \\ = \sum_{n=0}^{∞} {\text{exp}(-x^2)\text{exp}(-{x'}^2) \sqrt{\frac{2^n}{n!}} \sqrt{\frac{2^n}{n!}} x^n{x'}^n} \\ = \sum_{n=0}^{∞} (\text{exp}(-x^2) \sqrt{\frac{2^n}{n!}} x^n)(\text{exp}(-{x'}^2) \sqrt{\frac{2^n}{n!}} {x'}^n) \\ = φ(x)^Tφ(x')\]
+
+<p>可以得到特征变换$φ(x)$：</p>
+
+\[z = φ(x) = \text{exp}(-x^2)(1,\sqrt{\frac{2^1}{1!}} x^1,\sqrt{\frac{2^2}{2!}} x^2,...,\sqrt{\frac{2^n}{n!}} x^n,...)^T\]
+
+<h3 id="5-拉普拉斯核laplacian-kernel">(5) 拉普拉斯核（Laplacian kernel）</h3>
+<p>拉普拉斯核函数为：</p>
+
+\[\kappa(x,x') = \text{exp}(-\frac{||x-x'||}{\sigma}), \quad \sigma&gt;0\]
+
+<h3 id="6-sigmoid核">(6) Sigmoid核</h3>
+<p><strong>Sigmoid</strong>核函数为：</p>
+
+\[\kappa(x,x') = \text{tanh}(\beta x^T x' + \theta), \quad \beta&gt;0,\theta&lt;0\]
+
+<h3 id="7-核函数的线性组合">(7) 核函数的线性组合</h3>
+<ul>
+  <li>若$\kappa_1$和$\kappa_2$为核函数，则对于任意正数$\gamma_1,\gamma_2$，其线性组合仍为核函数：</li>
+</ul>
+
+\[\gamma_1\kappa_1+\gamma_2\kappa_2\]
+
+<ul>
+  <li>若$\kappa_1$和$\kappa_2$为核函数，则核函数的直积仍为核函数：</li>
+</ul>
+
+\[\kappa_1 \otimes \kappa_2(x,x') = \kappa_1(x,x')\kappa_2(x,x')\]
+
+<ul>
+  <li>若$\kappa_1$核函数，对于任意函数$g(x)$，则下列函数仍为核函数：</li>
+</ul>
+
+\[\kappa(x,x') = g(x)\kappa_1(x,x')g(x')\]
+
+<h1 id="4-引入核方法的机器学习算法">4. 引入核方法的机器学习算法</h1>
+<p>一些常用的引入核方法的机器学习算法介绍如下：</p>
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/03/30/ridge.html#2-kernel-ridge-regression"><font color="Blue">核岭回归</font></a>：回归</li>
+  <li><a href="https://0809zheng.github.io/2020/03/15/support-vector-regression.html#3-核方法"><font color="Blue">支持向量回归</font></a>：回归</li>
+  <li><a href="https://0809zheng.github.io/2020/03/13/logistic-regression.html#2-kernel-ridge-regression"><font color="Blue">核逻辑回归</font></a>：分类</li>
+  <li><a href="https://0809zheng.github.io/2020/03/14/SVM.html#3-%E6%A0%B8%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><font color="Blue">核支持向量机</font></a>：分类</li>
+  <li><a href="https://0809zheng.github.io/2020/03/24/lda.html#3-核线性判别分析"><font color="Blue">核线性判别分析</font></a>：分类</li>
+  <li><a href="https://0809zheng.github.io/2021/07/27/kpca.html"><font color="Blue">核主成分分析</font></a>：降维</li>
+</ul>
+
+<h3 id="核岭回归"><a href="https://0809zheng.github.io/2020/03/30/ridge.html#2-kernel-ridge-regression"><font color="Blue">核岭回归</font></a></h3>
+<ul>
+  <li>原问题的目标函数：</li>
+</ul>
+
+\[L(w) = \sum_{i=1}^{N} {(w^Tx_i-y_i)^2} + λw^2 = (Xw-y)^T(Xw-y)+ λw^Tw\]
+
+<ul>
+  <li>原问题的最优解：</li>
+</ul>
+
+\[w = (X^TX+λI)^{-1}Xy, \quad y=\sum_{i=1}^{N} {w^Tx_i}\]
+
+<ul>
+  <li>引入核方法后的目标函数：</li>
+</ul>
+
+\[L(α) = \sum_{i=1}^{N} {(\sum_{n=1}^{N} {α_nK(x_n,x_n)}-y^{(i)})^2} + λ \sum_{i=1}^{N} {\sum_{j=1}^{N} {α_iα_jK(x_i,x_j)}} = (y-Kα)^T(y-Kα) + λα^TKα\]
+
+<ul>
+  <li>引入核方法后的最优解：</li>
+</ul>
+
+\[α = (K+λI)^{-1}y, \quad y = \sum_{i=1}^{N} {α_iφ(x_i)^Tφ(x)} = \sum_{i=1}^{N} {α_iK(x_i,x)}\]
+
+<h3 id="支持向量回归"><a href="https://0809zheng.github.io/2020/03/15/support-vector-regression.html#3-核方法"><font color="Blue">支持向量回归</font></a></h3>
+<ul>
+  <li>原问题的目标函数：</li>
+</ul>
+
+\[\mathop{\min}_{α}  \frac{1}{2}\sum_{n=1}^{N} {\sum_{m=1}^{N} {(α_n^+-α_n^-)(α_m^+-α_m^-){φ(x^{(n)})}^Tφ(x^{(m)})}} + \sum_{n=1}^{N} {((ε-y^{(n)})α_n^++(ε+y^{(n)})α_n^-)} \\ \text{s.t. } \sum_{n=1}^{N} {(α_n^+-α_n^-)}=0 \\ C ≥ α_n^- ≥ 0,C ≥ α_n^+ ≥ 0\]
+
+<ul>
+  <li>原问题的最优解：</li>
+</ul>
+
+\[y=w^Tx=\sum_{n=1}^{N} {(α_n^+-α_n^-)(x^{(n)})^Tx}\]
+
+<ul>
+  <li>引入核方法后的目标函数：</li>
+</ul>
+
+\[\mathop{\min}_{α}  \frac{1}{2}\sum_{n=1}^{N} \sum_{m=1}^{N} {(α_n^+-α_n^-)(α_m^+-α_m^-){K(x^{(n)},x^{(m)})}} + \sum_{n=1}^{N} {((ε-y^{(n)})α_n^++(ε+y^{(n)})α_n^-)} \\ \text{s.t. } \sum_{n=1}^{N} {(α_n^+-α_n^-)}=0 \\ C ≥ α_n^- ≥ 0,C ≥ α_n^+ ≥ 0\]
+
+<ul>
+  <li>引入核方法后的最优解：</li>
+</ul>
+
+\[y=w^Tx=\sum_{n=1}^{N} {(α_n^+-α_n^-)K(x^{(n)},x)}\]
+
+<h3 id="核逻辑回归"><a href="https://0809zheng.github.io/2020/03/13/logistic-regression.html#2-kernel-ridge-regression"><font color="Blue">核逻辑回归</font></a></h3>
+<ul>
+  <li>原问题的目标函数：</li>
+</ul>
+
+\[L(w) = \sum_{i=1}^{N} {-y^{(i)}ln(σ(w^Tx^{(i)})) - (1-y^{(i)})ln(1-σ(w^Tx^{(i)}))} + \frac{λ}{N}w^Tw\]
+
+<ul>
+  <li>引入核方法后的目标函数：</li>
+</ul>
+
+\[L(β) = \sum_{i=1}^{N} {-y^{(i)}ln(σ(\sum_{n=1}^{N} {β_nK(x^{(n)},x^{(i)})})) - (1-y^{(i)})ln(1-σ(\sum_{n=1}^{N} {β_nK(x^{(n)},x^{(i)})}))} \\ + \frac{λ}{N}\sum_{i=1}^{N} {\sum_{j=1}^{N} {β_iβ_jK(x^{(i)},x^{(j)})}}\]
+
+<h3 id="核支持向量机"><a href="https://0809zheng.github.io/2020/03/14/SVM.html#3-%E6%A0%B8%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA"><font color="Blue">核支持向量机</font></a></h3>
+<ul>
+  <li>原问题的目标函数：</li>
+</ul>
+
+\[\mathop{\max}_{α}  -\frac{1}{2}\sum_{i=1}^{N} {\sum_{j=1}^{N} {α_iα_jy_iy_j{x_i}^Tx_j}} + \sum_{i=1}^{N} {α_i} \\ \text{s.t. } α_i≥0,i=1,...,N \\ \quad \quad \sum_{i=1}^{N} {α_iy_i} = 0\]
+
+<ul>
+  <li>原问题的最优解：</li>
+</ul>
+
+\[y = \text{sign}(w^Tx+b)\\ = \text{sign}(\sum_{i=1}^{N} {α_iy_i{x_i}^Tx} + y^{(s)} - \sum_{i=1}^{N} {α_iy_i{x_i}^Tx_s})\]
+
+<ul>
+  <li>引入核方法后的目标函数：</li>
+</ul>
+
+\[\mathop{\max}_{α}  -\frac{1}{2}\sum_{i=1}^{N} {\sum_{j=1}^{N} {α_iα_jy_iy_jK(x_i,x_j)}} + \sum_{i=1}^{N} {α_i} \\ \text{s.t. } α_i≥0,i=1,...,N \\ \quad \quad \sum_{i=1}^{N} {α_iy_i} = 0\]
+
+<ul>
+  <li>引入核方法后的最优解：</li>
+</ul>
+
+\[y = \text{sign}(w^Tφ(x)+b)\\ = \text{sign}(\sum_{i=1}^{N} {α_iy_iK(x_i,x)} + y_s - \sum_{i=1}^{N} {α_iy_iK(x_i,x_s)})\]
+
+<h3 id="核线性判别分析"><a href="https://0809zheng.github.io/2020/03/24/lda.html#3-核线性判别分析"><font color="Blue">核线性判别分析</font></a></h3>
+<ul>
+  <li>原问题的目标函数：</li>
+</ul>
+
+\[J = \frac{w^T(\mu_0-\mu_1)(\mu_0-\mu_1)^Tw}{w^T(\Sigma_0+\Sigma_1)w} = \frac{w^TS_bw}{w^TS_ww}\]
+
+<ul>
+  <li>原问题的最优解：</li>
+</ul>
+
+\[w = S_w^{-1}(\mu_0-\mu_1)\]
+
+<ul>
+  <li>引入核方法后的目标函数：</li>
+</ul>
+
+\[J = \frac{w^T(\mu_0^{\phi}-\mu_1^{\phi})(\mu_0^{\phi}-\mu_1^{\phi})^Tw}{w^T(\sum_{c=0,1}^{} \sum_{x \in X_c}^{}(\phi(x)-\mu_c^{\phi})(\phi(x)-\mu_c^{\phi})^T)w}= \frac{w^TS_b^{\phi}w}{w^TS_w^{\phi}w}\]
+
+<h3 id="核主成分分析"><a href="https://0809zheng.github.io/2021/07/27/kpca.html"><font color="Blue">核主成分分析</font></a></h3>
+<ul>
+  <li>原问题的目标函数：</li>
+</ul>
+
+\[xx^Tw_j = λ_jw_j\]
+
+<ul>
+  <li>原问题的最优解：</li>
+</ul>
+
+\[y_j = w_j^Tx\]
+
+<ul>
+  <li>引入核方法后的目标函数：</li>
+</ul>
+
+\[K\alpha^j = λ_j\alpha^j\]
+
+<ul>
+  <li>引入核方法后的最优解：</li>
+</ul>
+
+\[y_j = w_j^T\phi(x)=\sum_{i=1}^{N}\alpha_i^j\phi(x_i)^T\phi(x) = \sum_{i=1}^{N}\alpha_i^jK(x_i,x)\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/07/27/kpca.html" class="read-next-link"></a>
+        <section>
+          <span>核主成分分析(Kernelized Principal Component Analysis, KPCA)</span>
+          <p>  Kernelized Principal Component Analysis.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/610108ee5132923bf87767d5.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/07/22/ead.html" class="read-next-link"></a>
+          <section>
+            <span>集成学习中的误差-分歧分解(Error-Ambiguity Decomposition)</span>
+            <p>  Error-Ambiguity Decomposition in Ensemble Learning.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60f508195132923bf8403c92.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用scipy.optimize.minimize求解非线性规划 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="使用scipy.optimize.minimize求解非线性规划">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="使用scipy.optimize.minimize求解非线性规划 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/08/23/minimize.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>使用scipy.optimize.minimize求解非线性规划</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-08-23"><i class="iconfont icon-date"></i>23 Aug 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>scipy.optimize.minimize.</p>
+</blockquote>
+
+<p><a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html">scipy.optimize.minimize</a>用于求解非线性规划问题，将问题表述为若干个变量的标量函数的最小值，其函数接口定义如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">scipy</span><span class="p">.</span><span class="n">optimize</span><span class="p">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(),</span> <span class="n">method</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">jac</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hess</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">hessp</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="p">(),</span> <span class="n">tol</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>参数定义如下：</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">fun: callable</code>: 最小化的目标函数，定义为<code class="language-plaintext highlighter-rouge">fun(x, *args) -&gt; float</code>。<code class="language-plaintext highlighter-rouge">x</code>是形状为$(n,)$的一维数组，用于存放变量；<code class="language-plaintext highlighter-rouge">args</code>是一个元组，用于简化函数。</li>
+  <li><code class="language-plaintext highlighter-rouge">x0: ndarray, shape (n,)</code>: 变量的初始值。</li>
+  <li><code class="language-plaintext highlighter-rouge">args: tuple, optional</code>: 传递给目标函数及其导数的额外参数。</li>
+  <li><code class="language-plaintext highlighter-rouge">method: str or callable, optional</code>: 求解方法，默认为<strong>BFGS</strong>，可选<strong>L-BFGS-B</strong>,<strong>SLSQP</strong>,<strong>Nelder-Mead</strong>,<strong>Powell</strong>,<strong>CG</strong>,<strong>Newton-CG</strong>,<strong>TNC</strong>,<strong>COBYLA</strong>,<strong>dogleg</strong>,<strong>trust-constr</strong>,<strong>trust-ncg</strong>,<strong>trust-exact</strong>,<strong>trust-krylov</strong>,。</li>
+  <li><code class="language-plaintext highlighter-rouge">jac: {callable, ‘2-point’, ‘3-point’, ‘cs’, bool}, optional</code>：计算梯度向量的方法，仅在<strong>BFGS</strong>,<strong>CG</strong>,<strong>Newton-CG</strong>,<strong>L-BFGS-B</strong>,<strong>SLSQP</strong>,<strong>TNC</strong>,<strong>dogleg</strong>,<strong>trust-constr</strong>,<strong>trust-ncg</strong>,<strong>trust-exact</strong>,<strong>trust-krylov</strong>中使用。</li>
+  <li><code class="language-plaintext highlighter-rouge">hess: {callable, ‘2-point’, ‘3-point’, ‘cs’, HessianUpdateStrategy}, optional</code>：计算<strong>Hessian</strong>矩阵的方法，仅在<strong>Newton-CG</strong>,<strong>dogleg</strong>,<strong>trust-constr</strong>,<strong>trust-ncg</strong>,<strong>trust-exact</strong>,<strong>trust-krylov</strong>中使用。</li>
+  <li><code class="language-plaintext highlighter-rouge">hessp: callable, optional</code>：目标函数的<strong>Hessian</strong>矩阵乘以一个随机向量$p$，仅在<strong>Newton-CG</strong>,<strong>trust-constr</strong>,<strong>trust-ncg</strong>,<strong>trust-exact</strong>中使用。<code class="language-plaintext highlighter-rouge">hess</code>与<code class="language-plaintext highlighter-rouge">hessp</code>只需设定一个。</li>
+  <li><code class="language-plaintext highlighter-rouge">bounds: sequence or Bounds, optional</code>：变量的边界，仅在<strong>Nelder-Mead</strong>,<strong>L-BFGS-B</strong>,<strong>SLSQP</strong>,<strong>TNC</strong>,<strong>Powell</strong>,<strong>trust-constr</strong>中使用。以$(min,max)$对的形式定义每个变量的边界。如果没有边界，则用$None$标识。</li>
+  <li><code class="language-plaintext highlighter-rouge">constraints: {Constraint, dict} or List of {Constraint, dict}, optional</code>：约束条件，仅在<strong>SLSQP</strong>,<strong>COBYLA</strong>,<strong>trust-constr</strong>中使用。约束以字典的形式给出，其键包括：
+    <ol>
+      <li><code class="language-plaintext highlighter-rouge">typr: str</code>：约束类型。<code class="language-plaintext highlighter-rouge">eq</code>等于$0$，<code class="language-plaintext highlighter-rouge">ineq</code>大于等于$0$。</li>
+      <li><code class="language-plaintext highlighter-rouge">fun: callable</code>：约束函数</li>
+      <li><code class="language-plaintext highlighter-rouge">jac: callable, optional</code>：约束函数的<strong>Jacobian</strong>，仅对<strong>SLSQP</strong>。</li>
+    </ol>
+  </li>
+  <li><code class="language-plaintext highlighter-rouge">tol: float, optional</code>：误差的容忍程度，精度超过该值则迭代停止。
+<code class="language-plaintext highlighter-rouge">options: dict, optional</code>：通用设置，包括：
+    <ol>
+      <li><code class="language-plaintext highlighter-rouge">maxiter: int</code>：最大迭代次数</li>
+      <li><code class="language-plaintext highlighter-rouge">disp: bool</code>：是否打印迭代过程</li>
+    </ol>
+  </li>
+</ul>
+
+<h3 id="例1">例1</h3>
+
+\[\min \quad x+\frac{1}{x}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="o">/</span><span class="n">x</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">])</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">'SLSQP'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">fun</span><span class="p">)</span> <span class="c1"># [2.00000008]
+</span></code></pre></div></div>
+
+<h3 id="例2">例2</h3>
+
+\[\min \quad \frac{2+x}{1+y}-3x+4z \\ \text{s.t.} \quad 0.1≤x,y,z≤0.9\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">-</span><span class="mi">3</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">])</span>
+
+<span class="n">cons</span> <span class="o">=</span> <span class="p">[{</span><span class="s">'type'</span><span class="p">:</span><span class="s">'ineq'</span><span class="p">,</span> <span class="s">'fun'</span><span class="p">:</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mf">0.1</span><span class="p">},</span>
+        <span class="p">{</span><span class="s">'type'</span><span class="p">:</span><span class="s">'ineq'</span><span class="p">,</span> <span class="s">'fun'</span><span class="p">:</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mf">0.9</span><span class="p">},</span>
+        <span class="p">{</span><span class="s">'type'</span><span class="p">:</span><span class="s">'ineq'</span><span class="p">,</span> <span class="s">'fun'</span><span class="p">:</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mf">0.1</span><span class="p">},</span>
+        <span class="p">{</span><span class="s">'type'</span><span class="p">:</span><span class="s">'ineq'</span><span class="p">,</span> <span class="s">'fun'</span><span class="p">:</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mf">0.9</span><span class="p">},</span>
+        <span class="p">{</span><span class="s">'type'</span><span class="p">:</span><span class="s">'ineq'</span><span class="p">,</span> <span class="s">'fun'</span><span class="p">:</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="mf">0.1</span><span class="p">},</span>
+        <span class="p">{</span><span class="s">'type'</span><span class="p">:</span><span class="s">'ineq'</span><span class="p">,</span> <span class="s">'fun'</span><span class="p">:</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="o">-</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="mf">0.9</span><span class="p">}]</span>
+
+<span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">'SLSQP'</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">cons</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">fun</span><span class="p">)</span> <span class="c1"># -0.773684210526435
+</span><span class="k">print</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="c1"># [0.9 0.9 0.1]
+</span></code></pre></div></div>
+
+<h3 id="例3">例3</h3>
+
+\[\min \quad \log_2(1+\frac{2x}{3})+\log_2(1+\frac{3y}{4}) \\ \text{s.t.} \quad \log_2(1+\frac{2x}{5}) ≥ 5 \\  \quad  \quad  \log_2(1+\frac{3y}{2}) ≥ 5\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="n">fun</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="p">.</span><span class="n">log2</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">log2</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span><span class="mf">0.5</span><span class="p">])</span>
+
+<span class="n">cons</span> <span class="o">=</span> <span class="p">[{</span><span class="s">'type'</span><span class="p">:</span><span class="s">'ineq'</span><span class="p">,</span> <span class="s">'fun'</span><span class="p">:</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">np</span><span class="p">.</span><span class="n">log2</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="o">/</span><span class="mi">5</span><span class="p">)</span><span class="o">-</span><span class="mi">5</span><span class="p">},</span>
+        <span class="p">{</span><span class="s">'type'</span><span class="p">:</span><span class="s">'ineq'</span><span class="p">,</span> <span class="s">'fun'</span><span class="p">:</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">np</span><span class="p">.</span><span class="n">log2</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="mi">5</span><span class="p">}]</span>
+
+<span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">'SLSQP'</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">cons</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">fun</span><span class="p">)</span> <span class="c1"># 9.763212360886708
+</span><span class="k">print</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="c1"># [77.5        20.66666658]
+</span></code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/08/24/gelu.html" class="read-next-link"></a>
+        <section>
+          <span>Bridging Nonlinearities and Stochastic Regularizers with Gaussian Error Linear Units</span>
+          <p>  GELU：随机正则化的高斯误差线性单元.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6124b4ac44eaada7393ea828.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/08/22/celu.html" class="read-next-link"></a>
+          <section>
+            <span>Continuously Differentiable Exponential Linear Units</span>
+            <p>  CELU：连续可微的指数线性单元.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6128998044eaada7390461db.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

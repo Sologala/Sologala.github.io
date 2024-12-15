@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>等度量映射(Isometric Mapping, ISOMAP) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="等度量映射(Isometric Mapping, ISOMAP)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="等度量映射(Isometric Mapping, ISOMAP) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/07/30/isomap.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>等度量映射(Isometric Mapping, ISOMAP)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-07-30"><i class="iconfont icon-date"></i>30 Jul 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61dd3f942ab3f51d91867de0.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Isometric Mapping.</p>
+</blockquote>
+
+<p><strong>等度量映射(Isometric Mapping, ISOMAP)</strong>又称等距特征映射，是一种基于流形的降维方法，
+是<a href="https://0809zheng.github.io/2021/07/28/mds.html"><font color="Blue">多维缩放 MDS</font></a>方法在流形空间的应用。</p>
+
+<h1 id="1-isomap建模">1. ISOMAP建模</h1>
+
+<p><strong>MDS</strong>的基本思想是在降维后的低维空间中保持原始空间中样本之间的距离。低维空间中的距离使用欧氏距离衡量；通常原始空间中的距离也用欧氏距离描述，但是如果原始空间中的数据分布在非线性的<strong>流形</strong>(<strong>manifold</strong>)上，则欧氏距离无法反映两点之间的真实距离。</p>
+
+<p>如下图(A)所示的数据分布在空间中的一个“瑞士卷”流形上，图中两点之间的欧氏距离用蓝色虚线表示；两点间的实际距离为<strong>测地线</strong>(<strong>geodesic</strong>)距离，用蓝色实线表示。从图中可以看出，流形空间中的直线距离是不可达的。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61dcea152ab3f51d9145b452.jpg" alt="" /></p>
+
+<p>通常流形上的测地线距离不好直接计算，但是流形在局部与欧氏空间<strong>同胚</strong>，这意味着流形在局部具有欧氏空间的性质。
+对于流形空间中的每个点，可以根据欧氏距离计算其近邻点，进而建立一个<strong>近邻连接图</strong>。图中近邻点之间存在连接，非近邻点之间则不存在连接。
+因此计算两点之间的测地线距离问题，就转换成计算近邻连接图上对应两点之间的最短路径问题。</p>
+
+<p>如图(B)所示采用近邻距离代替测地距离，近邻点之间使用欧氏距离度量，近似路径用红色实线表示。将该流形展开后得到图(C)，可以看出近邻距离可以近似低维流形上的测地线距离。</p>
+
+<p>近邻图的构建有两种方法。可以选择与每个点欧氏距离最近的$k$个点作为邻近点，此时得到的近邻图称为$k$近邻图；也可以选择与每个点欧氏距离小于$\epsilon$的点作为邻近点，此时得到的近邻图称为$\epsilon$近邻图。</p>
+
+<p>如果近邻范围设置得比较大，则可能将欧氏距离很近但测地距离很远的点划分为近邻点，造成“短路”问题；如果近邻范围设置得比较小，则可能有些区域与其他区域不存在连接，造成“断路”问题。</p>
+
+<h1 id="2-求解isomap">2. 求解ISOMAP</h1>
+
+<p><strong>ISOMAP</strong>算法的一般流程如下：</p>
+<ol>
+  <li>给定输入样本$X \in \Bbb{R}^{N \times d}$、近邻参数$n$和降维维度$k$;</li>
+  <li>对于每个样本点计算与其距离最近的$n$个样本点(不包括自身)的距离，其他距离视为无穷大；</li>
+  <li>使用最短路径算法更新每两个样本点之间的最短距离；</li>
+  <li>对上述距离矩阵应用<strong>MDS</strong>算法，得到降维结果。</li>
+</ol>
+
+<p>在计算最短路径时，可以使用<strong>Dijkstra</strong>算法或<strong>Floyd-Warshall</strong>算法。下面介绍<strong>Floyd-Warshall</strong>算法。</p>
+
+<p>计算任意两点之间的最短路径，如果两点$i$和$j$之间存在一点$k$，使得$d_{ij}&gt;d_{ik}+d_{kj}$，则更新两点之间的距离。最终得到重新填充的距离矩阵$D_1$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">Floyd</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">n_neighbors</span> <span class="o">=</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">D</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># 填充距离矩阵
+</span>    <span class="n">Max</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">D</span><span class="p">)</span><span class="o">*</span><span class="mi">1000</span>
+    <span class="n">D1</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">([</span><span class="n">N</span><span class="p">,</span><span class="n">N</span><span class="p">])</span><span class="o">*</span><span class="n">Max</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">D1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="n">n_neighbors</span><span class="o">+</span><span class="mi">1</span><span class="p">]]</span><span class="o">=</span><span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span><span class="n">n_neighbors</span><span class="o">+</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="c1"># 更新距离矩阵
+</span>    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">D1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">+</span><span class="n">D1</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">&lt;</span><span class="n">D1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]:</span>
+                    <span class="n">D1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">D1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">+</span><span class="n">D1</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">D1</span>
+</code></pre></div></div>
+
+<h1 id="3-实现isomap">3. 实现ISOMAP</h1>
+
+<h3 id="-isomap-from-scratch">① ISOMAP from scratch</h3>
+<p>由上述介绍，<strong>ISOMAP</strong>的一般步骤如下：</p>
+<ol>
+  <li>给定输入样本$X \in \Bbb{R}^{N \times d}$、近邻参数$n$和降维维度$k$;</li>
+  <li>对于每个样本点计算与其距离最近的$n$个样本点(不包括自身)的距离，其他距离视为无穷大；</li>
+  <li>使用最短路径算法更新每两个样本点之间的最短距离；</li>
+  <li>对上述距离矩阵应用<strong>MDS</strong>算法，得到降维结果。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">MDS</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">D</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># 计算内积矩阵B
+</span>    <span class="n">T1</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
+    <span class="n">T2</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
+    <span class="n">T3</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">/</span><span class="n">N</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="p">(</span><span class="n">T1</span><span class="o">+</span><span class="n">T2</span><span class="o">-</span><span class="n">T3</span><span class="o">-</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+    <span class="c1"># 计算特征值和特征向量
+</span>    <span class="n">eig_values</span><span class="p">,</span> <span class="n">eig_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">eig</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+    <span class="c1"># 选择前k个最大的特征值标号
+</span>    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">eig_values</span><span class="p">)[:</span><span class="n">k</span><span class="p">]</span>
+    <span class="c1"># 选择对应的特征值和特征向量
+</span>    <span class="n">MDS_values</span> <span class="o">=</span> <span class="n">eig_values</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">MDS_vectors</span> <span class="o">=</span> <span class="n">eig_vectors</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]</span> <span class="c1"># (N, k)
+</span>    <span class="c1"># 降维
+</span>    <span class="n">reduced_data</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diagflat</span><span class="p">(</span><span class="n">MDS_values</span><span class="o">**</span><span class="mf">0.5</span><span class="p">).</span><span class="n">dot</span><span class="p">(</span><span class="n">MDS_vectors</span><span class="p">.</span><span class="n">T</span><span class="p">)</span> <span class="c1"># (k, N)
+</span>    <span class="k">return</span> <span class="n">reduced_data</span>
+
+<span class="k">def</span> <span class="nf">ISOMAP</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">N</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">])</span>
+    <span class="c1"># 计算距离矩阵D
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">data</span><span class="p">[</span><span class="n">j</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">D1</span> <span class="o">=</span> <span class="n">Floyd</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="n">n_neighbors</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">reduced_data</span> <span class="o">=</span> <span class="n">MDS</span><span class="p">(</span><span class="n">D1</span><span class="p">.</span><span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">reduced_data</span><span class="p">.</span><span class="n">T</span>
+</code></pre></div></div>
+
+<h3 id="-isomap-from-sklearn">② ISOMAP from sklearn</h3>
+
+<p><strong>ISOMAP</strong>也可以通过<code class="language-plaintext highlighter-rouge">sklearn</code>库快速实现：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_s_curve</span>
+<span class="kn">from</span> <span class="nn">sklearn.manifold</span> <span class="kn">import</span> <span class="n">Isomap</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="n">data</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">make_s_curve</span><span class="p">(</span><span class="n">n_samples</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+                           <span class="n">noise</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+                           <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">X_isomap</span> <span class="o">=</span> <span class="n">Isomap</span><span class="p">(</span><span class="n">n_neighbors</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">n_components</span> <span class="o">=</span> <span class="mi">2</span><span class="p">).</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_isomap</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_isomap</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">"ISOMAP"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/07/31/lle.html" class="read-next-link"></a>
+        <section>
+          <span>局部线性嵌入(Locally Linear Embedding, LLE)</span>
+          <p>  Locally Linear Embedding.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/61de7ac52ab3f51d9158a897.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/07/29/multiclass.html" class="read-next-link"></a>
+          <section>
+            <span>多类别(Multiclass)与多标签(Multilabel)分类</span>
+            <p>  Multiclass and Multilabel Classification.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63d095b4588a5d166cd6a692.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

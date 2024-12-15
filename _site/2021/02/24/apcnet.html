@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Pyramid Context Network for Semantic Segmentation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Adaptive Pyramid Context Network for Semantic Segmentation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Adaptive Pyramid Context Network for Semantic Segmentation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/02/24/apcnet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Adaptive Pyramid Context Network for Semantic Segmentation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-02-24"><i class="iconfont icon-date"></i>24 Feb 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63fd5ab9f144a01007434d02.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>APCNet: 语义分割的自适应金字塔上下文网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://openaccess.thecvf.com/content_CVPR_2019/html/He_Adaptive_Pyramid_Context_Network_for_Semantic_Segmentation_CVPR_2019_paper.html">Adaptive Pyramid Context Network for Semantic Segmentation</a></li>
+</ul>
+
+<p>目前的图像分割模型存在以下问题：</p>
+<ul>
+  <li>多尺度问题：对于语义分割任务而言，物体往往存在尺寸不同、位置不同的特点，对于一些没有聚合上下文信息的模型来说，检测这种尺寸相差较大的物体比较困难，同时会丢失一些细节信息。</li>
+  <li>自适应区域：在图像中，并不是所有的区域都与被分割物体有关，有些像素点对于物体正确分割的影响大，而有些像素点则没有什么影响。同时，这些像素点或者相关区域的位置不一定就在被分割物体的周围，也有可能远离被分割物体。这就要求模型具有自适应选择区域的能力，能够识别这些重要区域帮助物体的正确分割。</li>
+  <li>全局和局部的信息融合权重(<strong>Global-guided Local Affinity, GLA</strong>)：在构建了上下文向量之后，如何将上下文向量和原始特征图进行加权，这个权重如何该去选择和计算。</li>
+</ul>
+
+<p>本文提出了端到端的<strong>APCNet</strong>模型，能够进行全局信息的融合，以及提升多尺度检测效果。<strong>APCNet</strong>的金字塔层由若干个<strong>ACM（Adaptive Context Module）</strong>模块构成，每一个<strong>ACM</strong>模块接收一个<strong>scale</strong>参数$s$，来确定区域大小。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fd5b40f144a0100744268d.jpg" alt="" /></p>
+
+<p><strong>ACM</strong>模块计算每个局部位置的上下文向量，并将这个向量加权到特征图上，实现聚合上下文信息的作用。<strong>ACM</strong>由两个分支构成，分别是<strong>GLA</strong>分支和<strong>Aggregate</strong>分支。</p>
+
+<p>在<strong>GLA</strong>分支中，<strong>backbone</strong>输出的特征图记为$X$，$X$先经过一个<strong>1x1</strong>的<strong>Conv</strong>来得到一个特征映射$x$，通过一个空间全局池化，将$x$映射成一个全局信息向量（<strong>Global Information</strong>）$g(X)$。随后将$x$和$g(X)$相加后通过一个<strong>1x1</strong>的<strong>Conv</strong>和<strong>Sigmoid</strong>激活，生成一个<strong>GLA</strong>向量$\alpha^s$，将这个向量<strong>reshape</strong>后得到上下文向量。</p>
+
+<p>在<strong>Aggregate</strong>分支中， 特征图$X$通过<strong>AdaptivePooling（size=s）</strong>、<strong>Conv（kernel size=1x1）</strong>、<strong>reshape</strong>后得到的形状为$s^2\times 512$大小的$y^s$，与<strong>GLA</strong>分支中的<strong>GLA</strong>向量$\alpha^s$进行矩阵乘法，生成$hw\times 512$的结果，完成初步的特征融合。最后<strong>reshape</strong>成原始大小，并与<strong>GLA</strong>部分的残差相加，最终输出总的融合结果。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ACMModle</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">pool_scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fusion</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ACMModle</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pool_scale</span> <span class="o">=</span> <span class="n">pool_scale</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fusion</span> <span class="o">=</span> <span class="n">fusion</span>
+        
+        <span class="c1"># Global Information vector
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">reduce_Conv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">reduce_Pool_Conv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">residual_conv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">global_info</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gla</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">pool_scale</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">fusion</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">fusion_conv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">batch_size</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">X</span><span class="p">.</span><span class="n">shape</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">reduce_Conv</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">GI</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">global_info</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="n">adaptive_avg_pool2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">GI</span> <span class="o">=</span> <span class="n">torchvision</span><span class="p">.</span><span class="n">transforms</span><span class="p">.</span><span class="n">Resize</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:])(</span><span class="n">GI</span><span class="p">)</span>
+        <span class="n">Affinity_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">gla</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">GI</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">pool_scale</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">Affinity_matrix</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">Affinity_matrix</span><span class="p">)</span>
+        
+        <span class="n">pooled_x</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">adaptive_avg_pool2d</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">pool_scale</span><span class="p">)</span>
+        <span class="n">pooled_x</span> <span class="o">=</span> <span class="n">pooled_x</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">pool_scale</span><span class="o">**</span><span class="mi">2</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">contiguous</span><span class="p">()</span>
+
+        <span class="n">MatrixProduct</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">Affinity_matrix</span><span class="p">,</span> <span class="n">pooled_x</span><span class="p">)</span>
+        <span class="n">MatrixProduct</span> <span class="o">=</span> <span class="n">MatrixProduct</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">contiguous</span><span class="p">()</span>
+        <span class="n">MatrixProduct</span> <span class="o">=</span> <span class="n">MatrixProduct</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+        <span class="n">MatrixProduct</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">residual_conv</span><span class="p">(</span><span class="n">MatrixProduct</span><span class="p">)</span>
+        <span class="n">Z_out</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">MatrixProduct</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">fusion</span><span class="p">:</span>
+            <span class="n">Z_out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fusion_conv</span><span class="p">(</span><span class="n">Z_out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Z_out</span>
+    
+    
+<span class="k">class</span> <span class="nc">ACMModuleList</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pool_scales</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span> <span class="n">in_channels</span> <span class="o">=</span> <span class="mi">2048</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="mi">512</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ACMModuleList</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pool_scales</span> <span class="o">=</span> <span class="n">pool_scales</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">channels</span> <span class="o">=</span> <span class="n">channels</span>
+        
+        <span class="k">for</span> <span class="n">pool_scale</span> <span class="ow">in</span> <span class="n">pool_scales</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">ACMModle</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">pool_scale</span><span class="p">)</span>
+            <span class="p">)</span>
+            
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ACM</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">ACM_out</span> <span class="o">=</span> <span class="n">ACM</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">out</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">ACM_out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+    
+
+<span class="k">class</span> <span class="nc">APCNet</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">APCNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">ResNet</span><span class="p">.</span><span class="n">resnet50</span><span class="p">(</span><span class="n">replace_stride_with_dilation</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="mi">2048</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">512</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">ACM_pyramid</span> <span class="o">=</span> <span class="n">ACMModuleList</span><span class="p">(</span><span class="n">pool_scales</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span> <span class="n">in_channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">channels</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">cls_conv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">ACM_out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">ACM_pyramid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">ACM_out</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">(</span><span class="n">ACM_out</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">Resize</span><span class="p">((</span><span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="mi">8</span><span class="o">*</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cls_conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/02/25/uwbmimo.html" class="read-next-link"></a>
+        <section>
+          <span>Through-Wall Human Pose Reconstruction via UWB MIMO Radar and 3D CNN</span>
+          <p>  为超宽带MIMO雷达设计的3D人体姿态重构方法.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://img.imgdb.cn/item/603710205f4313ce2587a121.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/02/23/dmnet.html" class="read-next-link"></a>
+          <section>
+            <span>Dynamic Multi-Scale Filters for Semantic Segmentation</span>
+            <p>  DMNet: 语义分割的动态多尺度滤波器.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63fd52dff144a0100737fd0b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

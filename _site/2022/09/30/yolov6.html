@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/09/30/yolov6.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-09-30"><i class="iconfont icon-date"></i>30 Sep 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/652ce4d2c458853aef20c066.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>YOLOv6：用于工业应用的单阶段目标检测框架.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2209.02976">YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications</a></li>
+</ul>
+
+<p><strong>YOLOv6</strong> 提出了一系列适用于各种工业场景的模型，包括 <strong>N/T/S/M/L</strong>，考虑到模型的大小，其架构有所不同，以获得更好的精度-速度权衡。本算法专注于检测的精度和推理效率，并在网络结构、训练策略等算法层面进行了多项改进和优化。</p>
+
+<p>简单来说 <strong>YOLOv6</strong> 开源库的主要特点为：</p>
+<ul>
+  <li>统一设计了更高效的 <strong>Backbone</strong> 和 <strong>Neck</strong>：受到硬件感知神经网络设计思想的启发，基于 <strong>RepVGG style</strong> 设计了可重参数化、更高效的骨干网络 <strong>EfficientRep Backbone</strong> 和 <strong>Rep-PAN Neck</strong>。</li>
+  <li>相比于 <strong>YOLOX</strong> 的 <strong>Decoupled Head</strong>，进一步优化设计了简洁有效的 <strong>Efficient Decoupled Head</strong>，在维持精度的同时，降低了一般解耦头带来的额外延时开销。</li>
+  <li>在训练策略上，采用 <strong>Anchor-free</strong> 的策略，同时辅以 <strong>SimOTA</strong> 标签分配策略以及 <strong>SIoU</strong> 边界框回归损失来进一步提高检测精度。</li>
+</ul>
+
+<h2 id="1-数据增强模块">1. 数据增强模块</h2>
+
+<p><strong>YOLOv6</strong> 目标检测算法中使用的数据增强包括：</p>
+<ul>
+  <li><strong>Mosaic</strong> 马赛克</li>
+  <li><strong>RandomAffine</strong> 随机仿射变换</li>
+  <li><strong>MixUp</strong></li>
+  <li><strong>HSV</strong> 颜色空间增强</li>
+  <li>随机水平翻转</li>
+</ul>
+
+<p>在最后 <strong>15</strong> 个 <strong>epoch</strong> 的时候将 <strong>Mosaic</strong> 使用 <strong>YOLOv5KeepRatioResize + LetterResize</strong> 替代。</p>
+
+<h2 id="2-网络结构">2. 网络结构</h2>
+
+<p><strong>YOLOv6 N/T/S</strong> 模型的网络结构由 <strong>EfficientRep + Rep-PAN + Efficient decoupled Head</strong> 构成，<strong>M/L</strong> 模型的网络结构则由 <strong>CSPBep + CSPRepPAFPN + Efficient decoupled Head</strong> 构成。</p>
+
+<p><strong>YOLOv6</strong> 采用了重参数化结构 <strong>RepVGG Block</strong> 替换掉了原本的 <strong>ConvModule</strong>，在此基础上，将 <strong>CSPLayer</strong> 改进为了多个 <strong>RepVGG</strong> 堆叠的 <strong>RepStageBlock</strong>（<strong>N/T/S</strong> 模型）或 <strong>BepC3StageBlock</strong>（<strong>M/L</strong> 模型）；<strong>Head</strong> 部分则将回归与分类分支解耦成两个分支进行预测。</p>
+
+<p><img src="https://pic.imgdb.cn/item/652ceae6c458853aef30901d.jpg" alt="" /></p>
+
+<h3 id="1backbone">（1）backbone</h3>
+
+<p>已有研究表明，多分支的网络结构通常比单分支网络性能更加优异，但是这种结构会导致并行度降低进而增加推理延时；相反，单分支网络则具有并行度高、内存占用小的优点，因此推理效率更高。而 <strong>RepVGG</strong> 则同时具备上述两种结构的优点，在训练时可解耦成多分支拓扑结构提升模型精度，实际部署时可等效融合为单个 <strong>3×3</strong> 卷积提升推理速度。因此，<strong>YOLOv6</strong> 基于 <strong>RepVGG</strong> 重参数化结构设计了高效的骨干网络 <strong>EfficientRep</strong> 和 <strong>CSPBep</strong>，其可以充分利用硬件算力，提升模型表征能力的同时降低推理延时。</p>
+
+<p><img src="https://pic.imgdb.cn/item/652cebf8c458853aef3322f7.jpg" alt="" /></p>
+
+<p>在 <strong>N/T/S</strong> 模型中，<strong>YOLOv6</strong> 使用了 <strong>EfficientRep</strong> 作为骨干网络，其包含 <strong>1</strong> 个 <strong>Stem Layer</strong> 和 <strong>4</strong> 个 <strong>Stage Layer</strong>，具体细节如下：</p>
+<ul>
+  <li><strong>Stem Layer</strong> 中采用 <strong>stride=2</strong> 的 <strong>RepVGGBlock</strong> 替换了 <strong>stride=2</strong> 的 <strong>6×6 ConvModule</strong>。</li>
+  <li><strong>Stage Layer</strong> 将 <strong>1</strong> 个 <strong>ConvModule</strong> 和 <strong>1</strong> 个 <strong>CSPLayer</strong> 分别替换为 <strong>1</strong> 个 <strong>RepVGGBlock</strong> 和 <strong>1</strong> 个 <strong>RepStageBlock</strong>。其中第一个 <strong>RepVGGBlock</strong> 会做下采样和 <strong>Channel</strong> 维度变换，而每个 <strong>RepStageBlock</strong> 则由 <strong>n</strong> 个 <strong>RepVGGBlock</strong> 组成。此外仍然在第 <strong>4</strong> 个 <strong>Stage Layer</strong> 最后增加 <strong>SPPF</strong> 模块后输出。</li>
+</ul>
+
+<p>在 <strong>M/L</strong> 模型中，由于模型容量进一步增大，直接使用多个 <strong>RepVGGBlock</strong> 堆叠的 <strong>RepStageBlock</strong> 结构计算量和参数量呈现指数增长。因此，为了权衡计算负担和模型精度，在 <strong>M/L</strong> 模型中使用了 <strong>CSPBep</strong> 骨干网络，其采用 <strong>BepC3StageBlock</strong> 替换了小模型中的 <strong>RepStageBlock</strong> 。<strong>BepC3StageBlock</strong> 由 <strong>3</strong> 个 <strong>1×1</strong> 的 <strong>ConvModule</strong> 和多个子块（每个子块由两个 <strong>RepVGGBlock</strong> 残差连接）组成。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65307b2cc458853aef000229.jpg" alt="" /></p>
+
+<h3 id="2neck">（2）neck</h3>
+
+<p><strong>Neck</strong> 部分同样采用 <strong>RepStageBlock</strong> 或 <strong>BepC3StageBlock</strong> 对原本的 <strong>CSPLayer</strong> 进行了替换，需要注意的是，<strong>Neck</strong> 中 <strong>Down Sample</strong> 部分仍然使用了 <strong>stride=2</strong> 的 <strong>3×3 ConvModule</strong>，而不是像 <strong>Backbone</strong> 一样替换为 <strong>RepVGGBlock</strong>。</p>
+
+<h3 id="3head">（3）head</h3>
+
+<p><strong>YOLOv6</strong> 将分类和回归分支解耦成两个分支进行预测并且去掉了 <strong>obj</strong> 分支。同时，采用了 <strong>hybrid-channel</strong> 策略构建了更高效的解耦检测头，将中间 <strong>3×3</strong> 的 <strong>ConvModule</strong> 减少为 <strong>1</strong> 个，在维持精度的同时进一步减少了模型耗费，降低了推理延时。此外，需要说明的是，<strong>YOLOv6</strong> 在 <strong>Backobone</strong> 和 <strong>Neck</strong> 部分使用的激活函数是 <strong>ReLU</strong>，而在 <strong>Head</strong> 部分则使用的是 <strong>SiLU</strong>。</p>
+
+<p>由于 <strong>YOLOv6</strong> 是解耦输出，分类和 <strong>bbox</strong> 检测通过不同卷积完成。以 <strong>COCO 80</strong> 类为例：<strong>P5</strong> 模型在输入为 <strong>640x640</strong> 分辨率情况下，其 <strong>Head</strong> 模块输出的 <strong>shape</strong> 分别为 $(B,4,80,80), (B,80,80,80), (B,4,40,40), (B,80,40,40), (B,4,20,20), (B,80,20,20)$。</p>
+
+<h2 id="3-正负样本匹配策略">3. 正负样本匹配策略</h2>
+
+<p><strong>YOLOv6</strong> 采用与 <strong>YOLOX</strong> 一样的 <strong>Anchor-free</strong> 无锚范式，省略了聚类和繁琐的 <strong>Anchor</strong> 超参设定，泛化能力强，解码逻辑简单。在训练的过程中会根据 <strong>feature size</strong> 去自动生成先验框。网络 <strong>bbox</strong> 预测的值为 <strong>(top, bottom, left, right)</strong>，解码器将 <strong>anchor point</strong> 通过四个距离解码到坐标 $(x_1,y_1,x_2,y_2)$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">pred_bboxes</span><span class="p">:</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="s">"""
+        将预测值解码转化 bbox 的 xyxy
+        points (Tensor): 生成的 anchor point [x, y]，Shape (B, N, 2) or (N, 2).
+        pred_bboxes (Tensor): 预测距离四边的距离。(left, top, right, bottom). Shape (B, N, 4) or (N, 4)
+        stride (Tensor): 特征图下采样倍率.
+    """</span>
+    <span class="c1"># 首先将预测值转化为原图尺度
+</span>    <span class="n">distance</span> <span class="o">=</span> <span class="n">pred_bboxes</span> <span class="o">*</span> <span class="n">stride</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="p">:,</span> <span class="bp">None</span><span class="p">]</span>
+    <span class="c1"># 根据点以及到四条边距离转为 bbox 的 x1y1x2y2
+</span>    <span class="n">x1</span> <span class="o">=</span> <span class="n">points</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">distance</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">points</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">distance</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">points</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">distance</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="n">points</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">distance</span><span class="p">[...,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bboxes</span>
+</code></pre></div></div>
+
+<p><strong>YOLOv6</strong> 采用的标签匹配策略与 <strong>TOOD</strong> 相同, 前 <strong>4</strong> 个 <strong>epoch</strong> 采用 <a href="https://0809zheng.github.io/2021/05/23/atss.html"><font color="blue">ATSS</font></a> 作为标签匹配策略的 <strong>warm-up</strong> , 后续使用 <a href="https://0809zheng.github.io/2021/10/12/tood.html"><font color="blue">TOOD</font></a> 算法选择正负样本。</p>
+
+<h3 id="1atss">（1）ATSS</h3>
+
+<p><strong>ATSS</strong> 的匹配策略简单总结为：通过中心点距离先验对样本进行初筛,然后自适应生成 <strong>IoU</strong> 阈值筛选正样本。 <strong>YOLOv6</strong> 的实现种主要包括如下三个核心步骤：</p>
+<ul>
+  <li>因为 <strong>YOLOv6</strong> 是 <strong>Anchor-free</strong>，所以首先将 <strong>anchor point</strong> 转化为大小为 <strong>5*strdie</strong> 的 <strong>anchor</strong>。</li>
+  <li>对于每一个 <strong>GT</strong>，在 <strong>FPN</strong> 的每一个特征层上， 计算与该层所有 <strong>anchor</strong> 中心点距离(位置先验)， 然后优先选取距离 <strong>topK</strong> 近的样本，作为 初筛样本。</li>
+  <li>对于每一个 <strong>GT</strong>，计算其 初筛样本 的 <strong>IoU</strong> 的均值 <strong>mean</strong>与标准差 <strong>std</strong>，将 <strong>mean + std</strong> 作为该 <strong>GT</strong> 的正样本的 自适应 <strong>IoU</strong> 阈值 ，大于该 自适应阈值 且中心点在 <strong>GT</strong> 内部的 <strong>anchor</strong> 才作为正样本，使得样本能够被 <strong>assign</strong> 到合适的 <strong>FPN</strong> 特征层上。</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 1. 首先将anchor points 转化为 anchors
+# priors为(point_x,point_y,stride_w,stride_h), shape 为(N,4)
+</span><span class="n">cell_half_size</span> <span class="o">=</span> <span class="n">priors</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">*</span> <span class="mf">2.5</span>
+<span class="n">priors_gen</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">priors</span><span class="p">)</span>
+<span class="n">priors_gen</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">priors</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">cell_half_size</span>
+<span class="n">priors_gen</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">priors</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">cell_half_size</span>
+<span class="n">priors</span> <span class="o">=</span> <span class="n">priors_gen</span>
+<span class="c1"># 2. 计算 anchors 与 GT 的 IoU
+</span><span class="n">overlaps</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">iou_calculator</span><span class="p">(</span><span class="n">gt_bboxes</span><span class="p">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span> <span class="n">priors</span><span class="p">)</span>
+<span class="c1"># 3. 计算 anchor 与 GT 的中心距离
+</span><span class="n">distances</span><span class="p">,</span> <span class="n">priors_points</span> <span class="o">=</span> <span class="n">bbox_center_distance</span><span class="p">(</span>
+        <span class="n">gt_bboxes</span><span class="p">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span> <span class="n">priors</span><span class="p">)</span>
+<span class="c1"># 4. 根据中心点距离，在 FPN 的每一层选取 TopK 临近的样本作为初筛样本
+</span><span class="n">is_in_candidate</span><span class="p">,</span> <span class="n">candidate_idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">select_topk_candidates</span><span class="p">(</span>
+        <span class="n">distances</span><span class="p">,</span> <span class="n">num_level_priors</span><span class="p">,</span> <span class="n">pad_bbox_flag</span><span class="p">)</span>
+<span class="c1"># 5. 对于每一个 GT 计算其对应初筛样本的均值与标准差的和, 作为该GT的样本阈值
+</span><span class="n">overlaps_thr_per_gt</span><span class="p">,</span> <span class="n">iou_candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">threshold_calculator</span><span class="p">(</span>
+        <span class="n">is_in_candidate</span><span class="p">,</span> <span class="n">candidate_idxs</span><span class="p">,</span> <span class="n">overlaps</span><span class="p">,</span> <span class="n">num_priors</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">num_gt</span><span class="p">)</span>
+<span class="c1"># 6. 筛选大于阈值的样本作为正样本
+</span><span class="n">is_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">where</span><span class="p">(</span>
+        <span class="n">iou_candidates</span> <span class="o">&gt;</span> <span class="n">overlaps_thr_per_gt</span><span class="p">.</span><span class="n">repeat</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_priors</span><span class="p">]),</span>
+        <span class="n">is_in_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">is_in_candidate</span><span class="p">))</span>
+<span class="c1"># 6. 保证样本中心点在 GT 内部且不超图像边界
+</span><span class="n">pos_mask</span> <span class="o">=</span> <span class="n">is_pos</span> <span class="o">*</span> <span class="n">is_in_gts</span> <span class="o">*</span> <span class="n">pad_bbox_flag</span>
+</code></pre></div></div>
+
+<p>由于 <strong>ATSS</strong> 是属于静态标签匹配策略，其选取正样本的策略主要根据 <strong>anchor</strong> 的位置进行挑选， 并不会随着网络的优化而选取到更好的样本。</p>
+
+<h3 id="2tood">（2）TOOD</h3>
+
+<p><strong>TOOD</strong> 是一种动态样本匹配策略。 在目标检测中，分类和回归的任务最终作用于同一个目标，所以 <strong>TOOD</strong> 认为样本的选取应该更加关注到对分类以及回归都友好的样本点。</p>
+
+<p><strong>TOOD</strong> 的匹配策略简单总结为： 根据分类与回归的分数加权的分数选择正样本。</p>
+<ul>
+  <li>对于每一个 <strong>GT</strong>，对所有的 预测框 基于 <strong>GT</strong>类别对应分类分数 与 预测框与 <strong>GT</strong> 的 <strong>IoU</strong> 的加权得到一个关联分类以及回归的对齐分数 <strong>alignment_metrics</strong>。</li>
+  <li>对于每一个 <strong>GT</strong>，直接基于 <strong>alignment_metrics</strong> 对齐分数选取 <strong>topK</strong> 大的作为正样本。</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 1. 基于分类分数与回归的 IoU 计算对齐分数 alignment_metrics
+</span><span class="n">alignment_metrics</span> <span class="o">=</span> <span class="n">bbox_scores</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">overlaps</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">beta</span><span class="p">)</span>
+<span class="c1"># 2. 保证中心点在 GT 内部的 mask
+</span><span class="n">is_in_gts</span> <span class="o">=</span> <span class="n">select_candidates_in_gts</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">)</span>
+<span class="c1"># 3. 选取 TopK 大的对齐分数的样本
+</span><span class="n">topk_metric</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">select_topk_candidates</span><span class="p">(</span>
+            <span class="n">alignment_metrics</span> <span class="o">*</span> <span class="n">is_in_gts</span><span class="p">,</span>
+            <span class="n">topk_mask</span><span class="o">=</span><span class="n">pad_bbox_flag</span><span class="p">.</span><span class="n">repeat</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">topk</span><span class="p">]).</span><span class="nb">bool</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>因为在网络初期参数随机， 分类分数 和 预测框与 <strong>GT</strong> 的 <strong>IoU</strong> 都不准确，所以需要经过前 <strong>4</strong> 个 <strong>epoch</strong> 的 <strong>ATSS</strong> 的 <strong>warm-up</strong>。经过预热之后的 <strong>TOOD</strong> 标签匹配策略就不使用中心距离的先验, 而是直接对每一个<strong>GT</strong> 选取 <strong>alignment_metrics</strong> 中 <strong>topK</strong> 大的样本作为正样本。</p>
+
+<h2 id="4-loss函数">4. Loss函数</h2>
+
+<p>参与 <strong>Loss</strong> 计算的共有两个值：<strong>loss_cls</strong> 和 <strong>loss_bbox</strong>。<strong>Classes loss</strong>使用的是<strong>VarifocalLoss</strong>；<strong>BBox loss</strong>对于<strong>l/m/s</strong>使用的是 <strong>GIoULoss</strong>, <strong>t/n</strong> 用的是 <strong>SIoULoss</strong>。权重比例是：<strong>loss_cls : loss_bbox = 1 : 2.5</strong>。</p>
+
+<h2 id="1分类损失函数-varifocalloss">（1）分类损失函数 VarifocalLoss</h2>
+
+<p><a href="https://0809zheng.github.io/2021/05/25/varifocal.html"><font color="blue">Varifocal Loss</font></a>是将 预测框与 <strong>GT</strong> 的 <strong>IoU</strong> 软化作为分类的标签，使得分类分数关联回归质量， 使其在后处理 <strong>NMS</strong> 阶段有分类回归一致性很强的分值排序策略，以达到选取优秀预测框的目的。</p>
+
+\[{VFL}(p,q)= \begin{cases}
+-q(q\log(p) +(1-q)\log(1-p)), &amp;  q &gt; 0 \\
+-\alpha p^\gamma \log(1-p), &amp;  q = 0
+\end{cases}\]
+
+<p>其中 $q$ 是预测 <strong>bboxes</strong> 与 <strong>GT</strong> 的 <strong>IoU</strong>，使用软标签的形式作为分类的标签。 $p\in[0,1]$ 表示分类分数。</p>
+<ul>
+  <li>对于负样本，即当 $q = 0$ 时，标准交叉熵部分为 $-\log(p)$，负样本权重使用 $\alpha p^\gamma$ 作为 <strong>focal weight</strong> 使样本聚焦于困难样本上，这与 <strong>Focal Loss</strong> 基本一致。</li>
+  <li>对于正样本，即当 $q &gt; 0$ 时，首先计算标准二值交叉熵部分 $-(q\log(p) +(1-q)\log(1-p))$， 但是针对正样本的权重设置，<strong>Varifocal Loss</strong> 认为在网络的学习过程中正样本相对于负样本的学习信号来说更为重要，所以使用了分类的标签 $q$， 即 <strong>IoU</strong> 作为 <strong>focal weight</strong>, 使得聚焦到具有高质量的样本上。</li>
+</ul>
+
+<p><strong>YOLOv6</strong> 中的 <strong>Varifocal Loss</strong> 公式采用 <strong>TOOD</strong> 中的 <strong>Task ALignment Learning (TAL)</strong>, 将预测的 <strong>IoU</strong> 根据之前标签匹配策略中的分类对齐度 <strong>alignment_metrics</strong> 进行了归一化, 得到归一化 $\hat{t}$。 具体实现方式为：对于每一个 <strong>GT</strong>，找到所有样本中与 <strong>GT</strong> 最大的 <strong>IoU</strong>，具有最大 <strong>alignment_metrics</strong> 的样本位置的 $\max(Iou)$:</p>
+
+\[\hat{t} = AlignmentMetrics / max(AlignmentMetrics) * max(IoU)\]
+
+<p><strong>YOLOv6</strong> 分类损失损失函数为：</p>
+
+\[{VFL}(p,\hat{t})= \begin{cases}
+-\hat{t}(\hat{t}log(p) +(1-\hat{t})log(1-p)), &amp;  \hat{t} &gt; 0 \\
+-\alpha p^\gamma log(1-p), &amp;  \hat{t} = 0
+\end{cases}\]
+
+<h2 id="2回归损失函数-giou-loss--siou-loss">（2）回归损失函数 GIoU Loss / SIoU Loss</h2>
+
+<p>在 <strong>YOLOv6</strong> 中，针对不同大小的模型采用了不同的回归损失函数，其中 <strong>l/m/s</strong>使用的是 GIoULoss, <strong>t/n</strong> 用的是 <a href="https://0809zheng.github.io/2022/07/31/siou.html"><font color="blue">SIoU Loss</font></a>。</p>
+
+<p>由于之前的<strong>GIoU, CIoU, DIoU</strong> 都没有考虑预测框向 <strong>GT</strong> 框回归的角度，然而角度也确实是回归中一个重要的影响因素。</p>
+
+<p><strong>SIoU</strong> 损失主要由四个度量方面组成：</p>
+<ul>
+  <li><strong>IoU</strong>成本</li>
+  <li>角度成本</li>
+  <li>距离成本</li>
+  <li>形状成本</li>
+</ul>
+
+<p>角度成本是指图中预测框 $B$ 向 $B^{GT}$ 的回归过程中， 尽可能去使得优化过程中的不确定性因素减少，比如现将图中的角度 $\alpha$ 或者 $\beta$ 变为 $0$ ，再去沿着 $x$ 轴或者 $y$ 轴去回归边界。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6524ac55c458853aef876a2f.jpg" alt="" /></p>
+
+<p>在 <strong>YOLOv6</strong> 中，由于额外的置信度预测头可能与 <strong>Aligned Head</strong> 有所冲突，经实验验证在不同大小的模型上也都有掉点， 所以最后选择弃用 <strong>Objectness</strong> 分支。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/10/01/self.html" class="read-next-link"></a>
+        <section>
+          <span>自监督学习(Self-Supervised Learning)</span>
+          <p>  Self-Supervised Learning.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63bfffa1be43e0d30e3eda4f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/09/23/minimax.html" class="read-next-link"></a>
+          <section>
+            <span>约束优化问题与对偶问题(Dual Problem)</span>
+            <p>  Constrained Optimization Problem and Dual Problem.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/63477cbb16f2c2beb1f616c7.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

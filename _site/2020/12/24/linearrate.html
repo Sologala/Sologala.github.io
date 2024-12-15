@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/24/linearrate.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-24"><i class="iconfont icon-date"></i>24 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/62158e0a2ab3f51d91a39b2e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>大批量分布式训练的线性缩放规则和warmup.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1706.02677">Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour</a></li>
+</ul>
+
+<p>在分布式训练深度网络时，由于数据批量变大将会导致优化困难。作者提出了一种调整学习率的线性缩放规则，将其作为批量大小的函数；并提出了一种学习率<strong>warmup</strong>方案，以克服训练早期的困难。通过这些技术，作者使用$256$块<strong>GPU</strong>和$8192$的批量大小实现了在一小时内训练<strong>ResNet-50</strong>。</p>
+
+<h2 id="1-线性缩放规则">1. 线性缩放规则</h2>
+
+<p>学习率的<strong>线性缩放规则</strong>(<strong>linear scaling rule</strong>)是指：</p>
+<ul>
+  <li>当批量大小增大$k$倍时，学习率也增大$k$倍，并保持其它超参数不变。</li>
+</ul>
+
+<p>对于通常的梯度更新，经过$k$次迭代后参数更新为：</p>
+
+\[w_{t+k} = w_t - \eta \frac{1}{|\mathcal{B}|}\sum_{j&lt;k}^{}\sum_{x \in \mathcal{B}_j}^{} \nabla l(x,w_{t+j})\]
+
+<p>如果在单次更新时使用的数据批量为$∪_j\mathcal{B}_j$，则参数更新为：</p>
+
+\[\hat{w}_{t+1} = w_t - \hat{\eta} \frac{1}{k|\mathcal{B}|}\sum_{j&lt;k}^{}\sum_{x \in \mathcal{B}_j}^{} \nabla l(x,w_t)\]
+
+<p>如果假设$\nabla l(x,w_{t+j})≈\nabla l(x,w_t)$，则使得上述两种参数更新等价$w_{t+k} =\hat{w}_{t+1}$的条件为$\hat{\eta}=k\eta$。</p>
+
+<p>上述假设在一些情况下不成立。如在训练初期，梯度快速变化；批量的规模也不能无限扩大，超过某点时精度迅速下降。</p>
+
+<h2 id="2-warmup">2. warmup</h2>
+<p>在训练早期阶段，梯度变化剧烈，学习率的线性缩放规则不成立。该问题可以通过设计适当的<strong>warmup</strong>来缓解，即训练开始时使用较小的学习率。</p>
+<ul>
+  <li><strong>constant warmuup</strong>：在训练前$5$轮使用较低的常数学习率，然后恢复正常学习率。</li>
+  <li><strong>gradual warmuup</strong>：将学习率从一个较小的值开始逐渐提高，经过$5$轮恢复为正常学习率，避免学习率的突然增大。</li>
+</ul>
+
+<h2 id="3-分布式sgd的一些注意事项">3. 分布式SGD的一些注意事项</h2>
+
+<p>在训练分布式(或多<strong>GPU</strong>)模型时，有一些常见的实现错误导致模型训练误差较高。</p>
+
+<h3 id="1-权重衰减">(1) 权重衰减</h3>
+
+<p>参数的梯度更新公式如下：</p>
+
+\[w_{t+1} = w_t - \eta \frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} \nabla l(x,w_t)\]
+
+<p>此时对学习率$\eta$的缩放等价于对损失函数$l$的缩放。</p>
+
+<p>权重衰减相当于在损失函数中增加了梯度的<strong>l2</strong>正则化项：</p>
+
+\[w_{t+1} = w_t - \eta \frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} \nabla [l(x,w_t)+\frac{\lambda}{2}||w_t||^2] \\ = w_t -\eta \lambda w_t- \eta \frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} \nabla l(x,w_t)\]
+
+<p>注意到权重衰减项$\eta \lambda w_t$与批量无关，因此可以单独计算后增加到聚合梯度中。此时学习率缩放不在$\eta \lambda w_t$中执行。</p>
+
+<ul>
+  <li>当使用权重衰减时，学习率缩放不等于损失函数缩放。</li>
+</ul>
+
+<h3 id="2-动量修正">(2) 动量修正</h3>
+
+<p>当梯度更新过程中引入动量时，参数更新公式如下：</p>
+
+\[u_{t+1} = mu_t+ \frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} \nabla l(x,w_t) \\ w_{t+1} = w_t - \eta u_{t+1}\]
+
+<p>一种流行的变体是将学习率融合到动量更新中：</p>
+
+\[v_{t+1} = mv_t+ \eta \frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} \nabla l(x,w_t) \\ w_{t+1} = w_t -  v_{t+1}\]
+
+<p>注意到在上述两种更新方式中，动量$u$与学习率$\eta$无关，而动量$v$与学习率$\eta$有关。当学习率改变时，为了保证两者的等价性，变体公式应修改为：</p>
+
+\[v_{t+1} = m \frac{\eta_{t+1}}{\eta_t}v_t+ \eta_{t+1} \frac{1}{|\mathcal{B}|}\sum_{x \in \mathcal{B}}^{} \nabla l(x,w_t) \\ w_{t+1} = w_t -  v_{t+1}\]
+
+<p>$\frac{\eta_{t+1}}{\eta_t}$为动量修正的因子。当$\eta_{t+1}»\eta_t$时，动量修正很重要，否则将会导致训练不稳定。</p>
+
+<ul>
+  <li>如果使用动量梯度下降的变体公式，应该应用动量修正。</li>
+</ul>
+
+<h3 id="3-梯度累积">(3) 梯度累积</h3>
+<p>对于$k$个<strong>GPU</strong>计算的梯度结果，需要累积后用于一次梯度更新。累积结果不能单纯的求和，而是应该求平均值。一种简单有效的方法是将$1/k$平均缩放放到每个<strong>GPU</strong>的损失计算中，从而避免了对整体梯度的缩放，只需要对分布式求得的梯度求和即可。</p>
+
+<ul>
+  <li>对每个<strong>GPU</strong>的损失函数使用缩放系数$\frac{1}{k|\mathcal{B}|}$而不是$\frac{1}{|\mathcal{B}|}$。</li>
+</ul>
+
+<h3 id="4-数据打乱">(4) 数据打乱</h3>
+
+<p>梯度下降应该随机采样数据。在每轮<strong>epoch</strong>中应该对数据集进行随机打乱，然后划分成$k$部分，每部分数据交给一个<strong>GPU</strong>处理。</p>
+
+<ul>
+  <li>在每轮<strong>epoch</strong>中对数据集进行随机打乱。</li>
+</ul>
+
+<h2 id="4-实验分析">4. 实验分析</h2>
+<p>实验在<strong>ImageNet</strong>上进行，在$k=8$个<strong>GPU</strong>和每个<strong>GPU</strong>中$n=32$批量(相当于总批量$256$)时，默认学习率为$\eta=0.1$。通过设置<strong>gradual warmuup</strong>，实现了大批量训练与普通的小批量训练接近的训练结果。</p>
+
+<p><img src="https://pic.imgdb.cn/item/621734ed2ab3f51d91f211b6.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/25/igr.html" class="read-next-link"></a>
+        <section>
+          <span>Implicit Gradient Regularization</span>
+          <p>  隐式梯度正则化.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6226bcea5baa1a80abf1af38.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/23/multimodal.html" class="read-next-link"></a>
+          <section>
+            <span>Multimodal Machine Learning: A Survey and Taxonomy</span>
+            <p>  一篇关于多模态机器学习的综述（表示、转换、对齐、融合与协同学习）.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fe17bdf3ffa7d37b320cd23.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>稀疏编码(Sparse Coding) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="稀疏编码(Sparse Coding)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="稀疏编码(Sparse Coding) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/08/sparse-coding.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>稀疏编码(Sparse Coding)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-08"><i class="iconfont icon-date"></i>08 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e8db2d5504f4bcb043bd7cf.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Sparse Coding.</p>
+</blockquote>
+
+<p><strong>稀疏编码(Sparse Coding)</strong>是指给定一组<strong>基向量</strong>\(A = [a_1,...,a_M]\)，将输入样本\(x \in \Bbb{R}^D\)表示为基向量的线性组合：</p>
+
+\[x = \sum_{m=1}^{M} {z_ma_m} = Az\]
+
+<p>其中基向量的系数\(z = (z_1,...,z_M)^T\)称为输入样本$x$的<strong>编码(encoding)</strong>，要求$z$是稀疏的；基向量\(A\)也称为<strong>字典(dictionary)</strong>。</p>
+
+<p><strong>稀疏编码的特点</strong>：</p>
+<ol>
+  <li><strong>计算量</strong>：稀疏性可以极大地降低计算量。</li>
+  <li><strong>可解释性</strong>：稀疏编码只有少数非零元素，相当于将输入样本表示为少数几个相关的特征。</li>
+  <li><strong>特征选择</strong>：稀疏性可以实现特征的自动选择，只选择和输入样本最相关的少数特征。</li>
+</ol>
+
+<p><strong>本文目录</strong>：</p>
+<ol>
+  <li>生物学背景</li>
+  <li>损失函数</li>
+  <li>训练方法</li>
+  <li>OMP算法</li>
+</ol>
+
+<h1 id="1-生物学背景">1. 生物学背景</h1>
+<p>稀疏编码是受哺乳动物视觉系统中简单细胞感受野启发的模型。</p>
+
+<p>在哺乳动物的初级视觉皮层(<strong>Primary Visual Cortex</strong>)中，每个神经元仅对处于其感受野中特定的刺激信号（比如特定方向的边缘、条纹等特征）做出响应。</p>
+
+<p>外界信息经过编码后仅有一小部分神经元激活，即外界刺激在视觉神经系统的表示具有很高的稀疏性。编码的稀疏性在一定程度上符合生物学的低功耗特性。</p>
+
+<h1 id="2-损失函数">2. 损失函数</h1>
+<p>给定输入向量\(x^1,...,x^N\)，其稀疏编码的损失函数包括<strong>重构误差(Reconstruction error)</strong>和<strong>稀疏惩罚项(Sparsity penalty)</strong>,定义为：</p>
+
+\[L(A,z) = \sum_{n=1}^{N} {(|| x^n-Az^n ||^2 + ηρ(z^n))}\]
+
+<p>其中\(z = [z^1,...,z^N]\)；$ρ$是一个衡量稀疏性的函数；$η$是一个超参数，用来控制稀疏性的强度。</p>
+
+<p>稀疏性衡量函数有多种选择，最直接的衡量向量$z$稀疏性的函数是<strong>$l_0$</strong>范数，即$z$中非零元素的个数:</p>
+
+\[ρ(z) = \sum_{m=1}^{M} {I(| z_m | &gt; 0)}\]
+
+<p>但$l_0$范数不满足连续可导，是一个<strong>NP-hard</strong>的组合优化问题，对较大规模数据无法直接求解；</p>
+
+<p>为使求解稀疏性问题变得可行，在实际中，稀疏性衡量函数通常使用<strong>$l_1$</strong>范数，将一个组合优化问题放松到一个凸优化问题来求解：</p>
+
+\[ρ(z) = \sum_{m=1}^{M} {| z_m |}\]
+
+<p><img src="https://pic.downk.cc/item/5e8d86ad504f4bcb0413f49f.jpg" alt="" /></p>
+
+<p>从下图可以看出，对于$l_p$范数，$p$越小，范数在<strong>0</strong>附近对应参数越稀疏。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a83a7c08b68301634c149f.jpg" alt="" /></p>
+
+<h1 id="3-训练方法">3. 训练方法</h1>
+<p>给定输入向量\(x^1,...,x^N\)，需要同时学习基向量$A$和每一个输入样本对应的稀疏编码\(z = [z^1,...,z^N]\)。</p>
+
+<p>稀疏编码的训练过程一般采用交替优化的方法：</p>
+
+<p>(1). 固定基向量$A$，对每个输入$x^n$，计算其对应的最优编码$z^n$：</p>
+
+\[z^n = \mathop{\arg \min}_{z^n} || x^n-Az^n ||^2 + ηρ(z^n)\]
+
+<p>(2). 固定编码$z^n$，计算其最优基向量$A$：</p>
+
+\[A = \mathop{\arg \min}_{A} \sum_{n=1}^{N} {|| x^n-Az^n ||^2} + λ\frac{1}{2}|| A ||^2\]
+
+<p>其中λ是正则化系数。</p>
+
+<h1 id="4-omp算法">4. OMP算法</h1>
+<p>在给定输入向量\(x^1,...,x^N\)和基向量$A$时，求稀疏编码\(z = [z^1,...,z^N]\)也可以采用<strong>正交匹配追逐算法(Orthogonal Matching Pursuit, OMP)</strong>。</p>
+
+<h2 id="1-mp算法">1. MP算法</h2>
+<p><strong>匹配追逐算法(Matching Pursuit, MP)</strong>是对信号进行稀疏分解的方法之一，将信号在完备字典库(即基向量$A$)上进行分解。</p>
+
+<p>(1)<strong>基向量选择</strong></p>
+
+<p>信号\(x \in \Bbb{H}\)，从字典矩阵\(A = [a_1,...,a_M]\)中选择一个最为匹配的基向量，满足:</p>
+
+\[| &lt;x, a_{r_0}&gt; | = sup_{i \in (1,...,k)} | &lt;x, a_{r_k}&gt; |\]
+
+<p>信号$x$就被分解为在最匹配基向量方向上的投影分量和垂直于该基向量方向的残差$R_1f$两部分，即:</p>
+
+\[x = &lt;x, a_{r_0}&gt; a_{r_0} + R_1f\]
+
+<p>(2)<strong>迭代分解</strong></p>
+
+<p>对残差\(R_1f\)进行同样的分解，第$k$步可以得到：</p>
+
+\[R_kf = &lt;R_kf, a_{r_k}&gt; a_{r_k} + R_{k+1}f\]
+
+<p>经过$k$步分解后，信号$x$被分解为：</p>
+
+\[x = \sum_{n=0}^{k} {&lt;R_nf, a_{r_n}&gt; a_{r_n}} + R_{k+1}f\]
+
+<p>若残差\(R_{k+1}f\)在可接受范围内，则得到稀疏编码\(z_{r_n} = &lt;R_nf, a_{r_n}&gt;\)。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a83ae208b68301634ce815.jpg" alt="" /></p>
+
+<p><strong>MP算法的几点说明</strong>：</p>
+<ol>
+  <li>基向量$A$属于Hilbert空间\(\Bbb{H}\)，即定义了完备的内积空间；</li>
+  <li>基向量$A$事先归一化处理，内积常用于计算一个矢量在一个方向上的投影长度，这时方向的矢量必须是单位矢量；</li>
+  <li>MP算法是收敛的,因为\(R_kf = &lt;R_kf, a_{r_k}&gt; a_{r_k} + R_{k+1}f\)而且\(R_{k+1}f\)和\(a_{r_k}\)正交,平方得到:</li>
+</ol>
+
+\[||R_kf ||^2 = || R_{k+1}f ||^2 + | &lt;R_kf, a_{r_k}&gt; |^2\]
+
+<p>得出每一个残差值比上一次的小，故而收敛。</p>
+
+<p><strong>MP算法的缺点</strong>：</p>
+
+<p>信号(残差)在已选择的基向量进行垂直投影是非正交性的，这会使得每次迭代的结果并不少最优的而是次最优的，收敛需要很多次迭代。</p>
+
+<h2 id="2-omp算法">2. OMP算法</h2>
+<p><strong>正交匹配追逐算法(Orthogonal Matching Pursuit, OMP)</strong>改进了MP算法，在分解的每一步对所选择的全部基向量与残差正交化处理，这使得在精度要求相同的情况下，OMP算法的收敛速度更快。</p>
+
+<p>OMP算法初始基向量的选择与MP算法相同；在进行迭代分解时，<strong>OMP算法的残差与前面每个分量正交，而MP中仅与最近选出的那一项正交</strong>。</p>
+
+<p>经过$k$步分解后，信号$x$被分解为：</p>
+
+\[x = \sum_{n=0}^{k} {λ_n a_{r_n}} + R_{k+1}f\]
+
+<p>其中参数λ可以通过最小二乘（Least Square）得到：</p>
+
+\[λ = argmin_{λ} || A_kλ - x ||^2\]
+
+<p>通过上述过程不难看出，对于MP算法，每次选择一个基向量后，其系数便固定了（由内积得到）；对于OMP算法，每一个基向量的选择伴随着之前所有基向量系数的更新。这个系数就是所求的稀疏编码。</p>
+
+<p>关于MP算法和OMP算法更多的细节，可以参考<a href="https://korediantousman.staff.telkomuniversity.ac.id/introduction-orthogonal-matching-pursuit/">Introduction to Matching Pursuit</a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/09/autoencoder.html" class="read-next-link"></a>
+        <section>
+          <span>Autoencoder: 自编码器</span>
+          <p>  Auto Encoder.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5e8eb7ff504f4bcb040d0c17.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/07/manifold.html" class="read-next-link"></a>
+          <section>
+            <span>流形学习</span>
+            <p>  Manifold Learning.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

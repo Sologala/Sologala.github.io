@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class-Balanced Loss Based on Effective Number of Samples - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Class-Balanced Loss Based on Effective Number of Samples">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Class-Balanced Loss Based on Effective Number of Samples - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/01/18/classbalanced.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Class-Balanced Loss Based on Effective Number of Samples</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-01-18"><i class="iconfont icon-date"></i>18 Jan 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60ee896a5132923bf8057881.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Class-balanced Loss：基于有效样本数的类别平衡损失.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1901.05555">Class-Balanced Loss Based on Effective Number of Samples</a></li>
+  <li>code：<a href="https://github.com/vandit15/Class-balanced-loss-pytorch">github</a></li>
+</ul>
+
+<p><strong>Class-Balanced Loss</strong>可以用于改进任何传统的损失函数，从而提高在类别不平衡数据集上的表现。通过数据增强等方法，每一个样本可以产生许多与自身相似的样本，这些样本分布在空间中的某个邻域内，即占据一定的空间“体积”。<strong>Class-Balanced Loss</strong>关注每一类样本所能覆盖的空间体积，而不是单纯的关注每一类样本的数量，并引入<strong>有效样本数量(effective number of samples)</strong>的概念。</p>
+
+<p>将数据采样看作一个<strong>随机覆盖(random covering)</strong>问题，则某一类别的$n$个样本对应的有效样本数量为$E_n$，则其计算表达式为：</p>
+
+\[E_n=\frac{1-\beta^n}{1-\beta}, \quad \beta = \frac{N-1}{N}\]
+
+<p>其中$N$表示该类别所有样本占有的空间体积。下面使用数学归纳法证明该结论。</p>
+
+<p>当$n=1$时$E_n=1$成立，假设我们已经采样了$n-1$个样本，准备采样第$n$个样本。该类别所有样本占有的空间体积为$N$，已经采集样本的有效样本数量为$E_{n-1}=\frac{1-\beta^{n-1}}{1-\beta}$，则新的样本有$p=\frac{E_{n-1}}{N}$的概率落入已采集样本内；则采集新样本后的有效样本数量的数学期望计算为：</p>
+
+\[E_n = pE_{n-1}+(1-p)(E_{n-1}+1) = E_{n-1}+1-p \\ =E_{n-1}+1-\frac{E_{n-1}}{N} = 1+\frac{N-1}{N}E_{n-1} \\ = 1+\frac{N-1}{N}\frac{1-\beta^{n-1}}{1-\beta} = 1+\beta\frac{1-\beta^{n-1}}{1-\beta} = \frac{1-\beta^{n}}{1-\beta}\]
+
+<p><img src="https://pic.imgdb.cn/item/60a5be226ae4f77d3502dee4.jpg" alt="" /></p>
+
+<p>由此使用不同类别的有效样本数量$E_n$(而不是样本数量$n$)对不同类别的损失函数进行加权：</p>
+
+\[\mathcal{L}_{\text{CB}}(\hat{y},y) = \frac{1}{E_{n_y}} \mathcal{L}(\hat{y},y) = \frac{1-\beta}{1-\beta^{n_y}} \mathcal{L}(\hat{y},y)\]
+
+<ul>
+  <li>当样本空间大小$n=1$时，$\beta = 0$，意味着每个类别只需要$1$个样本便可以完全表示该类别的分布，增加样本数量对应的边际效应很强(增加样本得到的收益越来越少)，对应的策略为<strong>no weighting</strong>(即下图中蓝色曲线)；</li>
+  <li>当样本空间大小$n→∞$时，$\beta = 1$，意味着每个类别无法通过有限的样本量表示该类别的分布，增加样本数量对应的边际效应不存在(增加样本得到的收益恒定为$1$)，即每个类别完全由其含有的样本数量决定，需要按照样本数量加权，对应的策略为<strong>inverse class frequency weighting</strong>(即下图中紫色曲线)；</li>
+  <li>当$0 &lt; \beta &lt; 1$时，策略为上述两种方法的权衡。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/60a5bc996ae4f77d35f7d597.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/01/19/equalization.html" class="read-next-link"></a>
+        <section>
+          <span>Equalization Loss for Long-Tailed Object Recognition</span>
+          <p>  Equalization Loss：长尾目标检测中的均衡损失.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60ee8ac45132923bf81348e7.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/01/17/decouple.html" class="read-next-link"></a>
+          <section>
+            <span>Decoupling Representation and Classifier for Long-Tailed Recognition</span>
+            <p>  将长尾分布的图像分类问题解耦为表示学习和分类.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60ee78ad5132923bf865396a.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

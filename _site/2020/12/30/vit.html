@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/30/vit.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-30"><i class="iconfont icon-date"></i>30 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5feadb743ffa7d37b343e4ee.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>ViT：使用图像块序列的Transformer进行图像分类.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2010.11929">An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale</a></li>
+</ul>
+
+<h1 id="1-模型介绍">1. 模型介绍</h1>
+
+<p><img src="https://pic.downk.cc/item/5febde703ffa7d37b3adbfad.jpg" alt="" /></p>
+
+<p>模型的整体结构如上图所示。作者尽可能遵守原始<strong>Transformer</strong>的结构设计，其目的是使得针对<strong>Transformer</strong>设计的优化结构可以直接套用。</p>
+
+<p>将输入图像$x \in \Bbb{R}^{H \times W \times C}$划分成若干<strong>patch</strong> $x_p \in \Bbb{R}^{N \times (P^2 \cdot C)}$，其有效序列长度为$N = \frac{HW}{P^2}$。</p>
+
+<p>将每个<strong>patch</strong>展平后通过线性映射转化为一个维度为$D$的嵌入向量(<strong>patch embedding</strong>)，并在输入的起始位置增加一个可学习的类别嵌入，该向量在输出时的状态可作为图像的特征表示。在预训练和微调阶段，分类器将其作为输入。</p>
+
+<p>增加$1D$位置编码(<strong>position embedding</strong>)后输入<strong>Transformer</strong>的编码器（实验发现$2D$位置编码对结果提升不明显）。预训练时在网络后增加一个<strong>MLP</strong>线性分类器进行图像分类。</p>
+
+<p>微调时使用更高分辨率的图像。保持每一个图像<strong>patch</strong>的尺寸不变，这将使输入序列长度增加。<strong>Transformer</strong>可以输入任意长度的序列，但预训练的位置编码将不再匹配。为此使用$2D$插值调整位置编码。这部分是人为引入的<strong>归纳偏置(inductive bias)</strong>。</p>
+
+<h1 id="2-实验分析">2. 实验分析</h1>
+<p>作者训练了三个不同大小的<strong>ViT</strong>模型，其参数量如下表所示：</p>
+
+<p><img src="https://pic.downk.cc/item/5febe2393ffa7d37b3b44bb6.jpg" alt="" /></p>
+
+<p>在中等规模的数据集（如<strong>ImageNet</strong>）上训练，准确率要比基于卷积神经网络的模型（如<strong>ResNet</strong>）低几个点。这是因为<strong>Transformer</strong>缺少卷积神经网络的<strong>归纳偏置</strong>，如<strong>平移等变性和局部性(translation equivariance and locality)</strong>，这使得它在训练数据不足的时候泛化能力不强。作者认为在大尺度（$14M$-$300M$）的数据集上训练可以解决这个问题。</p>
+
+<p>实验结果显示，在<strong>JFT-300M</strong>数据集上预训练后，基于<strong>Transformer</strong>的分类模型迁移到小数据集任务中超越了基于卷积神经网络的模型：</p>
+
+<p><img src="https://pic.downk.cc/item/5febe24f3ffa7d37b3b47020.jpg" alt="" /></p>
+
+<p>作者可视化了部分线性嵌入的权重和位置编码，表明模型学习到特征提取和位置敏感的信息。作者分析不同层中注意力平均距离（类似于卷积网络中的感受野大小），发现在浅层模型同时关注近距离和远距离的特征，在深层模型主要关注远距离特征。而卷积神经网络在浅层主要关注近距离特征。</p>
+
+<p><img src="https://pic.downk.cc/item/5febe3c23ffa7d37b3b6f776.jpg" alt="" /></p>
+
+<h1 id="3-模型实现">3. 模型实现</h1>
+
+<p><strong>ViT</strong>的完整实现可参考<a href="https://github.com/lucidrains/vit-pytorch">vit-pytorch</a>。</p>
+
+<p><strong>ViT</strong>所采用的<strong>Transformer</strong>编码器为<strong>pre-norm</strong>的形式:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+<span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span>
+
+<span class="k">class</span> <span class="nc">PreNorm</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">fn</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">FeedForward</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">GELU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Attention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">inner_dim</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">*</span>  <span class="n">heads</span>
+        <span class="n">project_out</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">heads</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dim_head</span> <span class="o">==</span> <span class="n">dim</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">**</span> <span class="o">-</span><span class="mf">0.5</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">attend</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Softmax</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_qkv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">inner_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span> <span class="k">if</span> <span class="n">project_out</span> <span class="k">else</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">qkv</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_qkv</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">chunk</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">'b n (h d) -&gt; b h n d'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">heads</span><span class="p">),</span> <span class="n">qkv</span><span class="p">)</span>
+
+        <span class="n">dots</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">attend</span><span class="p">(</span><span class="n">dots</span><span class="p">)</span>
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">attn</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">attn</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">'b h n d -&gt; b n (h d)'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Transformer</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">heads</span><span class="p">,</span> <span class="n">dim_head</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span>
+                <span class="n">PreNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">Attention</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="n">dim_head</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span><span class="p">)),</span>
+                <span class="n">PreNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">FeedForward</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span><span class="p">))</span>
+            <span class="p">]))</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attn</span><span class="p">,</span> <span class="n">ff</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">attn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">ff</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<p><strong>ViT</strong>模型构建如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ViT</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">patch_size</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">heads</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="p">,</span> <span class="n">pool</span> <span class="o">=</span> <span class="s">'cls'</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">emb_dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">image_height</span><span class="p">,</span> <span class="n">image_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_size</span><span class="p">,</span> <span class="n">image_size</span><span class="p">)</span>
+        <span class="n">patch_height</span><span class="p">,</span> <span class="n">patch_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">patch_size</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">image_height</span> <span class="o">%</span> <span class="n">patch_height</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">image_width</span> <span class="o">%</span> <span class="n">patch_width</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s">'Image dimensions must be divisible by the patch size.'</span>
+
+        <span class="n">num_patches</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_height</span> <span class="o">//</span> <span class="n">patch_height</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">image_width</span> <span class="o">//</span> <span class="n">patch_width</span><span class="p">)</span>
+        <span class="n">patch_dim</span> <span class="o">=</span> <span class="n">channels</span> <span class="o">*</span> <span class="n">patch_height</span> <span class="o">*</span> <span class="n">patch_width</span>
+        <span class="k">assert</span> <span class="n">pool</span> <span class="ow">in</span> <span class="p">{</span><span class="s">'cls'</span><span class="p">,</span> <span class="s">'mean'</span><span class="p">},</span> <span class="s">'pool type must be either cls (cls token) or mean (mean pooling)'</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_patch_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">Rearrange</span><span class="p">(</span><span class="s">'b c (h p1) (w p2) -&gt; b (h w) (p1 p2 c)'</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">patch_height</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">patch_width</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">patch_dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">patch_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_patches</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">cls_token</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">emb_dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">heads</span><span class="p">,</span> <span class="n">dim_head</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">pool</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_latent</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">mlp_head</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+
+        <span class="n">cls_tokens</span> <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cls_token</span><span class="p">,</span> <span class="s">'1 1 d -&gt; b 1 d'</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">((</span><span class="n">cls_tokens</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">+=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">[:,</span> <span class="p">:(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">pool</span> <span class="o">==</span> <span class="s">'mean'</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_latent</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">mlp_head</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>实例化<strong>ViT</strong>模型的例子：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">vit_pytorch</span> <span class="kn">import</span> <span class="n">ViT</span>
+
+<span class="n">v</span> <span class="o">=</span> <span class="n">ViT</span><span class="p">(</span>
+    <span class="n">image_size</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span> 
+    <span class="n">patch_size</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>        <span class="c1"># Last dimension of output tensor after linear transformation
+</span>    <span class="n">depth</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>         <span class="c1"># Number of Transformer blocks
+</span>    <span class="n">heads</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>        <span class="c1"># Number of heads in Multi-head Attention layer
+</span>    <span class="n">mlp_dim</span> <span class="o">=</span> <span class="mi">2048</span><span class="p">,</span>    <span class="c1"># Dimension of the MLP (FeedForward) layer
+</span>    <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">emb_dropout</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="s">'cls'</span><span class="p">,</span>      <span class="c1"># either 'cls' token pooling or 'mean' pooling
+</span>    <span class="n">channels</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">img</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+<span class="n">preds</span> <span class="o">=</span> <span class="n">v</span><span class="p">(</span><span class="n">img</span><span class="p">)</span> <span class="c1"># (1, 1000)
+</span></code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/31/ddetr.html" class="read-next-link"></a>
+        <section>
+          <span>Deformable DETR: Deformable Transformers for End-to-End Object Detection</span>
+          <p>  Deformable DETR：使用多尺度可变形的注意力模块进行目标检测.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5fed30993ffa7d37b3a4350c.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/29/igpt.html" class="read-next-link"></a>
+          <section>
+            <span>Generative Pretraining from Pixels</span>
+            <p>  iGPT：像素级的图像预训练模型.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fea917f3ffa7d37b3c2e7ac.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

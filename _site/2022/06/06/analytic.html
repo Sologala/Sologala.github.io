@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytic-DPM: an Analytic Estimate of the Optimal Reverse Variance in Diffusion Probabilistic Models - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Analytic-DPM: an Analytic Estimate of the Optimal Reverse Variance in Diffusion Probabilistic Models">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Analytic-DPM: an Analytic Estimate of the Optimal Reverse Variance in Diffusion Probabilistic Models - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/06/06/analytic.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Analytic-DPM: an Analytic Estimate of the Optimal Reverse Variance in Diffusion Probabilistic Models</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-06-06"><i class="iconfont icon-date"></i>06 Jun 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6433ad680d2dde5777a48bde.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Analytic-DPM：扩散概率模型中最优反向方差的分析估计.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2201.06503">Analytic-DPM: an Analytic Estimate of the Optimal Reverse Variance in Diffusion Probabilistic Models</a></li>
+</ul>
+
+<p><strong>扩散模型 (Diffusion Model)</strong>是一类深度生成模型。这类模型首先定义前向扩散过程，向数据中逐渐地添加随机噪声；然后学习反向扩散过程，从噪声中构造所需的数据样本。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64228e1fa682492fcc54a663.jpg" alt="" /></p>
+
+<p>在扩散模型中，前向扩散过程可以定义为：</p>
+
+\[\begin{array}{rlr}
+\mathbf{x}_t &amp; =\sqrt{\bar{\alpha}_t} \mathbf{x}_0+\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon} \\
+q\left(\mathbf{x}_t \mid \mathbf{x}_0\right) &amp; =\mathcal{N}\left(\mathbf{x}_t ; \sqrt{\bar{\alpha}_t} \mathbf{x}_0,\left(1-\bar{\alpha}_t\right) \mathbf{I}\right) &amp;
+\end{array}\]
+
+<p>根据<a href="https://0809zheng.github.io/2022/06/04/ddim.html"><font color="Blue">DDIM</font></a>的假设，把\(q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t},\mathbf{x}_0\right)\)建模为一个高斯分布，$\sigma_t$是可调的标准差参数：</p>
+
+\[\begin{aligned}
+q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t, \mathbf{x}_0\right)&amp;=\mathcal{N}\left(\mathbf{x}_{t-1} ; \sqrt{\frac{1-\bar{\alpha}_{t-1}-\sigma_t^2}{1-\bar{\alpha}_{t}}}\mathbf{x}_{t}+\left( \sqrt{\bar{\alpha}_{t-1}} - \sqrt{\frac{\bar{\alpha}_{t}(1-\bar{\alpha}_{t-1}-\sigma_t^2)}{1-\bar{\alpha}_{t}}} \right) \mathbf{x}_0, \sigma_t^2 \mathbf{I}\right)
+\end{aligned}\]
+
+<p>因此得到：</p>
+
+\[\begin{aligned}
+\mathbf{x}_{t-1} = \sqrt{\frac{1-\bar{\alpha}_{t-1}-\sigma_t^2}{1-\bar{\alpha}_{t}}}\mathbf{x}_{t}+\left( \sqrt{\bar{\alpha}_{t-1}} - \sqrt{\frac{\bar{\alpha}_{t}(1-\bar{\alpha}_{t-1}-\sigma_t^2)}{1-\bar{\alpha}_{t}}} \right) \mathbf{x}_0+ \sigma_t \boldsymbol{\epsilon}_t
+\end{aligned}\]
+
+<p>在反向扩散过程中，我们希望求解\(q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t}\right)\)。一种常见的求解方法是首先通过\(\mathbf{x}_{t}\)构造\(\mathbf{x}_{0}\)，然后计算：</p>
+
+\[\begin{aligned}
+q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t},\mathbf{x}_0\right) \approx q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t},\mathbf{x}_0=\frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}}{\sqrt{\bar{\alpha}_t}}\right)
+\end{aligned}\]
+
+<p>然而从\(\mathbf{x}_{t}\)构造\(\mathbf{x}_{0}\)并不是完全准确的，因此应该用概率分布而非确定性的函数来描述它。事实上，严格地有：</p>
+
+\[\begin{aligned}
+q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t}\right) = \int q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_{t},\mathbf{x}_0\right) q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right) d \mathbf{x}_0
+\end{aligned}\]
+
+<p>注意到\(q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)\)是未知的，因此用正态分布\(\mathcal{N}\left(\mathbf{x}_0 ; \bar{\mu}(\mathbf{x}_{t}),\bar{\sigma}_t^2 \mathbf{I}\right)\)进行近似。</p>
+
+<p>用正态分布\(\mathcal{N}\left(\mathbf{x}_0 ; \bar{\mu}(\mathbf{x}_{t}),\bar{\sigma}_t^2 \mathbf{I}\right)\)近似\(q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)\)，落脚于分别近似\(q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)\)的均值和方差。</p>
+
+<h2 id="-近似均值">⚪ 近似均值</h2>
+
+<p>均值的近似为：</p>
+
+\[\begin{aligned}
+\bar{\mu}(\mathbf{x}_{t}) &amp;= \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \mathbf{x}_0  \right] \\
+&amp;= \mathop{\arg\min}_{\mu} \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ ||\mathbf{x}_0 -\mu||^2 \right] \\
+&amp;= \mathop{\arg\min}_{\mu(\mathbf{x}_t)} \mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ ||\mathbf{x}_0 -\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)||^2 \right] \\
+&amp;= \mathop{\arg\min}_{\mu(\mathbf{x}_t)} \mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_t \mid \mathbf{x}_0\right)q\left(\mathbf{x}_{0}\right)} \left[ ||\mathbf{x}_0 -\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)||^2 \right]
+\end{aligned}\]
+
+<p>不妨把\(\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right)\)表示为\(\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)\)的函数：</p>
+
+\[\boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right) = \frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)}{\sqrt{\bar{\alpha}_t}}\]
+
+<p>则损失函数等价于标准扩散模型中的损失函数：</p>
+
+\[\begin{aligned}
+L_t &amp; =\mathbb{E}_{\mathbf{x}_0, \boldsymbol{\epsilon}}\left[\left\| \frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}}{\sqrt{\bar{\alpha}_t}} - \frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)}{\sqrt{\bar{\alpha}_t}} \right\|^2\right] \\
+&amp; \propto \mathbb{E}_{\mathbf{x}_0, \boldsymbol{\epsilon}}\left[\left\|\boldsymbol{\epsilon}_t-\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)\right\|^2\right] \\
+&amp; =\mathbb{E}_{\mathbf{x}_0, \boldsymbol{\epsilon}}\left[\left\|\boldsymbol{\epsilon}_t-\boldsymbol{\epsilon}_\theta\left(\sqrt{\bar{\alpha}_t} \mathbf{x}_0+\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_t, t\right)\right\|^2\right]
+\end{aligned}\]
+
+<h2 id="-近似方差">⚪ 近似方差</h2>
+
+<p>据定义，协方差矩阵计算为：</p>
+
+\[\begin{aligned}
+\Sigma(\mathbf{x}_{t}) = &amp;\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ (\mathbf{x}_0 -\bar{\mu}(\mathbf{x}_{t}))(\mathbf{x}_0 -\bar{\mu}(\mathbf{x}_{t}))^T \right] \\
+=&amp; \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \left(\mathbf{x}_0 -\frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)}{\sqrt{\bar{\alpha}_t}}\right)\left(\mathbf{x}_0 -\frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)}{\sqrt{\bar{\alpha}_t}}\right)^T \right] \\
+=&amp; \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}+\frac{\sqrt{1-\bar{\alpha}_t} }{\sqrt{\bar{\alpha}_t}}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)\right)\left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}+\frac{\sqrt{1-\bar{\alpha}_t} }{\sqrt{\bar{\alpha}_t}}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)\right)^T \right] \\
+=&amp; \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}\right)\left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}\right)^T \right]+2\frac{\sqrt{1-\bar{\alpha}_t} }{\sqrt{\bar{\alpha}_t}}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}} \right]^T \\
+&amp; + \frac{1-\bar{\alpha}_t} {\bar{\alpha}_t}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ^T \\
+=&amp; \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}\right)\left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}\right)^T \right]+2\frac{\sqrt{1-\bar{\alpha}_t} }{\sqrt{\bar{\alpha}_t}}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)  \left[\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} [\mathbf{x}_0] -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}} \right]^T \\
+&amp; + \frac{1-\bar{\alpha}_t} {\bar{\alpha}_t}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ^T \\
+=&amp; \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}\right)\left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}\right)^T \right]+2\frac{\sqrt{1-\bar{\alpha}_t} }{\sqrt{\bar{\alpha}_t}}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)  \left[\bar{\mu}(\mathbf{x}_{t}) -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}} \right]^T \\
+&amp; + \frac{1-\bar{\alpha}_t} {\bar{\alpha}_t}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ^T \\
+=&amp; \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}\right)\left(\mathbf{x}_0 -\frac{\mathbf{x}_t}{\sqrt{\bar{\alpha}_t}}\right)^T \right]+2\frac{\sqrt{1-\bar{\alpha}_t} }{\sqrt{\bar{\alpha}_t}}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)  \left[\frac{-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)}{\sqrt{\bar{\alpha}_t}}  \right]^T \\
+&amp; + \frac{1-\bar{\alpha}_t} {\bar{\alpha}_t}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ^T \\
+=&amp; \frac{1}{\bar{\alpha}_t}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \left(\mathbf{x}_t-\sqrt{\bar{\alpha}_t}\mathbf{x}_0 \right)\left(\mathbf{x}_t-\sqrt{\bar{\alpha}_t}\mathbf{x}_0 \right)^T \right]- \frac{1-\bar{\alpha}_t} {\bar{\alpha}_t}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ^T 
+\end{aligned}\]
+
+<p>上式两端取\(q\left(\mathbf{x}_{t}\right)\)的期望：</p>
+
+\[\begin{aligned}
+\Sigma(\mathbf{x}_{t}) = &amp;\mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)} \left[\Sigma(\mathbf{x}_{t}) \right] \\
+=&amp; \mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)} \left[ \frac{1}{\bar{\alpha}_t}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \left(\mathbf{x}_t-\sqrt{\bar{\alpha}_t}\mathbf{x}_0 \right)\left(\mathbf{x}_t-\sqrt{\bar{\alpha}_t}\mathbf{x}_0 \right)^T \right]- \frac{1-\bar{\alpha}_t} {\bar{\alpha}_t}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ^T \right] 
+\end{aligned}\]
+
+<p>注意到：</p>
+
+\[\begin{aligned}
+&amp;\frac{1}{\bar{\alpha}_t}\mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)} \left[ \mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)} \left[ \left(\mathbf{x}_t-\sqrt{\bar{\alpha}_t}\mathbf{x}_0 \right)\left(\mathbf{x}_t-\sqrt{\bar{\alpha}_t}\mathbf{x}_0 \right)^T \right] \right] \\
+=&amp; \frac{1}{\bar{\alpha}_t}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_{0}\right)} \left[ \underbrace{\mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_t \mid \mathbf{x}_{0}\right)} \left[ \left(\mathbf{x}_t-\sqrt{\bar{\alpha}_t}\mathbf{x}_0 \right)\left(\mathbf{x}_t-\sqrt{\bar{\alpha}_t}\mathbf{x}_0 \right)^T \right]}_{ q\left(\mathbf{x}_t \mid \mathbf{x}_{0}\right)\text{的协方差}} \right] \\
+=&amp; \frac{1}{\bar{\alpha}_t}\mathbb{E}_{\mathbf{x}_0 \sim q\left(\mathbf{x}_{0}\right)} \left[ \left(1-\bar{\alpha}_t\right) \mathbf{I} \right] =\frac{1-\bar{\alpha}_t}{\bar{\alpha}_t}\mathbf{I}
+\end{aligned}\]
+
+<p>因此有：</p>
+
+\[\begin{aligned}
+\Sigma(\mathbf{x}_{t}) &amp;= \frac{1-\bar{\alpha}_t}{\bar{\alpha}_t}\mathbf{I}-\mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)} \left[  \frac{1-\bar{\alpha}_t} {\bar{\alpha}_t}\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ^T \right] \\
+&amp;= \frac{1-\bar{\alpha}_t}{\bar{\alpha}_t}\left(\mathbf{I}-\mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)} \left[ \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ^T \right] \right)
+\end{aligned}\]
+
+<p>两边取迹然后除以\(d=dim(\mathbf{x}_{t})\)，得到$\sigma_t$的一个估计：</p>
+
+\[\hat{\sigma}_t^2 = \frac{1-\bar{\alpha}_t}{\bar{\alpha}_t} \left(1-\frac{1}{d}\mathbb{E}_{\mathbf{x}_t \sim q\left(\mathbf{x}_{t}\right)} \left[ ||\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) ||^2 \right] \right)\]
+
+<h2 id="-采样过程">⚪ 采样过程</h2>
+
+<p>至此我们得到\(q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right)\)的近似为：</p>
+
+\[\begin{aligned}
+q\left(\mathbf{x}_0 \mid \mathbf{x}_{t}\right) \approx \mathcal{N}\left(\mathbf{x}_0 ; \frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)}{\sqrt{\bar{\alpha}_t}},\hat{\sigma}_t^2 \mathbf{I}\right)
+\end{aligned}\]
+
+<p>则反向扩散过程写作：</p>
+
+\[\begin{aligned}
+\mathbf{x}_{t-1} = \sqrt{\frac{1-\bar{\alpha}_{t-1}-\sigma_t^2}{1-\bar{\alpha}_{t}}}\mathbf{x}_{t}+\left( \sqrt{\bar{\alpha}_{t-1}} - \sqrt{\frac{\bar{\alpha}_{t}(1-\bar{\alpha}_{t-1}-\sigma_t^2)}{1-\bar{\alpha}_{t}}} \right) \mathbf{x}_0+ \sigma_t \boldsymbol{\epsilon}_t
+\end{aligned}\]
+
+<p>其中：</p>
+
+\[\begin{aligned}
+&amp;\left( \sqrt{\bar{\alpha}_{t-1}} - \sqrt{\frac{\bar{\alpha}_{t}(1-\bar{\alpha}_{t-1}-\sigma_t^2)}{1-\bar{\alpha}_{t}}} \right) \mathbf{x}_0 = \left( \sqrt{\bar{\alpha}_{t-1}} - \sqrt{\frac{\bar{\alpha}_{t}(1-\bar{\alpha}_{t-1}-\sigma_t^2)}{1-\bar{\alpha}_{t}}} \right)\left( \frac{\mathbf{x}_t-\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)}{\sqrt{\bar{\alpha}_t}}+\hat{\sigma}_t\boldsymbol{\epsilon} \right) \\
+=&amp;\frac{1}{\sqrt{\alpha_t}}\mathbf{x}_{t}-\sqrt{\frac{1-\bar{\alpha}_{t-1}-\sigma_t^2}{1-\bar{\alpha}_{t}}}\mathbf{x}_{t}+\left( \sqrt{1-\bar{\alpha}_{t-1}-\sigma_t^2}-\frac{\sqrt{1-\bar{\alpha}_t}}{\sqrt{\alpha_t}} \right)  \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \\
+&amp;+ \left( \sqrt{\bar{\alpha}_{t-1}} - \sqrt{\frac{\bar{\alpha}_{t}(1-\bar{\alpha}_{t-1}-\sigma_t^2)}{1-\bar{\alpha}_{t}}} \right)\hat{\sigma}_t\boldsymbol{\epsilon}
+\end{aligned}\]
+
+<p>代回原式得：</p>
+
+\[\begin{aligned}
+\mathbf{x}_{t-1} =&amp; \frac{1}{\sqrt{\alpha_t}}\mathbf{x}_{t}+\left( \sqrt{1-\bar{\alpha}_{t-1}-\sigma_t^2}-\frac{\sqrt{1-\bar{\alpha}_t}}{\sqrt{\alpha_t}} \right)  \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \\
+&amp; + \sigma_t \boldsymbol{\epsilon}_1 + \left( \sqrt{\bar{\alpha}_{t-1}} - \sqrt{\frac{\bar{\alpha}_{t}(1-\bar{\alpha}_{t-1}-\sigma_t^2)}{1-\bar{\alpha}_{t}}} \right)\hat{\sigma}_t\boldsymbol{\epsilon}_2 \\ 
+=&amp; \frac{1}{\sqrt{\alpha_t}}\mathbf{x}_{t}+\left( \sqrt{1-\bar{\alpha}_{t-1}-\sigma_t^2}-\frac{\sqrt{1-\bar{\alpha}_t}}{\sqrt{\alpha_t}} \right)  \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) \\
+&amp; + \sqrt{\sigma_t^2 + \left( \sqrt{\bar{\alpha}_{t-1}} - \sqrt{\frac{\bar{\alpha}_{t}(1-\bar{\alpha}_{t-1}-\sigma_t^2)}{1-\bar{\alpha}_{t}}} \right)^2\hat{\sigma}_t^2}\boldsymbol{\epsilon} \\ 
+\end{aligned}\]
+
+<h2 id="-analytic-dpm的实现">⚪ Analytic-DPM的实现</h2>
+
+<p>原论文的实验结果显示，<strong>Analytic-DPM</strong>所做的方差修正，主要在生成扩散步数较少时会有比较明显的提升，所以它对扩散模型的加速比较有意义。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GaussianDiffusion</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">image_size</span><span class="p">,</span>
+        <span class="n">timesteps</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">sampling_timesteps</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="n">ddim_sampling_eta</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span> <span class="c1"># 用于拟合\epsilon(x_t,t)的神经网络
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">channels</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">image_size</span> <span class="o">=</span> <span class="n">image_size</span>
+
+        <span class="n">betas</span> <span class="o">=</span> <span class="n">linear_beta_schedule</span><span class="p">(</span><span class="n">timesteps</span><span class="p">)</span> <span class="c1"># \beta_t
+</span>        <span class="n">alphas</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">-</span> <span class="n">betas</span> <span class="c1"># \alpha_t
+</span>        <span class="n">alphas_cumprod</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cumprod</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># \bar{\alpha}_t
+</span>        <span class="n">alphas_cumprod_prev</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">pad</span><span class="p">(</span><span class="n">alphas_cumprod</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">value</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">)</span> <span class="c1"># \bar{\alpha}_{t-1}
+</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_timesteps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">timesteps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">alphas_cumprod</span> <span class="o">=</span> <span class="n">alphas_cumprod</span>
+
+        <span class="c1"># sampling related parameters
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">sampling_timesteps</span> <span class="o">=</span> <span class="n">default</span><span class="p">(</span><span class="n">sampling_timesteps</span><span class="p">,</span> <span class="n">timesteps</span><span class="p">)</span> <span class="c1"># default num sampling timesteps to number of timesteps at training
+</span>        <span class="k">assert</span> <span class="bp">self</span><span class="p">.</span><span class="n">sampling_timesteps</span> <span class="o">&lt;=</span> <span class="n">timesteps</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">ddim_sampling_eta</span> <span class="o">=</span> <span class="n">ddim_sampling_eta</span>
+        
+        <span class="c1"># helper function to register buffer from float64 to float32
+</span>        <span class="n">register_buffer</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">float32</span><span class="p">))</span>
+        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'betas'</span><span class="p">,</span> <span class="n">betas</span><span class="p">)</span>
+        
+        <span class="c1"># calculations for diffusion q(x_t | x_{t-1}) and others
+</span>        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'sqrt_alphas_cumprod'</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">alphas_cumprod</span><span class="p">))</span> <span class="c1"># \sqrt{\bar{\alpha}_t}
+</span>        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'sqrt_one_minus_alphas_cumprod'</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">alphas_cumprod</span><span class="p">))</span> <span class="c1"># \sqrt{1-\bar{\alpha}_t}
+</span>        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'log_one_minus_alphas_cumprod'</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">alphas_cumprod</span><span class="p">))</span> <span class="c1"># \log{1-\bar{\alpha}_t}
+</span>        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'sqrt_recip_alphas_cumprod'</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">alphas_cumprod</span><span class="p">))</span> <span class="c1"># \sqrt{1/\bar{\alpha}_t}
+</span>        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'sqrt_recipm1_alphas_cumprod'</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">alphas_cumprod</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="c1"># \sqrt{1/(\bar{\alpha}_t-1)}
+</span>
+        <span class="c1"># calculations for posterior q(x_{t-1} | x_t, x_0)
+</span>        <span class="n">posterior_variance</span> <span class="o">=</span> <span class="n">betas</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">alphas_cumprod_prev</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">alphas_cumprod</span><span class="p">)</span> <span class="c1"># \sigma_t
+</span>        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'posterior_variance'</span><span class="p">,</span> <span class="n">posterior_variance</span><span class="p">)</span>
+        <span class="c1"># log calculation clipped because the posterior variance is 0 at the beginning of the diffusion chain
+</span>        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'posterior_log_variance_clipped'</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">posterior_variance</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span> <span class="o">=</span><span class="mf">1e-20</span><span class="p">)))</span>
+        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'posterior_mean_coef1'</span><span class="p">,</span> <span class="n">betas</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">alphas_cumprod_prev</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">alphas_cumprod</span><span class="p">))</span>
+        <span class="n">register_buffer</span><span class="p">(</span><span class="s">'posterior_mean_coef2'</span><span class="p">,</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">alphas_cumprod_prev</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">alphas</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">alphas_cumprod</span><span class="p">))</span>
+
+    <span class="s">"""
+    Training
+    """</span>
+
+    <span class="c1"># 计算x_t=\sqrt{\bat{\alpha}_t}x_0+\sqrt{1-\bat{\alpha}_t}\epsilon
+</span>    <span class="k">def</span> <span class="nf">q_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_start</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">sqrt_alphas_cumprod</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x_start</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">x_start</span> <span class="o">+</span>
+            <span class="n">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">sqrt_one_minus_alphas_cumprod</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x_start</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">noise</span>
+        <span class="p">)</span>
+    
+    <span class="c1"># 计算损失函数L_t=||\epsilon-\epsilon(x_t, t)||_1
+</span>    <span class="k">def</span> <span class="nf">p_losses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_start</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">noise</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x_start</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">x_start</span><span class="p">)</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">noise</span>
+
+        <span class="c1"># 计算 x_t
+</span>        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">q_sample</span><span class="p">(</span><span class="n">x_start</span> <span class="o">=</span> <span class="n">x_start</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">,</span> <span class="n">noise</span> <span class="o">=</span> <span class="n">noise</span><span class="p">)</span>
+
+        <span class="c1"># 计算 \epsilon(x_t, t)
+</span>        <span class="n">model_out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">l1_loss</span><span class="p">(</span><span class="n">model_out</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">reduction</span> <span class="o">=</span> <span class="s">'none'</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="s">'b ... -&gt; b (...)'</span><span class="p">,</span> <span class="s">'mean'</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="c1"># 训练过程
+</span>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="o">*</span><span class="n">img</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">img</span><span class="p">.</span><span class="n">device</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_timesteps</span><span class="p">,</span> <span class="p">(</span><span class="n">b</span><span class="p">,),</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">).</span><span class="nb">long</span><span class="p">()</span>
+
+        <span class="n">img</span> <span class="o">=</span> <span class="n">img</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span> <span class="c1"># data [0, 1] -&gt; [-1, 1]
+</span>        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">p_losses</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="s">"""
+    Sampling
+    """</span>
+    
+    <span class="k">def</span> <span class="nf">data_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s">'./images/official-artwork'</span><span class="p">):</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">T</span><span class="p">.</span><span class="n">Compose</span><span class="p">([</span>
+            <span class="n">T</span><span class="p">.</span><span class="n">Resize</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">image_size</span><span class="p">),</span>
+            <span class="n">T</span><span class="p">.</span><span class="n">RandomHorizontalFlip</span><span class="p">(),</span>
+            <span class="n">T</span><span class="p">.</span><span class="n">ToTensor</span><span class="p">()</span>
+        <span class="p">])</span>
+
+        <span class="n">selected_imgs</span> <span class="o">=</span> <span class="n">random</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">batch_imgs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">selected_imgs</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="p">.</span><span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">img</span><span class="p">))</span>
+            <span class="n">batch_imgs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">img</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">(</span><span class="n">batch_imgs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>
+            
+    <span class="c1"># 计算 x_0 = \sqrt{1/\bat{\alpha}_t}x_t-\sqrt{1/(1-\bat{\alpha}_t)}\epsilon_t
+</span>    <span class="k">def</span> <span class="nf">predict_start_from_noise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_t</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">noise</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">sqrt_recip_alphas_cumprod</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x_t</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">x_t</span> <span class="o">-</span>
+            <span class="n">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">sqrt_recipm1_alphas_cumprod</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x_t</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="n">noise</span>
+        <span class="p">)</span>
+
+    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">ddim_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">return_all_timesteps</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="n">batch</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">total_timesteps</span><span class="p">,</span> <span class="n">sampling_timesteps</span><span class="p">,</span> <span class="n">eta</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="p">.</span><span class="n">betas</span><span class="p">.</span><span class="n">device</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_timesteps</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">sampling_timesteps</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">ddim_sampling_eta</span>
+        
+        <span class="c1"># 用(batch_size * steps)个样本去估计方差修正项
+</span>        <span class="n">T</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_timesteps</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">total_timesteps</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">T</span><span class="p">.</span><span class="nb">int</span><span class="p">().</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">factors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">desc</span> <span class="o">=</span> <span class="s">'computing unbiased term'</span><span class="p">):</span>
+            <span class="n">batch_imgs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">data_generator</span><span class="p">(</span><span class="n">batch</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">).</span><span class="nb">long</span><span class="p">().</span><span class="n">repeat</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+            <span class="n">factor_t</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">((</span><span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">q_sample</span><span class="p">(</span><span class="n">x_start</span> <span class="o">=</span> <span class="n">batch_imgs</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="p">,</span> <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">)),</span> <span class="n">t</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">factors</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">factor_t</span><span class="p">)</span>
+        
+        <span class="n">times</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">total_timesteps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">steps</span> <span class="o">=</span> <span class="n">sampling_timesteps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>   <span class="c1"># [-1, 0, 1, 2, ..., T-1] when sampling_timesteps == total_timesteps
+</span>        <span class="n">times</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">times</span><span class="p">.</span><span class="nb">int</span><span class="p">().</span><span class="n">tolist</span><span class="p">()))</span>
+        <span class="n">time_pairs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">times</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span> <span class="c1"># [(T-1, T-2), (T-2, T-3), ..., (1, 0), (0, -1)]
+</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">)</span>
+        <span class="n">imgs</span> <span class="o">=</span> <span class="p">[</span><span class="n">img</span><span class="p">]</span>
+
+        <span class="n">x_start</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">time_next</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">time_pairs</span><span class="p">,</span> <span class="n">desc</span> <span class="o">=</span> <span class="s">'sampling loop time step'</span><span class="p">):</span>
+            <span class="n">time_cond</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">full</span><span class="p">((</span><span class="n">batch</span><span class="p">,),</span> <span class="n">time</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">long</span><span class="p">)</span>
+            <span class="n">pred_noise</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">time_cond</span><span class="p">)</span> <span class="c1"># 计算 \epsilon(x_t, t)
+</span>            <span class="n">x_start</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">predict_start_from_noise</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">time_cond</span><span class="p">,</span> <span class="n">pred_noise</span><span class="p">)</span> <span class="c1"># x_0
+</span>            <span class="k">if</span> <span class="n">time_next</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">img</span> <span class="o">=</span> <span class="n">x_start</span>
+                <span class="n">imgs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">alphas_cumprod</span><span class="p">[</span><span class="n">time</span><span class="p">]</span>
+            <span class="n">alpha_next</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">alphas_cumprod</span><span class="p">[</span><span class="n">time_next</span><span class="p">]</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="n">factors</span><span class="p">[</span><span class="n">time</span><span class="p">]</span>
+
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">eta</span> <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">/</span> <span class="n">alpha_next</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha_next</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)).</span><span class="n">sqrt</span><span class="p">()</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha_next</span> <span class="o">-</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">).</span><span class="n">sqrt</span><span class="p">()</span>
+            
+            <span class="n">unbias</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha_next</span><span class="p">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">-</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)).</span><span class="n">sqrt</span><span class="p">())</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">factor</span>
+
+            <span class="n">noise</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">x_start</span> <span class="o">*</span> <span class="n">alpha_next</span><span class="p">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">+</span> \
+                  <span class="n">c</span> <span class="o">*</span> <span class="n">pred_noise</span> <span class="o">+</span> \
+                  <span class="p">(</span><span class="n">sigma</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">unbias</span><span class="p">).</span><span class="n">sqrt</span><span class="p">()</span> <span class="o">*</span> <span class="n">noise</span>
+            <span class="n">imgs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">img</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">return_all_timesteps</span> <span class="k">else</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">(</span><span class="n">ret</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="k">return</span> <span class="n">ret</span>
+    
+    <span class="c1"># 采样过程
+</span>    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">img_channel</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">return_all_timesteps</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="n">image_size</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">image_size</span><span class="p">,</span> <span class="n">img_channel</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">ddim_sample</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">image_size</span><span class="p">),</span> <span class="n">return_all_timesteps</span> <span class="o">=</span> <span class="n">return_all_timesteps</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/06/07/extended_analytic.html" class="read-next-link"></a>
+        <section>
+          <span>Estimating the Optimal Covariance with Imperfect Mean in Diffusion Probabilistic Models</span>
+          <p>  扩散概率模型中具有不准确均值的最优协方差估计.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6435207a0d2dde57777a7f09.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/06/05/score.html" class="read-next-link"></a>
+          <section>
+            <span>Score-Based Generative Modeling through Stochastic Differential Equations</span>
+            <p>  基于得分匹配的随机微分方程生成式建模.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6434052f0d2dde57771f1eb5.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

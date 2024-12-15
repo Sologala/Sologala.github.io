@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glow: Generative Flow with Invertible 1x1 Convolutions - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Glow: Generative Flow with Invertible 1x1 Convolutions">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Glow: Generative Flow with Invertible 1x1 Convolutions - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/05/04/glow.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Glow: Generative Flow with Invertible 1x1 Convolutions</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-05-04"><i class="iconfont icon-date"></i>04 May 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/62d51148f54cd3f937ee124e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Glow：使用1x1可逆卷积构造生成流.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1807.03039">Glow: Generative Flow with Invertible 1x1 Convolutions</a></li>
+  <li>code：<a href="https://github.com/rosinality/glow-pytorch">Glow-Pytorch</a></li>
+</ul>
+
+<h1 id="1-问题建模">1. 问题建模</h1>
+
+<p><strong>流(flow-based)</strong>模型旨在对真实数据分布$\hat{p}_X(x)$与隐变量$p_Z(z)$之间的可逆映射关系进行建模。定义生成过程：</p>
+
+\[z~ p_Z(z), x=g(z)\]
+
+<p>$g(z)$是可逆的双射函数。给定一个数据样本$x$，隐变量推断由$z=f(x)=g^{−1}(x)$完成。函数$f(x)$由一系列变换复合而成$f=f_1\circ f_2 \circ \cdots \circ f_K$。则变换过程中存在一系列中间特征$h_k=f_k(h_{k-1})$：</p>
+
+\[x = h_0 \leftrightarrow h_1 \leftrightarrow  h_2 \leftrightarrow \cdots  \leftrightarrow  h_{K-1}  \leftrightarrow  h_K =z\]
+
+<p>根据<a href="https://0809zheng.github.io/2022/04/30/variable.html">概率密度的变量替换公式</a>，若隐变量的概率分布指定为$p_Z(z)$，则数据分布的概率密度函数$p_X(x)$表示为：</p>
+
+\[p_X(x) = p_Z(z)\cdot |\det[\frac{dz}{dx}]| = p_Z(z)\cdot |\det[\prod_{k=1}^{K}\frac{dh_k}{dh_{k-1}}]|\]
+
+<p>目标函数为最大化概率分布的对数似然：</p>
+
+\[\log p_X(x) = \log p_Z(z) +\sum_{k=1}^{K} \log |\det[\frac{dh_k}{dh_{k-1}}]|\]
+
+<p>其中$\det [\frac{dh_k}{dh_{k-1}}]$是函数$f_k$在$h_{k-1}$上的<strong>Jacobian</strong>行列式。为了构造可解的目标函数，要求设计合适的$f$使得<strong>Jacobian</strong>行列式容易计算。</p>
+
+<h1 id="2-glow">2. Glow</h1>
+
+<p><strong>Glow</strong>模型的整体结构受<a href="https://0809zheng.github.io/2022/05/03/realnvp.html"><font color="Blue">Real NVP</font></a>启发，采用多尺度结构。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629b20db09475431293f4460.jpg" alt="" /></p>
+
+<p>整体模型相当于编码器$z=f(x)$，
+原始输入$x$每经过一个<strong>flow</strong>模块后，输出与$x$尺寸相同的特征，将其沿着通道维度平均分为$z_1,z_2$，其中$z_2$直接输出，而$z_1$作为下一次输入，该过程共进行$L-1$次。最终的输出由$L-1$次中间结果和一次最终结果组成，总大小跟输入一样。在生成$64\times 64$的实验中默认$L=3$。</p>
+
+<p>值得一提的是，模型需要实现推断过程$z=f(x)$用于训练，并且需要同时实现生成过程$x=f^{-1}(z)$用于采样生成结果。</p>
+
+<p>每个<strong>flow</strong>模块包含一次<strong>squeeze</strong>操作，一个可逆网络和一次<strong>split</strong>操作（最后一个输出模块不包含）组成。实验中默认$K=32$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629b2a13094754312951540c.jpg" alt="" /></p>
+
+<h3 id="-squeeze操作">⚪ squeeze操作</h3>
+
+<p><strong>squeeze</strong>操作能够增加特征的通道维度，同时保留特征的空间局部相关性。假设输入数据的尺寸为$h×w×c$，沿着空间维度分为一个个$k×k×c$的特征块，然后将每个块调整为$1×1×k^2c$，从而构造$h/k×w/k×k^2c$的特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6299e34f0947543129c387d4.jpg" alt="" /></p>
+
+<h3 id="-可逆网络">⚪ 可逆网络</h3>
+
+<p><img src="https://pic.imgdb.cn/item/629b29bc094754312950ccf1.jpg" alt="" /></p>
+
+<p>可逆网络包含一个<strong>actnorm</strong>归一化层，一个可逆的$1\times 1$卷积层和一个仿射耦合层。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629b42a809475431297a1e28.jpg" alt="" /></p>
+
+<ul>
+  <li><strong>actnorm归一化层</strong></li>
+</ul>
+
+<p><strong>actnorm</strong>归一化层是对特征的每个元素进行缩放平移变换：</p>
+
+\[\hat{z} = \frac{z-\mu}{\sigma}\]
+
+<p>其中$μ,σ$是训练参数，可以用初始<strong>batch</strong>的均值和方差初始化。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ActNorm</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">loc</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"initialized"</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">uint8</span><span class="p">))</span> <span class="c1"># 标记是否为初始batch
+</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">flatten</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">).</span><span class="n">contiguous</span><span class="p">().</span><span class="n">view</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">mean</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="n">std</span> <span class="o">=</span> <span class="n">flatten</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">3</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="p">.</span><span class="n">loc</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">copy_</span><span class="p">(</span><span class="o">-</span><span class="n">mean</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">scale</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">copy_</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">std</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">shape</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">initialized</span><span class="p">.</span><span class="n">item</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">initialize</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">initialized</span><span class="p">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">log_abs</span> <span class="o">=</span> <span class="n">logabs</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">logdet</span> <span class="o">=</span> <span class="n">height</span> <span class="o">*</span> <span class="n">width</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">log_abs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="nb">input</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">loc</span><span class="p">),</span> <span class="n">logdet</span>
+
+    <span class="k">def</span> <span class="nf">reverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">output</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">loc</span>
+</code></pre></div></div>
+
+<ul>
+  <li><strong>可逆的1x1卷积层</strong></li>
+</ul>
+
+<p>可逆网络中的耦合层会把输入特征沿通道拆分成两部分。为了增强模型的表示能力，可以将通道顺序打乱，使得信息充分混合。常用的打乱方式包括反转或随机打乱，这些操作等价于将一个置换矩阵(单位正交矩阵)作用于数据通道维度，可以通过$1\times 1$卷积层实现(等价于共享权重的、可逆的沿通道维度的全连接层)。</p>
+
+<p><strong>可逆1x1卷积层</strong>的思路是将置换矩阵替换成可训练的参数矩阵$W \in \Bbb{R}^{C\times C}$，该变换引入了<strong>Jacobian</strong>行列式$\det W$。为了保证$W$的可逆性，一般使用“随机正交矩阵”初始化。注意到任意矩阵都有<strong>PLU</strong>分解：</p>
+
+\[W=PLU\]
+
+<p>其中$P$是一个置换矩阵，$L$是一个对角线元素全为$1$的下三角阵，$U$是一个上三角阵。此时<strong>Jacobian</strong>行列式$\det W = \prod diag(U)$，即$U$的对角线元素的乘积。</p>
+
+<p>在<strong>Glow</strong>中先随机生成一个正交矩阵，然后做<strong>LU</strong>分解得到$P,L,U$，固定$P$，约束$L$为对角线元素全为$1$的下三角阵，固定$U$的对角线的正负号，优化$L,U$的其余参数。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">linalg</span> <span class="k">as</span> <span class="n">la</span>
+
+<span class="k">class</span> <span class="nc">InvConv2dLU</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">)</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">la</span><span class="p">.</span><span class="n">qr</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+        <span class="n">w_p</span><span class="p">,</span> <span class="n">w_l</span><span class="p">,</span> <span class="n">w_u</span> <span class="o">=</span> <span class="n">la</span><span class="p">.</span><span class="n">lu</span><span class="p">(</span><span class="n">q</span><span class="p">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">))</span> <span class="c1"># PLU分解
+</span>        <span class="n">w_s</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="n">w_u</span><span class="p">)</span> <span class="c1"># 计算U对角线元素
+</span>        <span class="n">w_u</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">triu</span><span class="p">(</span><span class="n">w_u</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># 约束U为上三角阵（不包括对角线）
+</span>        <span class="n">u_mask</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">triu</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">w_u</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># 全1上三角阵
+</span>        <span class="n">l_mask</span> <span class="o">=</span> <span class="n">u_mask</span><span class="p">.</span><span class="n">T</span> <span class="c1"># 全1下三角阵
+</span>
+        <span class="n">w_p</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">w_p</span><span class="p">)</span>
+        <span class="n">w_l</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">w_l</span><span class="p">)</span>
+        <span class="n">w_s</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">w_s</span><span class="p">)</span>
+        <span class="n">w_u</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">w_u</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"w_p"</span><span class="p">,</span> <span class="n">w_p</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"u_mask"</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">u_mask</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"l_mask"</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">l_mask</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"s_sign"</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">sign</span><span class="p">(</span><span class="n">w_s</span><span class="p">))</span> <span class="c1"># U对角线的正负号
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s">"l_eye"</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">eye</span><span class="p">(</span><span class="n">l_mask</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="c1"># 单位阵
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">w_l</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">w_l</span><span class="p">)</span> <span class="c1"># 可学习参数：L的下三角元素
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">w_s</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">logabs</span><span class="p">(</span><span class="n">w_s</span><span class="p">))</span> <span class="c1"># 可学习参数：U的对角元素的对数值
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">w_u</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">w_u</span><span class="p">)</span> <span class="c1"># 可学习参数：U的上三角元素
+</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">weight</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">w_p</span> <span class="c1"># P为固定值
+</span>            <span class="o">@</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">w_l</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">l_mask</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">l_eye</span><span class="p">)</span> <span class="c1"># 下三角阵L对角线元素全为1，其余参数可学习
+</span>            <span class="o">@</span> <span class="p">((</span><span class="bp">self</span><span class="p">.</span><span class="n">w_u</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">u_mask</span><span class="p">)</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">s_sign</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">w_s</span><span class="p">)))</span> <span class="c1"># 上三角阵U对角线的正负号固定，其余参数可学习
+</span>        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">)</span>
+        <span class="n">logdet</span> <span class="o">=</span> <span class="n">height</span> <span class="o">*</span> <span class="n">width</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">w_s</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">logdet</span>
+
+    <span class="k">def</span> <span class="nf">reverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">F</span><span class="p">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">weight</span><span class="p">.</span><span class="n">squeeze</span><span class="p">().</span><span class="n">inverse</span><span class="p">().</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>实验结果表明，相比于反转或随机打乱，<strong>可逆1x1卷积层</strong>能实现更低的损失函数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/629b393d09475431296a776a.jpg" alt="" /></p>
+
+<ul>
+  <li><strong>仿射耦合层</strong></li>
+</ul>
+
+<p><strong>仿射耦合层(Affine Coupling Layer)</strong>是<a href="https://0809zheng.github.io/2022/05/03/realnvp.html"><font color="Blue">Real NVP</font></a>中设计的一种可逆结构。把$C$个通道的输入变量$x$沿通道拆分成两部分$x_1=x_{1:c}$，$x_2=x_{c+1:C}$，对于输出变量$h$取如下变化：</p>
+
+\[\begin{aligned} h_1&amp;= x_1 \\ h_2&amp;=s(x_1)\otimes x_2+t(x_1) \end{aligned}\]
+
+<p>其中$s,t$是任意函数，可以用卷积神经网络实现。该变换的<strong>Jacobian</strong>矩阵是下三角阵：</p>
+
+\[[\frac{\partial h}{\partial x}] = \begin{pmatrix} I_d &amp; 0 \\ \frac{\partial s}{\partial x_1}\otimes x_2+\frac{\partial t}{\partial x_1} &amp; \text{diag}(s) \end{pmatrix}\]
+
+<p>上述<strong>Jacobian</strong>矩阵的行列式为$s$各元素的乘积$\prod diag(s)$，同时该变换是可逆的：</p>
+
+\[\begin{aligned} x_1&amp;= h_1 \\ x_2&amp;=(h_2-t(h_1))/s(h_1) \end{aligned}\]
+
+<p>为了保证可逆性，通常约束$s$各元素均大于$0$。在实现时用神经网络建模输出$\log s$，然后取指数形式$e^{\log s}$。</p>
+
+<p>其中$s,t$设计为如下卷积神经网络：</p>
+
+<p><img src="https://pic.imgdb.cn/item/629b3a6509475431296c55bc.jpg" alt="" /></p>
+
+<p>最后一层使用零初始化，此时初始状态下相当于恒等变换，这有利于训练深层网络。输出增加一次尺度变换。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AffineCoupling</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">filter_size</span><span class="o">=</span><span class="mi">512</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="c1"># s,t设计的卷积神经网络
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">filter_size</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">net</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">weight</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">zero_</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">net</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">bias</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">zero_</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="n">in_a</span><span class="p">,</span> <span class="n">in_b</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">out_net</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">net</span><span class="p">(</span><span class="n">in_a</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">log_s</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">out_net</span><span class="p">.</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">log_s</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">out_b</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_b</span> <span class="o">+</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">s</span>
+        <span class="n">logdet</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">s</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">in_a</span><span class="p">,</span> <span class="n">out_b</span><span class="p">],</span> <span class="mi">1</span><span class="p">),</span> <span class="n">logdet</span>
+
+    <span class="k">def</span> <span class="nf">reverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+        <span class="n">out_a</span><span class="p">,</span> <span class="n">out_b</span> <span class="o">=</span> <span class="n">output</span><span class="p">.</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">log_s</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">net</span><span class="p">(</span><span class="n">out_a</span><span class="p">).</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">log_s</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">in_b</span> <span class="o">=</span> <span class="n">out_b</span> <span class="o">/</span> <span class="n">s</span> <span class="o">-</span> <span class="n">t</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">out_a</span><span class="p">,</span> <span class="n">in_b</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>值得一提的是，在仿射耦合层中的尺度变换$s(\cdot)$由于<strong>actnorm</strong>的存在已经不重要了，所以训练大型的模型时，为了节省资源，一般都只用加性耦合层。</p>
+
+<h3 id="-split操作">⚪ split操作</h3>
+
+<p><img src="https://pic.imgdb.cn/item/629b3e19094754312972447d.jpg" alt="" /></p>
+
+<p><strong>split</strong>操作将每次输出特征$z$拆分成两个$z_1,z_2$，其中$z_2$直接输出，而$z_1$作为下一次输入。此时输出隐变量$z_2$直接取标准正态分布并不合适，因为$z_2$与$z_1$相关，因此有条件分布：</p>
+
+\[p(z_2) = p(z_2|z_1)\]
+
+<p>假设$p(z_2|z_1)$为正态分布，其均值和方差通过$z_1$计算(用卷积层回归)。如果仍然构造一个符合标准正态分布的隐变量$\hat{z}_2$，相当于对输出再进行一次变换：</p>
+
+\[\hat{z}_2 = \frac{z_2-\mu(z_1)}{\sigma(z_1)}\]
+
+<p>该变换产生行列式$-\sum \log \sigma$。</p>
+
+<h3 id="-损失函数">⚪ 损失函数</h3>
+
+<p><strong>Glow</strong>的损失函数为负对数似然：</p>
+
+\[loss = - \log p_Z(\hat{z}) -\sum_{k=1}^{K} \log |\det[\frac{dh_k}{dh_{k-1}}]|\]
+
+<p>其中隐变量$\hat{z}$的先验分布$p_Z(\hat{z})$预设为各分量独立的标准正态分布：</p>
+
+\[p_Z(\hat{z}) = \frac{1}{(\sqrt{2\pi})^D}e^{-\frac{1}{2}||\hat{z}||^2}\]
+
+<p>则损失函数表示为：</p>
+
+\[loss = \frac{1}{2}||\hat{z}||^2  -\sum_{k=1}^{K} \log |\det[\frac{dh_k}{dh_{k-1}}]|\]
+
+<p>前者表示输出的平方和，后者表示所有变换贡献的<strong>Jacobian</strong>行列式$\det[\frac{dh_k}{dh_{k-1}}]$的负对数，来源于<strong>actnorm</strong>归一化层，可逆$1\times 1$卷积层、仿射耦合层和强制输出隐变量标准化。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/05/05/smooth.html" class="read-next-link"></a>
+        <section>
+          <span>曲线的平滑处理方法</span>
+          <p>  Smooth curves.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6274755809475431296f3854.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/05/03/realnvp.html" class="read-next-link"></a>
+          <section>
+            <span>Density estimation using Real NVP</span>
+            <p>  Real NVP：使用实值非体积保持进行密度估计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6299bee90947543129946a77.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

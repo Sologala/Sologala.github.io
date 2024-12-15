@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/01/27/bisenetv2.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-01-27"><i class="iconfont icon-date"></i>27 Jan 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/64098654f144a010075da7c2.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>BiSeNet V2: 实时语义分割的带引导聚合的双边网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2004.02147">BiSeNet V2: Bilateral Network with Guided Aggregation for Real-time Semantic Segmentation</a></li>
+</ul>
+
+<p><a href="https://0809zheng.github.io/2021/01/26/bisenet.html"><font color="Blue">BiSeNet</font></a>的双路分割结构在实时分割的任务中取得了不错的效果，这种网络结构能够保留低级细节和高级语义，同时又不会损害推理速度，很好的权衡了实现准确的语义分割任务和快速的推理速度之间的平衡。因此，提出了基于双路的分段网络-<strong>BiSeNetV2</strong>来实现实时的语义分割。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64098710f144a010075f06d8.jpg" alt="" /></p>
+
+<p>相比于初版<strong>BiSeNetV1</strong>，<strong>V2</strong>简化了原始结构，使网络更加高效；
+使用更加紧凑的网络结构以及精心设计的组件，加深了<strong>Semantic Branch</strong>的网络，使用更加轻巧的深度可分离卷积来加速模型；设计了更为有效的<strong>Aggregation Layer</strong>，以增强<strong>Semantic Branch</strong>和<strong>Detail Branch</strong>之间的链接。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6409878ff144a010075ff114.jpg" alt="" /></p>
+
+<p><strong>BiSeNetV2</strong>主要包含几个结构：<strong>Detail Branch</strong>分支、<strong>Semantic Branch</strong>分支、<strong>Aggregation Layer</strong>聚合层、<strong>Auxiliary Loss</strong>分支。</p>
+
+<h3 id="-细节分支-detail-branch">⚪ 细节分支 Detail Branch</h3>
+
+<p>对于<strong>Detail Branch</strong>，依旧使用类<strong>VGG</strong>的网络结构，这一部分结构较为简单，用于快速下采样并得到细分的<strong>feature map</strong>。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DetailBranch</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detail_channels</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DetailBranch</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">detail_branch</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">()</span>
+ 
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">detail_branch</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+ 
+                        <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">detail_branch</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+ 
+                        <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+ 
+                        <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">detail_channels</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                        <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">stage</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">detail_branch</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">stage</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<h3 id="-语义分支-semantic-branch">⚪ 语义分支 Semantic Branch</h3>
+<p><strong>Semantic Branch</strong>与<strong>Detail Branch</strong>平行，主要用于捕获高级语义信息。在这一个分支中，通道数比较少，因为更多信息可以由<strong>Detail Branch</strong>提供。由于获取高级语义信息需要上下文的依赖和较大的感受野，所以在这一个分支中，使用快速采样的策略来迅速扩大感受野；使用全局平均池化来嵌入上下文信息。</p>
+
+<p>作者在这部分做了较为精心的设计，主要包括三部分：</p>
+<ul>
+  <li><strong>Stem Block</strong>用于快速下采样；</li>
+  <li><strong>Gather-and-Expansion Layer（GE Layer）</strong>用于卷积获取细节信息。</li>
+  <li><strong>Context Embedding Block（CE Layer）</strong>用于嵌入上下文信息。</li>
+</ul>
+
+<p><strong>Stem Block</strong>和<strong>CE Block</strong>的结构较为简单。</p>
+
+<p><img src="https://pic.imgdb.cn/item/640989b9f144a0100763913d.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">StemBlock</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StemBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_in</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_branch</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="o">//</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>            
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">out_channels</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="p">)</span> 
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ceil_mode</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">fusion</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="p">)</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_in</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x_branch</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_branch</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x_downsample</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x_branch</span><span class="p">,</span> <span class="n">x_downsample</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fusion</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+
+<span class="k">class</span> <span class="nc">CEBlock</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CEBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">out_channels</span> <span class="o">=</span> <span class="n">out_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gap</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">)</span>
+            <span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_gap</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">out_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">out_channels</span><span class="p">)</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+            <span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_last</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">out_channels</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+            <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">identity</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">gap</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_gap</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">identity</span> <span class="o">+</span> <span class="n">x</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_last</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<p>对于<strong>GE Block</strong>，分为是否进行下采样的两个模块：不进行下采样的<strong>GE Block（b）</strong>和进行下采样的<strong>GE Block（c）</strong>。作者在这里借鉴了<strong>MobileNetv2</strong>中的倒瓶颈结构设计，为了减少计算量，中间使用一个深度可分离卷积。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64098b10f144a01007662026.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">depthwise_separable_conv</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">stride</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">depthwise_separable_conv</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">depthwise</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">pointwise</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">depthwise</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pointwise</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+ 
+<span class="k">class</span> <span class="nc">GELayer</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">exp_ratio</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GELayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">mid_channel</span> <span class="o">=</span> <span class="n">in_channels</span> <span class="o">*</span> <span class="n">exp_ratio</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+            <span class="p">)</span>
+ 
+        <span class="k">if</span> <span class="n">stride</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">dwconv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">mid_channel</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channels</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">mid_channel</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+ 
+                <span class="n">depthwise_separable_conv</span><span class="p">(</span><span class="n">mid_channel</span><span class="p">,</span> <span class="n">mid_channel</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">mid_channel</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">shortcut</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">dwconv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">mid_channel</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span><span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">mid_channel</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+                
+                <span class="n">depthwise_separable_conv</span><span class="p">(</span><span class="n">mid_channel</span><span class="p">,</span> <span class="n">mid_channel</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">mid_channel</span><span class="p">),</span>       
+                
+                <span class="n">depthwise_separable_conv</span><span class="p">(</span><span class="n">mid_channel</span><span class="p">,</span> <span class="n">mid_channel</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">mid_channel</span><span class="p">),</span>
+            <span class="p">)</span>
+ 
+            <span class="bp">self</span><span class="p">.</span><span class="n">shortcut</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">depthwise_separable_conv</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+ 
+                <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+                <span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">mid_channel</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">)</span>
+            <span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">act</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">identity</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dwconv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+ 
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">shortcut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">shortcut</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">shortcut</span><span class="p">(</span><span class="n">identity</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">shortcut</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">identity</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">act</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<p><strong>Semantic Branch</strong>的整体结构：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SemanticBranch</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">semantic_channels</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">exp_ratio</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SemanticBranch</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">semantic_channels</span> <span class="o">=</span> <span class="n">semantic_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">semantic_stages</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">semantic_stages</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">StemBlock</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">semantic_stages</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                        <span class="n">GELayer</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">exp_ratio</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                        <span class="n">GELayer</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">exp_ratio</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                        <span class="n">GELayer</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">exp_ratio</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                        <span class="n">GELayer</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">exp_ratio</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">semantic_stages</span><span class="p">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                        <span class="n">GELayer</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                <span class="n">exp_ratio</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                        <span class="n">GELayer</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">semantic_channels</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                <span class="n">exp_ratio</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                                <span class="p">)</span>
+                            <span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">semantic_stages</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">CEBlock</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">semantic_channels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">semantic_outs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">semantic_stage</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">semantic_stages</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">semantic_stage</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">semantic_outs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">semantic_outs</span>
+</code></pre></div></div>
+
+<h3 id="-聚合层-aggregation-layer">⚪ 聚合层 Aggregation Layer</h3>
+<p><strong>Aggregation Layer</strong>接受了<strong>Detail Branch</strong>和<strong>Semantic Branch</strong>的结果，通过下图中的一系列操作进行特征融合。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64098cfff144a010076bb3fa.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AggregationLayer</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AggregationLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">Conv_DetailBranch_1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">depthwise_separable_conv</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">Conv_DetailBranch_2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">AvgPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">Conv_SemanticBranch_1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">"bilinear"</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Sigmoid</span><span class="p">()</span>
+        <span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">Conv_SemanticBranch_2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">depthwise_separable_conv</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Sigmoid</span><span class="p">()</span>
+        <span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">conv_out</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">),</span>
+        <span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Detail_x</span><span class="p">,</span> <span class="n">Semantic_x</span><span class="p">):</span>
+        <span class="n">DetailBranch_1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">Conv_DetailBranch_1</span><span class="p">(</span><span class="n">Detail_x</span><span class="p">)</span>
+        <span class="n">DetailBranch_2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">Conv_DetailBranch_2</span><span class="p">(</span><span class="n">Detail_x</span><span class="p">)</span>
+ 
+        <span class="n">SemanticBranch_1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">Conv_SemanticBranch_1</span><span class="p">(</span><span class="n">Semantic_x</span><span class="p">)</span>
+        <span class="n">SemanticBranch_2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">Conv_SemanticBranch_2</span><span class="p">(</span><span class="n">Semantic_x</span><span class="p">)</span>
+ 
+        <span class="n">out_1</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">DetailBranch_1</span><span class="p">,</span> <span class="n">SemanticBranch_1</span><span class="p">)</span>
+        <span class="n">out_2</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">DetailBranch_2</span><span class="p">,</span> <span class="n">SemanticBranch_2</span><span class="p">)</span>
+        <span class="n">out_2</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">out_2</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">"bilinear"</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+ 
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out_1</span><span class="o">+</span><span class="n">out_2</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv_out</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+</code></pre></div></div>
+
+<h3 id="-auxiliary-loss">⚪ Auxiliary Loss</h3>
+<p>作者在<strong>Semantic Branch</strong>中引出了几个<strong>Auxiliary Loss</strong>分支，对比了集中<strong>Auxiliary Loss</strong>组合的性能，得出如下结果。其中检测头的实现比较简单。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64098e65f144a010076e02da.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SegHead</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">cls_seg</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">channels</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">channels</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">cls_seg</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-bisenet-v2">⚪ BiSeNet V2</h3>
+<p><strong>BiSeNet V2</strong>的整体结构实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BiSeNetV2</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="n">detail_channels</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> 
+                <span class="n">semantic_channels</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> 
+                <span class="n">semantic_expansion_ratio</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+                <span class="n">aggregation_channels</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+                <span class="n">out_indices</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+                <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BiSeNetV2</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span> <span class="o">=</span> <span class="n">in_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">detail_channels</span> <span class="o">=</span> <span class="n">detail_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">semantic_expansion_ratio</span> <span class="o">=</span> <span class="n">semantic_expansion_ratio</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">semantic_channels</span> <span class="o">=</span> <span class="n">semantic_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">aggregation_channels</span> <span class="o">=</span> <span class="n">aggregation_channels</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">out_indices</span> <span class="o">=</span> <span class="n">out_indices</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">detail</span> <span class="o">=</span> <span class="n">DetailBranch</span><span class="p">(</span><span class="n">detail_channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">detail_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">semantic</span> <span class="o">=</span> <span class="n">SemanticBranch</span><span class="p">(</span><span class="n">semantic_channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">semantic_channels</span><span class="p">,</span> <span class="n">in_channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">,</span><span class="n">exp_ratio</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">semantic_expansion_ratio</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">AggregationLayer</span> <span class="o">=</span> <span class="n">AggregationLayer</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">aggregation_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">aggregation_channels</span><span class="p">)</span>
+ 
+        <span class="bp">self</span><span class="p">.</span><span class="n">seg_head_aggre</span> <span class="o">=</span> <span class="n">SegHead</span><span class="p">(</span><span class="n">semantic_channels</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">seg_heads</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">seg_heads</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">seg_head_aggre</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">semantic_channels</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">seg_heads</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">SegHead</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span><span class="p">))</span>
+ 
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="n">x_detail</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">detail</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x_semantic_lst</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">semantic</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x_head</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">AggregationLayer</span><span class="p">(</span><span class="n">x_detail</span><span class="p">,</span> <span class="n">x_semantic_lst</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">outs</span> <span class="o">=</span> <span class="p">[</span><span class="n">x_head</span><span class="p">]</span> <span class="o">+</span> <span class="n">x_semantic_lst</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">outs</span> <span class="o">=</span> <span class="p">[</span><span class="n">outs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">out_indices</span><span class="p">]</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">outs</span><span class="p">)</span>
+ 
+        <span class="n">seg_out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">stage</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">seg_heads</span><span class="p">):</span>
+            <span class="n">seg_out</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">stage</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">index</span><span class="p">]),</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="n">w</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s">"bilinear"</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">seg_out</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/01/28/fpn.html" class="read-next-link"></a>
+        <section>
+          <span>Panoptic Feature Pyramid Networks</span>
+          <p>  全景特征金字塔网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64083a5af144a01007429060.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/01/26/bisenet.html" class="read-next-link"></a>
+          <section>
+            <span>BiSeNet: Bilateral Segmentation Network for Real-time Semantic Segmentation</span>
+            <p>  BiSeNet: 实时语义分割的双边分割网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64097f4bf144a0100751357f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

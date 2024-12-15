@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>变分自编码器(Variational Autoencoder) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="变分自编码器(Variational Autoencoder)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="变分自编码器(Variational Autoencoder) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/01/vae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>变分自编码器(Variational Autoencoder)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-01"><i class="iconfont icon-date"></i>01 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5fb715b8b18d627113d7ae88.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Variational Autoencoder.</p>
+</blockquote>
+
+<p>本文目录：</p>
+<ol>
+  <li>变分自编码器之“自编码器”：概率编码器与概率解码器</li>
+  <li>变分自编码器之“变分”：优化目标与重参数化</li>
+  <li>变分自编码器的各种变体</li>
+</ol>
+
+<h1 id="1-变分自编码器之自编码器概率编码器与概率解码器">1. 变分自编码器之“自编码器”：概率编码器与概率解码器</h1>
+<p><strong>变分自编码器(Variational Autoencoder,VAE)</strong>是一种深度生成模型，旨在学习已有数据集\(\{x_1,x_2,...,x_n\}\)的概率分布$p(x)$，并从数据分布中采样生成新的数据$\hat{x}$~$p(x)$。由于已有数据(也称<strong>观测数据, observed data</strong>)的概率分布形式是未知的，<strong>VAE</strong>把输入数据编码到<strong>隐空间(latent space)</strong>中，构造<strong>隐变量(latent variable)</strong>的概率分布$p(z)$，从隐变量中采样并重构新的数据，整个过程与自编码器类似。<strong>VAE</strong>的概率模型如下：</p>
+
+\[p(x) = \sum_{z}^{} p(x,z) = \sum_{z}^{}p(x|z)p(z)\]
+
+<p>如果人为指定隐变量的概率分布$p(z)$形式，则可以从中采样并通过解码器$p(x | z)$(通常用神经网络拟合)生成新的数据。然而注意到此时隐变量的概率分布$p(z)$与输入数据无关，即给定一个输入数据$x_n$，从$p(z)$随机采样并重构为$\hat{x}_n$，将无法保证$x_n$与$\hat{x}_n$的对应性！此时生成模型常用的优化指标$Distance(x_n,\hat{x}_n)$等也无法使用。</p>
+
+<p>在<strong>VAE</strong>中并不是<strong>直接指定</strong>隐变量的概率分布$p(z)$形式，而是为每个输入数据$x_n$指定一个<strong>后验分布</strong>$q(z | x_n)$(通常为标准正态分布)，则从该后验分布中采样并重构的$\hat{x}_n$对应于$x_n$。<strong>VAE</strong>指定后验分布$q(z | x_n)$为标准正态分布\(\mathcal{N}(0,I)\)，则隐变量分布$p(z)$实际上也会是标准正态分布\(\mathcal{N}(0,I)\)：</p>
+
+\[p(z) = \sum_{x}^{} q(z|x)p(x) = \sum_{x}^{} \mathcal{N}(0,I)p(x)= \mathcal{N}(0,I)\sum_{x}^{} p(x)= \mathcal{N}(0,I)\]
+
+<p><strong>VAE</strong>使用编码器(通常用神经网络)拟合后验分布$q(z | x_n)$的均值$\mu_n$和方差$\sigma_n^2$(其数量由每批次样本量决定)，通过训练使其接近标准正态分布\(\mathcal{N}(0,I)\)。实际上后验分布不可能<strong>完全精确</strong>地被拟合为标准正态分布，因为这样会使得$q(z | x_n)$完全独立于输入数据$x_n$，从而使得重构效果极差。<strong>VAE</strong>的训练过程中隐含地存在着<strong>对抗</strong>的过程，最终使得$q(z | x_n)$保留一定的输入数据$x_n$信息，并且对输入数据也具有一定的重构效果。</p>
+
+<p><strong>VAE</strong>的整体结构如下图所示。从给定数据中学习后验分布$q(z | x)$的均值$\mu_n$和方差$\sigma_n^2$的过程称为<strong>推断(inference)</strong>，实现该过程的结构被称作<strong>概率编码器(probabilistic encoder)</strong>。从后验分布的采样结果中重构数据的过程$p(x | z)$称为<strong>生成(generation)</strong>，实现该过程的结构被称作<strong>概率解码器(probabilistic decoder)</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/626b9206239250f7c5a98639.jpg" alt="" /></p>
+
+<h3 id="讨论后验分布可以选取其他分布吗">⚪讨论：后验分布可以选取其他分布吗？</h3>
+
+<p>理论上，后验分布$q(z | x_n)$可以选取任意可行的概率分布形式。然而从后续讨论中会发现对后验分布的约束是通过<strong>KL</strong>散度实现的，<strong>KL</strong>散度对于概率为$0$的点会发散，选择概率密度全局非负的标准正态分布\(\mathcal{N}(0,I)\)不会出现这种问题，且具有可以计算梯度的简洁的解析解。此外，由于服从正态分布的独立随机变量的和仍然是正态分布，因此隐空间中任意两点间的线性插值也是有意义的，并且可以通过线性插值获得一系列生成结果的展示。</p>
+
+<h3 id="讨论vae的bayesian解释">⚪讨论：VAE的Bayesian解释</h3>
+
+<p>自编码器<strong>AE</strong>将观测数据$x$编码为特征向量$z$，每一个特征向量对应特征空间中的一个离散点，所有特征向量的分布是无序、散乱的，并且无法保证不存在特征向量的空间点能够重构出真实样本。<strong>VAE</strong>是<strong>AE</strong>的<strong>Bayesian</strong>形式，将特征向量看作随机变量，使其能够覆盖特征空间中的一片区域。进一步通过强迫所有数据的特征向量服从多维正态分布，从而解耦特征维度，使得特征的空间分布有序、规整。</p>
+
+<h1 id="2-变分自编码器之变分优化目标与重参数化">2. 变分自编码器之“变分”：优化目标与重参数化</h1>
+<p><strong>VAE</strong>是一种隐变量模型$p(x,z)$，其优化目标为最大化观测数据的对数似然$\log p(x)=\log \sum_{z}^{} p(x,z)$。该问题是不可解的，因此采用<a href="https://0809zheng.github.io/2020/03/25/variational-inference.html">变分推断</a>求解。变分推断的核心思想是引入一个新的分布$q(z | x)$作为后验分布$p(z | x)$的近似，从而构造<strong>对数似然</strong>$\log p(x)$的置信下界<strong>ELBO</strong>(也称<strong>变分下界</strong>, <strong>variational lower bound</strong>)，通过最大化<strong>ELBO</strong>来代替最大化$\log p(x)$。采用<a href="https://0809zheng.github.io/2022/07/20/jenson.html">Jensen不等式</a>可以快速推导<strong>ELBO</strong>的表达式：</p>
+
+\[\begin{aligned} \log p(x) &amp;= \log \sum_{z}^{} p(x,z) = \log \sum_{z}^{} \frac{p(x,z)}{q(z|x)}q(z|x) \\ &amp;= \log \Bbb{E}_{z \text{~} q(z|x)}[\frac{p(x,z)}{q(z|x)}] \geq \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{q(z|x)}] \end{aligned}\]
+
+<p>上式表明变分下界<strong>ELBO</strong>是原优化目标$\log p(x)$的一个下界，两者的差距可以通过对$\log p(x)$的另一种写法获得：</p>
+
+\[\begin{aligned} \log p(x) &amp;= \sum_{z}^{} q(z|x)\log p(x)= \Bbb{E}_{z \text{~} q(z|x)}[\log p(x)]\\ &amp;= \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{p(z|x)}] = \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{p(z|x)}\frac{q(z|x)}{q(z|x)}] \\ &amp;= \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{q(z|x)}] + \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{q(z|x)}{p(z|x)}] \end{aligned}\]
+
+<p>因此<strong>VAE</strong>的变分下界与原目标之间存在的<strong>gap</strong>为$\Bbb{E}_{z \text{~} q(z|x)}[\log \frac{q(z|x)}{p(z|x)}]=KL(q(z|x)||p(z|x))$。让<strong>gap</strong>为$0$的条件是$q(z|x)=p(z|x)$，即找到一个与真实后验分布$p(z|x)$相同的分布$q(z|x)$。然而$q(z|x)$通常假设为较为简单的分布形式(如正态分布)，不能拟合足够复杂的分布。因此<strong>VAE</strong>通常只是一个近似模型，优化的是代理(<strong>surrogate</strong>)目标，生成的图像比较模糊。</p>
+
+<p>在<strong>VAE</strong>中，最大化<strong>ELBO</strong>等价于最小化如下损失函数：</p>
+
+\[\begin{aligned} \mathcal{L}  &amp;= -\mathbb{E}_{z \text{~} q(z|x)} [\log \frac{p(x,z)}{q(z|x)}] = -\mathbb{E}_{z \text{~} q(z|x)} [\log \frac{p(x|z)p(z)}{q(z|x)}] \\ &amp;= -\mathbb{E}_{z \text{~} q(z|x)} [\log p(x | z)] - \mathbb{E}_{z \text{~}q(z|x)} [\log \frac{p(z)}{q(z|x)}] \\ &amp;= \mathbb{E}_{z \text{~} q(z|x)} [-\log p(x | z)] + KL[q(z|x)||p(z)] \end{aligned}\]
+
+<p>直观上损失函数可以分成两部分：其中$\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x | z)]$表示生成模型$p(x|z)$的<strong>重构损失</strong>，$KL[q(z|x)||p(z)]$表示后验分布$q(z|x)$的<strong>正则化项</strong>(<strong>KL</strong>损失)。这两个损失并不是独立的，因为重构损失很小表明$p(x|z)$置信度较大，即解码器重构比较准确，则编码器$q(z|x)$不会太随机(即应和$x$相关性较高)，此时<strong>KL</strong>损失不会小；另一方面<strong>KL</strong>损失很小表明编码器$q(z|x)$随机性较高(即和$x$无关)，此时重构损失不可能小。因此<strong>VAE</strong>的损失隐含着对抗的过程，在优化过程中总损失减小才对应模型的收敛。下面分别讨论这两种损失的具体形式。</p>
+
+<h2 id="1-后验分布qzx的正则化项">(1) 后验分布$q(z|x)$的正则化项</h2>
+
+<p>损失$KL[q(z|x)||p(z)]$衡量后验分布$q(z|x)$和先验分布$p(z)$之间的<strong>KL</strong>散度。$q(z|x)$优化的目标是趋近标准正态分布，此时$p(z)$指定为标准正态分布$z$~\(\mathcal{N}(0,I)\)。$q(z|x)$通过神经网络进行拟合(即概率编码器)，其形式人为指定为<strong>多维对角正态分布</strong> \(\mathcal{N}(\mu,\sigma^{2})\)。</p>
+
+<p>由于两个分布都是正态分布，<strong>KL</strong>散度有闭式解(<strong>closed-form solution</strong>)，计算如下：</p>
+
+\[\begin{aligned} KL[q(z|x)||p(z)] &amp;= KL[\mathcal{N}(\mu,\sigma^{2})||\mathcal{N}(0,1)]  \\ &amp;= \int_{}^{} \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}} \log \frac{\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}}{\frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}}} dx  \\&amp;= \int_{}^{} \frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}} [-\frac{1}{2}\log \sigma^2 + \frac{x^2}{2}-\frac{(x-\mu)^2}{2\sigma^2}] dx \\ &amp;= \frac{1}{2}  (-\log \sigma^2 + \mu^2+\sigma^2-1) \end{aligned}\]
+
+<p>在实际实现时拟合$\log \sigma^2$而不是$\sigma^2$，因为$\sigma^2$总是非负的，需要增加激活函数进行限制；而$\log \sigma^2$的取值是任意的。<strong>KL</strong>损失的<strong>Pytorch</strong>实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">kld_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="n">exp</span><span class="p">(),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="2-生成模型pxz的重构损失">(2) 生成模型$p(x|z)$的重构损失</h2>
+
+<p>重构损失$\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x | z)]$表示把观测数据映射到隐空间后再重构为原数据的过程。其中生成模型$p(x|z)$也是通过神经网络进行拟合的(即概率解码器)，根据所处理数据的类型不同，$p(x|z)$应选择不同的分布形式。</p>
+
+<h3 id="二值数据伯努利分布">⚪二值数据：伯努利分布</h3>
+<p>如果观测数据$x$为二值数据（如二值图像），则生成模型$p(x|z)$建模为伯努利分布：</p>
+
+\[p(x|z)= \begin{cases} \rho(z) , &amp; x=1 \\ 1-\rho(z), &amp; x=0 \end{cases} = (\rho(z))^{x}(1-\rho(z))^{1-x}\]
+
+<p>使用神经网络拟合参数$\rho$：</p>
+
+\[\rho = \mathop{\arg \max}_{\rho} \log p(x|z) = \mathop{\arg \min}_{\rho} -x\log \rho(z)-(1-x)\log(1-\rho(z))\]
+
+<p>上式表示交叉熵损失函数，且$\rho(z)$需要经过<strong>sigmoid</strong>等函数压缩到$[0,1]$。</p>
+
+<h3 id="一般数据正态分布">⚪一般数据：正态分布</h3>
+
+<p>对于一般的观测数据$x$，将生成模型$p(x|z)$建模为具有固定方差$\sigma^2_0$的正态分布：</p>
+
+\[p(x|z) = \frac{1}{\sqrt{2\pi\sigma_0^2}}e^{-\frac{(x-\mu)^2}{2\sigma_0^2}}\]
+
+<p>使用神经网络拟合参数$\mu$：</p>
+
+\[\mu = \mathop{\arg \max}_{\mu} \log p(x|z) = \mathop{\arg \min}_{\mu} \frac{(x-\mu)^2}{2\sigma_0^2}\]
+
+<p>上式表示<strong>均方误差(MSE)</strong>，<strong>Pytorch</strong>实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">reduction</span> <span class="o">=</span> <span class="s">'sum'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>注意<code class="language-plaintext highlighter-rouge">reduction</code>参数可选<code class="language-plaintext highlighter-rouge">'sum'</code>和<code class="language-plaintext highlighter-rouge">'mean'</code>，应该使用<code class="language-plaintext highlighter-rouge">'sum'</code>，这使得损失函数计算与原式保持一致。笔者在实现时曾选用<code class="language-plaintext highlighter-rouge">'mean'</code>，导致即使训练损失有下降，也只能生成噪声图片，推测是因为取平均使重构损失误差占比过小，无法正常训练。</p>
+
+<h2 id="3-重参数化技巧">(3) 重参数化技巧</h2>
+<p><strong>VAE</strong>的损失函数如下：</p>
+
+\[\mathcal{L} = \mathbb{E}_{z \text{~} q(z|x)} [-\log p(x | z)] + KL[q(z|x)||p(z)]\]
+
+<p>其中期望\(\mathbb{E}_{z \text{~} q(z\|x)} [\cdot]\)表示从从$q(z|x)$中采样$z$的过程。由于采样过程是不可导的，不能直接参与梯度传播，因此引入<a href="https://0809zheng.github.io/2022/04/24/repere.html">重参数化(reparameterization)技巧</a>。</p>
+
+<p>已经假设$z$~$q(z|x)$服从\(\mathcal{N}(\mu,\sigma^{2})\)，则$\epsilon=\frac{z-\mu}{\sigma}$服从标准正态分布\(\mathcal{N}(0,I)\)。因此有如下关系：</p>
+
+\[z = \mu + \sigma \cdot \epsilon\]
+
+<p>则从\(\mathcal{N}(0,I)\)中采样$\epsilon$，再经过参数变换构造$z$，可使得采样操作不用参与梯度下降，从而实现模型端到端的训练。</p>
+
+<p><img src="https://pic.imgdb.cn/item/627a22c909475431292e6d8d.jpg" alt="" /></p>
+
+<p>在实现时对于每个样本只进行一次采样，采样的充分性是通过足够多的批量样本与训练轮数来保证的。则损失函数也可写作：</p>
+
+\[\mathcal{L} =  -\log p(x | z) + KL[q(z|x)||p(z)], \quad z \text{~} q(z|x)\]
+
+<p>重参数化技巧的<strong>Pytorch</strong>实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">reparameterize</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span><span class="p">):</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_var</span><span class="p">)</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">std</span>
+</code></pre></div></div>
+
+<h3 id="讨论vae的另一种建模方式">⚪讨论：VAE的另一种建模方式</h3>
+<p>对于一批已有样本，代表一个真实但形式未知的概率分布$\tilde{p}(x)$，可以构建一个带参数$\phi$的后验分布$q_{\phi}(z|x)$，从而组成联合分布$q(x,z)=\tilde{p}(x)q_{\phi}(z|x)$。如果人为定义一个先验分布$p(z)$，并构建一个带参数$\theta$的生成分布$p_{\theta}(x|z)$，则可以构造另一个联合分布$p(x,z)=p(z)p_{\theta}(x|z)$。<strong>VAE</strong>的目的是联合分布$q(x,z),p(x,z)$足够接近，因此最小化两者之间的<strong>KL</strong>散度：</p>
+
+\[\begin{aligned} KL(q(x,z)||p(x,z)) &amp;= \mathbb{E}_{q(x,z)}[\log \frac{q(x,z)}{p(x,z)}] = \mathbb{E}_{\tilde{p}(x)} [\mathbb{E}_{q_{\phi}(z|x)}[\log \frac{\tilde{p}(x)q_{\phi}(z|x)}{p(z)p_{\theta}(x|z)}]] \\&amp; = \mathbb{E}_{\tilde{p}(x)} [\mathbb{E}_{q_{\phi}(z|x)}[-\log p_{\theta}(x|z)] + \mathbb{E}_{q_{\phi}(z|x)}[\log \frac{q_{\phi}(z|x)}{p(z)}] + \mathbb{E}_{q_{\phi}(z|x)}[\log \tilde{p}(x)]] \\ &amp;= \mathbb{E}_{\tilde{p}(x)} [\mathbb{E}_{q_{\phi}(z|x)}[-\log p_{\theta}(x|z)] + KL(q_{\phi}(z|x)||p(z)) + Const.] \end{aligned}\]
+
+<h3 id="讨论kl散度与互信息">⚪讨论：KL散度与互信息</h3>
+
+<p>上述联合分布的<strong>KL</strong>散度也可写作：</p>
+
+\[\begin{aligned} KL(q(x,z)||p(x,z)) &amp; = \mathbb{E}_{\tilde{p}(x)} [\mathbb{E}_{q_{\phi}(z|x)}[\log \frac{\tilde{p}(x)q_{\phi}(z|x)}{p(z)p_{\theta}(x|z)}]] \\&amp;  = \mathbb{E}_{\tilde{p}(x)} [\mathbb{E}_{q_{\phi}(z|x)}[\log \frac{q_{\phi}(z|x)}{p(z)}]] - \mathbb{E}_{\tilde{p}(x)} [\mathbb{E}_{q_{\phi}(z|x)}[\log \frac{p_{\theta}(x|z)}{\tilde{p}(x)}]] \\&amp;  = \mathbb{E}_{\tilde{p}(x)} [KL(q_{\phi}(z|x)||p(z))] - \mathbb{E}_{\tilde{p}(x)} [\mathbb{E}_{q_{\phi}(z|x)}[\log \frac{p_{\theta}(x,z)}{\tilde{p}(x)p(z)}]] \end{aligned}\]
+
+<p>其中第一项为隐变量$z$的后验分布与先验分布之间的<strong>KL</strong>散度，第二项为观测变量$x$与为隐变量$z$之间的点互信息。因此<strong>VAE</strong>的优化目标也可以解释为最小化隐变量<strong>KL</strong>散度的同时最大化隐变量与观测变量的互信息。</p>
+
+<h1 id="3-变分自编码器的各种变体">3. 变分自编码器的各种变体</h1>
+
+<p><strong>VAE</strong>的损失函数共涉及三个不同的概率分布：由概率编码器表示的后验分布$q(z|x)$、隐变量的先验分布$p(z)$以及由概率解码器表示的生成分布$p(x|z)$。对<strong>VAE</strong>的各种改进可以落脚于对这些概率分布的改进：</p>
+
+<ul>
+  <li>后验分布$q(z|x)$：后验分布为模型引入了正则化；一种改进思路是通过调整后验分布的正则化项增强模型的解耦能力(如$\beta$-<strong>VAE</strong>, <strong>Disentangled</strong> $\beta$-<strong>VAE</strong>, <strong>InfoVAE</strong>, <strong>DIP-VAE</strong>, <strong>FactorVAE</strong>, $\beta$-<strong>TCVAE</strong>, <strong>HFVAE</strong>)。</li>
+  <li>先验分布$p(z)$：先验分布描绘了隐变量分布的隐空间；一种改进思路是通过引入标签实现半监督学习(如<strong>CVAE</strong>, <strong>CMMA</strong>)；一种改进思路是通过对隐变量离散化实现聚类或分层特征表示(如<strong>Categorical VAE</strong>, <strong>Joint VAE</strong>, <strong>VQ-VAE</strong>, <strong>VQ-VAE-2</strong>, <strong>FSQ</strong>)；一种改进思路是更换隐变量的概率分布形式(如<strong>Hyperspherical VAE</strong>, <strong>TD-VAE</strong>, <strong>f-VAE</strong>, <strong>NVAE</strong>)。</li>
+  <li>生成分布$p(x|z)$：生成分布代表模型的数据重构能力；一种改进思路是将均方误差损失替换为其他损失(如<strong>EL-VAE</strong>, <strong>DFCVAE</strong>, <strong>LogCosh VAE</strong>)。</li>
+  <li>改进整体损失函数：也有方法通过调整整体损失改进模型，如紧凑变分下界(如<strong>IWAE</strong>, <strong>MIWAE</strong>)或引入<strong>Wasserstein</strong>距离(如<strong>WAE</strong>, <strong>SWAE</strong>)。</li>
+  <li>改进模型结构：如<a href="https://0809zheng.github.io/2022/04/18/bnvae.html"><font color="Blue">BN-VAE</font></a>通过引入<strong>BatchNorm</strong>缓解<strong>KL</strong>散度消失问题(指较强的解码器允许训练时<strong>KL</strong>散度项$KL[q(z|x)||p(z)]=0$)；引入对抗训练(如<a href="https://0809zheng.github.io/2022/02/20/aae.html"><font color="Blue">AAE</font></a>, <a href="https://0809zheng.github.io/2022/02/17/vaegan.html"><font color="Blue">VAE-GAN</font></a>)。</li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">方法</th>
+      <th style="text-align: center">损失函数</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">VAE</td>
+      <td style="text-align: center">$\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z)]+KL[q(z|x)||p(z)]$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/02/cvae.html"><font color="Blue">CVAE</font></a> <br /> 引入条件</td>
+      <td style="text-align: center">$\mathbb{E}_{z \text{~} q(z|x,y)} [-\log p(x|z,y)]+KL[q(z|x,y)||p(z|y)]$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/03/cmma.html"><font color="Blue">CMMA</font></a> <br /> 隐变量$z$由标签$y$决定</td>
+      <td style="text-align: center">$\mathbb{E}_{z \text{~} q(z|x,y)} [-\log p(x|z)]+KL[q(z|x,y)||p(z|y)]$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2020/12/02/bvae.html"><font color="Blue">β-VAE</font></a> <br /> 特征解耦</td>
+      <td style="text-align: center">$\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z)]+\beta \cdot KL[q(z|x)||p(z)]$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2020/12/03/bvae2.html"><font color="Blue">Disentangled β-VAE</font></a> <br /> 特征解耦</td>
+      <td style="text-align: center">$\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z)]+\gamma \cdot |KL[q(z|x)||p(z)]-C|$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2020/12/04/infovae.html"><font color="Blue">InfoVAE</font></a> <br /> 特征解耦</td>
+      <td style="text-align: center">$\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z)]+(1-\alpha) \cdot KL[q(z|x)||p(z)]+(\alpha+\lambda-1)\cdot \mathcal{D}_Z(q(z),p(z))$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/17/dipvae.html"><font color="Blue">DIP-VAE</font></a> <br /> 分离推断先验</td>
+      <td style="text-align: center">\(\begin{aligned} &amp;\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z)]+KL[q(z|x)||p(z)]\\&amp;+\lambda_{od} \sum_{i \ne j} [\text{Cov}_{q(z)}[z]]^2_{ij}+\lambda_{d} \sum_{i} ([\text{Cov}_{q(z)}[z]]_{ii}-1)^2 \end{aligned}\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/15/factorvae.html"><font color="Blue">FactorVAE</font></a> <br /> 特征解耦</td>
+      <td style="text-align: center">\(\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z)]+KL[q(z|x)||p(z)] +\gamma KL(q(z)||\prod_{j}q(z_j))\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/05/btcvae.html"><font color="Blue">β-TCVAE</font></a> <br /> 分离全相关项</td>
+      <td style="text-align: center">\(\begin{aligned} &amp; \mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z)]+\alpha KL(q(z,x)||q(z)p(x)) \\ &amp; +\beta KL(q(z)||\prod_{j}q(z_j)) +\gamma \sum_{j}KL(q(z_j)||p(z_j)) \end{aligned}\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/16/hfvae.html"><font color="Blue">HFVAE</font></a> <br /> 隐变量特征分组</td>
+      <td style="text-align: center">\(\begin{aligned}&amp;\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z)] + \sum_{i}KL[q(z_{i})||p(z_{i})]  + \alpha KL(q(z,x)||q(z)p(x)) \\ &amp;+\beta \Bbb{E}_{q(z)}[\log \frac{q(z)}{\prod_{g}q(z^g)}-\log \frac{p(z)}{\prod_{g}p(z^g)}]  + \gamma \sum_{g} \Bbb{E}_{q(z^g)}[\log \frac{q(z^g)}{\prod_{j}q(z^g_j)}-\log \frac{p(z^g)}{\prod_{j}p(z^g_j)}]\end{aligned}\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/10/catevae.html"><font color="Blue">Categorical VAE</font></a> <br /> 离散隐变量: <strong>Gumbel Softmax</strong></td>
+      <td style="text-align: center">$\mathbb{E}_{z \text{~} q(c|x)} [-\log p(x|c)]+  KL[q(c|x)||p(c)]$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/11/jointvae.html"><font color="Blue">Joint VAE</font></a> <br /> 连续+离散隐变量</td>
+      <td style="text-align: center">$\mathbb{E}_{z,c \text{~} q(z,c|x)} [-\log p(x|z,c)]+\gamma_z \cdot |KL[q(z|x)||p(z)]-C_z|+\gamma_c \cdot |KL[q(c|x)||p(c)]-C_c|$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2020/11/10/vqvae.html"><font color="Blue">VQ-VAE</font></a> <br /> 向量量化隐变量</td>
+      <td style="text-align: center">$\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z_e + sg[z_q-z_e])]  +  || sg[z_e] - z_q ||_2^2  +  \beta || z_e - sg[z_q] ||_2^2$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2020/11/11/vqvae2.html"><font color="Blue">VQ-VAE-2</font></a> <br /> VQ-VAE分层</td>
+      <td style="text-align: center">同上，$z={z^{bottom},z^{top}}$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2023/09/27/fsq.html"><font color="Blue">FSQ</font></a> <br /> 有限标量量化</td>
+      <td style="text-align: center">$\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z + sg[\text{round} \left( \lfloor \frac{L}{2} \rfloor \tanh(z) \right)-z])]$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/19/svae.html"><font color="Blue">Hyperspherical VAE</font></a> <br /> 引入<strong>vMF</strong>分布</td>
+      <td style="text-align: center">\(\mathbb{E}_{z \text{~} q(z|x)} [-\log p(x|z)],\quad p(z)\text{~}C_{d,\kappa} e^{\kappa &lt;\mu(x),z&gt;}\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/21/tdvae.html"><font color="Blue">TD-VAE</font></a> <br /> <strong>Markov</strong>链状态空间</td>
+      <td style="text-align: center">\(\begin{aligned} \Bbb{E}_{(z_{t_1},z_{t_2}) \text{~} q}[ &amp; -\log p_D(x_{t_2}|z_{t_2}) -\log p_B(z_{t_1}|b_{t_1}) -\log p_T(z_{t_2}|z_{t_1}) \\ &amp; +\log p_B(z_{t_2}|b_{t_2})+\log q_S(z_{t_1}|z_{t_2},b_{t_1},b_{t_2})] \end{aligned}\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/22/fvae.html"><font color="Blue">f-VAE</font></a> <br /> 引入流模型</td>
+      <td style="text-align: center">\(\mathbb{E}_{u \text{~} q(u)} [-\log p(x|F_x(u))-\log |\det[\frac{\partial F_x(u)}{\partial u}]|]+KL[q(u)||p(F_x(u))]\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/20/nvae.html"><font color="Blue">NVAE</font></a> <br /> 引入自回归高斯模型</td>
+      <td style="text-align: center">\(\begin{aligned}&amp;\mathbb{E}_{z \text{~} q(z|x,y)} [-\log p(x|z,y)]+KL[q(z|x,y)||p(z|y)] \\ &amp;p(z) = \prod_{l=1}^{L} p(z_l|z_{\lt l}) ,q(z|x) = \prod_{l=1}^{L} q(z_l|z_{\lt l},x)\end{aligned}\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/12/msssim.html"><font color="Blue">EL-VAE</font></a> <br /> 引入<strong>MS-SSIM</strong>损失</td>
+      <td style="text-align: center">$I_M(x,\hat{x})^{\alpha_M} \prod_{j=1}^{M} C_j(x,\hat{x})^{\beta_j} S_j(x,\hat{x})^{\gamma_j}+ KL[q(z|x)||p(z)]$</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/09/dfcvae.html"><font color="Blue">DFCVAE</font></a> <br /> 引入特征感知损失</td>
+      <td style="text-align: center">\(\alpha \sum_{l=1}^{L}\frac{1}{2C^lH^lW^l}\sum_{c=1}^{C^l}\sum_{h=1}^{H^l}\sum_{w=1}^{W^l}(\Phi(x)_{c,h,w}^l-\Phi(\hat{x})_{c,h,w}^l)^2+\beta \cdot KL[q(z|x)||p(z)]\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/13/logcosh.html"><font color="Blue">LogCosh VAE</font></a> <br /> 引入<strong>log cosh</strong>损失</td>
+      <td style="text-align: center">\(\frac{1}{a} \log(\frac{e^{a(x-\hat{x})}+e^{-a(x-\hat{x})}}{2})+\beta \cdot KL[q(z|x)||p(z)]\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/07/iwae.html"><font color="Blue">IWAE</font></a> <br /> 紧凑变分下界</td>
+      <td style="text-align: center">\(\Bbb{E}_{z_1,z_2,\cdots z_K \text{~} q(z|x)}[\log \frac{1}{K}\sum_{k=1}^{K}\frac{p(x,z_k)}{q(z_k|x)}]\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/08/miwae.html"><font color="Blue">MIWAE</font></a> <br /> 紧凑变分下界</td>
+      <td style="text-align: center">\(\frac{1}{M}\sum_{m=1}^{M} \Bbb{E}_{z_{m,1},z_{m,2},\cdots z_{m,K} \text{~} q(z_{m}|x)}[\log \frac{1}{K}\sum_{k=1}^{K}\frac{p(x,z_{m,k})}{q(z_{m,k}|x)}]\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/04/wae.html"><font color="Blue">WAE</font></a> <br /> 引入<strong>Wasserstein</strong>距离</td>
+      <td style="text-align: center">\(\Bbb{E}_{x\text{~}p(z)}\Bbb{E}_{z \text{~} q(z|x)} [c(x,p(x|z))]+\lambda \cdot \mathcal{D}_Z(q(z),p(z))\)</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://0809zheng.github.io/2022/04/14/swae.html"><font color="Blue">SWAE</font></a> <br /> 引入<strong>Sliced-Wasserstein</strong>距离</td>
+      <td style="text-align: center">\(\Bbb{E}_{x\text{~}p(z)}\Bbb{E}_{z \text{~} q(z|x)} [c(x,p(x|z))]+\int_{\Bbb{S}^{d-1}} \mathcal{W}[\mathcal{R}_{q(z)}(\cdot ;\theta),\mathcal{R}_{p(z)}(\cdot ;\theta)] d\theta\)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="-参考文献">⚪ 参考文献</h1>
+<ul>
+  <li><a href="https://arxiv.org/abs/1312.6114">Auto-Encoding Variational Bayes</a>：(arXiv1312)VAE的原始论文。</li>
+  <li><a href="https://lilianweng.github.io/posts/2018-08-12-vae/">From Autoencoder to Beta-VAE</a>：Blog by Lilian Weng.</li>
+  <li><a href="https://spaces.ac.cn/archives/5253">变分自编码器（一）：原来是这么一回事</a>：Blog by 苏剑林.</li>
+  <li><a href="https://arxiv.org/abs/1812.05069v1">Recent Advances in Autoencoder-Based Representation Learning</a>：(arXiv1812)一篇VAE综述。</li>
+  <li><a href="https://github.com/AntixK/PyTorch-VAE">PyTorch-VAE: A Collection of Variational Autoencoders (VAE) in PyTorch.</a>：(github)VAE的PyTorch实现。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/02/cvae.html"><font color="Blue">Learning Structured Output Representation using Deep Conditional Generative Models</font></a>：(NeurIPS2015)CVAE: 使用深度条件生成模型学习结构化输出表示。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/07/iwae.html"><font color="Blue">Importance Weighted Autoencoders</font></a>：(arXiv1509)IWAE：重要性加权自编码器。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/12/msssim.html"><font color="Blue">Learning to Generate Images with Perceptual Similarity Metrics</font></a>：(arXiv1511)使用多尺度结构相似性度量MS-SSIM学习图像生成。</li>
+  <li><a href="https://0809zheng.github.io/2022/02/20/aae.html"><font color="Blue">Adversarial Autoencoders</font></a>：(arXiv1511)AAE：对抗自编码器。</li>
+  <li><a href="https://0809zheng.github.io/2022/02/17/vaegan.html"><font color="Blue">Autoencoding beyond pixels using a learned similarity metric</font></a>：(arXiv1512)VAE-GAN：结合VAE和GAN。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/03/cmma.html"><font color="Blue">Variational methods for Conditional Multimodal Learning: Generating Human Faces from Attributes</font></a>：(arXiv1603)CMMA: 条件多模态学习的变分方法。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/09/dfcvae.html"><font color="Blue">Deep Feature Consistent Variational Autoencoder</font></a>：(arXiv1610)DFCVAE：使用特征感知损失约束深度特征一致性。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/10/catevae.html"><font color="Blue">Categorical Reparameterization with Gumbel-Softmax</font></a>：(arXiv1611)使用Gumble-Softmax实现离散类别隐变量的重参数化。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/02/bvae.html"><font color="Blue">β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework</font></a>：(ICLR1704)β-VAE：学习变分自编码器隐空间的解耦表示。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/04/infovae.html"><font color="Blue">InfoVAE: Balancing Learning and Inference in Variational Autoencoders</font></a>：(arXiv1706)InfoVAE：平衡变分自编码器的学习和推断过程。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/17/dipvae.html"><font color="Blue">Variational Inference of Disentangled Latent Concepts from Unlabeled Observations</font></a>：(arXiv1711)DIP-VAE: 分离推断先验VAE。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/04/wae.html"><font color="Blue">Wasserstein Auto-Encoders</font></a>：(arXiv1711)WAE: 使用<strong>Wasserstein</strong>距离的变分自编码器。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/10/vqvae.html"><font color="Blue">Neural Discrete Representation Learning</font></a>：(arXiv1711)VQ-VAE：向量量化的变分自编码器。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/08/miwae.html"><font color="Blue">Tighter Variational Bounds are Not Necessarily Better</font></a>：(arXiv1802)MIWAE：紧凑的变分下界阻碍推理网络训练。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/15/factorvae.html"><font color="Blue">Disentangling by Factorising</font></a>：(arXiv1802)FactorVAE：通过分解特征表示的分布进行解耦。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/05/btcvae.html"><font color="Blue">Isolating Sources of Disentanglement in Variational Autoencoders</font></a>：(arXiv1802)β-TCVAE: 分离VAE解耦源中的全相关项。</li>
+  <li><a href="https://0809zheng.github.io/2020/12/03/bvae2.html"><font color="Blue">Understanding disentangling in β-VAE</font></a>：(arXiv1804)使用信息瓶颈解释β-VAE的解耦表示能力。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/16/hfvae.html"><font color="Blue">Structured Disentangled Representations</font></a>：(arXiv1804)HFVAE：通过层级分解VAE实现结构化解耦表示。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/11/jointvae.html"><font color="Blue">Learning Disentangled Joint Continuous and Discrete Representations</font></a>：(arXiv1804)Joint VAE：学习解耦的联合连续和离散表示。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/14/swae.html"><font color="Blue">Sliced-Wasserstein Autoencoder: An Embarrassingly Simple Generative Model</font></a>：(arXiv1804)SWAE：引入Sliced-Wasserstein距离构造VAE。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/19/svae.html"><font color="Blue">Hyperspherical Variational Auto-Encoders</font></a>：(arXiv1804)Hyperspherical VAE: 为隐变量引入vMF分布。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/21/tdvae.html"><font color="Blue">Temporal Difference Variational Auto-Encoder</font></a>：(arXiv1806)TD-VAE: 时间差分变分自编码器。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/22/fvae.html"><font color="Blue">f-VAEs: Improve VAEs with Conditional Flows</font></a>：(arXiv1809)f-VAE: 基于流的变分自编码器。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/13/logcosh.html"><font color="Blue">Log Hyperbolic Cosine Loss Improves Variational Auto-Encoder</font></a>：(OpenReview2018)使用对数双曲余弦损失改进变分自编码器。</li>
+  <li><a href="https://0809zheng.github.io/2020/11/11/vqvae2.html"><font color="Blue">Generating Diverse High-Fidelity Images with VQ-VAE-2</font></a>：(arXiv1906)VQ-VAE-2：改进VQ-VAE生成高保真度图像。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/18/bnvae.html"><font color="Blue">A Batch Normalized Inference Network Keeps the KL Vanishing Away</font></a>：(arXiv2004)BN-VAE: 通过批量归一化缓解KL散度消失问题。</li>
+  <li><a href="https://0809zheng.github.io/2022/04/20/nvae.html"><font color="Blue">NVAE: A Deep Hierarchical Variational Autoencoder</font></a>：(arXiv2007)Nouveau VAE: 深度层次变分自编码器。</li>
+  <li><a href="https://0809zheng.github.io/2023/09/27/fsq.html"><font color="Blue">Finite Scalar Quantization: VQ-VAE Made Simple</font></a>：(arXiv2309)有限标量量化：简化向量量化的变分自编码器。</li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/02/cvae.html" class="read-next-link"></a>
+        <section>
+          <span>Learning Structured Output Representation using Deep Conditional Generative Models</span>
+          <p>  CVAE: 使用深度条件生成模型学习结构化输出表示.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/627e0985094754312968c36f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/03/31/hubness.html" class="read-next-link"></a>
+          <section>
+            <span>Exploring and Exploiting Hubness Priors for High-Quality GAN Latent Sampling</span>
+            <p>  高质量GAN采样的枢纽度先验.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/639145b5b1fccdcd3655ee5f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

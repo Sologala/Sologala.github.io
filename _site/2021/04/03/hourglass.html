@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stacked Hourglass Networks for Human Pose Estimation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Stacked Hourglass Networks for Human Pose Estimation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Stacked Hourglass Networks for Human Pose Estimation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/04/03/hourglass.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Stacked Hourglass Networks for Human Pose Estimation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-04-03"><i class="iconfont icon-date"></i>03 Apr 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/649a43541ddac507cc4c5d20.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>用于人体姿态估计的堆叠沙漏网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1603.06937">Stacked Hourglass Networks for Human Pose Estimation</a></li>
+</ul>
+
+<p>本文提出了堆叠沙漏网络（<strong>Stacked Hourglass Network</strong>）用于人体姿态估计，该网络结构能够捕获并整合图像不同尺度的信息。堆叠沙漏网络是由若干个<strong>Hourglass</strong>模块堆叠而成，长得很像堆叠起来的沙漏：</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a44321ddac507cc4e7389.jpg" alt="" /></p>
+
+<p><strong>Hourglass</strong>模块结构是对称的，包含重复的<strong>降采样</strong>（高分辨率到低分辨率，由最大池化实现）和<strong>上采样</strong>（低分辨率到高分辨率，由最近邻插值实现），此外还使用了<strong>残差连接</strong>保存不同分辨率下的空间信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a445c1ddac507cc4ed349.jpg" alt="" /></p>
+
+<p>与<strong>DeepPose</strong>采用级联回归器目的相似，<strong>Hourglass</strong>模块可以捕捉利用多个尺度上的信息，例如局部特征信息对于识别脸部、手部等特征十分重要，但人体最终的姿态估计也需要图像的全局特征信息。</p>
+
+<p>直接对人体的$k$对关键点坐标进行回归比较困难，因此<strong>Hourglass</strong>将回归问题转换为预测$k$个关键点的<strong>热图heatmap</strong>，其中第$i$个热图表示第$i$个关键点的位置置信度分布，用于预测每个像素点是关键点的概率。<strong>Ground Truth</strong>热图构造为以实际关节点位置为中心的标准正态分布，采用均方误差损失。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a44891ddac507cc4f3934.jpg" alt="" /></p>
+
+<p>在<strong>Hourglass</strong>模块中，基本的卷积层是由如下残差模块定义的：</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a46fd1ddac507cc53b237.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BnReluConv</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+		<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">stride</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+				<span class="nb">super</span><span class="p">(</span><span class="n">BnReluConv</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">bn</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">inChannels</span><span class="p">)</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+
+		<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+				<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="k">return</span> <span class="n">x</span>
+
+<span class="k">class</span> <span class="nc">ConvBlock</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+		<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">):</span>
+				<span class="nb">super</span><span class="p">(</span><span class="n">ConvBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">cbr1</span> <span class="o">=</span> <span class="n">BnReluConv</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="o">//</span><span class="mi">2</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">cbr2</span> <span class="o">=</span> <span class="n">BnReluConv</span><span class="p">(</span><span class="n">outChannels</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">outChannels</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">cbr3</span> <span class="o">=</span> <span class="n">BnReluConv</span><span class="p">(</span><span class="n">outChannels</span><span class="o">//</span><span class="mi">2</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+		<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+				<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cbr1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cbr2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cbr3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="k">return</span> <span class="n">x</span>
+
+<span class="k">class</span> <span class="nc">SkipLayer</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+		<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">):</span>
+				<span class="nb">super</span><span class="p">(</span><span class="n">SkipLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+				<span class="k">if</span> <span class="p">(</span><span class="n">inChannels</span> <span class="o">==</span> <span class="n">outChannels</span><span class="p">):</span>
+						<span class="bp">self</span><span class="p">.</span><span class="n">conv</span> <span class="o">=</span> <span class="bp">None</span>
+				<span class="k">else</span><span class="p">:</span>
+						<span class="bp">self</span><span class="p">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+		<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+				<span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+						<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="k">return</span> <span class="n">x</span>
+
+<span class="k">class</span> <span class="nc">Residual</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+		<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">):</span>
+				<span class="nb">super</span><span class="p">(</span><span class="n">Residual</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">inChannels</span> <span class="o">=</span> <span class="n">inChannels</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">outChannels</span> <span class="o">=</span> <span class="n">outChannels</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">cb</span> <span class="o">=</span> <span class="n">ConvBlock</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">)</span>
+				<span class="bp">self</span><span class="p">.</span><span class="n">skip</span> <span class="o">=</span> <span class="n">SkipLayer</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">)</span>
+
+		<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+				<span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cb</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">skip</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+				<span class="k">return</span> <span class="n">out</span>
+</code></pre></div></div>
+
+<p><strong>Hourglass</strong>模块由上述残差块递归地构成。定义一个阶数来表示递归的层数，一阶的<strong>Hourglass</strong>模块如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a47531ddac507cc5424c8.jpg" alt="" /></p>
+
+<p>多阶的<strong>Hourglass</strong>模块是将上图虚线框中的块递归地替换为一阶<strong>Hourglass</strong>模块，作者在实验中使用的是<strong>4</strong>阶的H<strong>Hourglass</strong>模块：</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a4c571ddac507cc5c2c95.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Hourglass</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nChannels</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span> <span class="n">numReductions</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">nModules</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">poolKernel</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">poolStride</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">upSampleKernel</span> <span class="o">=</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Hourglass</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+        <span class="n">_skip</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nModules</span><span class="p">):</span>
+            <span class="n">_skip</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">Residual</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span> <span class="n">nChannels</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">skip</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_skip</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">mp</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">poolKernel</span><span class="p">,</span> <span class="n">poolStride</span><span class="p">)</span>
+
+        <span class="n">_afterpool</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nModules</span><span class="p">):</span>
+            <span class="n">_afterpool</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">Residual</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span> <span class="n">nChannels</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">afterpool</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_afterpool</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">numReductions</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">hg</span> <span class="o">=</span> <span class="n">Hourglass</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span> <span class="n">numReductions</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">nModules</span><span class="p">,</span> <span class="n">poolKernel</span><span class="p">,</span> <span class="n">poolStride</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_num1res</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nModules</span><span class="p">):</span>
+                <span class="n">_num1res</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">Residual</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span><span class="n">nChannels</span><span class="p">))</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">num1res</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_num1res</span><span class="p">)</span> 
+            
+        <span class="n">_lowres</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nModules</span><span class="p">):</span>
+            <span class="n">_lowres</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">Residual</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span><span class="n">nChannels</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">lowres</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_lowres</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">up</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Upsample</span><span class="p">(</span><span class="n">scale_factor</span> <span class="o">=</span> <span class="n">upSampleKernel</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">out1</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">out1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">skip</span><span class="p">(</span><span class="n">out1</span><span class="p">)</span>
+        <span class="n">out2</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="n">out2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">mp</span><span class="p">(</span><span class="n">out2</span><span class="p">)</span>
+        <span class="n">out2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">afterpool</span><span class="p">(</span><span class="n">out2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">numReductions</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">out2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">hg</span><span class="p">(</span><span class="n">out2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">num1res</span><span class="p">(</span><span class="n">out2</span><span class="p">)</span>
+        <span class="n">out2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">lowres</span><span class="p">(</span><span class="n">out2</span><span class="p">)</span>
+        <span class="n">out2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">up</span><span class="p">(</span><span class="n">out2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out2</span> <span class="o">+</span> <span class="n">out1</span>
+</code></pre></div></div>
+
+<p>堆叠沙漏网络的整体结构是由若干个<strong>Hourglass</strong>模块堆叠而成，从而使得网络能够不断重复自底向上和自顶向下的过程。网络输入的图片分辨率为<strong>256×256</strong>，在<strong>hourglass</strong>模块中的最大分辨率为<strong>64×64</strong>，整个网络最开始要经过一个<strong>7×7</strong>的步长为<strong>2</strong>的卷积层，之后再经过一个残差块和最大池化层使得分辨率从<strong>256</strong>降到<strong>64</strong>。</p>
+
+<p>作者在堆叠沙漏网络的每个<strong>Hourglass</strong>模块后引入了中间监督来对每一个<strong>Hourglass</strong>模块进行预测，即对中间层的<strong>heatmaps</strong>计算损失。通过引入中间监督，使得网络在早期就能进行预测，即整个网络的一部分也能够对图片有一个高层次的理解（中间监督设计在如下图所示位置）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a4fc41ddac507cc615352.jpg" alt="" /></p>
+
+<p>在整个网络中，作者共使用了<strong>8</strong>个<strong>hourglass</strong>模块，并且所有的模块都基于相同的<strong>ground truth</strong>添加了损失函数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a500b1ddac507cc61bc82.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">StackedHourGlass</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nChannels</span><span class="p">,</span> <span class="n">nStack</span><span class="p">,</span> <span class="n">nModules</span><span class="p">,</span> <span class="n">numReductions</span><span class="p">,</span> <span class="n">nJoints</span><span class="p">):</span>
+		<span class="nb">super</span><span class="p">(</span><span class="n">StackedHourGlass</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+		<span class="bp">self</span><span class="p">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">BnReluConv</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">kernelSize</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="n">stride</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+		<span class="bp">self</span><span class="p">.</span><span class="n">res1</span> <span class="o">=</span> <span class="n">Residual</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+		<span class="bp">self</span><span class="p">.</span><span class="n">mp</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+		<span class="bp">self</span><span class="p">.</span><span class="n">res2</span> <span class="o">=</span> <span class="n">Residual</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+		<span class="bp">self</span><span class="p">.</span><span class="n">res3</span> <span class="o">=</span> <span class="n">Residual</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">nChannels</span><span class="p">)</span>
+
+		<span class="n">_hourglass</span><span class="p">,</span> <span class="n">_Residual</span><span class="p">,</span> <span class="n">_lin1</span><span class="p">,</span> <span class="n">_chantojoints</span><span class="p">,</span> <span class="n">_lin2</span><span class="p">,</span> <span class="n">_jointstochan</span> <span class="o">=</span> <span class="p">[],[],[],[],[],[]</span>
+
+		<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">nStack</span><span class="p">):</span>
+			<span class="n">_hourglass</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">Hourglass</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span> <span class="n">numReductions</span><span class="p">,</span> <span class="n">nModules</span><span class="p">))</span>
+			<span class="n">_ResidualModules</span> <span class="o">=</span> <span class="p">[]</span>
+			<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nModules</span><span class="p">):</span>
+				<span class="n">_ResidualModules</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">Residual</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span> <span class="n">nChannels</span><span class="p">))</span>
+			<span class="n">_ResidualModules</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">_ResidualModules</span><span class="p">)</span>
+			<span class="n">_Residual</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">_ResidualModules</span><span class="p">)</span>
+			<span class="n">_lin1</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">BnReluConv</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span> <span class="n">nChannels</span><span class="p">))</span>
+			<span class="n">_chantojoints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span> <span class="n">nJoints</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+			<span class="n">_lin2</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">nChannels</span><span class="p">,</span> <span class="n">nChannels</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+			<span class="n">_jointstochan</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">nJoints</span><span class="p">,</span> <span class="n">nChannels</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+		<span class="bp">self</span><span class="p">.</span><span class="n">hourglass</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">_hourglass</span><span class="p">)</span>
+		<span class="bp">self</span><span class="p">.</span><span class="n">Residual</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">_Residual</span><span class="p">)</span>
+		<span class="bp">self</span><span class="p">.</span><span class="n">lin1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">_lin1</span><span class="p">)</span>
+		<span class="bp">self</span><span class="p">.</span><span class="n">chantojoints</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">_chantojoints</span><span class="p">)</span>
+		<span class="bp">self</span><span class="p">.</span><span class="n">lin2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">_lin2</span><span class="p">)</span>
+		<span class="bp">self</span><span class="p">.</span><span class="n">jointstochan</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">_jointstochan</span><span class="p">)</span>
+
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+		<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">start</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+		<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">res1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+		<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">mp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+		<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">res2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+		<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">res3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+		<span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">nStack</span><span class="p">):</span>
+			<span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">hourglass</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+			<span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">Residual</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x1</span><span class="p">)</span>
+			<span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">lin1</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x1</span><span class="p">)</span>
+			<span class="n">out</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">chantojoints</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x1</span><span class="p">))</span>
+			<span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">lin2</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">x1</span><span class="p">)</span>
+			<span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x1</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">jointstochan</span><span class="p">[</span><span class="n">i</span><span class="p">](</span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+		<span class="k">return</span> <span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>作者对中间监督的位置进行消融实验，结果最好的是<strong>HG-Int</strong>，即在最终输出分辨率之前的两个最高分辨率上进行上采样后应用中间监督。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a52311ddac507cc65a0e0.jpg" alt="" /></p>
+
+<p>作者也对<strong>hourglass</strong>模块的堆叠个数进行消融实验：</p>
+
+<p><img src="https://pic.imgdb.cn/item/649a52861ddac507cc66502a.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/04/04/cpm.html" class="read-next-link"></a>
+        <section>
+          <span>Convolutional Pose Machines</span>
+          <p>  卷积姿态机.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/649a55251ddac507cc6b8666.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/04/02/deberta.html" class="read-next-link"></a>
+          <section>
+            <span>DeBERTa: Decoding-enhanced BERT with Disentangled Attention</span>
+            <p>  DeBERTa：使用分解注意力机制和增强型掩膜解码器改进预训练语言模型.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://img.imgdb.cn/item/606bb7638322e6675c3f2408.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

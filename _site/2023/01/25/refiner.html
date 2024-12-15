@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refiner: Refining Self-attention for Vision Transformers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Refiner: Refining Self-attention for Vision Transformers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Refiner: Refining Self-attention for Vision Transformers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/25/refiner.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Refiner: Refining Self-attention for Vision Transformers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-25"><i class="iconfont icon-date"></i>25 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/643fbd7f0d2dde5777147f3c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Refiner：精炼视觉Transformer中的自注意力机制.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2106.03714">Refiner: Refining Self-attention for Vision Transformers</a></li>
+</ul>
+
+<p><strong>Refiner</strong> 是一个针对 <strong>Self-attention</strong> 机制本身做改进的工作。改进点包括：</p>
+<ul>
+  <li><strong>Attention Expansion</strong>：通过增大<strong>channel</strong>数来增加 <strong>head</strong> 的数量。</li>
+  <li><strong>Distributed Local Attention</strong>：通过融入卷积来增强 <strong>attention</strong> 局部信息的交互。</li>
+</ul>
+
+<p><strong>Self-attention</strong> 机制如下图所示，图片分成一个个<strong>patches</strong>之后，每个<strong>patch</strong>可以看做是一个<strong>token</strong>。对于每个<strong>token</strong>来讲，<strong>Self-attention</strong> 机制会建模它与其他所有<strong>tokens</strong>之间的相关性。这样，一个层的 <strong>tokens</strong> 之间就能够充分地相互交换信息，从而给模型提供了很好的表达能力。但是问题是：不同的 <strong>tokens</strong> 会变得越来越相似，尤其是当模型加深时。这种现象也称为<strong>过度平滑 (over-smoothing)</strong>。在这个工作中，作者通过直接 <strong>Refine attention map</strong>来解决这个问题。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643fca330d2dde57772952e3.jpg" alt="" /></p>
+
+<p>作者认为过度平滑问题会导致特征在通过模型的不同 <strong>Block</strong> 时变化会比较缓慢。作者使用<strong>CKA</strong> 相似度 (<strong>Centered Kernel Alignment similarity</strong>)衡量每个<strong>Block</strong>输出的中间 <strong>token</strong> 和最后<strong>1</strong>个 <strong>Block</strong> 的相似性，并根据第<strong>1</strong>个和最后<strong>1</strong>个 <strong>Block</strong> 的相似性作归一化。 这样的度量捕获了<strong>2</strong>个属性：中间特征收敛到最终特征的速度有多快，以及最终特征与第一层特征有多大的不同。</p>
+
+<p>如下图所示是<strong>ViT，DeiT，ResNet</strong> <strong>3</strong>种模型的 <strong>CKA</strong> 相似度，<strong>ViT</strong>模型随着层数的加深，中间层与最后一层特征的相似性增加缓慢，但是<strong>DeiT</strong> 和 <strong>ResNet</strong> 的这种相似性增长迅速，并且最后<strong>1</strong>层和第<strong>1</strong>层的差异比 <strong>ViT</strong> 大。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643fccb20d2dde57772c9f07.jpg" alt="" /></p>
+
+<h2 id="-attention-expansion">⚪ Attention Expansion</h2>
+
+<p>增加 <strong>head</strong> 的数量可以有效地提高模型的性能，但是这就会使得注意力图不够全面和准确：假如模型的 <strong>Embedding dimension</strong> 是固定的，直接增加 <strong>head</strong> 的数量，会导致每个<strong>head</strong>的<strong>dimension</strong>变小，削弱了注意力图的表达能力。</p>
+
+<p>为了解决这一难题，作者探索了注意力扩展，使用线性变换矩阵\(W_A \in \mathbb{R}^{H' \times H}\)将 <strong>multi-head self-attention map</strong> 线性映射到高维空间中。因此，在增加 <strong>head</strong> 的数量时，也能够保证每个<strong>head</strong>的<strong>dimension</strong>是不变的。使模型既能享受到更多 <strong>head</strong> 的好处，又能享受到高嵌入维度的好处。</p>
+
+<h2 id="-distributed-local-attention-dla">⚪ Distributed Local Attention (DLA)</h2>
+
+<p>作者认为 <strong>过度平滑 (over-smoothing)</strong> 的第<strong>2</strong>个原因是<strong>ViT</strong>模型忽略了 <strong>tokens</strong> 之间的 <strong>local relationship</strong>，局部性 (<strong>locality</strong>) 和空间不变性 (权重共享) 已被证明是 <strong>CNN</strong> 成功的关键，因此作者想把卷积融入 <strong>attention</strong> 里面，来同时利用 <strong>attention</strong> 机制的全局建模能力和卷积操作的局部建模能力。</p>
+
+<p>具体的做法是对<strong>attention map</strong>的每一个<strong>head</strong>使用卷积核\(w \in \mathbb{R}^{k \times k}\)进行一步卷积操作，然后使用这个新的 <strong>attention map</strong> 与 <strong>value</strong> 作 <strong>feature aggregation</strong> 操作。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DLA</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="n">kernel_size</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">expand_ratio</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">refine_mode</span><span class="o">=</span><span class="s">'none'</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DLA</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="s">"""
+            Distributed Local Attention used for refining the attention map.
+        """</span>
+
+        <span class="n">hidden_dim</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">inp</span> <span class="o">*</span> <span class="n">expand_ratio</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">expand_ratio</span> <span class="o">=</span> <span class="n">expand_ratio</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">identity</span> <span class="o">=</span> <span class="n">stride</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">inp</span> <span class="o">==</span> <span class="n">oup</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">inp</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">oup</span> <span class="o">=</span> <span class="n">inp</span><span class="p">,</span> <span class="n">oup</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">high_dim_id</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">refine_mode</span> <span class="o">=</span> <span class="n">refine_mode</span>
+
+        <span class="k">if</span> <span class="n">refine_mode</span> <span class="o">==</span> <span class="s">'conv'</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">conv</span> <span class="o">=</span> <span class="n">Conv2dSamePadding</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">kernel_size</span><span class="p">),</span> <span class="n">stride</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">refine_mode</span> <span class="o">==</span> <span class="s">'conv_exapnd'</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">expand_ratio</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">conv_exp</span> <span class="o">=</span> <span class="n">Conv2dSamePadding</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">)</span>   
+            <span class="bp">self</span><span class="p">.</span><span class="n">depth_sep_conv</span> <span class="o">=</span> <span class="n">Conv2dSamePadding</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span><span class="n">kernel_size</span><span class="p">),</span> <span class="n">stride</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">groups</span><span class="o">=</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="p">.</span><span class="n">conv_pro</span> <span class="o">=</span> <span class="n">Conv2dSamePadding</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">oup</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">bn3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">oup</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="p">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU6</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="n">x</span><span class="o">=</span> <span class="nb">input</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">refine_mode</span> <span class="o">==</span> <span class="s">'conv'</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">conv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">expand_ratio</span> <span class="o">!=</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn1</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv_exp</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn2</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">depth_sep_conv</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn3</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">conv_pro</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">identity</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="nb">input</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<h2 id="-refiner">⚪ Refiner</h2>
+
+<p><strong>Refiner</strong>首先通过 <strong>Linear Expansion</strong> 来对 <strong>attention map</strong> 的<strong>head</strong>数量进行扩展，再进行 <strong>Head-wise</strong> 的卷积操作。然后再通过 <strong>Linear Reduction</strong> 来对 <strong>attention map</strong> 进行特征削减来匹配 <strong>value</strong> 的维度。最后把特征削减之后的 <strong>attention map</strong> 和 <strong>value</strong> 作矩阵相乘，得到这个 <strong>head</strong> 的输出。</p>
+
+<p><img src="https://pic.imgdb.cn/item/643fd0520d2dde577730d6db.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Refined_Attention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">num_heads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qk_scale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attn_drop</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">proj_drop</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">expansion_ratio</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> 
+                        <span class="n">share_atten</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">apply_transform</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">refine_mode</span><span class="o">=</span><span class="s">'conv_exapnd'</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">head_expand</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="s">"""
+            refine_mode: "conv" represents only convolution is used for refining the attention map;
+                         "conv-expand" represents expansion and conv are used together for refining the attention map; 
+            share_atten: If set True, the attention map is not generated; use the attention map generated from the previous block
+        """</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span> <span class="o">=</span> <span class="n">num_heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">share_atten</span> <span class="o">=</span> <span class="n">share_atten</span>
+        <span class="n">head_dim</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">//</span> <span class="n">num_heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">apply_transform</span> <span class="o">=</span> <span class="n">apply_transform</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">qk_scale</span> <span class="ow">or</span> <span class="n">head_dim</span> <span class="o">**</span> <span class="o">-</span><span class="mf">0.5</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">share_atten</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">DLA</span> <span class="o">=</span> <span class="n">DLA</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">refine_mode</span><span class="o">=</span><span class="n">refine_mode</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">adapt_bn</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">qkv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">apply_transform</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">DLA</span> <span class="o">=</span> <span class="n">DLA</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">,</span> <span class="n">refine_mode</span><span class="o">=</span><span class="n">refine_mode</span><span class="p">,</span> <span class="n">expand_ratio</span><span class="o">=</span><span class="n">head_expand</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">adapt_bn</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">qkv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span> <span class="o">*</span> <span class="n">expansion_ratio</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">qkv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span> <span class="o">*</span> <span class="n">expansion_ratio</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">attn_drop</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">attn_drop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">proj_drop</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">proj_drop</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">atten</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">share_atten</span><span class="p">:</span>
+            <span class="n">attn</span> <span class="o">=</span> <span class="n">atten</span>
+            <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">adapt_bn</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">DLA</span><span class="p">(</span><span class="n">attn</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> 
+
+            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">qkv</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">C</span> <span class="o">//</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="n">attn_next</span> <span class="o">=</span> <span class="n">atten</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">qkv</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">qkv</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">C</span> <span class="o">//</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+            <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">qkv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">qkv</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">qkv</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>   
+
+            <span class="n">attn</span> <span class="o">=</span> <span class="p">(</span><span class="n">q</span> <span class="o">@</span> <span class="n">k</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+            <span class="n">attn</span> <span class="o">=</span> <span class="n">attn</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">atten</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="k">if</span> <span class="n">atten</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">attn</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">attn_drop</span><span class="p">(</span><span class="n">attn</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">apply_transform</span><span class="p">:</span>
+                <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">adapt_bn</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">DLA</span><span class="p">(</span><span class="n">attn</span><span class="p">))</span>  
+            <span class="n">attn_next</span> <span class="o">=</span> <span class="n">attn</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">attn</span> <span class="o">@</span> <span class="n">v</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">attn</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">C</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj_drop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">attn_next</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/31/yolov8.html" class="read-next-link"></a>
+        <section>
+          <span>Ultralytics YOLOv8</span>
+          <p>  Ultralytics YOLOv8：实时目标检测和图像分割模型的最新版本.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/65332ac8c458853aef693b48.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/24/oversmooth.html" class="read-next-link"></a>
+          <section>
+            <span>Improve Vision Transformers Training by Suppressing Over-smoothing</span>
+            <p>  通过抑制过度平滑改进视觉Transformer.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/643bc7a30d2dde5777c4843d.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

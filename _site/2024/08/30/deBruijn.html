@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>欧拉路径(Euler Path)与de Bruijn图 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="欧拉路径(Euler Path)与de Bruijn图">
+    <meta name="keywords"  content="数学">
+    <!-- Open Graph -->
+    <meta property="og:title" content="欧拉路径(Euler Path)与de Bruijn图 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/08/30/deBruijn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%95%B0%E5%AD%A6" class="post-tag">数学</a>
+          
+        
+      </div>
+      <h1>欧拉路径(Euler Path)与de Bruijn图</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-08-30"><i class="iconfont icon-date"></i>30 Aug 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/66d1a018d9c307b7e9ae1653.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Euler Path and de Bruijn Graph.</p>
+</blockquote>
+
+<p>本文目录：</p>
+<ol>
+  <li>欧拉路径</li>
+  <li><strong>de Bruijn</strong>图</li>
+  <li><strong>de Bruijn</strong>图在基因组学的应用</li>
+</ol>
+
+<h1 id="1-欧拉路径-euler-path">1. 欧拉路径 Euler Path</h1>
+
+<h2 id="1-欧拉路径的定义">(1) 欧拉路径的定义</h2>
+
+<p>一张图由顶点 (<strong>vertex</strong>) 和边 (<strong>edge</strong>) 构成。对于每个顶点，其连接的边的数目称为这个顶点的<strong>度</strong> (<strong>degree</strong>)。</p>
+
+<p>对于一个图$\textbf{G}$，如果一条路径经过这个图中所有的边，且恰好经过一次，则这条路径就是图$\textbf{G}$中的一个<strong>欧拉路径 (Euler Path)</strong>。有欧拉路径的图可以进行 “一笔画” 把所有的边画完而且没有重复。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66d1841bd9c307b7e989a160.png" alt="" /></p>
+
+<p>根据路径的起点与终点是否是同一个节点，欧拉路径可以细分为：</p>
+<ul>
+  <li><strong>欧拉回路 (closed Euler path)</strong>：起点与终点相同的欧拉路径</li>
+  <li><strong>欧拉开路 (open Euler path)</strong>：起点与终点不同的欧拉路径</li>
+</ul>
+
+<h2 id="2-欧拉路径的存在条件">(2) 欧拉路径的存在条件</h2>
+
+<p>对于无向图，有：</p>
+<ul>
+  <li>对于欧拉回路的情况，一个无向图存在欧拉回路当且仅当这个图是连通图 (<strong>connected</strong>)，并且每个顶点的度均是偶数。</li>
+  <li>对于欧拉开路的情况，一个无向图存在欧拉开路当且仅当这个图是连通图，并且有且只有两个顶点的度是奇数。</li>
+</ul>
+
+<p>必要性证明：假设路径经过顶点$A$，那么会有一条路径进入$A$，也会有一条路径离开$A$，于是$A$的度数一定会是偶数。对于欧拉回路，起点与终点相同，因此起点的度数也是偶数；对于欧拉开路，起点与终点不同，两点的度数是奇数。</p>
+
+<p>充分性证明：以欧拉回路为例，假设所有顶点的度数都是偶数。选取一个起点$A_1$，从$A_1$出发每经过一个顶点$A_i$，由于$A_i$的度数是偶数，所以必然也会从$A_i$再出发，而最终回到$A_1$。于是得到一个回路$A_1 \cdots A_i \cdots A_1$（如下图黑色的回路）。如果这条回路没有包括所有的边，那么除去这条回路和这条回路上的顶点，剩余顶点的度依然都是偶数。可以继续找到另一条回路，并且因为图是联通的，可以从$A_1 \cdots A_i \cdots A_1$之中的一个顶点出发，作为下一条回路的起点（如下图蓝色的回路）。以此类推，因为总的顶点数和边数是有限的，总可以结束这个过程。最终这些回路可以连接成为一条回路，这就证明了欧拉回路的存在。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66d186dfd9c307b7e98d83ae.png" alt="" /></p>
+
+<p>对于有向图，有</p>
+<ul>
+  <li>对于欧拉回路的情况，一个有向图存在欧拉回路当且仅当这个图是连通图，并且每个顶点的入度 (<strong>in degree</strong>) 等于出度 (<strong>out degree</strong>)。</li>
+  <li>对于欧拉开路的情况，一个有向图存在欧拉开路当且仅当这个图是连通图，并且有且只有两个顶点的入度不等于出度。对于这两个特殊的顶点，其中一个顶点的入度比出度大 1，这个点是欧拉开路的终点；另一个顶点的入度比出度小 1，这个点是欧拉开路的起点。</li>
+</ul>
+
+<h1 id="2-de-bruijn图">2. de Bruijn图</h1>
+
+<h2 id="1-de-bruijn序列">(1) de Bruijn序列</h2>
+
+<p>如果有一个字典$\Sigma$，其元素个数是$\alpha$，那么其上的一个 <strong>de Bruijn序列</strong> $S$是一个长度为$\alpha^n$的循环序列，$S$包含所有$\Sigma$上长度为$n$的子序列。</p>
+
+<p>例如\(\Sigma = \{0, \, 1 \}, \, \alpha = 2\)，如果$n=3$，那么一个 <strong>de Bruijn序列</strong>可以是 $S = 00011101$。其长度为$\alpha^n = 2^3 = 8$。可以验证，$S$包含了所有的长度为$3$的子序列（$000 ,   001 ,   010 ,   011 ,   100 ,   101 ,   110 ,   111$）。</p>
+
+<h2 id="2-de-bruijn图-1">(2) de Bruijn图</h2>
+
+<p>用来生产<strong>de Bruijn序列</strong>的有向图称为 <strong>de Bruijn有向图 (de Bruijn digraph)</strong>。比如用来生成上一节包含所有长度为 $3$ 的二进制子序列的 <strong>de Bruijn</strong>序列的有向图如下，有向图的每一个顶点都是一个长度为$n-1$的二进制的序列，并且每条有向边用 $0$ 或 $1$ 标注。顶点 $A$ 指向顶点 $B$的条件是，把顶点$A$ 代表的二进制序列的第一个比特 (<strong>bit</strong>) 去掉，然后在剩余的序列后面加上一个新的比特($0$ 或 $1$)，等于顶点$B$所代表的二进制序列。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66d18c25d9c307b7e994d053.png" alt="" /></p>
+
+<p>图中每一个顶点$x_1x_2$会有两条向外的边($0$ 或 $1$)，同样也会有两个顶点($0x_1,1x_1$)指向该顶点。所以每一个顶点的入度和出度是相等的。这个 <strong>de Bruijn</strong>有向图一定存在欧拉回路。把图中的每条有向边上的标注($0$ 或 $1$)按照一条欧拉回路依次连接，就能得到一个 <strong>de Bruijn</strong>序列。</p>
+
+<p>对于更多元素的 <strong>de Bruijn</strong>序列，也可以构造相应的 <strong>de Bruijn</strong>有向图来求解。比如求二进制的 $n = 4$的 <strong>de Bruijn</strong>序列，可以先构造长度为 $3$ 的全部子序列，然后建立 <strong>de Bruijn</strong>有向图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66d18e2fd9c307b7e99844a7.png" alt="" /></p>
+
+<p>对于一般的情况，如果要构造一个包含所有长度为 $n$ 的二进制子序列的 <strong>de Bruijn</strong>序列，其长度至少应该是 $2 ^ n2$。构造方法需要从顶点为所有 $n - 1$ 长度的二进制子序列构成的图中构造欧拉回路。由于每个$n - 1$长度的子序列会有两条向外的边 ($0$ 或 $1$)，所以 <strong>de Bruijn</strong>有向图中一共有$2^{n - 1} \times 2 = 2^n$条边，欧拉回路的长度就是$2^n$，符合其长度的最小的要求；欧拉回路又包含了所有的长度为 $n$ 的子序列。所以这样构造的 <strong>de Bruijn</strong>序列就是满足包含所有长度为 $n$ 的子序列中长度最短的序列。</p>
+
+<h1 id="3-de-bruijn图在基因组学的应用">3. de Bruijn图在基因组学的应用</h1>
+
+<p>在基因测序中所得数据的总长度将比基因组本身长得多，比如30亿bp基因组的总测序长度可能达到300亿bp，所以需要合适的算法将这些测序短序列<strong>read</strong>拼接起来。二代测序数据拼接常选择基于<strong>de Bruijn</strong>图的方法。</p>
+
+<p>这类方法通过将测序序列打断成更小的长度为$k$的小片段（<strong>k-mer</strong>）来降低计算的规模。对于一条长度为$N$的序列，从头到尾依次取<strong>k-mer</strong>，一共可以取到$N-k+1$个<strong>k-mer</strong>，每两个相邻的<strong>k-mer</strong>之间都有长度为$k-1$的重叠区域。通过读取构造的<strong>de Bruijn</strong>图可以获得完整的基因序列。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66d1a018d9c307b7e9ae1653.png" alt="" /></p>
+
+<p>通过将序列打断为<strong>k-mer</strong>，<strong>de Bruijn</strong>图方法降低了大量短序列数据集中的数据冗余性，降低了整体数据量和计算量，也避免了一些错误的拼接结果。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/10/08/pansharpen.html" class="read-next-link"></a>
+        <section>
+          <span>全色锐化(Panchromatic Sharpening)</span>
+          <p>  Panchromatic Sharpening.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/673af40cd29ded1a8c6d8d11.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/08/29/deepvariant.html" class="read-next-link"></a>
+          <section>
+            <span>A universal SNP and small-indel variant caller using deep neural networks</span>
+            <p>  使用深度神经网络的通用单核苷酸多态性和插入/缺失变异比对器.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/66d0605fd9c307b7e91b1e7b.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

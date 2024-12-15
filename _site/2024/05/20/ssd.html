@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Spatial Similarity Distribution for Few-shot Object Counting - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Learning Spatial Similarity Distribution for Few-shot Object Counting">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Learning Spatial Similarity Distribution for Few-shot Object Counting - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/05/20/ssd.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Learning Spatial Similarity Distribution for Few-shot Object Counting</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-05-20"><i class="iconfont icon-date"></i>20 May 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6685f25ed9c307b7e97f179e.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>学习少样本目标计数的空间相似度分布.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2405.11770">Learning Spatial Similarity Distribution for Few-shot Object Counting</a></li>
+</ul>
+
+<p>现有少样本目标计数方法通过计算查询图像与匹配样本在二维空间域的相似度，并进行回归得到计数结果。然而这些方法忽略了样本图像上丰富的相似度空间分布信息，从而对匹配精度产生了重大影响。</p>
+
+<p>本文提出了一种用于少样本目标计数的网络空间相似度分布(<strong>Spatial Similarity Distribution, SSD</strong>)，该方法保留了样本特征的空间结构，并计算了查询特征与样本特征之间点对点的四维相似金字塔，获取了四维相似空间中每个点的完整分布信息。<strong>SSD</strong>通过相似学习模块(<strong>SLM</strong>)在相似金字塔上应用高效的中心-枢轴四维卷积，将不同的相似分布映射到不同的预测密度值，从而获得准确的计数。此外还通过特征交叉增强模块(<strong>FCE</strong>)相互增强查询特征和样本特征，以提高特征匹配的准确性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66860156d9c307b7e9943675.png" alt="" /></p>
+
+<p>作者观察到对于匹配样本，每个部分之间的相似性分布特征是不同的，例如对于物体中心、边缘和背景，样本中目标中心的相似度分布从中心位置向周围区域逐渐减小，而边缘的相似度分布在不同位置呈现变化。另一方面，背景在除背景区域外的所有位置上的相似性值通常较低。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66860252d9c307b7e996b269.png" alt="" /></p>
+
+<p><strong>SSD</strong>框架包括特征提取模块、特征交叉增强模块、相似度金字塔计算模块、相似度学习模块与回归解码器模块组成。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668608bcd9c307b7e9a05e37.png" alt="" /></p>
+
+<p>特征提取模块使用冻结的<strong>ResNet-50</strong>从查询图像中提取金字塔特征；对于特征金字塔中的每一层，使用<strong>RoI Align</strong>方法提取$K$个目标样本的特征。将$K$个样本特征$F_l^q$与同一层次的查询特征$F_l^s$一起输入到特征交叉增强模块，得到增强后的特征$E_l^q,E_l^s$。</p>
+
+<p>同一类别查询特征中目标特征的分布往往是不均匀的，使用原始特征直接匹配和计数会导致每个目标的密度值不同。特征交叉增强模块(<strong>Feature Cross Enhancement, FCE</strong>)旨在使查询中的目标特征更接近样本特征，同时也使样本特征更接近所有目标特征的中心位置。通过增强特定类别的物体特征的相似度，该模型能够生成更准确的密度值。</p>
+
+<p>在<strong>FCE</strong>模块中，输入特征$F_l^q,F_l^s$通过卷积层联合变换为$V^q,V^s$；再经过另外两个卷积层分别变换为$Q,K$，并计算注意力矩阵$A_l=softmax(Q^TK)$。之后分别增强特征$F_l^q,F_l^s$：</p>
+
+\[E_l^q = F_l^q + MLP(F_l^q) \odot Conv(V^sA_l^T) \\
+E_l^s = F_l^s + MLP(F_l^s) \odot Conv(V^qA_l)\]
+
+<p>对$K$个样本进行划分，每个样本对应一组特征金字塔组合$E_l^q,E_{l,k}^s$，进行余弦乘法得到相似矩阵:</p>
+
+\[S_{l,k}(x^q,x^s) = ReLU\left( \frac{E_l^q(x^q)\cdot E_{l,k}^s(x^s)}{||E_l^q(x^q)||\cdot ||E_{l,k}^s(x^s)||} \right)\]
+
+<p>将同一大层$L_p$的相似度矩阵串联起来，然后将它们输入到相似度学习模块中，产生一个融合的特征图$S_{L_p}$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668608f0d9c307b7e9a0af08.png" alt="" /></p>
+
+<p>相似度学习模块（<strong>Similarity Learning Module, SLM</strong>）采用中心-枢轴<strong>4D</strong>卷积进行特征提取$S_{L_p}^\prime=f_{L_p}(S_{L_p})$。<strong>4D</strong>卷积仅关注与卷积中心相关的信息，在保持有效性的同时减少了计算开销。<strong>4D</strong>卷积基于卷积核权值对每个四维位置进行张量融合，在四维空间中积分附近的信息，并将该位置的向量转换为相应的输出维数。然后将不同层的特征图进行融合：</p>
+
+\[S_{L_{p-1}} = f_{L_{p-1}}(upsample(S_{L_p}^\prime)+S_{L_{p-1}}^\prime)\]
+
+<p>最后将融合特征图输入到回归解码器模块中，得到预测的密度图。回归解码器模块由多个组件模块组成，这些组件模块由卷积层、<strong>ReLU</strong>激活层和上采样层组成；最后通过1 × 1卷积层和<strong>ReLU</strong>激活层。损失函数采用广义损失（<strong>Generalized Loss</strong>）。广义损失通过不平衡最优传输问题直接测量了预测密度图$a$和真实点图$b$之间的距离：
+UOT为</p>
+
+\[\mathcal{L}_{\mathbf{C}} = \min_{\mathbf{P}\in\mathbb{R}_+^{n\times m}} \left\langle \mathbf{C},\mathbf{P}\right\rangle -\epsilon H\left(\mathbf{P}\right) + \tau ||\mathbf{P}\mathbf{1}_m-\mathbf{a}||_2^2 +\tau |\mathbf{P}^T\mathbf{1}_n-\mathbf{b}|_1\]
+
+<p>其中\(\mathbf{C}\in\mathbb{R}_+^{n\times m}\)是传输代价矩阵,$C_{i,j}$为将密度图从\(\mathbf{x}_i\)搬运到\(\mathbf{y}_j\)的距离。\(\mathbf{P}\)为传输矩阵。令\(\hat{\mathbf{a}} = \mathbf{P}\mathbf{1}_m, \hat{\mathbf{b}}=\mathbf{P}^T\mathbf{1}_n\)。</p>
+
+<p>这个损失包括四部分：</p>
+<ol>
+  <li>传输损失，目的是将预测的密度图往真实标注靠拢；</li>
+  <li>熵正则化项，目的是控制密度图的稀疏程度；</li>
+  <li>希望\(\hat{\mathbf{a}}\)靠近\(\mathbf{a}\)；</li>
+  <li>希望\(\hat{\mathbf{b}}\)靠近\(\mathbf{b}\)。</li>
+</ol>
+
+<p>某些样本图像可能包含小尺寸或密集分布的物体，导致难以有效区分单个物体，这将导致预测密度图中的重叠密度，从而影响模型性能。为了解决这个问题，在进入主干之前根据样本框的大小动态调整输入图像的大小。这种调整大小是按样本框的尺寸成比例执行的，允许模型更好地识别包含较小目标的样本。计算$K$个样本边界框$B$的平均长度和宽度$\overline{B}$，如果平均长度或宽度低于阈值$γ$，计算图像扩展的尺度:</p>
+
+\[scale = \frac{\gamma - \min(\overline{B})}{\eta} + 1\]
+
+<p>最后在输入模型之前，将图像尺寸和样本边界框$B$同时按比例值<strong>scale</strong>进行调整。</p>
+
+<p>实验结果表明，<strong>SSD</strong>方法在<strong>FSC-147</strong>数据集上的少样本计数性能始终优于现有的方法。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66860ec2d9c307b7e9a9d822.png" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/05/23/yolov10.html" class="read-next-link"></a>
+        <section>
+          <span>YOLOv10: Real-Time End-to-End Object Detection</span>
+          <p>  YOLOv10：实时端到端目标检测.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/668bb30cd9c307b7e9d3b5ac.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/05/07/spline.html" class="read-next-link"></a>
+          <section>
+            <span>样条曲线(Spline Curve)</span>
+            <p>  Spline Curve.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6639f3fe0ea9cb140379ee9e.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

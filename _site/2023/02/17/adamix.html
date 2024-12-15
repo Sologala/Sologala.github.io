@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdaMix: Mixture-of-Adaptations for Parameter-efficient Model Tuning - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="AdaMix: Mixture-of-Adaptations for Parameter-efficient Model Tuning">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="AdaMix: Mixture-of-Adaptations for Parameter-efficient Model Tuning - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/02/17/adamix.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>AdaMix: Mixture-of-Adaptations for Parameter-efficient Model Tuning</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-02-17"><i class="iconfont icon-date"></i>17 Feb 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/657a6f86c458853aef2566d0.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>AdaMix：参数高效模型微调中的混合调整.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2205.12410">AdaMix: Mixture-of-Adaptations for Parameter-efficient Model Tuning</a></li>
+</ul>
+
+<p><strong>Adapter</strong> 是一种参数高效的微调策略，相比于调整模型原有参数，直接在下游任务中对于先前模型增加一小部分参数，原有参数不变，只用这一小部分参数来在下游任务上取得最优效果。<strong>Adapter</strong> 模块的具体结构由两个 <strong>FFN</strong> 组成，中间隐藏维度可以取到很小来缩减参数需求。</p>
+
+<p><strong>AdaMix</strong>将 <strong>Adapter</strong> 定义为：</p>
+
+\[\mathbb{E}_i(x_s)\equiv w_{i}^{o u t}\cdot G e L U(w_{i}^{i n}\cdot x_s)\]
+
+<p>在此基础上<strong>AdaMix</strong>提出了 <strong>Mixture-of-Adapter</strong>，类似于多专家模型 (<strong>MoE: Mixture-of-Experts</strong>)，即将每一个 <strong>Adpater</strong> 视作一个专家$E$，加上传统的门控单元$G$，模型的输出可以表示为：</p>
+
+\[h(x_s) = \sum_{i}\mathbb{G}(x_{s})_i \mathbb{E}_{i}(x_{s})\]
+
+<p>专家包含了两个 <strong>FFN</strong> 层（<strong>up</strong> 映射和 <strong>down</strong> 映射），每个不同的 <strong>down</strong> 和 <strong>up</strong> 的组合都可以视作一个专家：</p>
+
+<p><img src="https://pic.imgdb.cn/item/657a7524c458853aef38c4ec.jpg" alt="" /></p>
+
+<p>在训练时将门控单元替换为随机平均选择专家的方式，既减少了门控单元所消耗的参数和计算量，又能保证每个专家不会超负荷运作。为了保证随机专家情况下不出现预测不匹配的情况，需要监督两个不同专家的输出一致性。</p>
+
+<p>模型只考虑一个主分支，将最终预测结果做损失；其次为了保证训练高效，在确定了主分支随机选择的专家后，右分支需要满足两个 <strong>FFN</strong> 专家的选择均与主分支不同。损失函数即为主分支的交叉熵加上两个分支的 <strong>KL</strong> 一致性损失：</p>
+
+\[\mathcal{L} = -\sum_{c=1}^{C}\left(
+\mathcal{I}(x,c) \log\operatorname{softmax}(z_{c}^{A}(x))+\frac{1}{2}(\mathcal{KL}(z_{c}^{A}(x))||z_{c}^{B}(x))+\mathcal{KL}(z_{c}^{B}(x)||z_{c}^{A}(x))
+\right)\]
+
+<p>对于推理阶段，将所有 <strong>Adapter</strong> 混合（平均参数），而不是像传统多专家模型中继续沿用门控单元或是随机分配，让参数和计算量达到最小和最高效。</p>
+
+<p><img src="https://pic.imgdb.cn/item/657a762bc458853aef3bb85c.jpg" alt="" /></p>
+
+\[\mathcal{W}_{i}^{u p}\leftarrow\frac{1}{M}\sum_{j=1}^{M}\mathcal{W}_{i j}^{u p}\qquad\mathcal{W}_{i}^{d o w n}\leftarrow\frac{1}{M}\sum_{j=1}^{M}\mathcal{W}_{i j}^{d o w n}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Adamix</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">d_model</span><span class="p">,</span>
+                 <span class="n">bottleneck</span><span class="p">,</span>
+                 <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">init_option</span><span class="o">=</span><span class="s">"bert"</span><span class="p">,</span>
+                 <span class="n">adapter_scalar</span><span class="o">=</span><span class="s">"1.0"</span><span class="p">,</span>
+                 <span class="n">adapter_layernorm_option</span><span class="o">=</span><span class="s">"in"</span><span class="p">,</span>
+                 <span class="n">num_of_adapters</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">n_embd</span> <span class="o">=</span> <span class="n">d_model</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">down_size</span> <span class="o">=</span> <span class="n">bottleneck</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_of_adapters</span> <span class="o">=</span> <span class="n">num_of_adapters</span>
+        <span class="c1">#_before
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">adapter_layernorm_option</span> <span class="o">=</span> <span class="n">adapter_layernorm_option</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">adapter_layer_norm_before</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">adapter_layernorm_option</span> <span class="o">==</span> <span class="s">"in"</span> <span class="ow">or</span> <span class="n">adapter_layernorm_option</span> <span class="o">==</span> <span class="s">"out"</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">adapter_layer_norm_before</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">n_embd</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">adapter_scalar</span> <span class="o">==</span> <span class="s">"learnable_scalar"</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">adapter_scalar</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">down_projs</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">n_embd</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">down_size</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_of_adapters</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">non_linear_func</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">up_projs</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">down_size</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">n_embd</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_of_adapters</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_of_adapters</span><span class="p">):</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">kaiming_uniform_</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">down_projs</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">weight</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">math</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">zeros_</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">up_projs</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">weight</span><span class="p">)</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">zeros_</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">down_projs</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">bias</span><span class="p">)</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">zeros_</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">up_projs</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">bias</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_gengrate_expert_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">expert_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_of_adapters</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,))</span>
+        <span class="k">return</span> <span class="n">expert_ids</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">add_residual</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">residual</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="n">x</span> <span class="k">if</span> <span class="n">residual</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">residual</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">adapter_layernorm_option</span> <span class="o">==</span> <span class="s">'in'</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">adapter_layer_norm_before</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">down_idx</span><span class="p">,</span> <span class="n">up_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_gengrate_expert_ids</span><span class="p">()</span>
+        <span class="n">down</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">down_projs</span><span class="p">[</span><span class="n">down_idx</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">down</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">non_linear_func</span><span class="p">(</span><span class="n">down</span><span class="p">)</span>
+        <span class="n">down</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">functional</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">down</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">training</span><span class="p">)</span>
+        <span class="n">up</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">up_projs</span><span class="p">[</span><span class="n">up_idx</span><span class="p">](</span><span class="n">down</span><span class="p">)</span>
+
+        <span class="n">up</span> <span class="o">=</span> <span class="n">up</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">adapter_layernorm_option</span> <span class="o">==</span> <span class="s">'out'</span><span class="p">:</span>
+            <span class="n">up</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">adapter_layer_norm_before</span><span class="p">(</span><span class="n">up</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">add_residual</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">up</span> <span class="o">+</span> <span class="n">residual</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">up</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/02/18/vpt.html" class="read-next-link"></a>
+        <section>
+          <span>Visual Prompt Tuning</span>
+          <p>  视觉提示微调.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/657bf044c458853aef28a9a4.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/02/16/adapterformer.html" class="read-next-link"></a>
+          <section>
+            <span>AdaptFormer: Adapting Vision Transformers for Scalable Visual Recognition</span>
+            <p>  AdaptFormer：微调视觉Transformer用于可扩展视觉识别.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/657920c6c458853aef438535.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

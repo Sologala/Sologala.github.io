@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balanced Meta-Softmax for Long-Tailed Visual Recognition - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Balanced Meta-Softmax for Long-Tailed Visual Recognition">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Balanced Meta-Softmax for Long-Tailed Visual Recognition - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/01/21/metasoftmax.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Balanced Meta-Softmax for Long-Tailed Visual Recognition</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-01-21"><i class="iconfont icon-date"></i>21 Jan 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/62611470239250f7c50a364f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>BALMS: 长尾图像分类中的平衡元Softmax函数.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2007.10740v3">Balanced Meta-Softmax for Long-Tailed Visual Recognition</a></li>
+</ul>
+
+<p>长尾分布面临的主要问题：</p>
+<ol>
+  <li><strong>标签分布偏移(Label Distribution Shift)</strong>：长尾问题中的训练集通常是类别不平衡的，而此时及是类别平衡的，造成类别不平衡的训练数据集分布与类别平衡的测试优化指标之间的不匹配性。比如平均精度<strong>mAP</strong>鼓励模型在测试集上所有类别上的平均精度最小，导致训练与测试时标签分布不同。</li>
+  <li><strong>过平衡(Over-balance)</strong>：由于尾部类别在训练过程中出现频率较低，因此无法提供足够的优化梯度。因此即使设置一个较好的优化目标，也很难保证模型收敛到全局最优。如果同时使用类别平衡采样与优化目标则会导致过平衡问题。</li>
+</ol>
+
+<p>本文作者针对长尾分布问题提出了<strong>Balanced Meta-Softmax (BALMS)</strong>方法。针对<strong>Softmax</strong>函数处理标签分布偏移问题时存在估计偏差，提出<strong>Balanced Softmax</strong>避免偏差；针对类别平衡采样在与<strong>Balanced Softmax</strong>一起使用时导致过平衡问题，提出元采样器<strong>Meta Sampler</strong>通过元学习方法学习最优重采样策略。</p>
+
+<h1 id="1-平衡softmax损失-balanced-softmax">1. 平衡Softmax损失 Balanced Softmax</h1>
+<p>$k$类别分类的输出通过<strong>Softmax</strong>函数建模为多项分布：</p>
+
+\[\phi=\phi_1^{\Bbb{I}\{y=1\}}\phi_2^{\Bbb{I}\{y=2\}} \cdots \phi_k^{\Bbb{I}\{y=k\}} \\ \phi_j = \frac{e^{\eta_j}}{\sum_{i=1}^{k}e^{\eta_i}},  \sum_{j=1}^{k}\phi_j=1\]
+
+<p>根据贝叶斯推断，第$j$个类别的条件概率$\phi_j$可以写作：</p>
+
+\[\phi_j = p(y=j|x) = \frac{p(x,y=j)}{p(x)} = \frac{p(x|y=j)p(y=j)}{p(x)}\]
+
+<p>训练集和测试集的标签分布$p(y=j)$存在差异，因此<strong>Softmax</strong>函数构造的条件概率$\phi$是真实条件概率的有偏估计。</p>
+
+<p>为了消除训练和测试后验分布的差异，引入<strong>Balanced Softmax</strong>，使用模型的<strong>logits</strong>输出分别参数化训练概率$\hat{\phi}$和测试概率$\phi$。</p>
+
+<p>若测试时类别分布是平衡的，即$p(y=j)=\frac{1}{k}$，则测试概率$\phi$表示为：</p>
+
+\[\phi_j =\frac{p(x|y=j)}{p(x)}\frac{1}{k}\]
+
+<p>而训练时类别分布是不平衡的，记第$j$个类别的样本数量为$n_j$，则训练概率$\hat{\phi}$表示为：</p>
+
+\[\hat{\phi}_j =\frac{p(x|y=j)}{p(x)}\frac{n_j}{\sum_{i=1}^{k}n_i}\]
+
+<p>如果$\phi$是通过<strong>logits</strong>输出$\eta$和<strong>Softmax</strong>函数表示的，则$\hat{\phi}$应表示为：</p>
+
+\[\hat{\phi}_j = \frac{\eta_je^{\eta_j}}{\sum_{i=1}^{k}\eta_ie^{\eta_i}}\]
+
+<p>上式称为<strong>Balanced Softmax</strong>，对应的损失函数为：</p>
+
+\[l = -\log \hat{\phi}_y = -\log  \frac{\eta_ye^{\eta_y}}{\sum_{i=1}^{k}\eta_ie^{\eta_i}}\]
+
+<h1 id="2-元采样器-meta-sampler">2. 元采样器 Meta Sampler</h1>
+
+<p>最近的一些工作表明使用<strong>Softmax</strong>函数学习的全局最小值与小批量采样过程无关，因此采用合适的重采样策略可以模拟类别平衡的数据分布。作者通过实验发现同时使用类别平衡采样<strong>CBS</strong>与<strong>Balanced Softmax</strong>使得表现变差。</p>
+
+<p>在理想的优化过程中，每个类别的梯度的权重应和该类别样本数量成反比，然而应用<strong>Balanced Softmax</strong>后权重和该类别样本数量成平方反比，造成过平衡现象。</p>
+
+<p>下图展示了一个类别不平衡的二维数据三分类问题的可视化，同时应用类别平衡采样<strong>CBS</strong>与<strong>Balanced Softmax</strong>后，优化过程将过度地被尾部类别主导。</p>
+
+<p><img src="https://pic.imgdb.cn/item/626135e4239250f7c55882f7.jpg" alt="" /></p>
+
+<p>为了解决过平衡问题，引入<strong>元采样器Meta Sampler</strong>，一种基于元学习的类别平衡采样方法。<strong>Meta Sampler</strong>自动学习不同类别样本的最佳采样率，从而更好地配合<strong>Balanced Softmax</strong>的使用。</p>
+
+<p><strong>Meta Sampler</strong>采用双级元学习策略：在内循环中更新采样分布$\pi_{\psi}$的参数$\psi$，在外循环中更新网络参数$\theta$。从训练集$D_{train}$中采样一个类别平衡的元数据集$D_{meta}$，通过内循环寻找使得网络$\theta$在$D_{meta}$上表现最好的采样分布$\pi_{\psi}$。问题建模如下：</p>
+
+\[\pi^*_{\psi} = \mathop{\arg \min}_{\psi} L_{D_{meta}}(\theta^*(\pi_{\psi})) \\ \text{s.t.  } \theta^*(\pi_{\psi})=\mathop{\arg \min}_{\theta} \hat{L}_{D_{q(x,y;\pi_{\psi})}}(\theta)\]
+
+<p>其中$L$是标准的<strong>Softmax</strong>函数，$\hat{L}$是<strong>Balanced Softmax</strong>函数，$D_{q(x,y;\pi_{\psi})}$是对训练集根据类别采样率$\pi_{\psi}$进行采样。</p>
+
+<p>元学习优化过程如下：</p>
+<ol>
+  <li>根据类别采样率$\pi_{\psi}$采样一个小批量$B_{\psi}$，通过梯度下降更新代理模型的参数：\(\tilde{\theta} \gets \theta - \nabla_{\theta}\hat{L}_{B_{\psi}}(\theta)\)</li>
+  <li>计算元数据集$D_{meta}$上代理模型的损失$L_{D_{meta}}(\tilde{\theta})$，通过梯度下降更新采样率参数：\(\psi \gets \psi - \nabla_{\psi}L_{D_{meta}}(\tilde{\theta})\)</li>
+  <li>更新模型参数：\(\theta \gets \theta - \nabla_{\theta}\hat{L}_{B_{\psi}}(\theta)\)</li>
+</ol>
+
+<p>从离散分布中采样是不可导的，为了保证采样过程能够端到端训练，在构造小批量$B_{\psi}$时应用<strong>Gumbel-Softmax</strong>重参数化技巧。</p>
+
+<h1 id="3-实验分析">3. 实验分析</h1>
+
+<p>下图展示了模型在测试集中每个类别的累加预测分数，即模型预测的标签分布。理想情况下，模型在类别平衡的测试集上预测的标签分布应该是平衡的。图中类别按照出现频率降序排列。<strong>Softmax</strong>函数明显地偏向于头部类别，而<strong>Balanced Softmax</strong>实现了相对平衡的预测类别分布。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62614259239250f7c578df75.jpg" alt="" /></p>
+
+<p>当直接结合<strong>Balanced Softmax</strong>与<strong>CBS</strong>时产生过平衡问题，预测类别分布明显地偏向于尾部类别。而<strong>Balanced Softmax</strong>与<strong>Meta Sampler</strong>的组合取得了较为均衡的标签分布。</p>
+
+<p><img src="https://pic.imgdb.cn/item/626142c4239250f7c579c703.jpg" alt="" /></p>
+
+<p>作者在图像分类（<strong>CIFAR-10/100-LT，ImageNet-LT，Places-LT</strong>）与实例分割（<strong>LVIS-v0.5</strong>）任务上分别进行了实验验证。<strong>BALMS</strong>方法取得最好的表现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6261432c239250f7c57aa8d1.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/01/22/onlstm.html" class="read-next-link"></a>
+        <section>
+          <span>Ordered Neurons: Integrating Tree Structures into Recurrent Neural Networks</span>
+          <p>  ON-LSTM：把树结构整合进循环神经网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63b63136be43e0d30e4a1e3e.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/01/20/seesaw.html" class="read-next-link"></a>
+          <section>
+            <span>Seesaw Loss for Long-Tailed Instance Segmentation</span>
+            <p>  Seesaw Loss：长尾实例分割中的平衡损失.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60ee8b0c5132923bf81635ec.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

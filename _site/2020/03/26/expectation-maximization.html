@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>期望最大算法(Expectation Maximization, EM) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="期望最大算法(Expectation Maximization, EM)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="期望最大算法(Expectation Maximization, EM) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/26/expectation-maximization.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>期望最大算法(Expectation Maximization, EM)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-26"><i class="iconfont icon-date"></i>26 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://img.imgdb.cn/item/6074ef4d8322e6675cfb7a34.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Expectation Maximization.</p>
+</blockquote>
+
+<p>在求解概率分布模型$P(x ; \theta)$的参数$\theta$时，通常采用<strong>极大似然估计</strong>方法；其中$x$被称为<strong>观测变量(observable variable)</strong>。给定数据后极大化观测变量$x$关于参数$\theta$的对数似然函数：</p>
+
+\[L(\theta) = \log P(x ; \theta)\]
+
+<p>若概率模型还包含<strong>隐变量(latent variable)</strong> $z$，则观测变量$x$和隐变量$z$对应的数据总称为<strong>完全数据(complete data)</strong>，对应的对数似然为：</p>
+
+\[L(\theta) = \log P(x ; \theta) = \log \int_{z}^{} P(x,z ; \theta) dz\]
+
+<p>由于隐变量的不可观测性，上式是<strong>intractable</strong>的，因为对数函数中包含积分项；需要采用近似算法处理。</p>
+
+<p><strong>期望最大(expectation maximization,EM)算法</strong>是用于解决含有<strong>隐变量</strong>的概率模型的极大似然估计方法，是一种迭代计算的数值方法。</p>
+
+<p>本文目录：</p>
+<ol>
+  <li>使用条件概率和<strong>KL</strong>散度推导<strong>EM</strong>算法</li>
+  <li>使用边缘分布和<strong>Jenson</strong>不等式推导<strong>EM</strong>算法</li>
+  <li><strong>EM</strong>算法的几何解释：近似曲线逼近</li>
+  <li><strong>EM</strong>算法的收敛性证明</li>
+  <li>广义<strong>EM</strong>算法</li>
+</ol>
+
+<h1 id="1-使用条件概率和kl散度推导em算法">1. 使用条件概率和KL散度推导EM算法</h1>
+<p>当概率模型$P(x ; \theta)$含有隐变量$z$时，对其对数似然函数做如下变换：</p>
+
+\[\begin{aligned} \log P(x ; \theta) &amp;= \log  \frac{P(x,z ; \theta)}{P(z|x ; \theta)} \\ &amp;= \log P(x,z ; \theta) - \log P(z|x ; \theta) \\ &amp;= \log \frac{P(x,z ; \theta)}{Q(z)} - \log \frac{P(z|x ; \theta)}{Q(z)} \end{aligned}\]
+
+<p>上式即使已知联合分布$P(x,z ; \theta)$，其条件分布$P(z|x ; \theta)$也是未知的；引入一个新的分布$Q(z)$近似该分布。上式两端对$Q(z)$求期望：</p>
+
+\[\begin{aligned} \text{左端} &amp;= \int_{z}^{} Q(z) \log P(x ; \theta) dz = \log P(x ; \theta) \int_{z}^{} Q(z) dz = \log P(x ; \theta) \\ \text{右端} &amp;= \int_{z}^{} Q(z) \log\frac{P(x,z ; \theta)}{Q(z)} dz - \int_{z}^{} Q(z) \log\frac{P(z|x ; \theta)}{Q(z)} dz \\ &amp;= \text{ELBO} + \text{KL}(Q(z) || P(z|x ; \theta)) \end{aligned}\]
+
+<p>上式中<strong>KL</strong>散度是一个不小于零的值；<strong>ELBO</strong>为<strong>证据下界(evidence lower bound)</strong>，是对数似然函数的一个下界；即：</p>
+
+\[\log P(x ; \theta) = \text{ELBO} + \text{KL}(Q || P) ≥ \text{ELBO}\]
+
+<p>极大似然估计的原目标函数为：</p>
+
+\[\theta_{\text{MLE}} = \mathop{\arg \max}_{\theta} \log P(x ; \theta)\]
+
+<p>假设对于第$t$轮计算得到的$\theta^{(t)}$，<strong>KL</strong>散度可以忽略，即$\text{KL}(Q(z) | | P(z|x ; \theta^{(t)})) ≈ 0$，此时$Q(z) ≈ P(z|x ; \theta^{(t)})$，且目标函数近似替代为：</p>
+
+\[\mathop{\arg \max}_{\theta} \log P(x ; \theta) ≈ \mathop{\arg \max}_{\theta} \text{ELBO}\]
+
+<p>此时<strong>ELBO</strong>可以表示为：</p>
+
+\[\begin{aligned} \text{ELBO} &amp;= \int_{z}^{} Q(z) \log\frac{P(x,z ; \theta)}{Q(z)} dz \\ &amp;= \int_{z}^{} P(z|x ; \theta^{(t)}) \log\frac{P(x,z ; \theta)}{P(z|x ; \theta^{(t)})} dz \\ &amp;= \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x,z ; \theta) dz - \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(z|x ; \theta^{(t)}) dz \end{aligned}\]
+
+<p>注意到上式右端只有第一项包含参数$\theta$，因此最大化<strong>ELBO</strong>等价于最大化第一项，即：</p>
+
+\[\begin{aligned} \theta^{(t+1)} &amp;= \mathop{\arg \max}_{\theta} \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x,z ; \theta) dz  \\ &amp;= \mathop{\arg \max}_{\theta} \Bbb{E}_{P(z|x ; \theta^{(t)})}[\log P(x,z ; \theta)] \end{aligned}\]
+
+<p>上式即为期望最大算法的表达式。</p>
+
+<h1 id="2-使用边缘分布和jenson不等式推导em算法">2. 使用边缘分布和Jenson不等式推导EM算法</h1>
+<p>当概率模型$P(x ; \theta)$含有隐变量$z$时，对其对数似然函数做如下变换：</p>
+
+\[\begin{aligned} \log P(x ; \theta) &amp;= \log \int_{z}^{} P(x,z ; \theta) dz \\&amp;= \log \int_{z}^{} \frac{P(x,z ; \theta)}{Q(z)} Q(z) dz \\ &amp;= \log \Bbb{E}_{Q(z)} [\frac{P(x,z ; \theta)}{Q(z)}] \end{aligned}\]
+
+<p>引入一个新的分布$Q(z)$，将上式表示成期望的形式，由于$\log$函数是<strong>凹函数(concave)</strong>，由<a href="https://0809zheng.github.io/2022/07/20/jenson.html"><strong>Jenson</strong>不等式</a>：</p>
+
+\[\log \Bbb{E}_{Q(z)} [\frac{P(x,z ; \theta)}{Q(z)}] ≥ \Bbb{E}_{Q(z)} [\log \frac{P(x,z ; \theta)}{Q(z)}]\]
+
+<p>上式等号成立当且仅当$\frac{P(x,z ; \theta)}{Q(z)}$为常数$C$，此时$P(x,z ; \theta)=CQ(z)$，两端对$z$取积分得$C=P(x; \theta)$，故$Q(z)=\frac{P(x,z ; \theta)}{P(x; \theta)}=P(z|x ; \theta)$。</p>
+
+<p>极大似然估计的原目标函数为：</p>
+
+\[\theta_{\text{MLE}} = \mathop{\arg \max}_{\theta} \log P(x ; \theta)\]
+
+<p>假设对于第$t$轮计算得到的$\theta^{(t)}$，<strong>Jenson</strong>不等式可取等号，即$Q(z)=P(z|x ; \theta^{(t)})$，此时目标函数近似替代为：</p>
+
+\[\begin{aligned} \mathop{\arg \max}_{\theta} \log P(x ; \theta) =&amp; \mathop{\arg \max}_{\theta} \Bbb{E}_{Q(z)} [\log \frac{P(x,z ; \theta)}{Q(z)}] \\ =&amp; \mathop{\arg \max}_{\theta} \Bbb{E}_{P(z|x ; \theta^{(t)})} [\log \frac{P(x,z ; \theta)}{P(z|x ; \theta^{(t)})}] \\ =&amp; \mathop{\arg \max}_{\theta} \Bbb{E}_{P(z|x ; \theta^{(t)})} [\log P(x,z ; \theta)] \\ &amp;-\mathop{\arg \max}_{\theta} \Bbb{E}_{P(z|x ; \theta^{(t)})} [\log P(z|x ; \theta^{(t)})] \end{aligned}\]
+
+<p>注意到上式右端只有第一项包含参数$\theta$，因此最大化目标函数等价于：</p>
+
+\[\theta^{(t+1)} = \mathop{\arg \max}_{\theta} \Bbb{E}_{P(z|x ; \theta^{(t)})} [\log P(x,z ; \theta)]\]
+
+<h1 id="3-em算法的几何解释近似曲线逼近">3. EM算法的几何解释：近似曲线逼近</h1>
+<p><strong>EM</strong>算法的表达式如下：</p>
+
+\[\begin{aligned} \theta^{(t+1)} &amp;= \mathop{\arg \max}_{\theta} \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x,z ; \theta) dz  \\ &amp;= \mathop{\arg \max}_{\theta} \Bbb{E}_{P(z|x ; \theta^{(t)})}[\log P(x,z ; \theta)] \end{aligned}\]
+
+<p><strong>EM</strong>算法在迭代时分成两步。第一步(<strong>E-step</strong>)，计算联合分布的对数似然函数$\log P(x,z ; \theta)$关于给定参数$\theta^{(t)}$下的条件分布$P(z|x ; \theta^{(t)})$的期望；第二步(<strong>M-step</strong>)，计算期望的最大值。参数的初值可以任意选择，但需注意<strong>EM</strong>算法对初值是敏感的。</p>
+
+<p><img src="https://img.imgdb.cn/item/6074ef4d8322e6675cfb7a34.jpg" alt="" /></p>
+
+<p>上图给出了<strong>EM</strong>算法的直观解释。对数似然函数表示为曲线$L(\theta)$，该曲线是无法直接求解的。因此在每次迭代$\theta^{(t)}$时寻找对数似然函数的一个下界(即<strong>ELBO</strong>,表示为$B(\theta,\theta^{(t)})$)，通过极大化该下界来近似极大化对数似然。由于$L(\theta)≥B(\theta,\theta^{(t)})$，保证每次迭代时对数似然都是增加的。</p>
+
+<h1 id="4-em算法的收敛性证明">4. EM算法的收敛性证明</h1>
+<p>下面说明极大似然估计的收敛性等价于期望最大算法的收敛性。原问题的极大似然估计的目标函数为：</p>
+
+\[\theta_{\text{MLE}} = \mathop{\arg \max}_{\theta} \log P(x ; \theta)\]
+
+<p>注意到$P(x ; \theta)≤1$，因此函数$\log P(x ; \theta)$有上界；只需要证明该函数对于参数$\theta$是单调的，则可说明该目标函数是收敛的。即证：</p>
+
+\[\log P(x ; \theta^{(t+1)}) ≥ \log P(x ; \theta^{(t)})\]
+
+<p>对目标函数做一些变换：</p>
+
+\[\begin{aligned} \log P(x ; \theta) &amp;= \log  \frac{P(x,z ; \theta)}{P(z|x ; \theta)} \\ &amp;= \log P(x,z ; \theta) - \log P(z|x ; \theta)  \end{aligned}\]
+
+<p>上式两端对$P(z|x ; \theta^{(t)})$求期望：</p>
+
+\[\begin{aligned} \text{左端} &amp;= \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x ; \theta) dz = \log P(x ; \theta) \int_{z}^{} P(z|x ; \theta^{(t)}) dz = \log P(x ; \theta) \\ \text{右端} &amp;= \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x,z ; \theta) dz - \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(z|x ; \theta) dz \end{aligned}\]
+
+<p>若记：</p>
+
+\[Q(\theta) = \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x,z ; \theta) dz \\ H(\theta) = \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(z|x ; \theta) dz\]
+
+<p>则有：</p>
+
+\[\log P(x ; \theta) = Q(\theta) - H(\theta)\]
+
+<p>若证$\log P(x ; \theta^{(t+1)}) ≥ \log P(x ; \theta^{(t)})$，不妨证$Q(\theta^{(t+1)}) ≥ Q(\theta^{(t)})$和$H(\theta^{(t+1)}) ≤ H(\theta^{(t)})$。</p>
+
+<h3 id="-证明-qthetat1--qthetat">⚪ 证明 $Q(\theta^{(t+1)}) ≥ Q(\theta^{(t)})$</h3>
+
+<p>由于$Q(\theta)$恰好是期望最大算法的第一步得到的期望值，即：</p>
+
+\[\begin{aligned} \theta^{(t+1)} &amp;= \mathop{\arg \max}_{\theta} \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x,z ; \theta) dz \\&amp;= \mathop{\arg \max}_{\theta} Q(\theta) \end{aligned}\]
+
+<p>因此$\theta^{(t+1)}$是使得$Q(\theta)$取得最大值的参数：</p>
+
+\[\begin{aligned} Q(\theta^{(t+1)}) &amp;= \mathop{\max}_{\theta} \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x,z ; \theta) dz \\ &amp;≥ \mathop{\max}_{\theta} \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x,z ; \theta^{(t)}) dz \\&amp;= Q(\theta^{(t)}) \end{aligned}\]
+
+<h3 id="-证明-hthetat1--hthetat">⚪ 证明 $H(\theta^{(t+1)}) ≤ H(\theta^{(t)})$</h3>
+
+\[\begin{aligned} H(\theta^{(t+1)}) - H(\theta^{(t)})  =&amp; \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(z|x ; \theta^{(t+1)}) dz \\&amp;- \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(z|x ; \theta^{(t)}) dz \\ =&amp; \int_{z}^{} P(z|x ; \theta^{(t)}) \log\frac{P(z|x ; \theta^{(t+1)})}{P(z|x ; \theta^{(t)})} dz \\ =&amp; \Bbb{E}_{P(z|x ; \theta^{(t)})}[\log\frac{P(z|x ; \theta^{(t+1)})}{P(z|x ; \theta^{(t)})}] \\ &amp;\text{(由Jenson不等式)} \\ ≤&amp; \log\Bbb{E}_{P(z|x ; \theta^{(t)})}[\frac{P(z|x ; \theta^{(t+1)})}{P(z|x ; \theta^{(t)})}] \\ = &amp;\log \int_{z}^{} P(z|x ; \theta^{(t)}) \frac{P(z|x ; \theta^{(t+1)})}{P(z|x ; \theta^{(t)})} dz \\ =&amp; \log \int_{z}^{} P(z|x ; \theta^{(t+1)}) dz\\ =&amp; \log 1 = 0 \end{aligned}\]
+
+<h1 id="5-广义em算法">5. 广义EM算法</h1>
+<p><strong>EM</strong>算法的表达式如下：</p>
+
+\[\begin{aligned} \theta^{(t+1)} &amp;= \mathop{\arg \max}_{\theta} \int_{z}^{} P(z|x ; \theta^{(t)}) \log P(x,z ; \theta) dz  \\ &amp;= \mathop{\arg \max}_{\theta} \Bbb{E}_{P(z|x ; \theta^{(t)})}[\log P(x,z ; \theta)] \end{aligned}\]
+
+<p>在迭代中分为两步执行：</p>
+
+\[\begin{aligned} \text{E-step：} &amp;P(z|x ; \theta^{(t)}) → \Bbb{E}_{P(z|x ; \theta^{(t)})}[\log P(x,z ; \theta)] \\\text{M-step：} &amp;\theta^{(t+1)} = \mathop{\arg \max}_{\theta} \Bbb{E}_{P(z|x ; \theta^{(t)})}[\log P(x,z ; \theta)] \end{aligned}\]
+
+<p>上述算法要求条件概率$P(z|x ; \theta^{(t)})$是可求的。若该条件概率不可求，则仍将对数似然函数看作<strong>ELBO</strong>和<strong>KL</strong>散度之和：</p>
+
+\[\begin{aligned} \log P(x ; \theta) &amp;= \int_{z}^{} Q(z) log\frac{P(x,z ; \theta)}{Q(z)} dz - \int_{z}^{} Q(z) log\frac{P(z|x ; \theta)}{Q(z)} dz \\ &amp;= \text{ELBO}(Q,\theta) + \text{KL}(Q(z) || P(z|x ; \theta)) \end{aligned}\]
+
+<p>此时可将$Q(z)$也看做未知量，在迭代求解时与参数$\theta$一起求解。即给定$\hat{\theta}$时，有：</p>
+
+\[\hat{Q} = \mathop{\arg \min}_{Q} \text{KL}(Q(z) || P(z|x ; \theta)) = \mathop{\arg \max}_{Q} \text{ELBO}(Q,\hat{\theta})\]
+
+<p>给定$\hat{Q}$时，有：</p>
+
+\[\hat{\theta} = \mathop{\arg \max}_{\theta} \text{ELBO}(\hat{Q},\theta)\]
+
+<p>上述算法被称作<strong>广义期望最大(generalized expectation maximization,GEM)</strong>算法，也被称作<strong>极大-极大(maximization-maximization)</strong>算法，算法流程如下：</p>
+
+\[\begin{aligned} \text{E-step：} &amp;Q^{(t+1)} = \mathop{\arg \max}_{Q} \text{ELBO}(Q,\theta^{(t)}) \\ \text{M-step：}&amp; \theta^{(t+1)} = \mathop{\arg \max}_{\theta} \text{ELBO}(Q^{(t+1)},\theta) \end{aligned}\]
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/27/recommender-system.html" class="read-next-link"></a>
+        <section>
+          <span>Recommender System：推荐系统</span>
+          <p>  Recommender System.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ee37639c2a9a83be5987fba.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/25/variational-inference.html" class="read-next-link"></a>
+          <section>
+            <span>变分推断(Variational Inference)</span>
+            <p>  Variational Inference.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63b40d63be43e0d30e2f4cdf.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

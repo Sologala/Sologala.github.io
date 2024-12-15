@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LayoutDiffusion: Controllable Diffusion Model for Layout-to-image Generation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="LayoutDiffusion: Controllable Diffusion Model for Layout-to-image Generation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="LayoutDiffusion: Controllable Diffusion Model for Layout-to-image Generation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/03/03/layoutdiffusion.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>LayoutDiffusion: Controllable Diffusion Model for Layout-to-image Generation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-03-03"><i class="iconfont icon-date"></i>03 Mar 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/664afbb2d9c307b7e995212f.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>LayoutDiffusion: 布局到图像生成的可控扩散模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2303.17189">LayoutDiffusion: Controllable Diffusion Model for Layout-to-image Generation</a></li>
+</ul>
+
+<p>由于文本的模糊性及其在精确表达图像空间位置方面的局限，文本引导的扩散模型在生成包含多个目标的复杂图像时，会出现物体缺失和错误地生成物体的位置、形状和类别等问题。而布局引导的图像扩散模型通过将带有边界框和类别注释的目标作为输入条件，可以在保持生成图像高质量的同时获得更强的可控性。</p>
+
+<p>文本引导的扩散模型对所有条件输入采用简单的多模态融合方法(如交叉注意力)或直接拼接输入。与文本和图像的融合相比，图像与布局的融合是一个复杂的多模态融合问题。布局对目标的位置、大小和类别有更多的限制。这对模型的可控性要求较高，往往会导致生成图像的自然性和多样性降低。此外，布局对每个<strong>token</strong>更加敏感，布局<strong>token</strong>的丢失将直接导致目标的丢失。本文旨在专门设计布局与图像之间的融合机制。</p>
+
+<h2 id="1-layoutdiffusion">1. LayoutDiffusion</h2>
+
+<p><strong>LayoutDiffusion</strong>模型由三部分组成：布局融合模块(<strong>Layout Fusion Module, LFM</strong>)、目标感知交叉注意机制(<strong>object-aware Cross-Attention Mechanism, OaCA</strong>)和相应的无分类器(<strong>classify-free</strong>)训练和采样方案。</p>
+<ul>
+  <li><strong>LFM</strong>融合了每个目标的信息，并对多个目标之间的关系进行建模，从而提供了整个布局的潜在表示。</li>
+  <li><strong>OaCA</strong>将图像<strong>patch</strong>特征与布局在统一的坐标空间中进行交叉注意力计算，将两者的位置表示为边界框，使模型更加关注与目标相关的信息。</li>
+  <li>无分类器采样过程的速度进行一些优化，在25次迭代中可以显着优于<strong>SOTA</strong>模型。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6650509ed9c307b7e9623aba.png" alt="" /></p>
+
+<h3 id="1布局嵌入-layout-embedding">（1）布局嵌入 Layout Embedding</h3>
+
+<p>包含$n$个目标的布局记为$l={o_1,…,o_n}$。其中每个目标$o_i={b_i,c_i}$，$b_i=(x_0^i,y_0^i,x_1^i,y_1^i)\in [0,1]^4$是边界框，$c_i\in [0, \mathcal{C}+1]$是类别。</p>
+
+<p>为了支持可变长度序列的输入，通过在$l$前面添加一个$o_l$和在最后添加一些$o_p$来将$l$填充到固定长度的$k$。$o_l={b_l=(0,0,1,1),c_l=0}$表示整个布局，$o_p={b_p=(0,0,0,0),c_p=\mathcal{C}+1}$表示一些没有目标的填充。</p>
+
+<p>最后通过投影矩阵$W_B\in \mathbb{R}^{4\times d_L},W_C\in \mathbb{R}^{1\times d_L}$将布局$l={o_1,…,o_k}$转换为布局嵌入$L\in \mathbb{R}^{k\times d_L}$:</p>
+
+\[L=bW_B+cW_C\]
+
+<h3 id="2-布局融合模块-layout-fusion-module">(2) 布局融合模块 Layout Fusion Module</h3>
+
+<p>布局嵌入中的每个目标与其他目标没有关系。这导致对整个场景的理解较差，特别是当多个目标重叠并相互阻挡时。因此，为了鼓励布局的多个目标之间进行更多的交互，作者提出了布局融合模块(<strong>LFM</strong>)，这是一种使用多层自注意力来融合布局嵌入的编码器。</p>
+
+\[L^\prime = \text{LFM}(L) = \{O_1^\prime,...,O_k^\prime\}\]
+
+<h3 id="3目标感知交叉注意力机制-object-aware-cross-attention-mechanism">（3）目标感知交叉注意力机制 Object-aware Cross-Attention Mechanism</h3>
+
+<p>图像<strong>patch</strong>仅局限于特征的语义信息，缺乏空间信息。因此通过添加包含位置和大小的区域信息来构造结构化图像<strong>patch</strong>。图像中第$(u,v)$个<strong>patch</strong>的区域信息定义为：</p>
+
+\[b_{I_{u,v}} = \left( \frac{u}{h}, \frac{v}{w}, \frac{u+1}{h}, \frac{v+1}{w} \right)\]
+
+<p>然后将图像<strong>patch</strong>的区域信息与图像中的目标框编码到统一的位置嵌入空间中：</p>
+
+\[P_I = b_IW_BW_P\\
+P_L = bW_BW_P\]
+
+<p>对图像中的布局进行条件化的最简单方法之一是直接将布局的全局信息$O_1^\prime$添加到图像特征中：</p>
+
+\[I^\prime = I+O_1^\prime W\]
+
+<p>考虑到物体的位置、大小和类别的融合，将目标感知交叉注意力(<strong>OaCA</strong>)定义为:</p>
+
+\[\begin{aligned}
+Q &amp;= \text{concat}_{\text{channel}}\left[ Q_I, P_L\right] \\
+K &amp;= \text{concat}_{\text{channel}}\left[ \text{concat}_{\text{length}}\left[ K_I,K_L\right], \text{concat}_{\text{length}}\left[ P_I,P_L\right]\right]\\
+V &amp;= \text{concat}_{\text{length}}\left[ V_I,V_L\right]
+\end{aligned}\]
+
+<p>其中布局$L^\prime$的键矩阵$K_L$和值矩阵$V_L$计算为：</p>
+
+\[K_L,V_L = \text{Conv}(\frac{1}{2}(\text{Norm}(C_L)+L^\prime))\]
+
+<p>其中类别嵌入$C_L$关注的是布局的类别信息，$L^\prime$关注的是目标本身以及可能与之有关系的其他目标的综合信息。通过对两者求平均，既能得到目标的一般信息，又能强调目标的类别信息。</p>
+
+<p>图像$I$的查询矩阵$Q_I$、键矩阵$K_I$和值矩阵$V_I$计算为：</p>
+
+\[Q_I, K_I,V_I = \text{Conv}(\text{Norm}(I))\]
+
+<h3 id="4无分类器采样过程">（4）无分类器采样过程</h3>
+
+<p>为了支持布局作为条件输入，我们采用了无分类器引导条件生成。它是通过在有条件输入和没有条件输入的扩散模型的预测之间进行插值来完成的。</p>
+
+<p>对于布局条件，首先构造一个填充布局$l_φ = {o_l, o_p,···,o_p}$。在训练过程中，扩散模型布局的条件将以固定概率被替换为$l_φ$。采样时，使用下式对有布局条件的图像进行采样:</p>
+
+\[\hat{\epsilon}_\theta (x_t,t|l) = (1-s)\cdot \epsilon_\theta (x_t,t|l_\phi) + s\cdot \epsilon_\theta (x_t,t|l)\]
+
+<p>作者还对无分类器采样过程的速度进行了一些优化。将<strong>DPM-solver</strong>用于无条件分类器采样，这是一种具有收敛阶保证的快速高阶扩散<strong>ODE</strong>专用解算器，以加快条件采样速度。</p>
+
+<h2 id="2-实验分析">2. 实验分析</h2>
+
+<p>实验所使用的数据集包括：</p>
+<ul>
+  <li><strong>COCO-Stuff</strong>：使用<strong>COCO 2017</strong>分割挑战子集，该子集的训练集/验证集/测试集分别包含<strong>40K / 5k / 5k</strong>图像。使用其中包含3到8个覆盖图像的$2\%$以上且不属于人群的图像，共有25210张训练图像和3097张测试图像。</li>
+  <li><strong>Visual Genome</strong>：将108077张数据按$8:1:1$划分，分别选择在训练集中出现至少2000次和500次的目标和关系类别，并选择具有3到30个边界框并忽略所有小目标的图像。训练/验证/测试集分别拥有62565 / 5062 / 5096张图像。</li>
+</ul>
+
+<p>所使用的评估指标包括：</p>
+<ul>
+  <li><strong>Fr’echet Inception Distance (FID)</strong>通过在<strong>imagenet</strong>预训练的<strong>Inception-v3</strong>网络上测量真实图像与生成图像之间特征分布的差异来显示生成图像的整体视觉质量。</li>
+  <li><strong>Inception Score (IS)</strong>使用在<strong>ImageNet</strong>网络上预训练的<strong>Inception-v3</strong>计算生成图像输出的统计分数。</li>
+  <li>多样性评分(<strong>Diversity Score, DS</strong>)通过比较两个生成的相同布局的图像在<strong>DNN</strong>特征空间中的<strong>LPIPS</strong>度量来计算它们之间的多样性。</li>
+  <li><strong>Classification Score (CAS)</strong>首先裁剪目标区域，并根以32×32的分辨率调整其大小。使用生成图像的裁剪图训练<strong>ResNet-101</strong>分类器，并在真实图像的裁剪图上进行测试。</li>
+  <li><strong>YOLOScore</strong>使用预训练的<strong>YOLOv4</strong>模型对生成图像上的<strong>80</strong>个目标类别<strong>bbox mAP</strong>进行评估。</li>
+</ul>
+
+<p>结果表明<strong>LayoutDiffusion</strong>生成更精确的高质量图像，其布局对应的目标可识别性和准确性更高。</p>
+
+<p><img src="https://pic.imgdb.cn/item/665060c3d9c307b7e973623b.png" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/6650603fd9c307b7e972f0ff.png" alt="" /></p>
+
+<p>此外，来自相同布局的图像具有高质量和多样性(不同的照明，纹理，颜色和细节)。并且在初始布局的基础上不断添加一个额外的布局，在每一步中，<strong>LayoutDiffusion</strong>将新目标添加到非常精确的位置，具有一致的图像质量，显示用户友好的交互性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6650609bd9c307b7e9733d41.png" alt="" /></p>
+
+<p>作者还进行了不同组件的消融实验。与基线相比，多样性得分(<strong>DS</strong>)略有下降。<strong>DS</strong>在物理上与其他指标(如<strong>CAS</strong>和<strong>YOLOScore)</strong>所代表的可控性相反。对生成图像的精确控制导致了对多样性的更多限制。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6650613dd9c307b7e973c991.png" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/03/04/reco.html" class="read-next-link"></a>
+        <section>
+          <span>ReCo: Region-Controlled Text-to-Image Generation</span>
+          <p>  ReCo: 区域控制的文本到图像生成.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/66559975d9c307b7e9ae2b97.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/03/02/gligen.html" class="read-next-link"></a>
+          <section>
+            <span>GLIGEN: Open-Set Grounded Text-to-Image Generation</span>
+            <p>  GLIGEN：开集接地文本到图像生成.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6603ddc09f345e8d034f08f1.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

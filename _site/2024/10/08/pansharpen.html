@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全色锐化(Panchromatic Sharpening) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="全色锐化(Panchromatic Sharpening)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="全色锐化(Panchromatic Sharpening) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/10/08/pansharpen.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>全色锐化(Panchromatic Sharpening)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-10-08"><i class="iconfont icon-date"></i>08 Oct 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/673af40cd29ded1a8c6d8d11.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Panchromatic Sharpening.</p>
+</blockquote>
+
+<p>由于受遥感卫星传感器设计、遥感成像机理等因素的影响，单源遥感图像在空间、光谱分辨率等方面相互制约，一般遥感卫星只能获得单幅低空间分辨率的<strong>多光谱（Multispectral, MS）</strong>图像或高空间分辨率的<strong>全色（Panchromatic, PAN）</strong>图像。</p>
+
+<p><strong>全色锐化 (Panchromatic Sharpening)</strong>是指将全色图像的高分辨率空间细节信息与多光谱图像的丰富光谱信息进行融合，得到高质量、理想的<strong>高空间分辨率多光谱（High Spatial Resolution Multispectral, HRMS）</strong>图像。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673af40cd29ded1a8c6d8d11.png" alt="" /></p>
+
+<p>像素级融合是直接在原始遥感图像各像素上的直接融合处理，其目的是为了获得质量更高的融合图像，如提升观测图像的分辨率、增强原始图像的清晰度等。像素级全色图像锐化方法通常分为:</p>
+<ol>
+  <li>成分替换法(<strong>CS-based</strong>)：使用全色图像对多光谱图像的成分进行替换，如<strong>Brovey</strong>变换, <strong>PCA</strong>变换, <strong>IHS</strong>变换, <strong>GS</strong>变换, <strong>GSA</strong>, <strong>CNMF</strong>, <strong>GFPCA</strong>。</li>
+  <li>多分辨率分析法(<strong>MRA-based</strong>)：对全色图像和多光谱图像不同尺度的高、低频成份进行融合，如<strong>SFIM</strong>变换, <strong>Wavelet</strong>变换, <strong>MTF-GLP</strong>, <strong>MTF-GLP-HPM</strong>。</li>
+  <li>模型优化法(<strong>MO-based</strong>)：建立并优化融合图像与全色图像和多光谱图像之间的能量函数，如<strong>SIRF</strong>, <strong>PSFG</strong>$S^2$<strong>LR</strong>, <strong>LGC</strong>, <strong>PGCP-PS</strong>, <strong>BPSM</strong>, <strong>F-BMP</strong>。</li>
+  <li>深度学习方法(<strong>DL-based</strong>)：使用深度学习模型自动学习图像特征，从而实现图像分辨率的提升，如<strong>PNN</strong>, <strong>PanNet</strong>, <strong>MSDCNN</strong>, <strong>GPPNN</strong>, <strong>SRPPNN</strong>, <strong>INNformer</strong>, <strong>PanFormer</strong>, <strong>SFIIN</strong>, <strong>MIDPS</strong>, <strong>PanFlowNet</strong>, <strong>Pan-Mamba</strong>, <strong>HFIN</strong>。</li>
+</ol>
+
+<h3 id="-参考文献">👉 参考文献</h3>
+<ul>
+  <li><a href="https://www.ygxb.ac.cn/zh/article/doi/10.11834/jrs.20211325/">基于深度学习的像素级全色图像锐化研究综述</a></li>
+  <li><a href="https://github.com/Lihui-Chen/Awesome-Pansharpening">Awesome-Pansharpening</a></li>
+  <li><a href="https://github.com/codegaj/py_pansharpening/tree/master">Rewrite some pansharpening methods with python</a></li>
+</ul>
+
+<h2 id="1-成分替换法-component-substitution">1. 成分替换法 Component Substitution</h2>
+
+<p>成分替换法(<strong>CS-based</strong>)先将多光谱图像转换到一个新的空间，然后在新的映射空间用全色图像对转换后的多光谱图像空间信息成份进行替换，其不足在于光谱失真较为明显。</p>
+
+<h3 id="-brovey变换">⚪ Brovey变换</h3>
+<ul>
+  <li>A. R. Gillespie, A. B. Kahle, and R. E. Walker, “Color enhancement of highly correlated images-II. Channel ratio and “Chromaticity” Transform techniques,”         Remote Sensing of Environment, vol. 22, no. 3, pp. 343–365, August 1987.</li>
+</ul>
+
+<p><strong>Brovey</strong>变换基于光谱建模，旨在提高数据直方图高端和低端的视觉对比度。假定全色图像所跨越的光谱范围与多光谱通道覆盖的范围相同，该变换所采用的方法是将各个重采样的多光谱像素乘以相应全色像素亮度与所有多光谱亮度总和的比值：</p>
+
+\[c_r = \frac{c_r}{(c_r+c_b+c_g)} \cdot PAN\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">Brovey</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">hs</span><span class="p">):</span>
+    <span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">pan</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">hs</span><span class="p">.</span><span class="n">shape</span>
+    
+    <span class="n">ratio</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">round</span><span class="p">(</span><span class="n">M</span><span class="o">/</span><span class="n">m</span><span class="p">))</span>
+    <span class="n">u_hs</span> <span class="o">=</span> <span class="n">upsample</span><span class="p">(</span><span class="n">hs</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span>
+    
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">u_hs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">image_hr</span> <span class="o">=</span> <span class="p">(</span><span class="n">pan</span><span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pan</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
+    <span class="n">image_hr</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">image_hr</span><span class="p">)</span>
+
+    <span class="n">I_Brovey</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">image_hr</span><span class="o">*</span><span class="n">u_hs</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="n">I</span><span class="o">+</span><span class="mf">1e-8</span><span class="p">)</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">I_Brovey</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+        
+    <span class="n">I_Brovey</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">I_Brovey</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> 
+    
+    <span class="c1">#adjustment
+</span>    <span class="n">I_Brovey</span><span class="p">[</span><span class="n">I_Brovey</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">I_Brovey</span><span class="p">[</span><span class="n">I_Brovey</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">I_Brovey</span><span class="o">*</span><span class="mi">255</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-pca变换">⚪ PCA变换</h3>
+<ul>
+  <li>P. S. Chavez Jr. and A. W. Kwarteng, “Extracting spectral contrast in Landsat Thematic Mapper image data using selective principal component analysis,”         Photogrammetric Engineering and Remote Sensing, vol. 55, no. 3, pp. 339–348, March 1989.</li>
+</ul>
+
+<p><strong>PCA</strong>变换将多光谱图像转换到主成分空间，利用多波段数据的协方差来确定主要信息的方向；其第一个主成分通常代表了最大的信息变异，可以被视为亮度信息。通过替换第一个主成分为高分辨率的全色图像，提高多光谱图像的空间分辨率。将修改后的主成分数据逆变换回原来的多光谱波段，得到增强后的多光谱图像。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">PCA</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">hs</span><span class="p">):</span>
+    <span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">pan</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">hs</span><span class="p">.</span><span class="n">shape</span>
+    
+    <span class="n">ratio</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">round</span><span class="p">(</span><span class="n">M</span><span class="o">/</span><span class="n">m</span><span class="p">))</span>
+    <span class="n">u_hs</span> <span class="o">=</span> <span class="n">upsample_interp23</span><span class="p">(</span><span class="n">hs</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span>
+
+    <span class="n">image_hr</span> <span class="o">=</span> <span class="n">pan</span>
+    
+    <span class="n">p</span> <span class="o">=</span> <span class="n">princomp</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">C</span><span class="p">)</span>
+    <span class="n">pca_hs</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">u_hs</span><span class="p">,</span> <span class="p">(</span><span class="n">M</span><span class="o">*</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">)))</span>
+    
+    <span class="n">pca_hs</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">pca_hs</span><span class="p">,</span> <span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span>
+    
+    <span class="n">I</span> <span class="o">=</span> <span class="n">pca_hs</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+    
+    <span class="n">image_hr</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_hr</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">image_hr</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">image_hr</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
+    
+    <span class="n">pca_hs</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_hr</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
+    
+    <span class="n">I_PCA</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">pca_hs</span><span class="p">)</span>
+    
+    <span class="c1">#equalization
+</span>    <span class="n">I_PCA</span> <span class="o">=</span> <span class="n">I_PCA</span><span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">I_PCA</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">u_hs</span><span class="p">)</span>
+    
+    <span class="c1">#adjustment
+</span>    <span class="n">I_PCA</span><span class="p">[</span><span class="n">I_PCA</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">I_PCA</span><span class="p">[</span><span class="n">I_PCA</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">I_PCA</span><span class="o">*</span><span class="mi">255</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-ihs变换">⚪ IHS变换</h3>
+<ul>
+  <li>W. Carper, T. Lillesand, and R. Kiefer, “The use of Intensity-Hue-Saturation transformations for merging SPOT panchromatic and multispectral image data,”         Photogrammetric Engineering and Remote Sensing, vol. 56, no. 4, pp. 459–467, April 1990.</li>
+</ul>
+
+<p><strong>IHS（Intensity-Hue-Saturation）</strong>变换将原始多光谱图像从 <strong>RGB</strong> 色彩空间转换为 <strong>IHS</strong> 空间。此步骤能够分离出亮度信息（<strong>Intensity</strong>），色调（<strong>Hue</strong>），以及饱和度（<strong>Saturation</strong>）。使用高分辨率的全色图像替换转换后的 <strong>IHS</strong> 图像的亮度通道，这样可以增强图像的空间分辨率。将修改后的 <strong>IHS</strong> 图像转换回 <strong>RGB</strong> 色彩空间，得到增强后的多光谱图像。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">IHS</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">hs</span><span class="p">):</span>
+    <span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">pan</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">hs</span><span class="p">.</span><span class="n">shape</span>
+    
+    <span class="n">ratio</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">round</span><span class="p">(</span><span class="n">M</span><span class="o">/</span><span class="n">m</span><span class="p">))</span>
+    <span class="n">u_hs</span> <span class="o">=</span> <span class="n">upsample_interp23</span><span class="p">(</span><span class="n">hs</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span>
+    
+    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">u_hs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    
+    <span class="n">P</span> <span class="o">=</span> <span class="p">(</span><span class="n">pan</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pan</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
+    
+    <span class="n">I_IHS</span> <span class="o">=</span> <span class="n">u_hs</span> <span class="o">+</span> <span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">P</span><span class="o">-</span><span class="n">I</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span>
+    
+    <span class="c1">#adjustment
+</span>    <span class="n">I_IHS</span><span class="p">[</span><span class="n">I_IHS</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">I_IHS</span><span class="p">[</span><span class="n">I_IHS</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">I_IHS</span><span class="o">*</span><span class="mi">255</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-gs变换">⚪ GS变换</h3>
+<ul>
+  <li>C. A. Laben and B. V. Brower, “Process for enhancing the spatial resolution of multispectral imagery using pan-sharpening,” Eastman Kodak Company, Tech. Rep. US Patent # 6,011,875, 2000.</li>
+</ul>
+
+<p><strong>Gram-Schmidt（GS）</strong>变换基于与经典的正交化过程类似的思想。</p>
+<ol>
+  <li>将多光谱波段线性组合成一个模拟全色图像，该图像在空间上与真实的全色图像尽可能相似。</li>
+  <li>使用模拟全色图像作为 <strong>Gram-Schmidt</strong> 正交化过程的第一基向量；将模拟全色图像从各个多光谱波段中去除，生成一组新的互相正交的波段（主成分）。</li>
+  <li>用真实的高分辨率全色图像替换模拟全色图像，对正交化后的波段逆变换，得到增强的多光谱图像。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">GS</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">hs</span><span class="p">):</span>
+    <span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">pan</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">hs</span><span class="p">.</span><span class="n">shape</span>
+    
+    <span class="n">ratio</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">round</span><span class="p">(</span><span class="n">M</span><span class="o">/</span><span class="n">m</span><span class="p">))</span>
+    <span class="n">u_hs</span> <span class="o">=</span> <span class="n">upsample_interp23</span><span class="p">(</span><span class="n">hs</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span>
+    
+    <span class="c1">#remove means from u_hs
+</span>    <span class="n">means</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">u_hs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">image_lr</span> <span class="o">=</span> <span class="n">u_hs</span><span class="o">-</span><span class="n">means</span>
+    
+    <span class="c1">#sintetic intensity
+</span>    <span class="n">I</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">u_hs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">I0</span> <span class="o">=</span> <span class="n">I</span><span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">I</span><span class="p">)</span>
+    
+    <span class="n">image_hr</span> <span class="o">=</span> <span class="p">(</span><span class="n">pan</span><span class="o">-</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pan</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">I0</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">I0</span><span class="p">)</span>
+    
+    <span class="c1">#computing coefficients
+</span>    <span class="n">g</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">g</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+        <span class="n">temp_h</span> <span class="o">=</span> <span class="n">image_lr</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">cov</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I0</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)),</span> <span class="n">np</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">temp_h</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)),</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">g</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="n">var</span><span class="p">(</span><span class="n">I0</span><span class="p">))</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+    
+    <span class="c1">#detail extraction
+</span>    <span class="n">delta</span> <span class="o">=</span> <span class="n">image_hr</span><span class="o">-</span><span class="n">I0</span>
+    <span class="n">deltam</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    
+    <span class="c1">#fusion
+</span>    <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">I0</span><span class="p">,</span> <span class="n">image_lr</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    
+    <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    
+    <span class="n">V_hat</span> <span class="o">=</span> <span class="n">V</span><span class="o">+</span> <span class="n">g</span><span class="o">*</span><span class="n">deltam</span>
+    
+    <span class="n">I_GS</span> <span class="o">=</span> <span class="n">V_hat</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span>
+    
+    <span class="n">I_GS</span> <span class="o">=</span> <span class="n">I_GS</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">I_GS</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">+</span><span class="n">means</span>
+    
+    <span class="c1">#adjustment
+</span>    <span class="n">I_GS</span><span class="p">[</span><span class="n">I_GS</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">I_GS</span><span class="p">[</span><span class="n">I_GS</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">I_GS</span><span class="o">*</span><span class="mi">255</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-gsa">⚪ GSA</h3>
+<ul>
+  <li>B. Aiazzi, S. Baronti, and M. Selva, “Improving component substitution Pansharpening through multivariate regression of MS+Pan data,” IEEE Transactions on Geoscience and Remote Sensing, vol. 45, no. 10, pp. 3230–3239, October 2007.</li>
+</ul>
+
+<p><strong>GSA (Generalized Spatial and Attribute)</strong>通过结合空间和属性信息来实现全色图像和多光谱图像的融合。该方法的核心思想是通过计算每个像素的空间和光谱权重，并在融合过程中应用这些权重。</p>
+<ol>
+  <li>分析全色图像和多光谱图像在空间域上的梯度或边缘信息，计算每个像素的空间权重。通常，高梯度或高边缘强度区域赋予较高权重，因为这些区域包含重要的空间细节。</li>
+  <li>分析多光谱图像的光谱属性，计算每个像素的光谱权重。光谱权重用于保持多光谱图像的光谱信息。</li>
+  <li>使用计算得到的空间权重和光谱权重，按照一定的融合规则将全色图像和多光谱图像的像素进行组合，生成具有高空间分辨率的多光谱图像。</li>
+</ol>
+
+<p>相关程序可参考<a href="https://github.com/codegaj/py_pansharpening/blob/master/methods/GSA.py">GSA.py</a>。</p>
+
+<h3 id="-cnmf">⚪ CNMF</h3>
+<ul>
+  <li>N. Yokoya, T. Yairi, and A. Iwasaki, “Coupled nonnegative matrix factorization unmixing for hyperspectral and multispectral data fusion,” IEEE Trans. Geosci. Remote Sens., vol. 50, no. 2, pp. 528-537, 2012.</li>
+</ul>
+
+<p><strong>CNMF</strong>（<strong>Coupled Non-negative Matrix Factorization</strong>，耦合非负矩阵分解）的核心思想是将多光谱图像和全色图像表示为非负矩阵，并通过非负矩阵分解（<strong>NMF</strong>）技术分解为低维特征矩阵和系数矩阵。通过约束和耦合两个图像的分解过程，能够实现图像的融合和细节提升。</p>
+<ol>
+  <li>将多光谱图像和全色图像表示为二维矩阵，其中每列代表一个像素，每行代表一个波段或空间分量。</li>
+  <li>对多光谱图像矩阵执行 <strong>NMF</strong> 分解，得到两个低维非负矩阵：基矩阵和系数矩阵；对全色图像执行类似的分解操作。</li>
+  <li>在非负矩阵分解过程中，通过加入耦合约束条件，使得全色图像和多光谱图像在低维特征空间上的表示尽可能一致。</li>
+  <li>使用耦合后的低维特征矩阵和系数矩阵，重构出高分辨率的多光谱图像，从而实现图像的全色锐化。</li>
+</ol>
+
+<p>相关程序可参考<a href="https://github.com/codegaj/py_pansharpening/blob/master/methods/CNMF.py">CNMF.py</a>。</p>
+
+<h3 id="-gfpca">⚪ GFPCA</h3>
+<ul>
+  <li>W. Liao et al., “Two-stage fusion of thermal hyperspectral and visible RGB image by PCA and guided filter,” 2015 7th Workshop on Hyperspectral Image and Signal Processing: Evolution in Remote Sensing (WHISPERS), Tokyo, 2015, pp. 1-4.</li>
+</ul>
+
+<p><strong>GFPCA</strong>（<strong>Guided Filter Principal Component Analysis</strong>，导向滤波器主成分分析）结合了主成分分析（<strong>PCA</strong>）和导向滤波（<strong>Guided Filtering</strong>），通过利用导向滤波器的边缘保持特性来优化 <strong>PCA</strong> 的结果，从而在融合过程中实现更精细的图像质量。</p>
+<ol>
+  <li>对多光谱图像进行主成分分析（<strong>PCA</strong>），提取出主要的成分，并将其转换为不同的主成分空间。</li>
+  <li>使用全色图像作为导向图，对<strong>PCA</strong>所得的第一个主成分执行导向滤波。导向滤波有助于保留边缘，同时去除噪声，从而在融合过程中保持空间细节。</li>
+  <li>用经过导向滤波处理的主成分替代原始<strong>PCA</strong>主成分，这样做可以将全色图像的细节信息更好地渗透到多光谱图像中。</li>
+  <li>通过逆<strong>PCA</strong>变换，将调整后的主成分转换回原始的多光谱波段，从而形成具有高空间分辨率的多光谱图像。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span> <span class="k">as</span> <span class="n">princomp</span>
+<span class="kn">from</span> <span class="nn">cv2.ximgproc</span> <span class="kn">import</span> <span class="n">guidedFilter</span>
+
+<span class="k">def</span> <span class="nf">GFPCA</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">hs</span><span class="p">):</span>
+    <span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">pan</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">hs</span><span class="p">.</span><span class="n">shape</span>
+    
+    <span class="n">ratio</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">round</span><span class="p">(</span><span class="n">M</span><span class="o">/</span><span class="n">m</span><span class="p">))</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">princomp</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="n">C</span><span class="p">)</span>
+    <span class="n">pca_hs</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">hs</span><span class="p">,</span> <span class="p">(</span><span class="n">m</span><span class="o">*</span><span class="n">n</span><span class="p">,</span> <span class="n">C</span><span class="p">)))</span>
+    
+    <span class="n">pca_hs</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">pca_hs</span><span class="p">,</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span>
+    
+    <span class="n">pca_hs</span> <span class="o">=</span> <span class="n">upsample_interp23</span><span class="p">(</span><span class="n">pca_hs</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span>
+    
+    <span class="n">gp_hs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">guidedFilter</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">(</span><span class="n">pan</span><span class="p">),</span> <span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">pca_hs</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="mi">8</span><span class="p">,</span> <span class="n">eps</span> <span class="o">=</span> <span class="mf">0.001</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">temp</span> <span class="p">,</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gp_hs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+        
+    <span class="n">gp_hs</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">gp_hs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="n">I_GFPCA</span> <span class="o">=</span> <span class="n">p</span><span class="p">.</span><span class="n">inverse_transform</span><span class="p">(</span><span class="n">gp_hs</span><span class="p">)</span>
+    
+    <span class="c1">#adjustment
+</span>    <span class="n">I_GFPCA</span><span class="p">[</span><span class="n">I_GFPCA</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">I_GFPCA</span><span class="p">[</span><span class="n">I_GFPCA</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">I_GFPCA</span><span class="o">*</span><span class="mi">255</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="2-多分辨率分析法-multi-resolution-analysis">2. 多分辨率分析法 Multi-Resolution Analysis</h2>
+
+<p>多分辨率分析法(<strong>MRA-based</strong>)首先利用多尺度变换方法，如小波变换或者金字塔变换等，将源图像分解获得高、低频成份，再运用适当的融合规则对不同尺度的高、低频成份进行融合，最后将融合后的高、低频成份反变换获得融合图像，其不足在于空间细节失真较为严重。</p>
+
+<h3 id="-sfim变换">⚪ SFIM变换</h3>
+<ul>
+  <li>J. Liu, “Smoothing filter based intensity modulation: a spectral preserve image fusion technique for improving spatial details,” International Journal of Remote Sensing, vol. 21, no. 18, pp. 3461–3472, December 2000.</li>
+</ul>
+
+<p><strong>SFIM（Smoothing Filter-based Intensity Modulation）</strong>基于平滑滤波和强度调制来融合多光谱图像和全色图像。</p>
+<ol>
+  <li>对高空间分辨率的全色图像进行平滑滤波，以提取其低频分量，通常使用均值滤波器或高斯滤波器；</li>
+  <li>使用全色图像的高频分量对多光谱图像进行调制，从而增强多光谱图像的空间细节；</li>
+  <li>对每个波段的调制结果可以进行幅值调整，以确保最终结果得到增强的视觉效果，同时减轻可能的过度增强。</li>
+</ol>
+
+\[MS_{\text{sharp}}(i,j) = \frac{PAN(i,j)}{PAN_{smooth}(i,j)} \times MS(i,j)\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+
+<span class="k">def</span> <span class="nf">SFIM</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">hs</span><span class="p">):</span>
+    <span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">pan</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">hs</span><span class="p">.</span><span class="n">shape</span>
+    
+    <span class="n">ratio</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">round</span><span class="p">(</span><span class="n">M</span><span class="o">/</span><span class="n">m</span><span class="p">))</span>
+    <span class="n">u_hs</span> <span class="o">=</span> <span class="n">upsample_interp23</span><span class="p">(</span><span class="n">hs</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">np</span><span class="p">.</span><span class="n">mod</span><span class="p">(</span><span class="n">ratio</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">ratio</span> <span class="o">+</span> <span class="mi">1</span>
+        
+    <span class="n">pan</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span>
+    
+    <span class="n">pan</span> <span class="o">=</span> <span class="p">(</span><span class="n">pan</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">u_hs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">+</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">u_hs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">((</span><span class="n">ratio</span><span class="p">,</span> <span class="n">ratio</span><span class="p">))</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">/</span><span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span>
+    
+    <span class="n">I_SFIM</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+        <span class="n">lrpan</span> <span class="o">=</span> <span class="n">signal</span><span class="p">.</span><span class="n">convolve2d</span><span class="p">(</span><span class="n">pan</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">'same'</span><span class="p">,</span> <span class="n">boundary</span> <span class="o">=</span> <span class="s">'wrap'</span><span class="p">)</span>
+        <span class="n">I_SFIM</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">u_hs</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">pan</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="n">lrpan</span><span class="o">+</span><span class="mf">1e-8</span><span class="p">)</span>
+
+    <span class="c1">#adjustment
+</span>    <span class="n">I_SFIM</span><span class="p">[</span><span class="n">I_SFIM</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">I_SFIM</span><span class="p">[</span><span class="n">I_SFIM</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>    
+    
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">I_SFIM</span><span class="o">*</span><span class="mi">255</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-wavelet变换">⚪ Wavelet变换</h3>
+<ul>
+  <li>King R L, Wang J. A wavelet based algorithm for pan sharpening Landsat 7 imagery [C]//IGARSS 2001. Scanning the Present and Resolving the Future. Proceedings.  IEEE 2001 International Geoscience and Remote Sensing Symposium (Cat. No. 01CH37217). IEEE, 2001, 2: 849-851.</li>
+</ul>
+
+<p>小波变换（<strong>Wavelet Transform</strong>）通过分解图像为不同频率的子带，以融合多光谱图像和全色图像，实现高空间分辨率和多光谱信息的结合。</p>
+<ol>
+  <li>对多光谱图像和全色图像分别进行小波分解。这一过程将图像分解为不同频带的子图像（例如，低频子带和高频子带）。</li>
+  <li>将全色图像中的高频子带与多光谱图像的低频子带相结合，以实现增强的空间分辨率，同时尽量保留多光谱信息；</li>
+  <li>将融合后的子带进行逆小波变换，重建高分辨率的多光谱图像。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pywt</span>
+
+<span class="k">def</span> <span class="nf">Wavelet</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="n">hs</span><span class="p">):</span>
+    <span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">pan</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">hs</span><span class="p">.</span><span class="n">shape</span>
+    
+    <span class="n">ratio</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">round</span><span class="p">(</span><span class="n">M</span><span class="o">/</span><span class="n">m</span><span class="p">))</span>
+    <span class="n">u_hs</span> <span class="o">=</span> <span class="n">upsample_interp23</span><span class="p">(</span><span class="n">hs</span><span class="p">,</span> <span class="n">ratio</span><span class="p">)</span>
+    
+    <span class="n">pan</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">pan</span><span class="p">)</span>
+    <span class="n">pc</span> <span class="o">=</span> <span class="n">pywt</span><span class="p">.</span><span class="n">wavedec2</span><span class="p">(</span><span class="n">pan</span><span class="p">,</span> <span class="s">'haar'</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    
+    <span class="n">rec</span><span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="p">):</span>
+        <span class="n">temp_dec</span> <span class="o">=</span> <span class="n">pywt</span><span class="p">.</span><span class="n">wavedec2</span><span class="p">(</span><span class="n">u_hs</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="s">'haar'</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="n">pc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp_dec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="n">temp_rec</span> <span class="o">=</span> <span class="n">pywt</span><span class="p">.</span><span class="n">waverec2</span><span class="p">(</span><span class="n">pc</span><span class="p">,</span> <span class="s">'haar'</span><span class="p">)</span>
+        <span class="n">temp_rec</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">temp_rec</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rec</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_rec</span><span class="p">)</span>
+        
+    <span class="n">I_Wavelet</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">rec</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    
+    <span class="c1">#adjustment
+</span>    <span class="n">I_Wavelet</span><span class="p">[</span><span class="n">I_Wavelet</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+    <span class="n">I_Wavelet</span><span class="p">[</span><span class="n">I_Wavelet</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">I_Wavelet</span><span class="o">*</span><span class="mi">255</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-mtf-glp">⚪ MTF-GLP</h3>
+<ul>
+  <li>B. Aiazzi, L. Alparone, S. Baronti, and A. Garzelli, “Context-driven fusion of high spatial and spectral resolution images based on oversampled multiresolution analysis,” IEEE Transactions on Geoscience and Remote Sensing, vol. 40, no. 10, pp. 2300–2312, October 2002.</li>
+</ul>
+
+<p><strong>MTF-GLP（Modulation Transfer Function Generalized Laplacian Pyramid）</strong>是一种结合调制传递函数（<strong>MTF</strong>）和广义拉普拉斯金字塔（<strong>GLP</strong>）的全色锐化方法。该方法通过模拟传感器的调制传递函数特性来对图像进行滤波，并采用金字塔分解技术来增强多光谱图像的空间分辨率。</p>
+<ol>
+  <li>使用调制传递函数来模拟传感器的光学和电子特性，生成一个低分辨的多光谱图像，该图像旨在匹配实际传感器对图像空间细节的响应。</li>
+  <li>对低分辨多光谱图像和全色图像进行拉普拉斯金字塔分解，以分离高频和低频信息。拉普拉斯金字塔是一种多分辨率结构，通过逐层减去图像的高斯模糊版本形成。</li>
+  <li>将从全色图像中获取的高频细节与多光谱图像的低频部分相结合。这一过程增强了多光谱图像的空间分辨率。</li>
+  <li>通过拉普拉斯金字塔的逆变换过程，重建出具有高空间分辨率的多光谱图像。</li>
+</ol>
+
+<p>相关程序可参考<a href="https://github.com/codegaj/py_pansharpening/blob/master/methods/MTF_GLP.py">MTF_GLP.py</a>。</p>
+
+<h3 id="-mtf-glp-hpm">⚪ MTF-GLP-HPM</h3>
+<ul>
+  <li>B. Aiazzi, L. Alparone, S. Baronti, A. Garzelli, and M. Selva, “MTF-tailored multiscale fusion of high-resolution MS and Pan imagery,” Photogrammetric Engineering and Remote Sensing, vol. 72, no. 5, pp. 591–596, May 2006.</li>
+</ul>
+
+<p><strong>MTF-GLP-HPM（Modulation Transfer Function Generalized Laplacian Pyramid with High-pass Modulation）</strong>是<strong>MTF-GLP</strong>方法的扩展版本，通过结合调制传递函数和高通调制技术，实现对图像空间细节的精细增强，同时保持多光谱图像的光谱特性。</p>
+<ol>
+  <li>使用调制传递函数来模拟传感器的特性，生成一个低分辨率的多光谱图像，该过程旨在模拟传感器对图像空间细节的响应，通常使用高斯滤波模拟。</li>
+  <li>对低分辨多光谱图像和全色图像进行拉普拉斯金字塔分解，以分离高频和低频信息，获取各层次的图像细节。</li>
+  <li>通过将来自全色图像的高频信息与多光谱图像的低频成分相结合，增强多光谱图像空间细节。高通调制进一步细化了<strong>MTF-GLP</strong>的处理，通过添加一个乘法因子来强调来自全色图像的边缘与细节信息。</li>
+  <li>通过对经过增强的图像在金字塔结构上进行逆变换，重建出具有高空间分辨率以及保留原始光谱信息的多光谱图像。</li>
+</ol>
+
+<p>相关程序可参考<a href="https://github.com/codegaj/py_pansharpening/blob/master/methods/MTF_GLP_HPM.py">MTF_GLP_HPM.py</a>。</p>
+
+<h2 id="3-模型优化法-model-optimization">3. 模型优化法 Model Optimization</h2>
+
+<p>模型优化法(<strong>MO-based</strong>)根据理想的融合图像$X$与全色图像$P$、多光谱图像$M$之间的关系建立能量函数，并通过最优化求解获得高分辨率多光谱融合图像，但其计算较为复杂。</p>
+
+<h3 id="-sirf">⚪ SIRF</h3>
+<ul>
+  <li><a href="https://ieeexplore.ieee.org/document/7156141">SIRF: Simultaneous Satellite Image Registration and Fusion in a Unified Framework. (IEEE TIP 2015)</a></li>
+</ul>
+
+<p><strong>SIRF</strong>把高分辨率多光谱图像（目标图像）的优化问题建模为最小化最小二乘拟合项和动态梯度稀疏正则器的线性组合。前者用于保留多光谱图像的精确光谱信息，而后者用于保留高分辨率全色图像的清晰边缘。模型的优化函数包含两个主要方面：</p>
+
+<ol>
+  <li>光谱保持：下采样的高分辨率多光谱图像应接近原始多光谱图像，以保持准确的光谱信息：</li>
+</ol>
+
+\[f_1(X,M) = \frac{1}{2} \left\| \text{DownSample}(X) - M \right\|_F^2\]
+
+<ol>
+  <li>动态梯度稀疏：将不同波段上具有相同空间位置的像素分配到一个组中，它们的梯度（对应于陆地物体的边缘）往往位于相同的空间位置，因此通过$l_{2,1}$范数促进组内稀疏性：</li>
+</ol>
+
+\[f_2(X,P) = \sum_{i,j}\sqrt{\sum_d\sum_{q=1,2}(\nabla_q X_{i,j,d} - \nabla_q P_{i,j})^2}\]
+
+<h3 id="-psfgtexts2lr">⚪ PSFG$\text{S}^2$LR</h3>
+<ul>
+  <li><a href="https://ieeexplore.ieee.org/document/8167324">A Variational Pan-Sharpening Method Based on Spatial Fractional-Order Geometry and Spectral–Spatial Low-Rank Priors. (IEEE TGRS 2018)</a></li>
+</ul>
+
+<p><strong>PSFG</strong>$\text{S}^2$<strong>LR</strong>结合了空间分数阶几何和光谱空间低秩先验，充分利用空间分数阶几何先验的空间细节和纹理表达能力以及低秩先验的光谱空间相关性保持能力。模型的优化函数包含三个主要方面：</p>
+
+<ol>
+  <li>数据生成保真度项：模拟多光谱图像和高分辨率多光谱图像（目标图像）之间的退化关系以强制执行几何和光谱保持约束 （$D$是模拟模糊和下采样矩阵）：</li>
+</ol>
+
+\[f_1(X,M) = \frac{1}{2} \left\| DX - M \right\|_2^2\]
+
+<ol>
+  <li>基于分数阶全变分的空间分数阶几何先验项：利用全色图像和目标图像之间的空间分数阶梯度特征一致性，将全色图像的空间结构信息转移到目标图像中：</li>
+</ol>
+
+\[f_2(X,P) = \sum_{i = 1}^{N} \| {\nabla ^\alpha \mathbf{X}_i - \nabla ^\alpha \mathbf{P}}\|_{1,2}\]
+
+<ol>
+  <li>基于加权核范数的光谱空间低秩先验项：利用目标图像和多光谱图像中基于非局部块的低秩结构稀疏性，进一步保留图像的空间结构和光谱信息：</li>
+</ol>
+
+\[f_3(X,M) = \sum_{i = 1}^{N} \sum_{j = 1}^{B} \| \tilde{\mathbf{R}}_j(\mathbf{X}_i - \text{UpSample}(M)_i) \|_{\omega, * }\]
+
+<h3 id="-lgc">⚪ LGC</h3>
+<ul>
+  <li><a href="https://openaccess.thecvf.com/content_CVPR_2019/papers/Fu_A_Variational_Pan-Sharpening_With_Local_Gradient_Constraints_CVPR_2019_paper.pdf">A Variational Pan-Sharpening With Local Gradient Constraints. (CVPR 2019)</a></li>
+</ul>
+
+<p><strong>LGC (Local Gradient Constraints)</strong>是一种基于局部梯度约束的变分模型，通过考虑全色图像和高分辨率多光谱图像（目标图像）在不同局部区域和波段中的梯度差异，实现了更准确的空间信息保持。模型的优化函数包含两个主要方面：</p>
+
+<ol>
+  <li>光谱保持：下采样的高分辨率多光谱图像应接近原始多光谱图像，以保持准确的光谱信息：</li>
+</ol>
+
+\[f_1(X,M) = \frac{1}{2} \left\| \text{DownSample}(X) - M \right\|_2^2\]
+
+<ol>
+  <li>空间保持：引入局部梯度约束，高分辨率多光谱图像不同波段和局部区域中的梯度应呈线性关系$\nabla x \approx a\nabla p + b$：</li>
+</ol>
+
+\[f_2(X,A,C,P) = \sum_{b=1}^B  \sum_k \sum_{i \in \omega_k}(\nabla x_{b,i} - a_{b,k}\nabla p_i -c_{b,k})^2\]
+
+<h3 id="-pgcp-ps">⚪ PGCP-PS</h3>
+<ul>
+  <li><a href="https://ieeexplore.ieee.org/document/8643394">PAN-Guided Cross-Resolution Projection for Local Adaptive Sparse Representation- Based Pansharpening. (IEEE TGRS 2019)</a></li>
+</ul>
+
+<p><strong>PGCP-PS</strong>的基本思想是从模拟的全色图像超分辨率场景中估计用于锐化多光谱图像的跨分辨率投影和偏移量，并注入高分辨率多光谱图像（目标图像）超分辨率重建过程。把目标图像$X$建模为：</p>
+
+\[X=\text{UpSample}(M) +\widehat {\boldsymbol {x}}_{k,i}^{\mathrm {HM}}+\boldsymbol {O}_{k,i}^{\mathrm {HM}}\]
+
+<p>其中\(\widehat {\boldsymbol {x}}_{k,i}^{\mathrm {HM}}\)是$X$的高频分量，可表示为字典基$D_h$和稀疏系数$\alpha_{k,i}$的组合\(\widehat {\boldsymbol {x}}_{k,i}^{\mathrm {HM}}=D_h\alpha_{k,i}\)；\(\boldsymbol {O}_{k,i}^{\mathrm {HM}}\)是多光谱图像超分辨率的偏移量。\(D_h,\alpha_{k,i},\boldsymbol {O}_{k,i}^{\mathrm {HM}}\)通过构造全色图像的超分辨率模型来近似。</p>
+
+<h3 id="-bpsm">⚪ BPSM</h3>
+<ul>
+  <li><a href="https://ieeexplore.ieee.org/document/9020056">Bayesian Pan-Sharpening With Multiorder Gradient-Based Deep Network Constraints. (IEEE JSTARS 2020)</a></li>
+</ul>
+
+<p><strong>BPSM (Bayesian pan-sharpening model)</strong>是一种基于贝叶斯理论的全色锐化模型，该模型涉及三个假设：1）多光谱图像是通过模糊核卷积从高分辨率多光谱图像（目标图像）中抽取的；2）使用多尺度递归块组成的卷积神经网络保留全色图像的空间信息；3）在多阶梯度域中引入各向异性的全变分先验以重建更好的图像边缘和细节。模型的后验概率建模为：</p>
+
+\[\begin{align*} p(X|M,f)=&amp;N(M|X,\sigma _{1}^{2})N(\nabla _{1}f|\nabla _{1}X,\sigma _{21}^{2})N(\nabla _{2}f|\nabla _{2}X,\sigma _{22}^{2})\\ &amp; \times L(\nabla _{1}X|0,s_{1})L(\nabla _{2}X|0,s_{2}) \end{align*}\]
+
+<p>其中$f=f_{MCNN}(M,P)$设计为<strong>MCNN</strong>卷积网络。</p>
+
+<h3 id="-f-bmp">⚪ F-BMP</h3>
+<ul>
+  <li><a href="https://ieeexplore.ieee.org/document/9491792">Fast and High-Quality Blind Multi-Spectral Image Pansharpening. (IEEE TGRS 2021)</a></li>
+</ul>
+
+<p><strong>F-BMP</strong>通过计算具有最小总广义变差的核系数来估计高分辨率多光谱图像（目标图像）下采样的模糊核，并使用局部拉普拉斯先验 (<strong>LLP</strong>) 估计目标图像的每个通道与全色图像之间的关系。模型的优化函数包含三个主要方面：</p>
+
+<ol>
+  <li>数据保真度项：迫使经过模糊和下采样的高分辨率多光谱图像接近多光谱图像，其中$B(u)$是实现高分辨率多光谱图像与模糊核 $u$ 的卷积的 <strong>Toeplitz</strong> 矩阵：</li>
+</ol>
+
+\[f_1(X,M) = \frac{1}{2} \left\| \text{DownSample}(B(u)X) - M \right\|_F^2\]
+
+<ol>
+  <li>模糊核$u$的正则化项：采用<strong>TGV2</strong>作为正则化器，保留模糊核的高阶平滑度，同时拒绝远离峰值的非平凡系数：</li>
+</ol>
+
+\[f_2(u) = \min _{\mathbf {p}} \left \{ \alpha_1\|\mathbf {\nabla } \mathbf {u}-\mathbf {p}\|_{2,1}+\alpha_2\|\mathcal {E}(\mathbf {p})\|_{2,1}\right \}+\mathbf {I}_{\mathbb {S}}(\mathbf {u})\]
+
+<ol>
+  <li><strong>HRMS</strong> 图像和 <strong>PAN</strong> 图像之间的正则化项：根据受局部线性模型启发的变分观点，最小化来自另一个通道的每个高频分量块的最接近的线性仿射函数来近似目标通道的每个高频分量块的总体损失 ($\mathcal{L}$是拉普拉斯算子)：</li>
+</ol>
+
+\[f_3(X, P) = \frac {\lambda }{2}\sum _{i,j}\sum _{k\in w_{j}}\bigg [\big ([{\mathcal{L}}(\mathbf {X}_{i})]_{j,k}- a_{i,j}[{\mathcal{L}}(\mathbf {P})]_{j,k}-c_{i,j}\big )^{2}+ \epsilon a^{2}_{i,j}\bigg ]\]
+
+<h2 id="4-基于深度学习的方法-deep-learning">4. 基于深度学习的方法 Deep Learning</h2>
+
+<p>深度学习方法(<strong>DL-based</strong>)是指使用深度学习模型进行全色融合。早期<strong>DL-based</strong>全色锐化方法大多参考了<a href="https://0809zheng.github.io/2020/08/27/SR.html">图像超分辨率</a>的概念，通过构建卷积神经网络（<strong>CNN</strong>）来自动学习图像特征，从而实现图像分辨率的提升。</p>
+
+<h3 id="-pnn">⚪ <a href="https://0809zheng.github.io/2024/10/09/pcnn.html"><font color="blue">PNN</font></a></h3>
+<ul>
+  <li>(Remote Sensing 2016) Pansharpening by Convolutional Neural Networks</li>
+</ul>
+
+<p><strong>PNN</strong>采用了较为简单的<strong>CNN</strong>架构以避免过拟合和训练困难。在特征融合阶段采用了逐元素相加的方式，将多光谱图像的特征与全色图像的特征进行结合，以生成具有丰富光谱信息和高空间分辨率的融合图像。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673c70e2d29ded1a8cd5198e.png" alt="" /></p>
+
+<h3 id="-pannet">⚪ <a href="https://0809zheng.github.io/2024/10/10/pannet.html"><font color="blue">PanNet</font></a></h3>
+<ul>
+  <li>(ICCV 2017) PanNet: A Deep Network Architecture for Pan-Sharpening</li>
+</ul>
+
+<p><strong>PanNet</strong>遵循<strong>ResNet</strong>框架，引入了光谱映射和高通输入的改进：</p>
+<ul>
+  <li>光谱映射是指将低分辨率的多光谱图像进行上采样，并通过跳跃连接将其添加到网络的目标函数中。这允许网络专注于学习图像中的细节信息，同时保留光谱内容。</li>
+  <li>高通输入是指网络输入的是全色图像和低分辨率多光谱图像的高通分量，这使得网络能够学习如何将全色图像中的空间信息映射到高分辨率多光谱图像中。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/673c743dd29ded1a8cd97a52.png" alt="" /></p>
+
+<h3 id="-msdcnn">⚪ <a href="https://0809zheng.github.io/2024/10/11/msdcnn.html"><font color="blue">MSDCNN</font></a></h3>
+<ul>
+  <li>(arXiv1712) A Multi-Scale and Multi-Depth Convolutional Neural Network for Remote Sensing Imagery Pan-Sharpening</li>
+</ul>
+
+<p><strong>MSDCNN</strong>架构结合了多尺度特征提取和深层网络结构，以更好地捕捉遥感影像中的空间细节和光谱信息。由两个主要部分组成：</p>
+<ul>
+  <li>特征提取网络：采用基本的卷积神经网络结构，用于从输入的全色图像和多光谱图像中提取初步特征。</li>
+  <li>多尺度特征提取网络：包含多个多尺度卷积层块，每个块由不同尺度的卷积核组成，用于捕捉不同尺度的空间细节。这些块通过串联和卷积操作融合不同尺度的特征，以生成更丰富的特征表示。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/673c78b7d29ded1a8cddb32e.png" alt="" /></p>
+
+<h3 id="-gppnn">⚪ <a href="https://0809zheng.github.io/2024/10/17/gppnn.html"><font color="blue">GPPNN</font></a></h3>
+<ul>
+  <li>(arXiv2103) Deep Gradient Projection Networks for Pan-sharpening</li>
+</ul>
+
+<p><strong>GPPNN</strong>考虑<strong>PAN</strong>和<strong>LRMS</strong>图像的生成模型，并通过梯度投影算法解决相应的优化问题。优化问题的迭代步骤被泛化为<strong>MS Block</strong>和<strong>PAN Block</strong>两个网络块，对应于一次算法迭代。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673ef441d29ded1a8cdc9069.png" alt="" /></p>
+
+<h3 id="-srppnn">⚪ <a href="https://0809zheng.github.io/2024/10/12/srppnn.html"><font color="blue">SRPPNN</font></a></h3>
+<ul>
+  <li>(IEEE TGRS 2021) Super-Resolution-Guided Progressive Pansharpening Based on a Deep Convolutional Neural Network</li>
+</ul>
+
+<p><strong>SRPPNN</strong>模型在超分辨率过程中引入了渐进式全色锐化和高通残差模块。</p>
+<ul>
+  <li>渐进式全色锐化：将整个全色锐化网络分解为一系列子网络，每个子网络负责执行特征提取和2倍上采样。这种方法有助于逐步改善图像的空间分辨率，同时考虑尺度效应。</li>
+  <li>高通残差模块：用于直接注入<strong>PAN</strong>图像中的空间细节，进一步增强融合结果的空间分辨率。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/673c7c07d29ded1a8ce084b7.png" alt="" /></p>
+
+<h3 id="-innformer">⚪ <a href="https://0809zheng.github.io/2024/10/13/innformer.html"><font color="blue">INNformer</font></a></h3>
+<ul>
+  <li>(AAAI 2022) Pan-Sharpening with Customized Transformer and Invertible Neural Network</li>
+</ul>
+
+<p><strong>INNformer</strong>模型采用两流独立卷积编码器，在特征提取之后利用定制化<strong>Transformer</strong>捕捉长距离依赖关系，利用卷积网络捕捉局部特征；最后使用可逆神经网络融合模块将<strong>MS</strong>和<strong>PAN</strong>图像的特征进行融合，生成高分辨率的多光谱图像。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673c8023d29ded1a8ce43a8b.png" alt="" /></p>
+
+<h3 id="-panformer">⚪ <a href="https://0809zheng.github.io/2024/10/14/panformer.html"><font color="blue">PanFormer</font></a></h3>
+<ul>
+  <li>(arXiv2203) PanFormer: a Transformer Based Model for Pan-sharpening</li>
+</ul>
+
+<p><strong>PanFormer</strong>是一个基于<strong>Transformer</strong>的全色锐化模型。它首先通过自注意力机制的模态特定编码器提取全色图像和多光谱图像的模态特定特征，然后使用交叉注意力机制的跨模态融合模块来合并光谱和空间特征，最后使用卷积网络的图像恢复模块生成全色锐化图像。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673da72cd29ded1a8ccccb10.png" alt="" /></p>
+
+<h3 id="-sfiin">⚪ <a href="https://0809zheng.github.io/2024/10/15/sfiin.html"><font color="blue">SFIIN</font></a></h3>
+<ul>
+  <li>(ECCV 2022) Spatial-Frequency Domain Information Integration for Pan-Sharpening</li>
+</ul>
+
+<p><strong>SFIIN</strong>通过结合空间域和频率域的信息进一步提升全色锐化的性能。其核心模块是<strong>SFIB</strong>，包含三个关键组件：空间域信息分支、频率域信息分支和双域信息交互。</p>
+<ul>
+  <li>空间域信息分支：使用卷积层提取<strong>PAN</strong>和<strong>MS</strong>图像在空间域的局部信息。</li>
+  <li>频率域信息分支：在傅里叶空间使用卷积层提取频率域的全局信息。</li>
+  <li>双域信息交互：通过空间注意力和通道注意力学习空间域和频率域信息的互补表示。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/673dad30d29ded1a8cd3430e.png" alt="" /></p>
+
+<h3 id="-midps">⚪ <a href="https://0809zheng.github.io/2024/10/16/mutnet.html"><font color="blue">MIDPS</font></a></h3>
+<ul>
+  <li>(CVPR 2022) Mutual Information-driven Pan-sharpening</li>
+</ul>
+
+<p><strong>MIDPS</strong>是一种基于互信息最小化的全色锐化框架，显式地鼓励<strong>MS</strong>和<strong>PAN</strong>之间的互补信息学习，减少信息冗余。模型架构包含三个模块：模态感知特征提取、互信息约束和后融合模块。</p>
+<ul>
+  <li>模态感知特征提取：使用两个独立的卷积层特征提取分支，将<strong>PAN</strong>和<strong>MS</strong>图像投影到模态感知特征图；</li>
+  <li>互信息约束：将<strong>PAN</strong>特征和<strong>MS</strong>特征转换为低维特征向量，并引入互信息最小化来显式鼓励两种模态之间的互补信息学习；</li>
+  <li>后融合模块：基于可逆神经网络的后融合模块将经过互信息最小化处理的特征向量投影到最终的融合图像。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/673dbfa7d29ded1a8cefc924.png" alt="" /></p>
+
+<h3 id="-panflownet">⚪ <a href="https://0809zheng.github.io/2024/10/19/panflownet.html"><font color="blue">PanFlowNet</font></a></h3>
+<ul>
+  <li>(arXiv2305) PanFlowNet: A Flow-Based Deep Network for Pan-sharpening</li>
+</ul>
+
+<p><strong>PanFlowNet</strong>是一个基于流的生成网络，由一系列可逆的条件仿射耦合块<strong>CACB</strong>构成。<strong>CACB</strong>接受前一层的输出和条件信息（如<strong>PAN</strong>和<strong>MS</strong>图像）作为输入，并输出变换后的特征图。具体来说，<strong>CACB</strong>通过仿射变换对输入特征图$h_n=[h_n^1,h_n^2]$进行缩放和平移，变换参数$s,t$是由条件信息和前一层的输出共同决定：</p>
+
+\[h_{n+1}^1 = h_n^1 \odot \exp(s_1(h_n^2))+t_1(h_n^2) \\
+h_{n+1}^2 = h_n^2 \odot \exp(s_2(h_{n+1}^1))+t_2(h_{n+1}^1)\]
+
+<p><img src="https://pic.imgdb.cn/item/673f15ead29ded1a8c02245d.png" alt="" /></p>
+
+<h3 id="-pan-mamba">⚪ <a href="https://0809zheng.github.io/2024/10/20/panmamba.html"><font color="blue">Pan-Mamba</font></a></h3>
+<ul>
+  <li>(arXiv2402) Pan-Mamba: Effective pan-sharpening with State Space Model</li>
+</ul>
+
+<p><strong>Pan-Mamba</strong>模型首先使用卷积层将两种图像投影到特征空间，并沿空间维度扁平化为令牌；然后利用<strong>Mamba</strong>块的离散表示来更新隐藏状态，并生成输出；之后通过通道交换<strong>Mamba</strong>块和跨模态<strong>Mamba</strong>块实现特征的深度融合和冗余特征的过滤；最后通过反卷积层将融合后的特征重构为高分辨率多光谱图像。</p>
+
+<p><img src="https://pic.imgdb.cn/item/673f1b56d29ded1a8c061be9.png" alt="" /></p>
+
+<h3 id="-hfin">⚪ <a href="https://0809zheng.github.io/2024/10/18/hfin.html"><font color="blue">HFIN</font></a></h3>
+<ul>
+  <li>(CVPR 2024) Revisiting Spatial-Frequency Information Integration from a Hierarchical Perspective for Panchromatic and Multi-Spectral Image Fusion</li>
+</ul>
+
+<p><strong>HFIN</strong>是一种分层频率集成网络，用于从<strong>PAN</strong>和<strong>LRMS</strong>图像中提取分层信息，促进空间-频率信息的集成。<strong>HFIN</strong>网络由空间与全局-局部傅里叶信息集成模块（<strong>SGLI</strong>）组成，<strong>SGLI</strong>实现了两个功能：信息分层和信息集成。</p>
+<ul>
+  <li>信息分层：通过空间块、全局傅里叶块和局部傅里叶块分别提取空间特征、全局频率特征和局部频率特征。</li>
+  <li>信息集成：首先通过空间-频率融合将空间信息与频率信息相结合，然后通过全局-局部融合进一步增强了全局傅里叶信息与局部傅里叶信息之间的关系。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/673f1200d29ded1a8cff0a20.png" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/10/09/pcnn.html" class="read-next-link"></a>
+        <section>
+          <span>Pansharpening by Convolutional Neural Networks</span>
+          <p>  通过卷积神经网络实现全色锐化.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/673c6fbfd29ded1a8cd32b42.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/08/30/deBruijn.html" class="read-next-link"></a>
+          <section>
+            <span>欧拉路径(Euler Path)与de Bruijn图</span>
+            <p>  Euler Path and de Bruijn Graph.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/66d1a018d9c307b7e9ae1653.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

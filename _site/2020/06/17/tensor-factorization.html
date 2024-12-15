@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>张量分解(Tensor Decomposition) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="张量分解(Tensor Decomposition)">
+    <meta name="keywords"  content="数学">
+    <!-- Open Graph -->
+    <meta property="og:title" content="张量分解(Tensor Decomposition) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/06/17/tensor-factorization.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%95%B0%E5%AD%A6" class="post-tag">数学</a>
+          
+        
+      </div>
+      <h1>张量分解(Tensor Decomposition)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-06-17"><i class="iconfont icon-date"></i>17 Jun 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ee9a89da240b370e3bcba63.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Tensor Decomposition(Factorization).</p>
+</blockquote>
+
+<p><strong>张量分解（tensor decomposition/factorization）</strong>的思想是找到一个<strong>低秩</strong>结构近似原始数据张量。常用的方法包括：</p>
+<ol>
+  <li><strong>Tucker</strong>分解</li>
+  <li><strong>CP</strong>分解</li>
+  <li>应用：缺失数据修复</li>
+</ol>
+
+<h1 id="1-tucker分解">1. Tucker分解</h1>
+<p><strong>Tucker分解（Tucker decomposition）</strong>是一种高阶的主成分分析形式。它将一个张量分解成一个较小的核张量与一系列矩阵（二维张量）的乘积。</p>
+
+<p><img src="https://pic.downk.cc/item/5ee8b6f82cb53f50fedacb48.jpg" alt="" /></p>
+
+<p>通常，给定一个三阶张量$x \in \Bbb{R}^{M×N×T}$，使用低秩（$R_1,R_2,R_3$）的<strong>Tucker</strong>分解可以表示为：</p>
+
+\[\mathcal{X}\approx\mathcal{G}\times_1 A\times_2 B\times_3 C\]
+
+<p>其中$g \in \Bbb{R}^{R_1×R_2×R_3}$是<strong>核张量（core tensor）</strong>，$A \in \Bbb{R}^{M×R_1}$、$B \in \Bbb{R}^{N×R_2}$和$C \in \Bbb{R}^{T×R_3}$是<strong>因子矩阵（factor matrix）</strong>。</p>
+
+<p>对于张量$X$的任意第($m,n,t$)个元素，<strong>Tucker</strong>分解也可以写作：</p>
+
+\[x_{mnt}\approx\sum_{r_1=1}^{R_1}\sum_{r_2=1}^{R_2}\sum_{r_3=1}^{R_3}g_{r_1r_2r_3}a_{mr_1}b_{nr_2}c_{tr_3}\]
+
+<p>使用<strong>Python</strong>的<strong>Numpy</strong>库可以便捷实现上述运算过程：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="k">def</span> <span class="nf">tucker_combine</span><span class="p">(</span><span class="n">core_tensor</span><span class="p">,</span> <span class="n">mat1</span><span class="p">,</span> <span class="n">mat2</span><span class="p">,</span> <span class="n">mat3</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">einsum</span><span class="p">(</span><span class="s">'ijk, mi, nj, tk -&gt; mnt'</span><span class="p">,</span> <span class="n">core_tensor</span><span class="p">,</span> <span class="n">mat1</span><span class="p">,</span> <span class="n">mat2</span><span class="p">,</span> <span class="n">mat3</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>Tucker</strong>分解可以使用<strong>交替最小二乘法（Alternating Least Square， ALS）</strong>求解。</p>
+
+<p>在<strong>Tucker</strong>分解中，采用平方误差作为损失函数，最小化该损失函数求解最优的核张量和因子矩阵：</p>
+
+\[\min_{\mathcal{G},A,B,C}\sum_{(m,n,t)\in\Omega}\left(x_{mnt}-\sum_{r_1=1}^{R_1}\sum_{r_2=1}^{R_2}\sum_{r_3=1}^{R_3}g_{r_1r_2r_3}a_{mr_1}b_{nr_2}c_{tr_3}\right)^2\]
+
+<p>该优化问题的困难在于需要同时优化核张量和三个因子矩阵，一种解决方法是使用交替最小二乘法。</p>
+
+<p>交替最小二乘法把优化问题划分成几个独立的子问题，交替地优化每个子问题的损失函数。对于<strong>Tucker</strong>分解，每次优化<strong>g、A、B、C</strong>其中的一个参数，保持其他三个参数不变。求解单一参数的子问题是一个<strong>凸优化</strong>问题。</p>
+
+<p>下面以求解核张量<strong>g</strong>为例，说明交替最小二乘法的优化过程。</p>
+
+\[\min_{\mathcal{G}}\sum_{(m,n,t)\in\Omega}\left(x_{mnt}-\sum_{r_1=1}^{R_1}\sum_{r_2=1}^{R_2}\sum_{r_3=1}^{R_3}g_{r_1r_2r_3}a_{mr_1}b_{nr_2}c_{tr_3}\right)^2\]
+
+\[\Rightarrow\min_{\mathcal{G}}\sum_{(m,n,t)\in\Omega}\left(x_{mnt}-\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)^\top\text{vec}\left(\mathcal{G}\right)\right)^2\]
+
+\[\Rightarrow\min_{\mathcal{G}}\sum_{(m,n,t)\in\Omega}\left(x_{mnt}-\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)^\top\text{vec}\left(\mathcal{G}\right)\right)^\top\left(x_{mnt}-\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)^\top\text{vec}\left(\mathcal{G}\right)\right)\]
+
+<p>上述问题的解可以表达为：</p>
+
+\[\text{vec}\left (\mathcal{G}\right)\Leftarrow \\ \left(\sum_{(m,n,t)\in\Omega}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)^\top\right)^{-1}\left(\sum_{(m,n,t)\in\Omega}x_{mnt}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)\right)\]
+
+<p>同理，求解因子矩阵$A \in \Bbb{R}^{M×R_1}$的优化问题可以写作：</p>
+
+\[\min_{A}\sum_{(m,n,t)\in\Omega}\left(x_{mnt}-\sum_{r_1=1}^{R_1}\sum_{r_2=1}^{R_2}\sum_{r_3=1}^{R_3}g_{r_1r_2r_3}a_{mr_1}b_{nr_2}c_{tr_3}\right)^2\]
+
+<p>上述问题可以表示为：</p>
+
+\[\min_{\boldsymbol{a}_m}\sum_{n,t:(m,n,t)\in\Omega}\left(x_{mnt}-\boldsymbol{a}_m^\top\mathcal{G}_{(1)}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)\right)\left(x_{mnt}-\boldsymbol{a}_m^\top\mathcal{G}_{(1)}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)\right)^\top\]
+
+<p>其最小二乘解为：</p>
+
+\[\boldsymbol{a}_{m}\Leftarrow\left(\sum_{n,t:(m,n,t)\in\Omega}\mathcal{G}_{(1)}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)^\top\mathcal{G}_{(1)}^\top\right)^{-1}\left(\sum_{n,t:(m,n,t)\in\Omega}y_{mnt}\mathcal{G}_{(1)}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)\right)\\,\forall m\in\left\{1,2,...,M\right\}\]
+
+<p>同理，因子矩阵$B \in \Bbb{R}^{N×R_2}$和$C \in \Bbb{R}^{T×R_3}$的最小二乘解为：</p>
+
+\[\boldsymbol{b}_{n}\Leftarrow\left(\sum_{m,t:(m,n,t)\in\Omega}\mathcal{G}_{(2)}\left(\boldsymbol{c}_{t}\odot\boldsymbol{a}_{m}\right)\left(\boldsymbol{c}_{t}\odot\boldsymbol{a}_{m}\right)^\top\mathcal{G}_{(2)}^\top\right)^{-1}\left(\sum_{m,t:(m,n,t)\in\Omega}y_{mnt}\mathcal{G}_{(2)}\left(\boldsymbol{c}_{t}\odot\boldsymbol{a}_{m}\right)\right)\\,\forall n\in\left\{1,2,...,N\right\}\]
+
+\[\boldsymbol{c}_{t}\Leftarrow\left(\sum_{m,n:(m,n,t)\in\Omega}\mathcal{G}_{(3)}\left(\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)\left(\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)^\top\mathcal{G}_{(3)}^\top\right)^{-1}\left(\sum_{m,n:(m,n,t)\in\Omega}y_{mnt}\mathcal{G}_{(3)}\left(\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)\right)\\,\forall t\in\left\{1,2,...,T\right\}\]
+
+<p><strong>Tucker</strong>分解的核张量一般具有很大的值，容易过拟合；通常在求解核张量<strong>g</strong>时引入<strong>l1</strong>或<strong>l2正则化</strong>增强分解对于数据的鲁棒性：</p>
+
+\[\min_{\mathcal{G}}\sum_{(m,n,t)\in\Omega}\left(x_{mnt}-\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)^\top\text{vec}\left(\mathcal{G}\right)\right)^\top\left(x_{mnt}-\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)^\top\text{vec}\left(\mathcal{G}\right)\right)\\+\lambda_g\text{vec}\left(\mathcal{G}\right)^\top\text{vec}\left(\mathcal{G}\right)\]
+
+<p>上述问题的解可以表达为：</p>
+
+\[\text{vec}\left (\mathcal{G}\right)\Leftarrow \\ \left(\sum_{(m,n,t)\in\Omega}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)^\top+\lambda_gI\right)^{-1}\left(\sum_{(m,n,t)\in\Omega}x_{mnt}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)\right)\]
+
+<h1 id="2-cp分解">2. CP分解</h1>
+<p><strong>CP分解（CANDECOMP/PARAFAC decomposition）</strong>也是一种常见的张量分解方法。它将一个张量分解成一系列因子向量外积（<strong>outer product</strong>）的和。</p>
+
+<p><img src="https://pic.downk.cc/item/5ee8b8132cb53f50fedbefc3.jpg" alt="" /></p>
+
+<p>通常，给定一个三阶张量$x \in \Bbb{R}^{M×N×T}$，CP分解可以表示为：</p>
+
+\[\mathcal{x}\approx\sum_{r=1}^{R}a_{r}\circ b_{r}\circ c_{r}\]
+
+<p>其中<strong>因子向量（factor vector）</strong>$a_r \in \Bbb{R}^{M}$、$b_r \in \Bbb{R}^{N}$、$c_r \in \Bbb{R}^{T}$是<strong>因子矩阵（factor matrix）</strong>$A \in \Bbb{R}^{M×R}$、$B \in \Bbb{R}^{N×R}$和$C \in \Bbb{R}^{T×R}$的第$r$列。实际上这些向量的外积是秩为$1$的张量，<strong>CP</strong>分解就是把原张量分解成$R$个秩为$1$的张量之和。</p>
+
+<p>对于张量$x$的任意第($m,n,t$)个元素，CP分解也可以写作：</p>
+
+\[x_{mnt}\approx\sum_{r=1}^{R}a_{mr}b_{nr}c_{tr}\]
+
+<p>实际上，<strong>CP</strong>分解是<strong>Tucker</strong>分解的一种特殊形式，可以表示为：</p>
+
+\[x_{mnt}\approx\sum_{r=1}^{R}a_{mr}b_{nr}c_{tr}=\sum_{r_1=1}^{R}\sum_{r_2=1}^{R}\sum_{r_3=1}^{R}g_{r_1r_2r_3}a_{mr_1}b_{nr_2}c_{tr_3}\]
+
+<p>其中核张量<strong>g</strong>是对角张量，即:</p>
+
+\[g_{r_1r_2r_3} = \begin{cases} 1, &amp; r_1=r_2=r_3 \\ 0, &amp; \text{others} \end{cases}\]
+
+<p>使用<strong>Python</strong>的<strong>Numpy</strong>库可以便捷实现上述运算过程：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="k">def</span> <span class="nf">cp_combine</span><span class="p">(</span><span class="n">mat1</span><span class="p">,</span> <span class="n">mat2</span><span class="p">,</span> <span class="n">mat3</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">einsum</span><span class="p">(</span><span class="s">'mr, nr, tr -&gt; mnt'</span><span class="p">,</span> <span class="n">mat1</span><span class="p">,</span> <span class="n">mat2</span><span class="p">,</span> <span class="n">mat3</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>在<strong>CP</strong>分解中，采用平方误差作为损失函数，最小化该损失函数求解最优的因子矩阵：</p>
+
+\[\min _{A, B, C} \sum_{(m, n, t) \in \Omega}\left(x_{m n t}-\sum_{r=1}^{R}a_{mr}b_{nr}c_{tr}\right)^{2}\]
+
+<p>使用<strong>交替最小二乘法</strong>把该优化问题划分成几个独立的子问题，交替地优化每个子问题的损失函数。对于<strong>CP</strong>分解，每次优化<strong>A、B、C</strong>其中的一个参数，保持其他三个参数不变。求解单一参数的子问题是一个<strong>凸优化</strong>问题。</p>
+
+<p>具体地，求解因子矩阵$A \in \Bbb{R}^{M×R}$的第$m$行$a_m \in \Bbb{R}^{R}$可以表示为：</p>
+
+\[\min_{\boldsymbol{a}_m}\sum_{n,t:(m,n,t)\in\Omega}\left(x_{mnt}-\boldsymbol{a}_m^\top\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)\right)\left(x_{mnt}-\boldsymbol{a}_m^\top\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)\right)^\top\]
+
+<p>其最小二乘解为：</p>
+
+\[\boldsymbol{a}_{m}\Leftarrow\left(\sum_{n,t:(m,n,t)\in\Omega}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)^\top\right)^{-1}\left(\sum_{n,t:(m,n,t)\in\Omega}y_{mnt}\left(\boldsymbol{c}_{t}\odot\boldsymbol{b}_{n}\right)\right)\\,\forall m\in\left\{1,2,...,M\right\}\]
+
+<p>同理，因子矩阵$B \in \Bbb{R}^{N×R}$的第$n$行$b_n \in \Bbb{R}^{R}$和因子矩阵$C \in \Bbb{R}^{T×R}$的第$t$行$c_t \in \Bbb{R}^{R}$的最小二乘解为：</p>
+
+\[\boldsymbol{b}_{n}\Leftarrow\left(\sum_{m,t:(m,n,t)\in\Omega}\left(\boldsymbol{c}_{t}\odot\boldsymbol{a}_{m}\right)\left(\boldsymbol{c}_{t}\odot\boldsymbol{a}_{m}\right)^\top\right)^{-1}\left(\sum_{m,t:(m,n,t)\in\Omega}y_{mnt}\left(\boldsymbol{c}_{t}\odot\boldsymbol{a}_{m}\right)\right)\\,\forall n\in\left\{1,2,...,N\right\}\]
+
+\[\boldsymbol{c}_{t}\Leftarrow\left(\sum_{m,n:(m,n,t)\in\Omega}\left(\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)\left(\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)^\top\right)^{-1}\left(\sum_{m,n:(m,n,t)\in\Omega}y_{mnt}\left(\boldsymbol{b}_{n}\odot\boldsymbol{a}_{m}\right)\right)\\,\forall t\in\left\{1,2,...,T\right\}\]
+
+<h1 id="3-应用缺失数据修复">3. 应用：缺失数据修复</h1>
+<p>张量分解可以用于修复缺失数据。</p>
+
+<ul>
+  <li>实例：<a href="https://zhuanlan.zhihu.com/p/50429765">时空交通数据缺失值修复</a></li>
+</ul>
+
+<p>如下图所示，对于一个含有缺失数据的数据张量$Y$，对其进行张量分解，分解成一系列低秩张量的乘积。将这些低秩张量的乘积作为原数据张量的重构，修复其缺失值：</p>
+
+<p><img src="https://pic.downk.cc/item/5ee9a020a240b370e3aff888.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/06/20/detr.html" class="read-next-link"></a>
+        <section>
+          <span>DETR：End-to-End Object Detection with Transformers</span>
+          <p>  DETR: 使用Transformer实现端到端目标检测.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5eedb67d14195aa594885979.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/06/13/yolov4.html" class="read-next-link"></a>
+          <section>
+            <span>YOLOv4: Optimal Speed and Accuracy of Object Detection</span>
+            <p>  YOLOv4：优化目标检测的速度和精度.  paper：YOLOv4: Optimal Speed and A...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ea3eea1c2a9a83be5996f6b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

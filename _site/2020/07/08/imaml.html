@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta-Learning with Implicit Gradients - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Meta-Learning with Implicit Gradients">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Meta-Learning with Implicit Gradients - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/07/08/imaml.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Meta-Learning with Implicit Gradients</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-07-08"><i class="iconfont icon-date"></i>08 Jul 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f057f1a14195aa594028595.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>iMAML：使用L2正则化增加内部梯度更新次数.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Meta-Learning with Implicit Gradients</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1909.04630">link</a></li>
+</ul>
+
+<p><strong>MAML</strong>是用来自动选择初始化参数的元学习算法。</p>
+
+<p>假设最优的初始化参数（称为<strong>meta-parameter</strong>）为$θ$，则目标函数为：</p>
+
+\[θ_{ML}^* = \mathop{\arg \min}_{θ \in Θ} F(θ)\]
+
+\[F(θ) = \frac{1}{M} \sum_{i=1}^{M} {L(Alg(θ,D_i^{tr}),D_i^{test})}\]
+
+<ul>
+  <li>对于<strong>outer-level</strong>的目标函数，希望在给定的$M$个任务上测试损失最小；</li>
+  <li>对于<strong>inner-level</strong>的目标函数，希望每个任务的训练损失最小，即找到最优的<strong>model-parameter</strong> $φ$。</li>
+</ul>
+
+<p>对于第$i$个训练任务，模型从初始化参数$θ$开始，通过一步或多步梯度下降更新参数；在<strong>first-order MAML</strong>中使用一次梯度下降：</p>
+
+\[φ_i = Alg(θ,D_i^{tr}) = θ - α \nabla_θ L((θ,D_i^{tr}))\]
+
+<p>这种方法在更新参数时把模型在每个任务上的当前梯度更新方向作为初始化参数的梯度更新方向，当只进行了一次梯度更新时这种线性假设近似成立。实际上<strong>first-order MAML</strong>只进行一次梯度更新，相当于<strong>early stopping</strong>，减少了过拟合的风险；但是可能得到优化比较差的结果。</p>
+
+<p>如果在每个任务上训练时进行了多次梯度更新，则会引入下列问题：</p>
+<ul>
+  <li>更新次数增加，可能过拟合；</li>
+  <li>每次更新需要存储参数、更新参数，计算量大；</li>
+  <li>随着梯度更新次数的增加，<strong>model-parameter</strong> $φ$ 对<strong>meta-parameter</strong> $θ$ 的依赖减小。</li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5f05d01a14195aa59420c8d4.jpg" alt="" /></p>
+
+<p><strong>iMAML</strong>算法在每个任务上训练时进行了多次梯度更新，为了解决上述问题，引入了正则化方法。引入一些记号：</p>
+
+\[L_i(φ) = L(φ, D_i^{test})\]
+
+\[\hat{L}_i(φ) = L(φ, D_i^{tr})\]
+
+\[Alg_i(θ) = Alg(θ, D_i^{tr})\]
+
+<p><strong>iMAML</strong>的优化问题可以写作：</p>
+
+\[θ_{ML}^* = \mathop{\arg \min}_{θ \in Θ} F(θ)\]
+
+\[F(θ) = \frac{1}{M} \sum_{i=1}^{M} {L_i(Alg_i^*(θ))}\]
+
+\[Alg_i^*(θ) = \mathop{\arg \min}_{φ' \in Φ} \hat{L}_i(φ') + \frac{λ}{2} \mid\mid φ'-θ \mid\mid^2\]
+
+<p>其中正则化项限制了参数$φ$的更新不能和初始化参数$θ$偏差太大。</p>
+
+<p>下面求初始化参数$θ$的更新方向，即求\(d_θF(θ)\):</p>
+
+\[d_θF(θ) = \frac{1}{M} \sum_{i=1}^{M} {d_θL_i(Alg_i(θ))}\]
+
+\[d_θL_i(Alg_i(θ)) = \frac{dAlg_i(θ)}{dθ} \nabla_ φ L_i(φ) \mid_{φ=Alg_i(θ)}\]
+
+<p>因此初始化参数$θ$的更新可表示成：</p>
+
+\[θ = θ-η \frac{1}{M} \sum_{i=1}^{M} {\frac{dAlg_i^*(θ)}{dθ} \nabla_ φ L_i(φ) \mid_{φ=Alg_i^*(θ)}}\]
+
+<p>\(\nabla_ φ L_i(φ) \mid_{φ=Alg_i^*(θ)}\)表示模型在每一个任务上训练完之后在参数$φ$处的梯度，容易计算；下面计算\(\frac{dAlg_i^*(θ)}{dθ}\)（即$\frac{dφ}{dθ}$）：</p>
+
+<p>注意到\(Alg_i^*(θ) = \mathop{\arg \min}_{φ \in Φ} \hat{L}_i(φ) + \frac{λ}{2} \mid\mid φ-θ \mid\mid^2\)，因此有下式：</p>
+
+\[\frac{d}{dφ} \hat{L}_i(φ) + \frac{λ}{2} \mid\mid φ-θ \mid\mid^2 = \nabla_φ \hat{L}_i(φ) + λ(φ-θ) = 0\]
+
+<p>上式再次对$θ$求梯度：</p>
+
+\[\nabla_θ (\nabla_φ \hat{L}_i(φ) + λ(φ-θ)) = 0\]
+
+\[\frac{dφ}{dθ}\nabla_φ^2 \hat{L}_i(φ) + λ(\frac{dφ}{dθ}-I) = 0\]
+
+\[\frac{dφ}{dθ} = (I+\frac{1}{λ}\nabla_φ^2 \hat{L}_i(φ))^{-1}\]
+
+<p>完整的<strong>iMAML</strong>算法如下：</p>
+
+<p><img src="https://pic.downk.cc/item/5f05ced914195aa59420404d.jpg" alt="" /></p>
+
+<p>实际使用时需要注意的两点：</p>
+<ul>
+  <li>模型在每个任务上并不直接训练到最优值，只要参数$φ$足够接近最优值即可：</li>
+</ul>
+
+\[\mid\mid φ_i - Alg_i^*(θ) \mid\mid ≤ δ\]
+
+<ul>
+  <li>求参数$θ$的更新梯度时，可以用数值解法求逆矩阵及其乘积：</li>
+</ul>
+
+\[\mid\mid g_i - (I+\frac{1}{λ}\nabla_φ^2 \hat{L}_i(φ))^{-1} \nabla_ φ L_i(φ) \mid_{φ=Alg_i^*(θ)} \mid\mid ≤ δ'\]
+
+<p><img src="https://pic.downk.cc/item/5f05d0e914195aa5942120b8.jpg" alt="" /></p>
+
+<p>实验证明，<strong>iMAML</strong>很好地权衡了误差率、内存大小和运行时间。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/07/09/game-prior.html" class="read-next-link"></a>
+        <section>
+          <span>Investigating Human Priors for Playing Video Games</span>
+          <p>  探究电子游戏的人类先验知识.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f080a5314195aa594c8a08b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/07/07/learn-from-one-image.html" class="read-next-link"></a>
+          <section>
+            <span>A critical analysis of self-supervision, or what we can learn from a single image</span>
+            <p>  使用单张图像进行自监督学习.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f03f01514195aa594635775.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

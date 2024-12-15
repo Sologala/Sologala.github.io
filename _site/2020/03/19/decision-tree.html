@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>决策树(Decision Tree) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="决策树(Decision Tree)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="决策树(Decision Tree) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/19/decision-tree.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>决策树(Decision Tree)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-19"><i class="iconfont icon-date"></i>19 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63a2e4feb1fccdcd36e7094a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Decision Tree.</p>
+</blockquote>
+
+<p><strong>决策树(decision tree)</strong>是一种对训练数据集$(X,y)$进行划分的树形结构算法。决策树既可以看作一个<strong>if</strong>-<strong>then</strong>规则的集合，其中的规则互斥且完备；又可以看作描述训练数据集的条件概率分布$P(y | X)$。</p>
+
+<p>一棵完整的决策树是由结点(<strong>node</strong>)和有向边(<strong>directed edge</strong>)组成的。结点包括内部(<strong>internal</strong>)结点和叶(<strong>leaf</strong>)结点：其中内部结点对输入数据的某个特征维度进行条件判断，叶结点作为决策树的某一路输出。有向边用于把输入数据划分到不同的分支(<strong>branch</strong>)。</p>
+
+<p>决策树的基本算法包含了三个选择：</p>
+<ul>
+  <li><strong>分支个数(number of branches)</strong>：根据每个结点的分支个数可以分为二叉树(<strong>bi-branch</strong>)和多叉树(<strong>multi-branch</strong>)。</li>
+  <li><strong>分支条件(branching criteria)</strong>：也称为<strong>不纯度(impurity)</strong>，用于确定对数据的哪一个特征维度进行选择，通常与数据的熵相关；对于分类任务可以选择信息增益、信息增益比、基尼指数；对于回归任务通常设置为均方误差。</li>
+  <li><strong>终止条件(termination criteria)</strong>：通常为用完所有特征或子集中数据标签全部相同，也可根据迭代次数、深度要求或不纯度的阈值要求进行设置。</li>
+</ul>
+
+<p>决策树可以表示成递归形式：</p>
+
+\[G(x) = \sum_{n=1}^{N} {[b(x)=n]G_n(x)}\]
+
+<p>其中$N$表示每一个结点的分支数，根据条件进入不同的子树；$b(x)$是分支函数(<strong>branching tree</strong>)，用来决定数据前往哪个分支。</p>
+
+<p>决策树算法递归地根据分支条件进行特征选择，然后把训练数据集中的数据划分到不同的分支中，每一个数据最终会落入一个叶结点中。当给定一个测试数据时，判断其所属的叶结点，并输出对应叶结点的输出值：对于分类取该结点中出现最多的数据类别；对于回归取该结点中数据标签的均值。</p>
+
+<p>决策树有以下<strong>优点</strong>：</p>
+<ul>
+  <li>决策树可以看作<strong>if-then</strong>规则的集合，可解释性强。</li>
+  <li>决策树相比于其他算法需要更少的特征工程，比如可以不用做特征标准化。</li>
+  <li>决策树可以很好的处理特征缺失的数据。</li>
+  <li>决策树能够自动组合多个特征，也有特征选择的作用。</li>
+  <li>对异常点鲁棒。</li>
+  <li>可扩展性强，容易并行，预测速度快。</li>
+</ul>
+
+<p>决策树有以下<strong>缺点</strong>：</p>
+<ul>
+  <li>缺乏平滑性（回归预测时输出值只能输出有限的若干种数值）。</li>
+  <li>不适合处理高维稀疏数据。</li>
+  <li>决策树算法容易过拟合。</li>
+</ul>
+
+<p>根据设置的分支个数和分支条件不同，决策树算法体现为不同的形式：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">决策树</th>
+      <th style="text-align: center">分支个数</th>
+      <th style="text-align: center">分支条件</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><strong>ID3</strong></td>
+      <td style="text-align: center">多叉树</td>
+      <td style="text-align: center">信息增益</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>C4.5</strong></td>
+      <td style="text-align: center">多叉树</td>
+      <td style="text-align: center">信息增益比</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><strong>CART</strong></td>
+      <td style="text-align: center">二叉树</td>
+      <td style="text-align: center">(分类): 基尼指数 <br /> (回归): 均方误差</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="1-id3">1. ID3</h1>
+
+<p><strong>ID3</strong>是一种以信息增益作为分支条件的多叉决策树。</p>
+
+<h2 id="1-信息增益">(1) 信息增益</h2>
+
+<p><strong>信息增益(information gain)</strong>定义为给定特征$A$时，数据集$D$的不确定性减少的程度（也即为互信息）：</p>
+
+\[g(D,A) = H(D) - H(D|A)\]
+
+<p>其中$H(D)$表示数据集$D$的经验熵(<strong>empirical entropy</strong>)，用于衡量数据集$D$的标签的不确定性。在计算时首先统计每个标签$c$的频数，然后计算标签频率分布的熵：</p>
+
+\[H(D) = -\sum_{c=1}^C \frac{|D(y=c)|}{|D|} \log \frac{|D(y=c)|}{|D|}\]
+
+<p>$H(D|A)$表示特征$A$对数据集$D$的经验条件(<strong>conditional</strong>)熵，用于衡量已知特征$A$的条件下数据集$D$的标签的不确定性。在计算时首先构造特征$A$的每种取值情况下的经验熵，然后按照特征取值的频率进行加权：</p>
+
+\[\begin{aligned} H(D|A) &amp;= \sum_{k=1}^{K} \frac{|D_k|}{|D|} H(D_k) \\ &amp;= -\sum_{k=1}^{K} \frac{|D_k|}{|D|} \sum_{c=1}^C \frac{|D_k(y=c)|}{|D_k|} \log \frac{|D_k(y=c)|}{|D_k|} \end{aligned}\]
+
+<h2 id="2-id3的算法流程">(2) ID3的算法流程</h2>
+
+<p>给定训练数据集$D$、数据的特征集$A$和阈值$\epsilon$：</p>
+<ol>
+  <li>如果数据集$D$中所有样本均属于同一类$c_0$，则决策树$T$为单结点树，并将$c_0$作为该结点的类标记，返回$T$；</li>
+  <li>如果特征集$A=\Phi$，则$T$为单结点树，并将$D$中出现次数最多的类$c_{\max}$作为该结点的类标记，返回$T$；</li>
+  <li>计算特征集$A$中每一个特征的信息增益，选择信息增益最大的特征$A_{\max}$；</li>
+  <li>如果$A_{\max}$的信息增益小于阈值$\epsilon$，则$T$为单结点树，并将该结点中出现次数最多的类$c_{\max}’$作为该结点的类标记，返回$T$；</li>
+  <li>对于$A_{\max}$的每一种可能取值$a_k$，按照$A_{\max}=a_k$把$D$分割成若干非空子集$D_k$，将$D_k$中出现次数最多的类$c_k$作为该类标记构造子结点；</li>
+  <li>对第$k$个子结点，以$D_k$为训练集，以$A-A_{\max}$为特征集，递归地调用<strong>1</strong>-<strong>5</strong>，得到并返回子树$T_k$。</li>
+</ol>
+
+<h2 id="3-实现id3">(3) 实现ID3</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+
+<span class="k">class</span> <span class="nc">DisicionTree</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span> <span class="o">=</span> <span class="p">{}</span>
+       
+    <span class="c1"># 递归构建决策树
+</span>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataSet</span><span class="p">,</span> <span class="n">feature_labels</span><span class="p">):</span>
+        <span class="c1"># 取出类别标签
+</span>        <span class="n">classList</span> <span class="o">=</span> <span class="p">[</span><span class="n">example</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">example</span> <span class="ow">in</span> <span class="n">dataSet</span><span class="p">]</span>            
+        <span class="c1"># 如果类别完全相同则停止继续划分
+</span>        <span class="k">if</span> <span class="n">classList</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="n">classList</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">classList</span><span class="p">):</span>           
+            <span class="k">return</span> <span class="n">classList</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># 遍历完所有特征时返回出现次数最多的类标签
+</span>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_labels</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>                
+            <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">majorityCnt</span><span class="p">(</span><span class="n">classList</span><span class="p">)</span>
+        <span class="c1"># 获取最优特征维度    
+</span>        <span class="n">bestFeat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">chooseBestFeatureToSplit</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>                
+        <span class="c1"># 得到最优特征标签
+</span>        <span class="n">bestFeatLabel</span> <span class="o">=</span> <span class="n">feature_labels</span><span class="p">[</span><span class="n">bestFeat</span><span class="p">]</span>
+        <span class="c1"># 根据最优特征的标签生成树
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span><span class="p">.</span><span class="n">update</span><span class="p">({</span><span class="n">bestFeatLabel</span><span class="p">:{}})</span>
+        <span class="c1"># 删除已经使用特征标签
+</span>        <span class="k">del</span><span class="p">(</span><span class="n">feature_labels</span><span class="p">[</span><span class="n">bestFeat</span><span class="p">])</span>
+        <span class="c1"># 得到训练集中所有最优特征维度的所有属性值
+</span>        <span class="n">featValues</span> <span class="o">=</span> <span class="p">[</span><span class="n">example</span><span class="p">[</span><span class="n">bestFeat</span><span class="p">]</span> <span class="k">for</span> <span class="n">example</span> <span class="ow">in</span> <span class="n">dataSet</span><span class="p">]</span>       
+        <span class="n">uniqueVals</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">featValues</span><span class="p">)</span>
+        <span class="c1"># 遍历特征，创建决策树
+</span>        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">uniqueVals</span><span class="p">:</span>
+            <span class="n">subLabels</span> <span class="o">=</span> <span class="n">feature_labels</span><span class="p">[:]</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span><span class="p">[</span><span class="n">bestFeatLabel</span><span class="p">][</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span>
+                <span class="n">dataSet</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">splitDataSet</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">bestFeat</span><span class="p">,</span> <span class="n">value</span><span class="p">),</span>
+                <span class="n">feature_labels</span> <span class="o">=</span> <span class="n">subLabels</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span>
+
+    <span class="c1"># 返回classList中出现次数最多的元素
+</span>    <span class="k">def</span> <span class="nf">majorityCnt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">classList</span><span class="p">):</span>
+        <span class="n">classCount</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">classList</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">classCount</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">classList</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="c1">#根据字典的值降序排序
+</span>        <span class="n">sortedClassCount</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">classCount</span><span class="p">.</span><span class="n">items</span><span class="p">(),</span> 
+                                  <span class="n">key</span> <span class="o">=</span> <span class="n">operator</span><span class="p">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> 
+                                  <span class="n">reverse</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>  
+        <span class="k">return</span> <span class="n">sortedClassCount</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>   
+
+    <span class="c1"># 根据信息增益选择特征
+</span>    <span class="k">def</span> <span class="nf">chooseBestFeatureToSplit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataSet</span><span class="p">):</span>
+        <span class="n">numFeatures</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>     <span class="c1"># 特征数量
+</span>        <span class="n">baseEntropy</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">calcShannonEnt</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span> <span class="c1"># 计算数据集的经验熵
+</span>        <span class="n">bestInfoGain</span> <span class="o">=</span> <span class="mf">0.0</span>                    <span class="c1"># 信息增益
+</span>        <span class="n">bestFeature</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>                      <span class="c1"># 最优特征的索引值
+</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numFeatures</span><span class="p">):</span> 
+            <span class="c1">#获取所有数据样本的第i个特征
+</span>            <span class="n">featList</span> <span class="o">=</span> <span class="p">[</span><span class="n">example</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">example</span> <span class="ow">in</span> <span class="n">dataSet</span><span class="p">]</span>
+            <span class="n">uniqueVals</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">featList</span><span class="p">)</span>        <span class="c1"># 第i个特征的所有取值
+</span>            <span class="n">newEntropy</span> <span class="o">=</span> <span class="mf">0.0</span>                  <span class="c1"># 经验条件熵
+</span>            <span class="c1">#计算第i个特征的信息增益
+</span>            <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">uniqueVals</span><span class="p">:</span>
+                <span class="c1"># 按照第i个特征拆分数据集
+</span>                <span class="n">subDataSet</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">splitDataSet</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="n">prob</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subDataSet</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataSet</span><span class="p">))</span>
+                <span class="n">newEntropy</span> <span class="o">+=</span> <span class="n">prob</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">calcShannonEnt</span><span class="p">(</span><span class="n">subDataSet</span><span class="p">)</span>
+            <span class="n">infoGain</span> <span class="o">=</span> <span class="n">baseEntropy</span> <span class="o">-</span> <span class="n">newEntropy</span>
+            <span class="c1"># 寻找信息增益最大的特征
+</span>            <span class="k">if</span> <span class="p">(</span><span class="n">infoGain</span> <span class="o">&gt;</span> <span class="n">bestInfoGain</span><span class="p">):</span>
+                <span class="n">bestInfoGain</span> <span class="o">=</span> <span class="n">infoGain</span>
+                <span class="n">bestFeature</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="n">bestFeature</span>
+
+    <span class="c1"># 计算经验熵(香农熵)
+</span>    <span class="k">def</span> <span class="nf">calcShannonEnt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataSet</span><span class="p">):</span>
+        <span class="c1"># 返回数据集的样本数
+</span>        <span class="n">numEntires</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>       
+        <span class="c1"># 收集所有目标标签 （最后一个维度）
+</span>        <span class="n">labels</span><span class="o">=</span> <span class="p">[</span><span class="n">featVec</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">featVec</span> <span class="ow">in</span> <span class="n">dataSet</span><span class="p">]</span>     
+        <span class="c1"># 去重、获取标签种类
+</span>        <span class="n">keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="n">shannonEnt</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+           <span class="c1"># 计算每种标签出现的次数
+</span>           <span class="n">prob</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">labels</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="n">key</span><span class="p">))</span> <span class="o">/</span> <span class="n">numEntires</span> 
+           <span class="n">shannonEnt</span> <span class="o">-=</span> <span class="n">prob</span> <span class="o">*</span> <span class="n">math</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">prob</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> 
+        <span class="k">return</span> <span class="n">shannonEnt</span>
+
+    <span class="c1"># 数据集分割
+</span>    <span class="k">def</span> <span class="nf">splitDataSet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataSet</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>        
+        <span class="n">retDataSet</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">featVec</span> <span class="ow">in</span> <span class="n">dataSet</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">featVec</span><span class="p">[</span><span class="n">axis</span><span class="p">]</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+                <span class="c1"># 去除数据的第i个特征
+</span>                <span class="n">reducedFeatVec</span> <span class="o">=</span> <span class="n">featVec</span><span class="p">[:</span><span class="n">axis</span><span class="p">]</span>
+                <span class="n">reducedFeatVec</span><span class="p">.</span><span class="n">extend</span><span class="p">(</span><span class="n">featVec</span><span class="p">[</span><span class="n">axis</span><span class="o">+</span><span class="mi">1</span><span class="p">:])</span>
+                <span class="n">retDataSet</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">reducedFeatVec</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retDataSet</span>
+
+    <span class="c1"># 进行新数据的分类
+</span>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputTree</span><span class="p">,</span> <span class="n">feature_labels</span><span class="p">,</span> <span class="n">testVec</span><span class="p">):</span>
+        <span class="c1"># 获取决策树结点
+</span>        <span class="n">firstStr</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">inputTree</span><span class="p">))</span>
+        <span class="c1"># 获取子树
+</span>        <span class="n">secondDict</span> <span class="o">=</span> <span class="n">inputTree</span><span class="p">[</span><span class="n">firstStr</span><span class="p">]</span>
+        <span class="n">featIndex</span> <span class="o">=</span> <span class="n">feature_labels</span><span class="p">.</span><span class="n">index</span><span class="p">(</span><span class="n">firstStr</span><span class="p">)</span>
+        <span class="c1"># 把数据划分到不同的分支                                   
+</span>        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">secondDict</span><span class="p">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">testVec</span><span class="p">[</span><span class="n">featIndex</span><span class="p">]</span> <span class="o">==</span> <span class="n">key</span><span class="p">:</span>
+                <span class="c1"># 如果对应子树
+</span>                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">secondDict</span><span class="p">[</span><span class="n">key</span><span class="p">]).</span><span class="n">__name__</span> <span class="o">==</span> <span class="s">'dict'</span><span class="p">:</span>
+                    <span class="n">classLabel</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span>
+                        <span class="n">inputTree</span> <span class="o">=</span> <span class="n">secondDict</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+                        <span class="n">testVec</span> <span class="o">=</span> <span class="n">testVec</span>
+                        <span class="p">)</span>
+                <span class="c1"># 如果对应叶结点
+</span>                <span class="k">else</span><span class="p">:</span> <span class="n">classLabel</span> <span class="o">=</span> <span class="n">secondDict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">classLabel</span>
+
+
+<span class="c1"># 创建数据集
+</span><span class="k">def</span> <span class="nf">createDataSet</span><span class="p">():</span>
+    <span class="n">dataSet</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">'no'</span><span class="p">],</span>                        <span class="c1">#数据集
+</span>            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'no'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'yes'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">'yes'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">'no'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">'no'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'no'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'yes'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">'yes'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">'yes'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">'yes'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'yes'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'yes'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">'yes'</span><span class="p">],</span>
+            <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">'no'</span><span class="p">]]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s">'年龄'</span><span class="p">,</span> <span class="s">'有工作'</span><span class="p">,</span> <span class="s">'有房子'</span><span class="p">,</span> <span class="s">'信贷情况'</span><span class="p">]</span>        <span class="c1">#特征标签
+</span>    <span class="k">return</span> <span class="n">dataSet</span><span class="p">,</span> <span class="n">labels</span>                             <span class="c1">#返回数据集和分类属性
+</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+    <span class="c1"># 获取数据集
+</span>    <span class="n">dataSet</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">createDataSet</span><span class="p">()</span>
+    <span class="n">feature_labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[:]</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">DisicionTree</span><span class="p">()</span>
+    <span class="n">myTree</span> <span class="o">=</span> <span class="n">dt</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">myTree</span><span class="p">)</span> <span class="c1"># {'有房子': {0: {...}, 1: 'yes'}, '有工作': {0: 'no', 1: 'yes'}}
+</span>    
+    <span class="c1"># 测试
+</span>    <span class="n">testVec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> 
+    <span class="n">result</span> <span class="o">=</span> <span class="n">dt</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">myTree</span><span class="p">,</span> <span class="n">feature_labels</span><span class="p">,</span> <span class="n">testVec</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="c1"># yes
+</span></code></pre></div></div>
+
+<h1 id="2-c45">2. C4.5</h1>
+
+<p><strong>C4.5</strong>模型与<strong>ID3</strong>模型类似，主要区别在于使用信息增益比作为分支条件。</p>
+
+<p>数据集$D$在特征$A$上的<strong>信息增益比(information gain radio)</strong>定义为信息增益与条件熵的比值：</p>
+
+\[g_R(D,A) = \frac{g(D,A)}{H(D)}\]
+
+<h1 id="3-cart">3. CART</h1>
+
+<p><strong>CART (classification and regression tree)</strong>是一种<strong>二叉树</strong>形式的决策树算法，既可以用于分类也可以用于回归。<strong>CART</strong>算法简单，容易实现；具有具有良好的可解释性；并且可以处理特征缺失的情况。对于每一个内部节点，<strong>CART</strong>使用<strong>决策桩算法（decision stump）</strong>。</p>
+
+<h2 id="1-决策桩-decision-stump">(1) 决策桩 Decision Stump</h2>
+<p>决策桩算法可以看做一维的感知机，即通过一定的准则将数据按照某一个特征维度分成两份：若数据的第$i$个特征不超过$θ$，则前往右边的子树；否则前往左边的子树：</p>
+
+\[b(x) = [x_i≤θ] + 1\]
+
+<p>一个好的决策桩对数据进行划分后，应使每一组子数据集内的不纯度最小（即设定合适的分支条件）。根据设置的分支条件不同，<strong>CART</strong>可以分别应用于回归和分类问题。</p>
+
+<h2 id="2-回归cart最小二乘回归树-least-squares-regression-tree">(2) 回归CART：最小二乘回归树 least squares regression tree</h2>
+
+<p>最小二乘回归树把输入空间划分为$M$个互不相交的子区域$R_1,…,R_M$，计算每个子区域$R_m$上的输出值$C_m$，从而构造回归树模型：</p>
+
+\[f(x) = \sum_{m=1}^M C_m \cdot I(x \in R_m)\]
+
+<p><img src="https://pic.imgdb.cn/item/63a7aa4708b683016376356e.jpg" alt="" /></p>
+
+<p>最小二乘回归树根据平方误差最小化准则选择最优划分特征：</p>
+
+\[\min \sum_{x_i \in R_m} (y_i - f(x_i))^2\]
+
+<p>具体地，对输入数据$x$选择一个切分特征$d$及其对应的切分点$p$，将空间递归地划分为两个子空间：</p>
+
+\[R_1(d,p) = \{ x | x_d \leq p \},\quad R_2(d,p) = \{ x | x_d  &gt; p \}\]
+
+<p>并将每个子空间的输出值设定为子空间内所有数据的平均标签值：</p>
+
+\[C_1 = \frac{1}{|R_1(d,p)|} \sum_{x \in R_1(d,p)}y,\quad C_2 = \frac{1}{|R_2(d,p)|} \sum_{x \in R_2(d,p)}y\]
+
+<p>最优切分特征$d$及最优切分点$p$的选择通过求解：</p>
+
+\[\mathop{\min}_{d,p} [\mathop{\min}_{C_1} \sum_{x \in R_1(d,p)} (y-C_1)^2 +  \mathop{\min}_{C_2} \sum_{x \in R_2(d,p)} (y-C_2)^2  ]\]
+
+<p>在实践中首先遍历特征维度$d$；对于每个特征维度，遍历所有可能的切分点$p$；直至找到使得上式最小的$(d,p)$值。</p>
+
+<h3 id="-回归cart的例子">⚪ 回归CART的例子</h3>
+
+<p>已知如图所示的训练数据，试用平方误差损失准则生成一个二叉回归树。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a7aab208b683016376e329.jpg" alt="" /></p>
+
+<p>该数据集只有一个切分变量$x$，分别选择$p=1,…,10$为切分点，把数据分成左右两份。对于每个切分点分别计算两个子集的平均输出$C_1,C_2$，并进一步计算平方误差：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a7ac1c08b6830163793652.jpg" alt="" /></p>
+
+<p>从结果可得$p=5$时平方误差最小，因此选择第一个最优切分点为$p_1=5$，划分成两个子数据集$R_1={1,2,3,4,5}$和$R_2={6,7,8,9,10}$，两个子数据集的输出分别为$\hat{c}_1=5.06,\hat{c}_2=8.18$。</p>
+
+<p>递归地执行上述过程，即可构造二叉回归树：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a7ace008b68301637a84e3.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/63a7ad2608b68301637af5be.jpg" alt="" /></p>
+
+<h2 id="3-分类cart">(3) 分类CART</h2>
+
+<p>对于分类问题，<strong>CART</strong>使用<strong>基尼指数（Gini index）</strong>作为分支条件。基尼指数越大，表明数据集的不确定性越大。</p>
+
+<p>若分类问题共有$K$个类别，且某一样本属于第$k$个类别的概率为$p_k$，则该样本的基尼指数为：</p>
+
+\[\text{Gini}(p) = \sum_{k=1}^Kp_k(1-p_k) = 1-\sum_{k=1}^Kp_k^2\]
+
+<p>对于二分类问题（$K=2$），若记某一类样本所占总样本的比例为$μ$，另一类所占比例为$1-μ$，则基尼指数为：</p>
+
+\[\text{Gini}(μ) = 2μ(1-μ)\]
+
+<p>若样本集$D$共有$N$个样本，则该样本集的基尼指数为：</p>
+
+\[\text{Gini}(D) =  1 - \sum_{k=1}^{K} {(\frac{\sum_{n=1}^{N} {[y_n=k]}}{N})^2}\]
+
+<p>若样本集$D$根据特征$A$可以进行划分$D=(D_1,D_2)$，则在特征$A$下样本集的基尼指数为：</p>
+
+\[\text{Gini}(D,A) =  \frac{|D_1|}{N}\text{Gini}(D_1)+\frac{|D_2|}{N}\text{Gini}(D_2)\]
+
+<p>在构造分类<strong>CART</strong>时，根据数据集$D$的每一个特征$A$的每一个取值情况把$D$划分成两部分$(D_1,D_2)$，计算此时的基尼指数$\text{Gini}(D,A)$。遍历所有特征及其所有可能的切分点，选择基尼指数最小的作为最优特征及最优切分点，把数据集划分成两部分；递归地执行上述操作，直至满足停止条件。</p>
+
+<h2 id="4-处理缺失值-handle-missing-features">(4) 处理缺失值 Handle missing features</h2>
+<p><strong>CART</strong>可以处理预测时缺失特征的情况。一种常用的方法就是代理分支<strong>(surrogate branch)</strong>，即寻找与每个特征相似的替代特征。确定是相似特征的做法是在决策树训练的时候，如果存在一个特征与当前特征切分数据的方式和结果是类似的，则表明二者是相似的，就把该替代的特征也存储下来。当预测时遇到原特征缺失的情况，就用替代特征进行分支判断和选择。</p>
+
+<h2 id="5-实现cart">(5) 实现CART</h2>
+
+<p>下面以回归<strong>CART</strong>为例，给出实现过程：</p>
+
+<h3 id="-回归cart-from-scratch">⚪ 回归CART from scratch</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">class</span> <span class="nc">RegressionTree</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span> <span class="o">=</span> <span class="p">{}</span>
+        
+    <span class="c1"># 构建tree
+</span>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataSet</span><span class="p">):</span>
+        <span class="n">feat</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">chooseBestSplit</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">feat</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span> <span class="n">val</span>  <span class="c1"># 满足停止条件时返回叶结点值
+</span>        <span class="c1"># 切分后赋值
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span><span class="p">[</span><span class="s">'spInd'</span><span class="p">]</span> <span class="o">=</span> <span class="n">feat</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span><span class="p">[</span><span class="s">'spVal'</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="c1"># 切分后的左右子树
+</span>        <span class="n">lSet</span><span class="p">,</span> <span class="n">rSet</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">binSplitDataSet</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span><span class="p">[</span><span class="s">'left'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">lSet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span><span class="p">[</span><span class="s">'right'</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">rSet</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">myTree</span>
+
+    <span class="c1"># 二元切分
+</span>    <span class="k">def</span> <span class="nf">chooseBestSplit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataSet</span><span class="p">,</span> <span class="n">ops</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
+        <span class="c1"># 切分特征的参数阈值，用户初始设置好
+</span>        <span class="n">tolS</span> <span class="o">=</span> <span class="n">ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># 允许的误差下降值
+</span>        <span class="n">tolN</span> <span class="o">=</span> <span class="n">ops</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># 切分的最小样本数
+</span>        <span class="c1"># 若所有特征值都相同，停止切分
+</span>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">T</span><span class="p">.</span><span class="n">tolist</span><span class="p">()))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># 标签值查重
+</span>            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># 使用标签均值生成叶结点
+</span>        <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">shape</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+        <span class="c1"># 计算数据集的平方误差（均方误差*总样本数）
+</span>        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">var</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">m</span>
+        <span class="n">bestS</span> <span class="o">=</span> <span class="n">inf</span>
+        <span class="n">bestIndex</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">bestValue</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># 遍历数据的每个属性特征
+</span>        <span class="k">for</span> <span class="n">featIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="c1"># 遍历每个特征里不同的特征值
+</span>            <span class="k">for</span> <span class="n">splitVal</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">((</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="n">featIndex</span><span class="p">].</span><span class="n">T</span><span class="p">.</span><span class="n">tolist</span><span class="p">())):</span>
+                <span class="c1"># 对每个特征进行二元切分
+</span>                <span class="n">subset1</span><span class="p">,</span> <span class="n">subset2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">binSplitDataSet</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">featIndex</span><span class="p">,</span> <span class="n">splitVal</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">subset1</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tolN</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">subset2</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tolN</span><span class="p">):</span> <span class="k">continue</span>
+                <span class="n">S1</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">var</span><span class="p">(</span><span class="n">subset1</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">subset1</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">S2</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">var</span><span class="p">(</span><span class="n">subset2</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">subset2</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">newS</span> <span class="o">=</span> <span class="n">S1</span><span class="o">+</span><span class="n">S2</span>
+                <span class="c1"># 更新为误差最小的特征
+</span>                <span class="k">if</span> <span class="n">newS</span> <span class="o">&lt;</span> <span class="n">bestS</span><span class="p">:</span>
+                    <span class="n">bestIndex</span> <span class="o">=</span> <span class="n">featIndex</span>
+                    <span class="n">bestValue</span> <span class="o">=</span> <span class="n">splitVal</span>
+                    <span class="n">bestS</span> <span class="o">=</span> <span class="n">newS</span>
+        <span class="c1"># 如果切分后误差效果下降不大，则取消切分，直接创建叶结点
+</span>        <span class="k">if</span> <span class="p">(</span><span class="n">S</span> <span class="o">-</span> <span class="n">bestS</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tolS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">subset1</span><span class="p">,</span> <span class="n">subset2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">binSplitDataSet</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">bestIndex</span><span class="p">,</span> <span class="n">bestValue</span><span class="p">)</span>
+        <span class="c1"># 判断切分后子集大小，小于最小允许样本数停止切分
+</span>        <span class="k">if</span> <span class="p">(</span><span class="n">subset1</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tolN</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">subset2</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tolN</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">bestIndex</span><span class="p">,</span> <span class="n">bestValue</span>  <span class="c1"># 返回特征编号和用于切分的特征值
+</span>
+    <span class="c1"># 切分数据集为两个子集
+</span>    <span class="k">def</span> <span class="nf">binSplitDataSet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataSet</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">subset1</span> <span class="o">=</span> <span class="n">dataSet</span><span class="p">[</span><span class="n">nonzero</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="n">feature</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">value</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:]</span>
+        <span class="n">subset2</span> <span class="o">=</span> <span class="n">dataSet</span><span class="p">[</span><span class="n">nonzero</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="n">feature</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:]</span>
+        <span class="k">return</span> <span class="n">subset1</span><span class="p">,</span> <span class="n">subset2</span>
+
+    
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">))).</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.50</span><span class="p">,</span> <span class="mf">4.75</span><span class="p">,</span> <span class="mf">4.91</span><span class="p">,</span> <span class="mf">5.34</span><span class="p">,</span> <span class="mf">5.80</span><span class="p">,</span> <span class="mf">7.05</span><span class="p">,</span> <span class="mf">7.90</span><span class="p">,</span> <span class="mf">8.23</span><span class="p">,</span> <span class="mf">8.70</span><span class="p">,</span> <span class="mf">9.00</span><span class="p">]).</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">myDat</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">myTree</span> <span class="o">=</span> <span class="n">RegressionTree</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">myTree</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">myDat</span><span class="p">))</span>
+    <span class="s">"""
+    {'spInd': 0, 'spVal': 2.0, 'left': {...}, 'right': {...}}
+    """</span>
+</code></pre></div></div>
+
+<h3 id="-回归cart-from-sklearn">⚪ 回归CART from sklearn</h3>
+
+<p>使用<strong>sklearn</strong>库可以便捷地实现二叉回归树：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeRegressor</span>
+
+<span class="c1"># Data set
+</span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">))).</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># [n, d]
+</span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mf">4.50</span><span class="p">,</span> <span class="mf">4.75</span><span class="p">,</span> <span class="mf">4.91</span><span class="p">,</span> <span class="mf">5.34</span><span class="p">,</span> <span class="mf">5.80</span><span class="p">,</span> <span class="mf">7.05</span><span class="p">,</span> <span class="mf">7.90</span><span class="p">,</span> <span class="mf">8.23</span><span class="p">,</span> <span class="mf">8.70</span><span class="p">,</span> <span class="mf">9.00</span><span class="p">]).</span><span class="n">ravel</span><span class="p">()</span> <span class="c1"># [n,]
+</span>
+<span class="c1"># Fit regression model
+</span><span class="n">model</span> <span class="o">=</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">model</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># Predict
+</span><span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)[:,</span> <span class="n">np</span><span class="p">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="c1"># [m, d]
+</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="c1"># Plot the results
+</span><span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s">"black"</span><span class="p">,</span>
+            <span class="n">c</span><span class="o">=</span><span class="s">"darkorange"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">"data"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">"cornflowerblue"</span><span class="p">,</span>
+         <span class="n">label</span><span class="o">=</span><span class="s">"max_depth=3"</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">"data"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">"target"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h1 id="4-决策树的剪枝">4. 决策树的剪枝</h1>
+
+<p>直接生成的决策树被称为<strong>fully-grown tree</strong>，最终会在观测样本集上实现零误差，并且较深的节点分配到的数据量逐渐减少，容易过拟合；因此需要对其进行<strong>剪枝(pruning)</strong>。剪枝是指从已生成的树上裁掉子树或叶结点，并将其对应的根结点或父结点作为新的叶结点。</p>
+
+<p>决策树的剪枝有<strong>预剪枝</strong>和<strong>后剪枝</strong>两种形式：</p>
+<ul>
+  <li><strong>预剪枝(pre-pruning)</strong>：在每次对结点进行实际划分之前，先采用验证集的数据来验证该划分是否能提高准确率。如果能就继续递归地生成结点；如果不能就把结点标记为叶结点并退出划分。</li>
+  <li><strong>后剪枝(post-pruning)</strong>：首先通过训练集生成一颗完整的决策树，然后自底向上地对内部结点进行考察，若将该结点设置为叶结点能够提高泛化性，则进行剪枝。</li>
+</ul>
+
+<p>下面介绍决策树的后剪枝过程。定义决策树$T$的损失函数：</p>
+
+\[\begin{aligned} C_{\alpha}(T) &amp;= \sum_{t=1}^{|T|} N_t H_t(T) + \alpha \cdot |T| \\ &amp;= - \sum_{t=1}^{|T|} \sum_{c=1}^{C} N_{tc} \log \frac{N_{tc}}{N_t} + \alpha \cdot |T| \end{aligned}\]
+
+<p>其中$|T|$是叶结点的个数，用于衡量决策树的模型复杂度；$N_t$是第$t$个叶结点对应的样本数量；$H_t(T)$是第$t$个叶结点的经验熵，</p>
+
+<p>给定决策树$T$和参数$\alpha$，则决策树的单步剪枝过程为：</p>
+<ol>
+  <li>计算每个叶结点的经验熵；</li>
+  <li>递归地从叶结点向上回缩。记回缩后的树为$T’$，计算损失函数$C_{\alpha}(T), C_{\alpha}(T’)$。如果$C_{\alpha}(T’)\leq C_{\alpha}(T)$，则对该叶结点进行剪枝，并将其父结点作为新的叶结点。</li>
+  <li>递归地调用<strong>2</strong>，直至满足结束条件。</li>
+</ol>
+
+<p>上述过程是逐结点地进行剪枝，也可以直接对子树进行剪枝。记某内部结点$t$，以$t$为单结点树的损失函数为$C_{\alpha}(t)=C(t)+\alpha$，以$t$为根结点的子树$T_t$的损失函数为$C_{\alpha}(T_t)=C(T_t)+\alpha \cdot |T_t|$。若两个损失函数一致$C_{\alpha}(t)=C_{\alpha}(T_t)$，则该子树没有实质贡献，此时有：</p>
+
+\[\alpha = \frac{C(t)-C(T_t)}{|T_t|-1}\]
+
+<p>因此也可以自上而下地遍历决策树的内部结点$t$，并计算该结点的$\frac{C(t)-C(T_t)}{|T_t|-1}$值；若该值等于$\alpha$，则对以$t$为根结点的子树$T_t$进行剪枝。</p>
+
+<p>对于固定的$\alpha$，存在最优子树$T_{\alpha}$。特别地，当$\alpha \to + \infty$时最优子树为单结点树；当$\alpha=0$时最优子树为完整的决策树。若$\alpha$从小到大变化，$0&lt;\alpha_0&lt;\alpha_1&lt; \cdots &lt;\alpha_n &lt; + \infty$，，则产生一个最优子树序列\(\{T_0,T_1,\cdots,T_n\}\)；进一步采用交叉验证法可以从中选取最优子树。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/20/random-forest.html" class="read-next-link"></a>
+        <section>
+          <span>随机森林(Random Forest)</span>
+          <p>  Random Forest.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5efb023c14195aa5948bf48e.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/18/boosting.html" class="read-next-link"></a>
+          <section>
+            <span>集成学习中的提升(Boosting)方法</span>
+            <p>  An Ensemble Learning Method：Boosting.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5efb009814195aa5948b6b2e.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Armed Bandit(MAB)：多臂老虎机 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Multi-Armed Bandit(MAB)：多臂老虎机">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Multi-Armed Bandit(MAB)：多臂老虎机 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/02/multiarm-bandit.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>Multi-Armed Bandit(MAB)：多臂老虎机</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-02"><i class="iconfont icon-date"></i>02 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f505cc9160a154a671bb05b.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Multi-armed bandit.</p>
+</blockquote>
+
+<h1 id="1-模型介绍">1. 模型介绍</h1>
+<p><strong>多臂老虎机（Multi-Armed Bandit，MAB）</strong>是统计学中一个经典问题。设想一个赌徒面前有$N$个老虎机，事先他不知道每台老虎机的真实盈利情况，他如何根据每次玩老虎机的结果来选择下次拉哪台或者是否停止赌博，来最大化自己的从头到尾的收益。</p>
+
+<p>❀关于多臂老虎机问题名字的来源，是因为老虎机在以前是有一个操控杆，就像一只手臂(<strong>arm</strong>)，而玩老虎机的结果往往是口袋被掏空，就像遇到了土匪(<strong>bandit</strong>)一样。</p>
+
+<p><img src="https://pic.downk.cc/item/5f506bda160a154a671ee1f3.jpg" alt="" /></p>
+
+<p>假设共有$K$台<strong>arm</strong>，进行$T$轮实验。对于第$t$轮实验，<strong>代理（agent）</strong>根据给定的<strong>策略（policy）</strong>采取<strong>行动（action）</strong>选择一台<strong>arm</strong> $a_t$，并获得<strong>奖励（reward）</strong> $r_t$。</p>
+
+<p>若记最优的<strong>arm</strong>能够得到奖励$μ$，则目标是使所有实验中的累计<strong>遗憾（regret）</strong>最小化：</p>
+
+\[R(T) = μT-\frac{1}{T} \sum_{t=1}^{T} {r_t(a_t)}\]
+
+<p>实际中假设状态空间有限但非常大，因此遍历所有<strong>arm</strong>是不现实的，因此需要权衡<strong>探索和利用(Exploration and Exploitation,EE)</strong>。</p>
+<ul>
+  <li><strong>探索(Exploration)</strong>指的是每次优先选择之前没有选择过的<strong>arm</strong>；</li>
+  <li><strong>利用(Exploitation)</strong>指的是优先选择已知奖励高的<strong>arm</strong>，利用当前已有的信息来最大化收益。</li>
+</ul>
+
+<h3 id="ε-greedy-算法">⚪ε-greedy 算法</h3>
+<p>当$K$台<strong>arm</strong>的<strong>reward</strong>已知或已经被估计出来时，可以通过<strong>ε-greedy</strong>算法进行搜索。</p>
+<ol>
+  <li>以$ε$的概率在$K$台<strong>arm</strong>之间等概率随机选择；</li>
+  <li>以$1-ε$的概率在已经探索过的<strong>arm</strong>中选择<strong>reward</strong>最高的。</li>
+</ol>
+
+<h3 id="ucbupper-confidence-bound算法">⚪UCB(Upper Confidence Bound)算法</h3>
+<p>实际中$K$台<strong>arm</strong>的<strong>reward</strong>是未知的，需要进行估计。假设每台<strong>arm</strong>的<strong>reward</strong>服从某个概率分布，对<strong>reward</strong>的置信区间进行估计。</p>
+
+<p><strong>UCB</strong>算法是在利用阶段时，选择<strong>reward</strong>估计的置信上界最大的<strong>arm</strong>。</p>
+
+<h1 id="2-contextual-mab">2. Contextual MAB</h1>
+<p><strong>Contextual MAB</strong>需要结合上下文信息（<strong>context</strong>），即每台<strong>arm</strong>在每一时刻的<strong>reward</strong>是变化的。</p>
+
+<p>对于第$t$轮实验，<strong>agent</strong>能够观察到当前<strong>context</strong> $x_t$，根据<strong>policy</strong>选择一个<strong>arm</strong> $a_t$，目标是使所有实验中的累计<strong>遗憾（regret）</strong>最小化：</p>
+
+\[R(T) = \mathop{\max}_{\pi \in \Pi} \frac{1}{T} \sum_{t=1}^{T} {r_t(\pi (x_t))}-\frac{1}{T} \sum_{t=1}^{T} {r_t(a_t)}\]
+
+<h3 id="disjoint-linear-model">⚪Disjoint Linear Model</h3>
+<p>在<strong>Contextual MAB</strong>问题中，每台<strong>arm</strong>的<strong>reward</strong>与<strong>context</strong>相关。一种简单的模型假设每台<strong>arm</strong>在第$t$轮的特征$x_{t,a}$与其奖励$r_{t,a}$呈线性关系：</p>
+
+\[E[r_{t,a} \mid x_{t,a}] = x^T_{t,a}θ_a\]
+
+<p>其中参数$θ_a$可以通过岭回归等算法进行学习。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/03/srm.html" class="read-next-link"></a>
+        <section>
+          <span>Simple Regret Minimization for Contextual Bandits</span>
+          <p>  上下文多臂老虎机问题的简单遗憾最小化.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f508384160a154a67246dc1.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/01/images.html" class="read-next-link"></a>
+          <section>
+            <span>批量处理文件夹内的图片</span>
+            <p>  Handle images from the file.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

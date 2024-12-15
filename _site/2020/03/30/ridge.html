@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>岭回归与LASSO回归(Ridge/LASSO Regression) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="岭回归与LASSO回归(Ridge/LASSO Regression)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="岭回归与LASSO回归(Ridge/LASSO Regression) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/30/ridge.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>岭回归与LASSO回归(Ridge/LASSO Regression)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-30"><i class="iconfont icon-date"></i>30 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60e7fa3f5132923bf811b50d.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Ridge Regression and LASSO Regression.</p>
+</blockquote>
+
+<p>岭回归与<strong>LASSO</strong>回归是将正则化思想引入线性回归模型后得到的方法。</p>
+<ul>
+  <li>岭回归对模型的参数加入<strong>L2正则化</strong>，能够有效的防止模型<strong>过拟合</strong>，解决非满秩下<strong>求逆</strong>困难的问题。</li>
+  <li><strong>LASSO</strong>回归全称为<strong>Least Absolute Shrinkage and Selection Operator(最小绝对收缩选择算子, 套索算法)</strong>，对模型的参数加入<strong>L1正则化</strong>，能够<strong>稀疏</strong>矩阵，进行庞大特征数量下的<strong>特征选择</strong>。</li>
+</ul>
+
+<h1 id="1-ridge-regression">1. Ridge Regression</h1>
+<p><strong>岭回归（Ridge Regression）</strong>是引入了<strong>L2正则化</strong>的线性回归，求解问题如下：</p>
+
+\[L(w) = \sum_{i=1}^{N} {(w^Tx^{(i)}-y^{(i)})^2} + λ||w||_2 = (Xw-y)^T(Xw-y)+ λw^Tw\]
+
+<p>岭回归通过增加对权重的限制，使得模型把有限的权重放到更重要的特征维度上；并且每个权重都不会太大，否则自变量的微小变化将会引起输入的巨大变化。</p>
+
+<p>令梯度为零可以得到：</p>
+
+\[\nabla_wL(w) = 2X^TXw - 2Xy + 2λw = 0\]
+
+<p>该问题的解析解为：</p>
+
+\[w = (X^TX+λI)^{-1}Xy\]
+
+<p>注意到正则化系数$λ$通常大于零，故矩阵$X^TX+λI$一定<strong>可逆</strong>。</p>
+
+<p>正则化系数$λ$越大，不重要的维度的权重会减小；因此通过调整正则化系数可以实现初步的特征选择。下图给出了某岭回归模型中八个维度的权重随正则化系数的变化曲线。从图中可以看出，特征维度4和5的重要性较大，并且特征4起到正作用，特征5起到反作用。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6399d6a6b1fccdcd36ded922.jpg" alt="" /></p>
+
+<p>求解岭回归问题的程序如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">RidgeRegression</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">T</span><span class="p">,</span><span class="n">X</span><span class="p">)</span><span class="o">+</span><span class="n">lambd</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">eye</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="n">np</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">))</span>
+</code></pre></div></div>
+
+<h3 id="-讨论岭回归等价于噪声和先验服从高斯分布的最大后验估计">⚪ 讨论：岭回归等价于噪声和先验服从高斯分布的最大后验估计</h3>
+<p>引入高斯噪声$ε$~$N(0,σ^2)$，对线性回归建模：</p>
+
+\[y = w^Tx + ε\]
+
+<p>贝叶斯角度认为参数$w$不再是常数，而是随机变量，假设其先验概率为$N(0,σ_0^2)$,</p>
+
+<p>由贝叶斯定理，参数$w$的后验概率：</p>
+
+\[P(w | y) = \frac{P(y | w)P(w)}{P(y)} \propto P(y | w)P(w)\]
+
+<p>由最大后验估计：</p>
+
+\[\begin{aligned} \hat{w} &amp;= \mathop{\arg \max}_{w}\log P(w | y) = \mathop{\arg \max}_{w}\log P(y | w)P(w) \\ &amp;= \mathop{\arg \max}_{w} \log (\prod_{i=1}^{N} {\frac{1}{\sqrt{2\pi}σ}\exp(-\frac{(y^{(i)}-w^Tx^{(i)})^2}{2σ^2})\frac{1}{\sqrt{2\pi}σ_0}\exp(-\frac{w^Tw}{2σ_0^2})}) \\ &amp;= \mathop{\arg \max}_{w} \sum_{i=1}^{N} {\log (\frac{1}{\sqrt{2\pi}σ}\exp(-\frac{(y^{(i)}-w^Tx^{(i)})^2}{2σ^2})\frac{1}{\sqrt{2\pi}σ_0}\exp(-\frac{w^Tw}{2σ_0^2}))} \\ &amp;\propto \mathop{\arg \max}_{w} \sum_{i=1}^{N} {-\frac{(y^{(i)}-w^Tx^{(i)})^2}{2σ^2}-\frac{w^Tw}{2σ_0^2}} \\ &amp;= \mathop{\arg \min}_{w} \sum_{i=1}^{N} {(y^{(i)}-w^Tx^{(i)})^2+\frac{σ^2}{σ_0^2}w^Tw} \end{aligned}\]
+
+<p>该问题等价于引入<strong>L2</strong>正则化的最小二乘法（岭回归）。</p>
+
+<h1 id="2-kernel-ridge-regression">2. Kernel Ridge Regression</h1>
+<p>将<a href="https://0809zheng.github.io/2021/07/23/kernel.html">核方法</a>引入岭回归，即可得到<strong>核岭回归(Kernelized Ridge Regression)</strong>。</p>
+
+<p>岭回归的目标函数：</p>
+
+\[L(w) = \frac{1}{N}\sum_{i=1}^{N} {(w^Tx^{(i)}-y^{(i)})^2} + \frac{λ}{N}w^Tw\]
+
+<p>根据表示定理，上述优化问题的最优解$w$可以表示为<strong>所有样本的线性组合</strong>：</p>
+
+\[w^* = \sum_{n=1}^{N} {β_nx^{(n)}}\]
+
+<p>代入目标函数：</p>
+
+\[L(β) = \frac{1}{N} \sum_{i=1}^{N} {(\sum_{n=1}^{N} {β_n{x^{(n)}}^Tx^{(i)}}-y^{(i)})^2} + \frac{λ}{N}\sum_{i=1}^{N} {\sum_{j=1}^{N} {β_iβ_j{x^{(i)}}^Tx^{(j)}}}\]
+
+<p>引入核函数来代替样本的特征转换和内积运算，记\(K(x,x')={φ(x)}^Tφ(x')\)，则核岭回归的损失函数为：</p>
+
+\[L(β) = \frac{1}{N} \sum_{i=1}^{N} {(\sum_{n=1}^{N} {β_nK(x^{(n)},x^{(i)})}-y^{(i)})^2} + \frac{λ}{N}\sum_{i=1}^{N} {\sum_{j=1}^{N} {β_iβ_jK(x^{(i)},x^{(j)})}}\]
+
+<p>上式写作矩阵形式：</p>
+
+\[L(β) = \frac{1}{N} (y-Kβ)^T(y-Kβ) + \frac{λ}{N}β^TKβ\]
+
+<p>对$β$求梯度，令其为零，(注意到$K$是对称矩阵)可得：</p>
+
+\[\nabla_βL(β) = \frac{1}{N}(2K^TKβ-2K^Ty) + \frac{λ}{N}2Kβ = \frac{2K^T}{N}(Kβ-y+λβ) = 0\]
+
+<p>可解得引入核岭回归的解析解：</p>
+
+\[β = (K+λI)^{-1}y\]
+
+<p>对矩阵$K+λI$的讨论：</p>
+<ul>
+  <li>由于$λ&gt;0$，$K$是半正定矩阵，其逆矩阵一定存在。</li>
+  <li>该矩阵是一个<strong>稠密(dense)</strong>矩阵，大部分元素不是$0$，求逆过程计算量较大。</li>
+</ul>
+
+<p>求得$β$后，可以得到回归函数：</p>
+
+\[y = \sum_{n=1}^{N} {β_nφ(x^{(n)})^Tφ(x)} = \sum_{n=1}^{N} {β_nK(x^{(n)},x)}\]
+
+<h1 id="3-lasso-regression">3. LASSO Regression</h1>
+
+<ul>
+  <li>lasso (英/læˈsuː/ 美/ˈlæsoʊ/): n. (捕马、套牛等用的)套索</li>
+</ul>
+
+<p><strong>LASSO回归</strong>是引入了<strong>L1正则化</strong>的线性回归，求解问题如下：</p>
+
+\[L(w) = \sum_{i=1}^{N} {(w^Tx^{(i)}-y^{(i)})^2} + λ\sum_{d=1}^{D} {| w_d |}= (Xw-y)^T(Xw-y)+ λ||w||_1\]
+
+<p>选择<strong>L1</strong>范数使得学习得到的权重更加稀疏，不重要的权重接近$0$。</p>
+
+<p>由于引入了<strong>L1</strong>正则化项，因此<strong>LASSO</strong>回归的目标函数不满足处处可到，没有闭式解；在实践中常采用梯度下降搜索法(坐标轴下降法)求解，即依次对权重$w_d$求局部最优，使其梯度趋近于0，不断迭代直至所有权重都不产生显著变化。</p>
+
+<p><strong>LASSO</strong>回归的目标函数可写作：</p>
+
+\[\begin{aligned} L(w) &amp;= \sum_{i=1}^{N} {(w^Tx^{(i)}-y^{(i)})^2} + λ\sum_{d=1}^{D} {| w_d |} \\ &amp;= \sum_{i=1}^{N} {(\sum_{d=1}^Dw_dx_d^{(i)}-y^{(i)})^2} + λ\sum_{d=1}^{D} {| w_d |} \\ &amp;= \sum_{i=1}^{N} {((\sum_{d=1}^Dw_dx_d^{(i)})^2+(y^{(i)})^2-2(\sum_{d=1}^Dw_dx_d^{(i)})y^{(i)})} + λ\sum_{d=1}^{D} {| w_d |}\end{aligned}\]
+
+<p>求上式对权重$w_d$的梯度：</p>
+
+\[\begin{aligned} \frac{\partial L(w)}{w_d} &amp;=  \sum_{i=1}^{N} (2(\sum_{d=1}^Dw_dx_d^{(i)})x_d^{(i)}-2x_d^{(i)}y^{(i)}) + \lambda \text{sign}(w_d) \\ &amp;= 2 \sum_{i=1}^{N} ((\sum_{d=1}^Dw_dx_d^{(i)}-y^{(i)})x_d^{(i)}) + \lambda \text{sign}(w_d)  \\ &amp;= 2  x_d^T(w^Tx^{(i)}-y^{(i)}) + \lambda \text{sign}(w_d) \end{aligned}\]
+
+<p>则可以通过梯度下降更新权重$w_d$：</p>
+
+\[w_d \leftarrow w_d - \alpha \cdot (2  x_d^T(w^Tx^{(i)}-y^{(i)}) + \lambda \text{sign}(w_d))\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 坐标轴下降法
+</span><span class="k">def</span> <span class="nf">CoordinateDescent</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">epochs</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="n">lam</span><span class="p">):</span>
+    <span class="n">N</span><span class="p">,</span> <span class="n">D</span><span class="o">=</span> <span class="n">X</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">ones</span><span class="p">([</span><span class="n">D</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># 进行 epoches 轮迭代
+</span>    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+        <span class="c1"># 保存上一轮的w
+</span>        <span class="n">pre_w</span> <span class="o">=</span> <span class="n">copy</span><span class="p">.</span><span class="n">copy</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="c1"># 逐维度进行参数寻优
+</span>        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+            <span class="c1"># 在每个维度上找到最优的w_d
+</span>            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+                <span class="n">Y_hat</span> <span class="o">=</span> <span class="n">X</span><span class="o">*</span><span class="n">w</span>
+                <span class="n">g_d</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">X</span><span class="p">[:,</span><span class="n">d</span><span class="p">].</span><span class="n">T</span><span class="o">*</span><span class="p">(</span><span class="n">Y_hat</span><span class="o">-</span><span class="n">Y</span><span class="p">)</span> <span class="o">+</span> <span class="n">lam</span><span class="o">*</span><span class="n">np</span><span class="p">.</span><span class="n">sign</span><span class="p">(</span><span class="n">w</span><span class="p">[</span><span class="n">d</span><span class="p">])</span>
+                <span class="c1"># 进行梯度下降
+</span>                <span class="n">w</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">-</span> <span class="n">g_d</span><span class="o">*</span><span class="n">lr</span>
+                <span class="k">if</span> <span class="n">np</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">g_d</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-3</span><span class="p">:</span>
+                    <span class="k">break</span>
+        <span class="c1"># 计算上一轮的w和当前轮w的差值，如果每个维度的w都没有什么变化则退出
+</span>        <span class="n">diff_w</span>  <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">1e-3</span><span class="p">,</span><span class="n">pre_w</span><span class="o">-</span><span class="n">w</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">diff_w</span><span class="p">.</span><span class="nb">all</span><span class="p">():</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">w</span>
+</code></pre></div></div>
+
+<h3 id="-讨论lasso回归等价于噪声服从高斯分布参数服从拉普拉斯分布的最大后验估计">⚪ 讨论：LASSO回归等价于噪声服从高斯分布、参数服从拉普拉斯分布的最大后验估计。</h3>
+<p>引入高斯噪声$ε$~$N(0,σ^2)$，对线性回归建模：</p>
+
+\[y = w^Tx + ε\]
+
+<p>贝叶斯角度认为参数$w$不再是常数，而是随机变量，假设其先验概率为拉普拉斯分布$L(0,σ_0^2)$:</p>
+
+\[w \text{~} L(0,σ_0^2) = \frac{1}{2σ_0^2} \exp(-\frac{|w|}{σ_0^2})\]
+
+<p>由贝叶斯定理，参数$w$的后验概率：</p>
+
+\[P(w | y) = \frac{P(y | w)P(w)}{P(y)} \propto P(y | w)P(w)\]
+
+<p>由最大后验估计：</p>
+
+\[\begin{aligned} \hat{w} &amp;= \mathop{\arg \max}_{w}\log P(w | y) = \mathop{\arg \max}_{w}\log P(y | w)P(w) \\ &amp;= \mathop{\arg \max}_{w} \log (\prod_{i=1}^{N} {\frac{1}{\sqrt{2\pi}σ}\exp(-\frac{(y^{(i)}-w^Tx^{(i)})^2}{2σ^2}) \frac{1}{2σ_0^2} \exp(-\frac{|w|}{σ_0^2}) }) \\ &amp;= \mathop{\arg \max}_{w} \sum_{i=1}^{N} {\log (\frac{1}{\sqrt{2\pi}σ}\exp(-\frac{(y^{(i)}-w^Tx^{(i)})^2}{2σ^2})\frac{1}{2σ_0^2} \exp(-\frac{|w|}{σ_0^2}))} \\ &amp;\propto \mathop{\arg \max}_{w} \sum_{i=1}^{N} {-\frac{(y^{(i)}-w^Tx^{(i)})^2}{2σ^2} -\frac{|w|}{σ_0^2}} \\ &amp;= \mathop{\arg \min}_{w} \sum_{i=1}^{N} {(y^{(i)}-w^Tx^{(i)})^2+\frac{2σ^2}{σ_0^2}|w|} \end{aligned}\]
+
+<p>该问题等价于引入<strong>L1</strong>正则化的最小二乘法（<strong>LASSO</strong>回归）。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/31/lwlr.html" class="read-next-link"></a>
+        <section>
+          <span>局部加权线性回归(Local Weighted Linear Regression)</span>
+          <p>  Local Weighted Linear Regression.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/639da58cb1fccdcd3679836d.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/29/tube.html" class="read-next-link"></a>
+          <section>
+            <span>Tube回归(Tube Regression)</span>
+            <p>  Tube Regression.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5ed5f015c2a9a83be552b8e9.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

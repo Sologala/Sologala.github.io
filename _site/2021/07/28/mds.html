@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多维缩放(Multiple Dimensional Scaling, MDS) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="多维缩放(Multiple Dimensional Scaling, MDS)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="多维缩放(Multiple Dimensional Scaling, MDS) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/07/28/mds.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>多维缩放(Multiple Dimensional Scaling, MDS)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-07-28"><i class="iconfont icon-date"></i>28 Jul 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/610107145132923bf86e6723.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Multiple Dimensional Scaling.</p>
+</blockquote>
+
+<p><strong>多维缩放(Multiple Dimensional Scaling, MDS)</strong>是一种常用的基于距离度量的降维方法，其基本思想是原始空间中样本之间的<strong>相对位置关系(距离)</strong>在低维空间得以保持。</p>
+
+<h1 id="1-mds建模">1. MDS建模</h1>
+
+<p>假设在维度为$d$的原始空间中的$N$个样本表示为$X \in \Bbb{R}^{d \times N}$，目标是获得样本在$k$维空间中的降维表示$Z \in \Bbb{R}^{k \times N}$，且$k&lt;d$。</p>
+
+<p>记样本在原始空间中的距离矩阵(也叫不相似矩阵) $D \in \Bbb{R}^{N \times N}$，其$i$行$j$列元素$d_{ij}$表示样本$x_i$到$x_j$的距离。<strong>多维缩放</strong>要求任意两个样本$x_i$, $x_j$在降维后的空间中的欧式距离等于原始空间中的距离，即$||z_i-z_j||=d_{ij}$。</p>
+
+<p>值得一提的是，原始空间中的样本距离可以选用任意度量方式，只要能获得距离矩阵$D$即可；而降维空间后的距离度量采用欧式距离。</p>
+
+<p>注意到约束$||z_i-z_j||=d_{ij}$是没有唯一解的，对于任意两个满足条件的降维结果$z_i$, $z_j$，将其同时平移$z_0$后仍然满足上式：</p>
+
+\[||(z_i-z_0)-(z_j-z_0)|| = ||z_i-z_j||=d_{ij}\]
+
+<p>因此直接求解降维结果$Z$比较困难。</p>
+
+<h1 id="2-求解mds">2. 求解MDS</h1>
+
+<p><strong>MDS</strong>并不直接求解降维结果$Z \in \Bbb{R}^{k \times N}$，而是求解降维后的样本的内积矩阵$B=Z^TZ \in \Bbb{R}^{N \times N}$。由于矩阵$B$是实对称矩阵，对其进行特征值分解：</p>
+
+\[B = V\Lambda V^T = (\Lambda^{\frac{1}{2}} V^T)^T(\Lambda^{\frac{1}{2}} V^T)=Z^TZ\]
+
+<p>因此求得$B$后可以通过特征值分解得到降维矩阵$Z$。</p>
+
+<p>若记矩阵$B$中的元素$b_{ij}=z_i^Tz_j$，则距离约束$||z_i-z_j||=d_{ij}$可以表示为</p>
+
+\[d_{ij}^2 = ||z_i||^2+||z_j||^2-2z_i^Tz_j = b_{ii}+b_{jj}-2b_{ij}\]
+
+<p>为了便于讨论，令降维后的样本被中心化，即$\sum_{i=1}^{N}z_i=0$。
+因此有$\sum_{i=1}^{N}b_{ij}=\sum_{j=1}^{N}b_{ij}=0$，并记矩阵$B$的迹$\text{tr}(B)=\sum_{i=1}^{N}b_{ii}=\sum_{i=1}^{N}||z_i||^2$，则有：</p>
+
+\[\sum_{i=1}^{N}d_{ij}^2 = \sum_{i=1}^{N}b_{ii}+\sum_{i=1}^{N}b_{jj}-2\sum_{i=1}^{N}b_{ij} = \text{tr}(B)+Nb_{jj}\]
+
+\[\sum_{j=1}^{N}d_{ij}^2 = \sum_{j=1}^{N}b_{ii}+\sum_{j=1}^{N}b_{jj}-2\sum_{j=1}^{N}b_{ij} = Nb_{ii}+\text{tr}(B)\]
+
+\[\sum_{i=1}^{N}\sum_{j=1}^{N}d_{ij}^2 = \sum_{i=1}^{N}\sum_{j=1}^{N}b_{ii}+\sum_{i=1}^{N}\sum_{j=1}^{N}b_{jj}-2\sum_{i=1}^{N}\sum_{j=1}^{N}b_{ij} = 2N\text{tr}(B)\]
+
+<p>解上述方程组，则内积矩阵$B$中的元素$b_{ij}$计算为：</p>
+
+\[b_{ij} = \frac{1}{2}(b_{ii}+b_{jj}-d_{ij}^2) \\ = \frac{1}{2}(\frac{1}{N}\sum_{j=1}^{N}d_{ij}^2-\frac{1}{N}\text{tr}(B)+\frac{1}{N}\sum_{i=1}^{N}d_{ij}^2-\frac{1}{N}\text{tr}(B)-d_{ij}^2) \\ = \frac{1}{2}(\frac{1}{N}\sum_{j=1}^{N}d_{ij}^2+\frac{1}{N}\sum_{i=1}^{N}d_{ij}^2-\frac{2}{N}\frac{1}{2N}\sum_{i=1}^{N}\sum_{j=1}^{N}d_{ij}^2-d_{ij}^2)\]
+
+<p>因此可根据距离矩阵$D$求得内积矩阵$B$。进一步对内积矩阵$B$进行特征值分解：</p>
+
+\[B=V \Lambda V^T, \quad \Lambda=\text{diag}(\lambda_1,\lambda_2,...,\lambda_d)\]
+
+<p>选择前$k$个最大的非零特征值构成对角矩阵$\tilde{\Lambda}=\text{diag}(\lambda_1,\lambda_2,…,\lambda_k)$，相应的特征向量矩阵为$\tilde{V}$，则可以求得样本的降维表示$Z$:</p>
+
+\[Z = \tilde{\Lambda}^{\frac{1}{2}}\tilde{V}^T \in \Bbb{R}^{k \times N}\]
+
+<h1 id="3-实现mds">3. 实现MDS</h1>
+
+<h3 id="-mds-from-scratch">① MDS from scratch</h3>
+<p>由上述介绍，<strong>MDS</strong>的一般步骤如下：</p>
+<ol>
+  <li>给定输入样本$X \in \Bbb{R}^{d \times N}$和降维维度$k$;</li>
+  <li>计算距离矩阵$D \in \Bbb{R}^{N \times N}$；</li>
+  <li>计算降维后的内积矩阵$B=Z^TZ \in \Bbb{R}^{N \times N}$：$b_{ij} = \frac{1}{2}(\frac{1}{N}\sum_{j=1}^{N}d_{ij}^2+\frac{1}{N}\sum_{i=1}^{N}d_{ij}^2-\frac{1}{N^2}\sum_{i=1}^{N}\sum_{j=1}^{N}d_{ij}^2-d_{ij}^2)$;</li>
+  <li>对矩阵$B$进行特征值分解：$B=V \Lambda V^T$；</li>
+  <li>选择前$k$个最大特征值矩阵$\tilde{\Lambda}$对应的特征向量矩阵$\tilde{V}$;</li>
+  <li>降维：$Z = \tilde{\Lambda}^{\frac{1}{2}}\tilde{V}^T \in \Bbb{R}^{k \times N}$。</li>
+</ol>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">MDS</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+    <span class="n">d</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">])</span>
+    <span class="c1"># 计算距离矩阵D
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">((</span><span class="n">data</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">data</span><span class="p">[:,</span><span class="n">j</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="c1"># 计算内积矩阵B
+</span>    <span class="n">T1</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
+    <span class="n">T2</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">/</span><span class="n">N</span>
+    <span class="n">T3</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">/</span><span class="n">N</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="p">(</span><span class="n">T1</span><span class="o">+</span><span class="n">T2</span><span class="o">-</span><span class="n">T3</span><span class="o">-</span><span class="n">D</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+    <span class="c1"># 计算特征值和特征向量
+</span>    <span class="n">eig_values</span><span class="p">,</span> <span class="n">eig_vectors</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linalg</span><span class="p">.</span><span class="n">eig</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+    <span class="c1"># 选择前k个最大的特征值标号
+</span>    <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">eig_values</span><span class="p">)[:</span><span class="n">k</span><span class="p">]</span>
+    <span class="c1"># 选择对应的特征值和特征向量
+</span>    <span class="n">MDS_values</span> <span class="o">=</span> <span class="n">eig_values</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">MDS_vectors</span> <span class="o">=</span> <span class="n">eig_vectors</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]</span> <span class="c1"># (N, k)
+</span>    <span class="c1"># 降维
+</span>    <span class="n">reduced_data</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">diagflat</span><span class="p">(</span><span class="n">MDS_values</span><span class="o">**</span><span class="mf">0.5</span><span class="p">).</span><span class="n">dot</span><span class="p">(</span><span class="n">MDS_vectors</span><span class="p">.</span><span class="n">T</span><span class="p">)</span> <span class="c1"># (k, N)
+</span>    <span class="k">return</span> <span class="n">reduced_data</span>
+</code></pre></div></div>
+
+<h3 id="-mds-from-sklearn">② MDS from sklearn</h3>
+
+<p><strong>MDS</strong>也可以通过<code class="language-plaintext highlighter-rouge">sklearn</code>库快速实现：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_digits</span>
+<span class="kn">from</span> <span class="nn">sklearn.manifold</span> <span class="kn">import</span> <span class="n">MDS</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="n">digits</span> <span class="o">=</span> <span class="n">load_digits</span><span class="p">()</span>
+<span class="n">X_mds</span> <span class="o">=</span> <span class="n">MDS</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dissimilarity</span><span class="o">=</span><span class="s">'euclidean'</span><span class="p">).</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">digits</span><span class="p">.</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_mds</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_mds</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">digits</span><span class="p">.</span><span class="n">target</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">"MDS"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/07/29/multiclass.html" class="read-next-link"></a>
+        <section>
+          <span>多类别(Multiclass)与多标签(Multilabel)分类</span>
+          <p>  Multiclass and Multilabel Classification.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63d095b4588a5d166cd6a692.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/07/27/kpca.html" class="read-next-link"></a>
+          <section>
+            <span>核主成分分析(Kernelized Principal Component Analysis, KPCA)</span>
+            <p>  Kernelized Principal Component Analysis.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/610108ee5132923bf87767d5.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>目标检测(Object Detection) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="目标检测(Object Detection)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="目标检测(Object Detection) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/05/08/object-detection.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>目标检测(Object Detection)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-05-08"><i class="iconfont icon-date"></i>08 May 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/64899e3d1ddac507ccb6d5cb.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Object Detection.</p>
+</blockquote>
+
+<p><strong>目标检测(Object Detection)</strong>任务是指在图像中检测出可能存在的目标；包括<strong>定位</strong>和<strong>分类</strong>两个子任务：其中定位是指确定目标在图像中的具体位置，分类是确定目标的具体类别。</p>
+
+<p>本文目录：</p>
+<ol>
+  <li><a href="https://0809zheng.github.io/2020/05/08/object-detection.html#1-%E4%BC%A0%E7%BB%9F%E7%9A%84%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95">传统的目标检测算法</a></li>
+  <li><a href="https://0809zheng.github.io/2020/05/08/object-detection.html#2-%E5%9F%BA%E4%BA%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E6%A8%A1%E5%9E%8B">基于深度学习的目标检测算法</a></li>
+  <li><a href="https://0809zheng.github.io/2020/05/08/object-detection.html#3-%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9A%84%E8%AF%84%E4%BC%B0%E6%8C%87%E6%A0%87">目标检测的评估指标</a></li>
+  <li><a href="https://0809zheng.github.io/2020/05/08/object-detection.html#4-%E9%9D%9E%E6%9E%81%E5%A4%A7%E5%80%BC%E6%8A%91%E5%88%B6%E7%AE%97%E6%B3%95">非极大值抑制算法</a></li>
+  <li><a href="https://0809zheng.github.io/2020/05/08/object-detection.html#5-%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E4%B8%AD%E7%9A%84%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0">目标检测中的损失函数</a></li>
+  <li><a href="https://0809zheng.github.io/2020/05/08/object-detection.html#6-%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E4%B8%AD%E7%9A%84%E6%A0%87%E7%AD%BE%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5">目标检测中的标签分配策略</a></li>
+</ol>
+
+<h1 id="1-传统的目标检测算法">1. 传统的目标检测算法</h1>
+
+<p>传统的目标检测算法主要有三个步骤，</p>
+<ol>
+  <li>在图像中生成候选区域(<strong>proposal region</strong>);</li>
+  <li>对每个候选区域提取特征向量，这一步通常是用人工精心设计的特征描述子(<strong>feature descriptor</strong>)提取图像的特征;</li>
+  <li>对每个候选区域提取的特征进行分类，确定对应的类别。</li>
+</ol>
+
+<h2 id="1生成候选区域">（1）生成候选区域</h2>
+
+<p>常用的候选区域生成方法包括滑动窗口、<strong>Felzenszwalb</strong>算法、选择搜索算法。</p>
+
+<h3 id="-滑动窗口-sliding-window">⚪ 滑动窗口 Sliding Window</h3>
+
+<p>候选区域通常是由<strong>滑动窗口</strong>实现的；结合不同尺度的图像以及不同尺度的窗口可生成大量的候选区域。</p>
+
+<h3 id="-felzenszwalb算法">⚪ Felzenszwalb算法</h3>
+
+<ul>
+  <li>paper：<a href="http://cvcl.mit.edu/SUNSeminar/Felzenszwalb_IJCV04.pdf">Efficient graph-based image segmentation</a></li>
+</ul>
+
+<p><strong>Felzenszwalb</strong>算法通过基于图的方法把图像分割成一些相似的区域。使用无向图$G=(V,E)$表示输入图像，其中的一个节点$v_i \in V$代表一个像素，一条边$e_{ij} = (v_i,v_j) \in V$连接两个节点$i,j$，每条边$e_{ij}$有一个权重$w_{ij}$衡量两个节点$i,j$的不相似程度（可以通过颜色、位置、强度值来衡量）。则一个分割结果$S$是把节点$V$分配到多个内部相互连接的子集\(\{C\}\)中。相似的像素应该属于通过一个子集，不相似的像素被分配到不同的子集。</p>
+
+<p>构造一个图像的图的方法有两种：</p>
+<ul>
+  <li><strong>网格图 (Grid Graph)</strong>：每个像素只和其邻域内的像素连接（比如周围的$8$个像素），边的连接权重是像素的强度值之差的绝对值。</li>
+  <li><strong>最近邻图 (Nearest Neighbor Graph)</strong>：把每个像素表示为位置+颜色特征空间中的一个点$(x,y,r,g,b)$，两个像素之间的边权重是像素特征向量的欧氏距离。</li>
+</ul>
+
+<p>首先定义以下几个概念：</p>
+<ul>
+  <li><strong>内部差异 (Internal difference)</strong>：$Int(C)=\max_{e \in MST(C,E)} w(e)$。其中<strong>MST</strong>表示最小生成树。当移除所有权重小于$Int(C)$的边时，集合$C$仍然保持连接。</li>
+  <li>两个集合之间的<strong>差异 (difference)</strong>：$Diff(C_1,C_2)=\min_{v_i\in C_1,v_j \in C_2,(v_i,v_j) \in E} w(v_i,v_j)$。若两个集合之间没有边连接，则定义$Diff(C_1,C_2)=\infty$。</li>
+  <li><strong>最小内部差异 (Minimum internal difference)</strong>：$MInt(C_1,C_2)=\min(Int(C_1)+k/|C_1|,Int(C_2)+k/|C_2|)$。阈值$k$越大则则倾向于选择较大的子集。</li>
+</ul>
+
+<p>给定两个区域$C_1,C_2$，则当下列判据成立时才把这两个区域视为两个独立的子集；否则分割过于细致，应该把两个区域合并。</p>
+
+\[D(C_1,C_2) =
+\begin{cases}
+True &amp; Diff(C_1,C_2) &gt; MInt(C_1,C_2) \\
+False &amp; Diff(C_1,C_2) \leq MInt(C_1,C_2)
+\end{cases}\]
+
+<p><strong>Felzenszwalb</strong>算法采用自底向上的处理流程。给定具有$|V|=n$个节点和$|E|=m$条边的无向图$G=(V,E)$：</p>
+<ul>
+  <li>把边按照权重升序排列$e_1,e_2,…,e_m$；</li>
+  <li>初始化时把每个像素看作一个单独的区域，则一共有$n$个区域；</li>
+  <li>重复以下操作$k=1,…,m$：
+    <ol>
+      <li>第$k-1$步的分割结果为$S^{k-1}$；</li>
+      <li>选取排序后的第$k$条边$e_k=(v_i,v_j)$；</li>
+      <li>如果$v_i,v_j$在分割$S^{k-1}$中属于同一个区域，则直接令$S^k=S^{k-1}$；</li>
+      <li>如果$v_i,v_j$在分割$S^{k-1}$中属于不同的区域$C_i^{k-1},C_j^{k-1}$，若$w(v_i,v_j) \leq MInt(C_i^{k-1},C_j^{k-1})$则将两个区域合并；否则不做处理。</li>
+    </ol>
+  </li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">import</span> <span class="nn">skimage.segmentation</span>
+
+<span class="n">img</span> <span class="o">=</span> <span class="n">scipy</span><span class="p">.</span><span class="n">misc</span><span class="p">.</span><span class="n">imread</span><span class="p">(</span><span class="s">"image.jpg"</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">"L"</span><span class="p">)</span>
+<span class="n">segment_mask</span> <span class="o">=</span> <span class="n">skimage</span><span class="p">.</span><span class="n">segmentation</span><span class="p">.</span><span class="n">felzenszwalb</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="-选择搜索算法-selective-search">⚪ 选择搜索算法 Selective Search</h3>
+
+<p>选择搜索算法是一种常用的提取潜在目标的区域提议算法。该算法建立在图像分割结果上（如<strong>Felzenszwalb</strong>算法的输出），并使用基于区域的特征执行自底向上的层次划合并。选择搜索算法的工作流程如下：</p>
+<ul>
+  <li>初始化阶段，使用<strong>Felzenszwalb</strong>算法生成图像的分割区域集合；</li>
+  <li>使用贪心算法迭代地执行区域合并：
+    <ol>
+      <li>首先计算所有相邻区域之间的相似度；</li>
+      <li>两个最相似的区域被合并为一组，然后计算新的区域和其邻域区域之间的相似度。</li>
+    </ol>
+  </li>
+  <li>重复执行相似区域之间的合并，直至整个图像变成单个区域。</li>
+  <li>上述过程中产生的所有区域都被视为可能存在目标的区域。</li>
+</ul>
+
+<p>在评估两个区域之间的相似性时，采用四种互补的相似性度量：</p>
+<ul>
+  <li>颜色</li>
+  <li>纹理：通过<strong>SIFT</strong>算子提取特征</li>
+  <li>尺寸：鼓励较小的区域尽早合并</li>
+  <li>形状：理想情况下，一个区域可以填补另一个区域的空白</li>
+</ul>
+
+<p>通过调整<strong>Felzenszwalb</strong>算法的阈值$k$、改变颜色空间、选择不同的相似性度量组合，可以制定一套多样化的选择搜索策略。能够产生具有最高质量的提议区域的选择搜索策略为：不同初始分割结果的混合+多种颜色空间的混合+所有相似性度量的组合。算法也需要在质量（模型复杂性）和速度之间取得平衡。</p>
+
+<h2 id="2设计特征描述子">（2）设计特征描述子</h2>
+
+<p>常用的特征描述子包括图像梯度向量、方向梯度直方图<strong>HOG</strong>、尺度不变特征变换<strong>SIFT</strong>、可变形部位模型<strong>DPM</strong>。</p>
+
+<h3 id="-图像梯度向量-image-gradient-vector">⚪ 图像梯度向量 Image Gradient Vector</h3>
+
+<p><strong>图像梯度向量</strong>定义为每个像素沿着$x$轴和$y$轴的像素颜色变化度量。若$f(x,y)$表示像素位置$(x,y)$处的颜色，则像素$(x,y)$的梯度向量定义为：</p>
+
+\[\nabla f(x,y) = \begin{bmatrix} g_x \\ g_y \end{bmatrix}= \begin{bmatrix} \frac{\partial f}{\partial x} \\ \frac{\partial f}{\partial y} \end{bmatrix}= \begin{bmatrix} f(x+1,y)-f(x-1,y) \\ f(x,y+1)-f(x,y-1) \end{bmatrix}\]
+
+<p>梯度向量的幅值(<strong>magnitude</strong>) $g$定义为向量的<strong>L2</strong>范数；梯度向量的方向(<strong>direction</strong>) $\theta$定义为两个偏导数方向之间的夹角。</p>
+
+\[g = \sqrt{g_x^2+g_y^2}, \quad \theta = \arctan(\frac{g_y}{g_x})\]
+
+<p><img src="https://pic.imgdb.cn/item/6480463d1ddac507ccd73a8e.jpg" alt="" /></p>
+
+<p>如上图中像素$(x,y)$的梯度向量为：</p>
+
+\[\nabla f = \begin{bmatrix} f(x+1,y)-f(x-1,y) \\ f(x,y+1)-f(x,y-1) \end{bmatrix} = \begin{bmatrix} 55-105 \\ 90-40 \end{bmatrix} = \begin{bmatrix} -50 \\ 50 \end{bmatrix}\]
+
+<h3 id="-方向梯度直方图-histogram-of-oriented-gradients">⚪ 方向梯度直方图 Histogram of Oriented Gradients</h3>
+
+<ul>
+  <li>paper：<a href="https://inria.hal.science/file/index/docid/548512/filename/hog_cvpr2005.pdf">Histograms of oriented gradients for human detection</a></li>
+</ul>
+
+<p><strong>方向梯度直方图 (HOG)</strong> 的构造过程如下：</p>
+<ol>
+  <li>预处理图像，包括尺寸调整和像素值归一化；</li>
+  <li>计算每个像素的梯度向量，并进一步计算其幅值和方向；</li>
+  <li>把图像划分成一系列$8\times 8$的图像块。对于每个图像块，把其中$64$个像素梯度向量的幅值累加到直方图的$9$个桶中，直方图根据梯度向量的方向绝对值($0-180°$)经验性地划分成$9$个均匀的桶；</li>
+  <li>如果一个像素的梯度向量的方向恰好位于两个桶之间，则将其按比例划分到两个桶中；比如大小为$8$的梯度向量方向为$15°$，则分别把$6$和$2$划分到$0°$桶和$20°$桶中；这种分配方式对图像较小的失真具有鲁棒性；</li>
+  <li>在图像上滑动$2\times 2$个图像块（对应$16\times 16$像素）。每个滑动窗口中的$4$个直方图被连接后进行归一化。最终的<strong>HOG</strong>特征向量是所有滑动窗口向量的级联。</li>
+  <li><strong>HOG</strong>特征向量可以被输入到分类器中，用于学习目标识别任务。</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/648056fe1ddac507ccf358a7.jpg" alt="" /></p>
+
+<h3 id="-尺度不变特征变换-scale-invariant-feature-transform">⚪ 尺度不变特征变换 Scale Invariant Feature Transform</h3>
+
+<ul>
+  <li>paper：<a href="https://www.cs.ubc.ca/~lowe/papers/iccv99.pdf">Object Recognition from Local Scale-Invariant Features</a></li>
+</ul>
+
+<p><strong>尺度不变特征变换 (SIFT)</strong>是一种非常稳定的局部特征，具有旋转不变性、尺度不变性、亮度变化保持不变性。<strong>SIFT</strong>特征的构造过程如下：</p>
+<ol>
+  <li><strong>DoG尺度空间的极值检测</strong>：为了使算子具有<strong>尺度不变性</strong>，先构造高斯差分尺度空间 <strong>(Difference of Gaussina, DOG)</strong>：通过不同$\sigma$值的高斯滤波和降采样构造图像的高斯尺度空间，再通过每组高斯空间中的相邻图像相减得到<strong>DoG</strong>图像。对于<strong>DoG</strong>中的每个像素点，将其与所在图像$3×3$邻域$8$个像素点以及同一尺度空间中上下两层图像$3×3$邻域$18$个像素点进行比较。当其值大于（或者小于）所有比较点时，该点为候选极值点；<img src="https://pic.imgdb.cn/item/648061cd1ddac507cc0321b5.jpg" alt="" /></li>
+  <li><strong>删除不稳定的极值点</strong>：对<strong>DoG</strong>尺度空间函数进行二次泰勒展开求极值点，去掉局部曲率非常不对称的点。剔除的点主要有两种：低对比度的特征点和不稳定的边缘响应点；</li>
+  <li><strong>确定特征点的主方向</strong>：计算以特征点为中心的邻域内各个像素点的<strong>HOG</strong>直方图（以$45°$划分直方图，则共有$8$个桶），直方图中最高峰所对应的方向即为特征点的方向。<img src="https://pic.imgdb.cn/item/648064cf1ddac507cc073bb2.jpg" alt="" /></li>
+  <li><strong>生成特征点的描述子</strong>：为了使算子具有<strong>旋转不变性</strong>，首先将坐标轴旋转为特征点的方向。以特征点为中心划分$4×4$的图像块，每个图像块包括$4×4$像素。对每个图像块构造<strong>HOG</strong>直方图（长度为$8$的向量），一个特征点可以产生$128$维的<strong>SIFT</strong>特征向量。为了使算子具有<strong>亮度变化保持不变性</strong>，对<strong>SIFT</strong>特征向量进行归一化处理。<img src="https://pic.imgdb.cn/item/648067111ddac507cc09a287.jpg" alt="" /></li>
+</ol>
+
+<h3 id="-deformable-parts-model-dpm">⚪ Deformable Parts Model (DPM)</h3>
+
+<ul>
+  <li>paper：<a href="https://ieeexplore.ieee.org/document/5539906/">Cascade object detection with deformable part models</a></li>
+</ul>
+
+<p>可变形部位模型(<strong>DPM</strong>)使用可变形部位的混合图模型（马尔可夫随机场）来识别目标。<strong>DPM</strong>主要由三个部分组成：</p>
+<ul>
+  <li>一个<strong>根滤波器(root filter)</strong>近似定义覆盖整个目标的检测窗口，并指定区域特征向量的权重；</li>
+  <li>多个<strong>部位滤波器(part filter)</strong>覆盖目标的较小部位，其学习分辨率设置为根滤波器的两倍。</li>
+  <li>一个<strong>空间模型(spatial model)</strong>对部位滤波器相对于根滤波器的位置进行评分。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/648660ba1ddac507ccbac9a5.jpg" alt="" /></p>
+
+<p>检测目标的质量是通过滤波器的得分减去变形成本来衡量的。令$x$为输入图像，$y$是$x$的一个子区域，$\beta_{root},\beta_{part}$分别代表根滤波器和部位滤波器，代价函数$cost()$衡量部位偏离其相对于根的理想位置的惩罚。则模型匹配图像$x$的得分$f()$计算为：</p>
+
+\[f(model, x) = f(\beta_{root},x) + \sum_{\beta_{part}} \max_y [f(\beta_{part},y)-cost(\beta_{part},x,y)]\]
+
+<p>得分模型$f()$通常设置为滤波器$\beta$与区域特征向量$\Phi(x)$的点积：$f(\beta,x) = \beta\cdot \Phi(x)$。区域特征向量$\Phi(x)$可以由<strong>HOG</strong>算子构造。根滤波器中得分较高的位置检测出包含目标可能性高的区域，而部位滤波器中得分较高的位置证实了已识别的物体假设。</p>
+
+<h1 id="2-基于深度学习的目标检测模型">2. 基于深度学习的目标检测模型</h1>
+
+<p>在传统的方法中，经常会使用集成、串联学习、梯度提升等方法来提高目标检测的准确率；但是传统的方法逐渐暴露出很多问题，比如检测准确率有限、需要人工设计特征描述子等。近些年来深度学习的引入使得目标检测的精度和速度有了很大的提升，<a href="https://0809zheng.github.io/2020/03/06/CNN.html">卷积神经网络</a>能够提取图像的深层语义特征，省去了人工设计和提取特征的步骤。</p>
+
+<p>目前主流的目标检测模型分成两类。</p>
+<ul>
+  <li><strong>两阶段（Two-Stage）</strong>的目标检测模型：首先在图像中生成可能存在目标的候选区域，然后对这些候选区域进行预测。这些方法精度高，速度相对慢一些；</li>
+  <li><strong>单阶段（One-Stage）</strong>的目标检测模型：把图像中的每一个位置看作潜在的候选区域，直接进行预测。这些方法速度快，精度相对低一些。</li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5facf3b81cd1bbb86b4e1145.jpg" alt="" /></p>
+
+<p>上图是目前大部分目标检测模型的主要流程图。一个目标检测系统主要分成三部分，如图中的<strong>backbone</strong>、<strong>neck</strong>和<strong>regression</strong>部分。</p>
+<ol>
+  <li><strong>backbone</strong>部分通常是一个卷积网络，把图像转化成对应的<strong>特征映射(feature map)</strong>；</li>
+  <li><strong>neck</strong>部分通常是对特征映射做进一步的增强处理；</li>
+  <li><strong>regression</strong>部分通常把提取的特征映射转换成<strong>边界框(bounding box)</strong>和<strong>类别(class)</strong>信息。</li>
+</ol>
+
+<p>单阶段的目标检测模型直接在最后的特征映射上进行预测；而两阶段的方法先在特征映射上生成若干候选区域，再对候选区域进行预测。由此可以看出单阶段的方法所处理的候选区域是<strong>密集</strong>的；而两阶段的方法由于预先筛选了候选区域，最终处理的候选区域相对来说是<strong>稀疏</strong>的。</p>
+
+<p>下面介绍一些常用的目标检测模型：</p>
+<ul>
+  <li>两阶段的目标检测模型：<strong>R-CNN</strong>, <strong>Fast RCNN</strong>, <strong>Faster RCNN</strong>, <strong>SPP-Net</strong>, <strong>FPN</strong>, <strong>Libra RCNN</strong>, <strong>Cascade RCNN</strong>, <strong>Sparse RCNN</strong></li>
+  <li>单阶段的目标检测模型：<strong>OverFeat</strong>, <strong>YOLOv1-3</strong>, <strong>SSD</strong>, <strong>RetinaNet</strong>, <strong>Guided Anchoring</strong>, <strong>ASFF</strong>, <strong>EfficientDet</strong>, <strong>YOLT</strong>, <strong>Poly-YOLO</strong>, <strong>YOLOv4</strong>, <strong>YOLOv5</strong>, <strong>RTMDet</strong></li>
+  <li><strong>Anchor-Free</strong>的目标检测模型：(<strong>anchor-point</strong>方法) <strong>FCOS</strong>, <strong>YOLOX</strong>, <strong>YOLOv6</strong>, <strong>YOLOv7</strong>, <strong>YOLOv8</strong>, <strong>YOLOv9</strong>, <strong>YOLOv10</strong>; (<strong>key-point</strong>方法) <strong>CornerNet</strong>, <strong>CenterNet</strong>, <strong>RepPoints</strong></li>
+  <li>基于<strong>Transformer</strong>的目标检测模型：<strong>DETR</strong>, <strong>Deformable DETR</strong></li>
+</ul>
+
+<h3 id="-扩展阅读">⭐ 扩展阅读</h3>
+<ul>
+  <li><a href="https://0809zheng.github.io/2020/05/17/paper-recent.html"><font color="blue">Recent Advances in Deep Learning for Object Detection</font></a>：(arXiv1908)深度学习中目标检测最近的进展综述。</li>
+  <li><a href="https://0809zheng.github.io/2020/04/03/mmdetection.html"><font color="blue">MMDetection: Open MMLab Detection Toolbox and Benchmark</font></a>：商汤科技和香港中文大学开源的基于Pytorch实现的深度学习目标检测工具箱。</li>
+</ul>
+
+<h2 id="1两阶段的目标检测模型">（1）两阶段的目标检测模型</h2>
+
+<h3 id="-r-cnn">⚪ R-CNN</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/01/rcnn.html"><font color="blue">Rich feature hierarchies for accurate object detection and semantic segmentation</font></a></li>
+</ul>
+
+<p><strong>R-CNN</strong>首先应用选择搜索算法提取感兴趣区域，对于每个区域进行尺寸调整后通过预训练的卷积神经网络提取特征向量，并通过二元支持向量机对每个预测类别进行二分类。为进一步提高检测框的定位精度，训练一个回归器进行边界框的位置和尺寸修正。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648678031ddac507ccd6f5f5.jpg" alt="" /></p>
+
+<h3 id="-fast-r-cnn">⚪ Fast R-CNN</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/07/fastrcnn.html"><font color="blue">Fast R-CNN</font></a></li>
+</ul>
+
+<p><strong>Fast R-CNN</strong>是对<strong>R-CNN</strong>的改进：</p>
+<ul>
+  <li><strong>Fast R-CNN</strong>首先将图像通过卷积网络提取特征映射，在原始图像中生成的候选区域被投影到在特征映射的对应位置；</li>
+  <li><strong>Fast R-CNN</strong>把特征区域的各向异性放缩替换为<strong>RoI Pooling</strong>层，即通过最大池化把候选区域的特征映射转换成固定尺寸的特征。</li>
+  <li><strong>Fast R-CNN</strong>把用于目标分类的分类损失和用于目标边界框坐标修正的回归损失结合起来一起训练。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6486bcbd1ddac507cc5ff741.jpg" alt="" /></p>
+
+<h3 id="-faster-r-cnn">⚪ Faster R-CNN</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/09/fasterrcnn.html"><font color="blue">Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks</font></a></li>
+</ul>
+
+<p><strong>Faster R-CNN</strong>改进了<strong>R-CNN</strong>和<strong>Fast RCNN</strong>中的候选区域生成方法，使用<strong>区域提议网络(Region Proposal Network, RPN)</strong>代替了选择搜索算法。<strong>RPN</strong>在预训练卷积网络输出特征映射每个元素对应的输入像素位置预设一系列具有不同尺寸和长宽比的<strong>anchor</strong>，并进行<strong>anchor</strong>分类和边界框回归；只有正类<strong>anchor</strong>被视为可能存在目标的<strong>proposals</strong>，并通过<strong>RoI Pooling</strong>和预测头执行目标分类和目标边界框坐标修正。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6486c8f51ddac507cc862f79.jpg" alt="" /></p>
+
+<h3 id="-spp-net">⚪ SPP-Net</h3>
+
+<ul>
+  <li>paper：<a href="http://arxiv.org/abs/1406.4729">Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition</a></li>
+</ul>
+
+<p>在目标检测模型中需要把尺寸和形状各异的<strong>proposal</strong>调整到固定的尺寸以进行后续的分类和边界框回归任务。<strong>SPP-Net</strong>提出了一种<strong>空间金字塔池化(Spatial Pyramid Pooling, SPP)</strong>层，能够把任意不同尺寸和不同长宽比的图像特征转换为固定尺寸大小的输出特征向量。在实现时分别把特征划分成$k_i \times k_i$的栅格，然后应用最大池化操作构造长度为$\sum_i k_i^2c$的输出特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63abf68f08b6830163947507.jpg" alt="" /></p>
+
+<h3 id="-fpn">⚪ FPN</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1612.03144">Feature Pyramid Networks for Object Detection</a></li>
+</ul>
+
+<p>卷积网络不同层输出的特征映射具有不同的感受野和分辨率，适合检测不同尺度的目标：浅层特征具有较高的分辨率，适合检测小目标；深层特征具有范围较大的感受野，适合检测大目标。</p>
+
+<p><strong>特征金字塔网络 (Feature Pyramid Network, FPN)</strong>通过转置卷积和特征融合生成不同尺度的特征，并在这些空间信息和语义信息都很丰富的特征映射上同时执行目标检测任务。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648a798e1ddac507cc9f9cb3.jpg" alt="" /></p>
+
+<h3 id="-libra-r-cnn">⚪ Libra R-CNN</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/22/libra.html"><font color="blue">Libra R-CNN: Towards Balanced Learning for Object Detection</font></a></li>
+</ul>
+
+<p><strong>Libra R-CNN</strong>出发点为解决目标检测中的一些不均衡现象，如采样不均衡、不同阶段特征分布的不均衡、框回归过程中不均衡。改进包括<strong>IoU</strong>均衡采样，对<strong>FPN</strong>结构的均衡以及对<strong>L1 loss</strong>的均衡：</p>
+
+<p><img src="https://pic.imgdb.cn/item/652de603c458853aef2f3da1.jpg" alt="" /></p>
+
+<h3 id="-cascade-r-cnn">⚪ Cascade R-CNN</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/10/cascadercnn.html"><font color="blue">Cascade R-CNN: Delving into High Quality Object Detection</font></a></li>
+</ul>
+
+<p>在<strong>Faster R-CNN</strong>等网络中，在训练时会为<strong>RPN</strong>网络设置<strong>IoU</strong>阈值，以区分<strong>proposal</strong>是否包含目标，进而只对<strong>positive proposal</strong>进行边界框回归；通常该阈值设置越高，生成的<strong>proposal</strong>越准确，但是正样本的数量降低，容易过拟合。而在推理时所有<strong>proposal</strong>都用于边界框回归。这导致这导致了在训练和测试阶段中，<strong>proposal</strong>的分布不匹配问题。</p>
+
+<p>为了提高检测精度，产生更高质量的<strong>proposal</strong>，<strong>Cascade R-CNN</strong>使用不同<strong>IoU</strong>阈值（$0.5$、$0.6$、$0.7$）训练多个级联的检测器，通过串联的学习获得较高的目标检测精度。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648a6d5a1ddac507cc8cd09c.jpg" alt="" /></p>
+
+<h3 id="-sparse-r-cnn">⚪ Sparse R-CNN</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/29/sparsercnn.html"><font color="blue">Sparse R-CNN: End-to-End Object Detection with Learnable Proposals</font></a></li>
+</ul>
+
+<p><strong>Sparse RCNN</strong>通过嵌入指定的$N$个可学习候选框<strong>Proposal Boxes</strong>来提供<strong>RoI</strong>坐标，通过嵌入指定的$N$个可学习实例级别特征<strong>Proposal Features</strong>来提供更多的物体相关信息；并采用级联思想对输出的<strong>bbox</strong>进行<strong>refine</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6534be43c458853aef5545d0.jpg" alt="" /></p>
+
+<h2 id="2单阶段的目标检测模型">（2）单阶段的目标检测模型</h2>
+
+<h3 id="-overfeat">⚪ OverFeat</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1312.6229">OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks</a></li>
+</ul>
+
+<p><strong>OverFeat</strong>使用同一个卷积神经网络同时执行目标检测、定位和分类任务，其主要思想是：构建一个卷积神经网络（采用<strong>AlexNet</strong>结构：作为特征提取器的全卷积网络+作为分类器的全连接层），以滑动窗口的方式在不同尺度的图像的不同区域位置上进行图像分类，然后通过把分类器调整为回归器进行边界框位置预测。</p>
+
+<p><strong>OverFeat</strong>的训练流程：</p>
+<ol>
+  <li>在图像分类任务上训练卷积神经网络；</li>
+  <li>冻结特征提取器，把分类器替换为回归器，在每个空间位置和尺度上预测每个类别边界框的坐标$(x_{left},x_{right},y_{top},y_{bottom})$。</li>
+</ol>
+
+<p><strong>OverFeat</strong>的检测流程：</p>
+<ol>
+  <li>使用预训练的卷积网络在每个位置上执行分类；</li>
+  <li>对于生成的所有已分类区域预测目标边界框；</li>
+  <li>合并重叠的边界框以及可能来自同一个目标的边界框。</li>
+</ol>
+
+<p>注意到全卷积网络可以并行地以滑动窗口的方式提取图像特征。<strong>OverFeat</strong>采用$5\times 5$卷积核实现滑动窗口，相当于在输入图像上设置$14 \times 14$的窗口。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648672f01ddac507cccfcec2.jpg" alt="" /></p>
+
+<h3 id="-yolo">⚪ YOLO</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/16/yolo.html"><font color="blue">You Only Look Once: Unified, Real-Time Object Detection</font></a></li>
+</ul>
+
+<p><strong>YOLO</strong>模型把图像划分成$S\times S$个网格（对应尺寸为$S\times S$的特征映射），每个网格预测$B$个边界框的坐标和置信度得分，以及当边界框中存在目标时的$K$个类别概率。网络的输出特征尺寸为$S\times S \times (5B+K)$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ab13b1ddac507cc26b9d9.jpg" alt="" /></p>
+
+<h3 id="-yolov2yolo9000">⚪ YOLOv2/YOLO9000</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/17/yolov2.html"><font color="blue">YOLO9000: Better, Faster, Stronger</font></a></li>
+</ul>
+
+<p><strong>YOLOv2</strong>相比于<strong>YOLO</strong>进行以下改进：</p>
+<ul>
+  <li>网络结构的改进：增加<strong>BatchNorm</strong>、引入跳跃连接、轻量级网络</li>
+  <li>检测方式的改进：引入<strong>anchor</strong>、通过<strong>k-means</strong>设置<strong>anchor</strong></li>
+  <li>训练过程的改进：增大图像分辨率、多尺度训练</li>
+</ul>
+
+<p><strong>YOLO9000</strong>结合小型目标检测数据集（<strong>COCO</strong>的$80$类）与大型图像分类数据集（<strong>ImageNet</strong>的前$9000$类）联合训练目标检测模型。如果输入图像来自分类数据集，则只会计算分类损失。</p>
+
+<h3 id="-yolov3">⚪ YOLOv3</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/19/yolov3.html"><font color="blue">YOLOv3: An Incremental Improvement</font></a></li>
+</ul>
+
+<p><strong>YOLOv3</strong>相比于<strong>YOLOv2</strong>进行以下改进：</p>
+<ul>
+  <li>网络结构的改进：特征提取网络为<strong>DarkNet53</strong>、使用多层映射进行多尺度检测、构造特征金字塔网络增强特征</li>
+  <li>损失函数的改进：边界框回归损失采用<strong>GIoU</strong>损失、置信度分类与类别分类损失采用二元交叉熵</li>
+</ul>
+
+<h3 id="-ssd">⚪ SSD</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/20/ssd.html"><font color="blue">SSD: Single Shot MultiBox Detector</font></a></li>
+</ul>
+
+<p><strong>SSD</strong>模型提取包含不同尺度的图像的特征金字塔表示，并在每个尺度上执行目标检测。在每一层特征映射上，<strong>SSD</strong>设置不同尺寸的<strong>anchor</strong>来检测不同尺度的目标。对于每一个特征位置，模型对$k=6$个<strong>anchor</strong>分别预测$4$个边界框位置偏移量与$c$个类别概率。则对于$m\times n$的特征图，模型输出特征尺寸为$m\times n\times k(c+4)$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648acd401ddac507cc7a016f.jpg" alt="" /></p>
+
+<h3 id="-retinanet">⚪ RetinaNet</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/21/retinanet.html"><font color="blue">Focal Loss for Dense Object Detection</font></a></li>
+</ul>
+
+<p><strong>RetinaNet</strong>的两个关键组成部分是<strong>Focal Loss</strong>和特征图像金字塔。<strong>Focal Loss</strong>用于缓解边界框的正负样本类别不平衡问题；特征图像金字塔通过<strong>FPN</strong>构造多尺度特征进行预测。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d115a1ddac507ccc3c57e.jpg" alt="" /></p>
+
+<h3 id="-guided-anchoring">⚪ Guided Anchoring</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/06/18/guidedanchor.html"><font color="blue">Region Proposal by Guided Anchoring</font></a></li>
+</ul>
+
+<p><strong>Guided Anchoring</strong>把回归<strong>anchor</strong>分支替换为两条预测分支，一条分支用于区分前后景，目标是预测哪些区域应该作为中心点来生成 <strong>anchor</strong>；另一条分支是用于预测<strong>anchor</strong>的长和宽。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65378c74c458853aef90bc41.jpg" alt="" /></p>
+
+<h3 id="-adaptively-spatial-feature-fusion-asff">⚪ Adaptively Spatial Feature Fusion (ASFF)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/06/19/asff.html"><font color="blue">Learning Spatial Fusion for Single-Shot Object Detection</font></a></li>
+</ul>
+
+<p><strong>ASFF</strong>通过可学习的权重把<strong>FPN</strong>中具有不同语义信息的特征图进行自适应融合。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6537ac6bc458853aefe1e1f0.jpg" alt="" /></p>
+
+<h3 id="-efficientdet">⚪ EfficientDet</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/06/02/efficientdet.html"><font color="blue">EfficientDet: Scalable and Efficient Object Detection</font></a></li>
+</ul>
+
+<p><strong>EfficientDet</strong>提出了<strong>BiFPN</strong>和联合缩放方法（<strong>Compound Scaling</strong>）。<strong>BiFPN</strong>在特征融合前为每一个特征设置了一个权重系数 $\phi$，并引入了跨尺度连接；联合缩放方法对目标检测网络的<strong>BackBone</strong>的输出分辨率、宽度和深度、<strong>BiFPN(Neck)</strong>的深度和宽度、预测网络(<strong>Head</strong>)的宽度和深度同时缩放。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65365524c458853aef7b88fe.jpg" alt="" /></p>
+
+<h3 id="-yolt">⚪ YOLT</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/10/12/yolt.html"><font color="blue">You Only Look Twice: Rapid Multi-Scale Object Detection In Satellite Imagery</font></a></li>
+</ul>
+
+<p>对于高分辨率大尺寸图像（如遥感图像）中的目标检测问题，<strong>YOLT</strong>提出了一种两阶段的检测框架：首先把输入图像划分成重叠的子图像，对每张子图像分别进行检测；再通过全局的非极大值抑制算法获得最终的检测结果。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649bce1c1ddac507cc8a1d4f.jpg" alt="" /></p>
+
+<h3 id="-poly-yolo">⚪ Poly-YOLO</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/31/polyyolo.html"><font color="blue">Poly-YOLO: higher speed, more precise detection and instance segmentation for YOLOv3</font></a></li>
+</ul>
+
+<p><strong>YOLOv3</strong>由于特殊的网格预测模式，当物体比较密集且大小差不多时，会存在标签重写现象；并且在该场景下基于<strong>kmeans</strong>计算得到的<strong>anchor</strong>会出现物体预测尺度和感受野不符的问题。</p>
+
+<p>针对上述问题，<strong>Poly-YOLO</strong>提出采用单尺度预测，且维持高输出分辨率特征图的策略。为了进一步提高性能，采用了通道注意力单元、<strong>hypercolumn + stairstep</strong>上采样特征聚合方式来加强特征提取能力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6534f7fdc458853aef1247c1.jpg" alt="" /></p>
+
+<h3 id="-yolov4">⚪ YOLOv4</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/06/13/yolov4.html"><font color="blue">YOLOv4: Optimal Speed and Accuracy of Object Detection</font></a></li>
+</ul>
+
+<p><strong>YOLOv4</strong>相比于之前<strong>YOLO</strong>系列的改进包括：</p>
+<ul>
+  <li>网络结构的改进：<strong>backbone</strong>采用<strong>CSPDarkNet53</strong>、<strong>neck</strong>采用<strong>SPP+PANet</strong></li>
+  <li>训练过程的改进：回归损失采用<strong>CIoU Loss</strong>、引入标签平滑、引入<strong>Mosaic</strong>数据增强</li>
+</ul>
+
+<h3 id="-yolov5">⚪ YOLOv5</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/07/09/yolov5.html"><font color="blue">Comprehensive Guide to Ultralytics YOLOv5</font></a></li>
+</ul>
+
+<p><strong>YOLOv5</strong>相比于之前<strong>YOLO</strong>系列的改进包括：</p>
+<ul>
+  <li>网络结构的改进：<strong>CSPDarknet</strong> + <strong>PAFPN</strong> + 非解耦 <strong>Head</strong></li>
+  <li>标签分配策略：采用了 <strong>anchor</strong> 和 <strong>gt_bbox</strong> 的形状匹配度作为划分规则，同时引入跨邻域网格策略来增加正样本</li>
+  <li>训练和推理的改进：采用<strong>Mosaic + RandomAffine + MixUp</strong>数据增强、推理时引入 <strong>batch shape</strong> 策略</li>
+</ul>
+
+<h3 id="-rtmdet">⚪ RTMDet</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/12/07/rtmdet.html"><font color="blue">RTMDet: An Empirical Study of Designing Real-Time Object Detectors</font></a></li>
+</ul>
+
+<p><strong>MMDetection</strong> 核心开发者针对当前 <strong>YOLO</strong> 系列的诸多改进模型进行了经验性的总结，推出了高精度、低延时的单阶段目标检测器 <strong>RTMDet</strong>。</p>
+<ul>
+  <li>模型结构：整体结构由 <strong>CSPNeXt + CSPNeXtPAFPN +</strong> 共享卷积权重但分别计算 <strong>BN</strong> 的 <strong>SepBNHead</strong> 构成。内部核心模块是 <strong>CSPNeXt Block</strong>。</li>
+  <li>标签分配策略：<strong>Dynamic Soft Label Assigner</strong>，该方法主要包括使用位置先验信息损失、样本回归损失、样本分类损失，同时对三个损失进行了 <strong>Soft</strong> 处理进行参数调优。</li>
+  <li>损失函数：分类损失采用<strong>QualityFocalLoss</strong>，回归损失采用<strong>GIoULoss</strong>。</li>
+</ul>
+
+<h2 id="3-anchor-free的目标检测方法">（3） Anchor-Free的目标检测方法</h2>
+
+<p>目标检测模型的主流是<strong>Anchor-Based</strong>的方法。这种方法在特征图的每一个像素点预设几个不同尺度和长宽比的边界框，称之为<strong>anchor</strong>。网络对每一个 <strong>anchor</strong> 进行分类，并对正类的 <strong>anchor</strong> 进行回归（位置及大小调整）。这类方法的主要优点是：</p>
+<ol>
+  <li>很大程度上减少了计算量，并将 <strong>proposal</strong> 数量放到可控范围内以便后面的计算和筛选；</li>
+  <li>通过调整不同的 <strong>anchor</strong> 设置可以覆盖尽可能多的物体，也可针对不同任务设置不同的 <strong>anchor</strong> 尺度范围；</li>
+  <li>由于 <strong>anchor</strong> 的尺度是人工定义的，物体的定位是通过 <strong>anchor</strong> 的回归来实现，通过计算偏移量而不是物体的位置大大降低了优化难度。</li>
+</ol>
+
+<p>然而 <strong>anchor</strong> 的设置也有着它自身的缺点。单纯通过使用更多不同大小和长宽比的 <strong>anchor</strong> 以及更多的训练技巧就可以达到更好的效果，然而这种通过增加算力而改进网络的方法很难落实到实际的应用中。并且 <strong>anchor</strong> 的设定需要人为设定大量的参数，且离散的 <strong>anchor</strong> 尺度设定会导致一些物体无法很好的匹配，从而导致遗漏。</p>
+
+<p><strong>Anchor-Free</strong>的目标检测方法没有采用“预设<strong>anchor</strong>+偏移量回归”的检测流程，而是把目标检测任务视作关键点检测等其它形式的任务，直接对目标的位置进行预测；可分为<strong>Anchor-Point</strong>检测和<strong>Key-Point</strong>检测。</p>
+<ul>
+  <li><strong>Anchor-Point</strong>检测器：根据中心点到检测框边界的距离将目标<strong>bboxes</strong>编码为<strong>anchor point</strong>，表现为特征图上的一个像素，关联着当前位置的特征。这类方法能够灵活地选择特征表示金字塔层级，具有更简单的网络结构、更快的检测速度。常用方法包括<strong>FCOS</strong>。</li>
+  <li><strong>Key-Point</strong>检测器：预测<strong>bbox</strong>一些关键点的位置，例如角点、中心或极点，并将这些关键点分组以形成框。这类方法可以使用相对小的输入图像尺寸取得相对更高的检测精度，但依赖于对单个高分辨率特征图的重复推理，因此往往需要更大的内存消耗和更长的检测时间。常用方法包括<strong>CornerNet</strong>, <strong>CenterNet</strong>。</li>
+</ul>
+
+<h3 id="a-anchor-point检测器">a. Anchor-Point检测器</h3>
+
+<h3 id="-fcos">⚪ FCOS</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/30/fcos.html"><font color="blue">FCOS: A Simple and Strong Anchor-free Object Detector</font></a></li>
+</ul>
+
+<p><strong>FCOS</strong>预测特征图上各点的类别，再预测各点到<strong>bbox</strong>左侧、右侧、顶端和底部的距离，以及各点的<strong>center-ness score</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64c4bfc11ddac507cc3bf5b2.jpg" alt="" /></p>
+
+<h3 id="-yolox">⚪ YOLOX</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/08/01/yolox.html"><font color="blue">YOLOX: Exceeding YOLO Series in 2021</font></a></li>
+</ul>
+
+<p><strong>YOLOX</strong>把<strong>YOLOv3</strong>模型修改为<strong>anchor free</strong>结构，对特征图的每一个栅格位置预测$1$个目标，从而可以直接预测目标框的$4$
+个值(左上角<strong>xy</strong>坐标和<strong>box</strong>高宽)；并做出如下改进：</p>
+<ul>
+  <li>解耦预测分支（分类+回归），回归分支添加<strong>IoU</strong>分支；</li>
+  <li>使用<strong>Mosaic</strong>和<strong>MixUp</strong>数据增强，但在最后<strong>15 epochs</strong>时关闭；</li>
+  <li>采用<strong>simOTA</strong>进行正负样本分配。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/610765a35132923bf87b9cc1.png" alt="" /></p>
+
+<h3 id="-yolov6">⚪ YOLOv6</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/09/30/yolov6.html"><font color="blue">YOLOv6: A Single-Stage Object Detection Framework for Industrial Applications</font></a></li>
+</ul>
+
+<p><strong>YOLOv6</strong> 提出了一系列适用于各种工业场景的模型，包括 <strong>N/T/S/M/L</strong>，考虑到模型的大小，其架构有所不同，以获得更好的精度-速度权衡。本算法专注于检测的精度和推理效率，并在网络结构、训练策略等算法层面进行了多项改进和优化：</p>
+<ul>
+  <li>网络结构：基于 <strong>RepVGG style</strong> 设计了可重参数化、更高效的骨干网络 <strong>EfficientRep Backbone</strong> 和 <strong>Rep-PAN Neck</strong>；进一步优化设计了简洁有效的 <strong>Efficient Decoupled Head</strong>。</li>
+  <li>标签分配策略：前 <strong>4</strong> 个 <strong>epoch</strong> 采用 <strong>ATSS</strong> 作为标签匹配策略的 <strong>warm-up</strong> , 后续使用 <strong>TOOD</strong> 算法选择正负样本。</li>
+  <li>损失函数：分类损失使用的是<strong>VarifocalLoss</strong>；回归损失对于<strong>l/m/s</strong>使用的是 <strong>GIoULoss</strong>, <strong>t/n</strong> 用的是 <strong>SIoULoss</strong>。</li>
+</ul>
+
+<h3 id="-yolov7">⚪ YOLOv7</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/07/10/yolov7.html"><font color="blue">YOLOv7: Trainable bag-of-freebies sets new state-of-the-art for real-time object detectors</font></a></li>
+</ul>
+
+<p><strong>YOLOv7</strong>为实时检测器提出了高效的聚合网络和基于连接的模型缩放方法，可以更加高效地利用参数和计算量；并设计了几种可训练的<strong>bag-of-freebies</strong>，使实时检测器可以在不提高推理成本的情况下大大提高检测精度。</p>
+<ol>
+  <li>用梯度传播路径的概念分析了适用于不同网络中各层结构重参数化策略，提出了规划的模型结构重参数化，高效替代原始模块。</li>
+  <li>提出了一种新的标签分配方法：由粗到细的引导标签分配策略，为不同输出层分支更好的分配动态目标。</li>
+</ol>
+
+<h3 id="-yolov8">⚪ YOLOv8</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2023/01/31/yolov8.html"><font color="blue">Ultralytics YOLOv8</font></a></li>
+</ul>
+
+<p><strong>YOLOv8</strong> 是 <strong>Ultralytics</strong> 公司开源的 <strong>YOLOv5</strong> 的下一个重大更新版本，目前支持图像分类、物体检测和实例分割任务。<strong>YOLOv8</strong> 算法的核心特性和改动可以归结为如下：</p>
+<ul>
+  <li>骨干网络和 <strong>Neck</strong> 部分将 <strong>YOLOv5</strong> 的 <strong>C3</strong> 结构换成了梯度流更丰富的 <strong>C2f</strong> 结构；<strong>Head</strong> 部分换成了目前主流的解耦头结构，同时也从 <strong>Anchor-Based</strong> 换成了 <strong>Anchor-Free</strong>。</li>
+  <li><strong>Loss</strong> 计算方面采用了 <strong>TOOD</strong> 正样本分配策略，并引入了 <strong>Distribution Focal Loss</strong>。</li>
+  <li>训练的数据增强部分引入了 <strong>YOLOX</strong> 中的最后 <strong>10 epoch</strong> 关闭 <strong>Mosiac</strong> 增强的操作，可以有效地提升精度。</li>
+</ul>
+
+<h3 id="-yolov9">⚪ YOLOv9</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2024/02/21/yolov9.html"><font color="blue">YOLOv9: Learning What You Want to Learn Using Programmable Gradient Information</font></a></li>
+</ul>
+
+<p><strong>YOLOv9</strong>是在<strong>YOLOv7</strong>的基础上进行的改进，现有方案进行逐层特征提取时会丢失大量信息，<strong>YOLOv9</strong>主要有以下2点改进：</p>
+<ul>
+  <li>设计了一种广义高效层聚合网络<strong>GELAN</strong>。<strong>GELAN</strong>将<strong>ELAN</strong>中的卷积组替换成带有<strong>RepConv</strong>的<strong>CSPNet</strong>，相当于增加网络的宽度。</li>
+  <li>提出可编程梯度信息<strong>PGI</strong>。<strong>PGI</strong>包括主分支、辅助可逆分支、多级辅助信息。辅助可逆分支解决网络深度带来的信息丢失问题；多级辅助信息解决深度监督带来的错误累积问题。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/668ce7cfd9c307b7e9c8ccbe.png" alt="" /></p>
+
+<h3 id="-yolov10">⚪ YOLOv10</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2024/05/23/yolov10.html"><font color="blue">YOLOv10: Real-Time End-to-End Object Detection</font></a></li>
+</ul>
+
+<p><strong>YOLOv10</strong>模型针对<strong>YOLOv8</strong>检测流程中的后处理和模型架构进一步推进<strong>YOLOs</strong>在准确率与推理速度上的发展。</p>
+<ul>
+  <li>为了解决后处理中的冗余预测问题，<strong>YOLOv10</strong>采用一致的对偶分配策略，该策略允许模型在训练期间同时采用一对多与一对一的标签分配策略；在推理期间仅使用无需<strong>NMS</strong>的一对一预测结果。</li>
+  <li>通过对<strong>YOLO</strong>各个组件的全面检查，<strong>YOLOv10</strong>采用整体效率-准确性驱动的模型设计策略；为了降低计算冗余，采用轻量级分类头、空间-通道解耦下采样和秩引导的模块设计；为了提高准确率，采用大核卷积与部分自注意力模块。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/668bca2cd9c307b7e9f4d5d1.png" alt="" /></p>
+
+<h3 id="b-key-point检测器">b. Key-Point检测器</h3>
+
+<h3 id="-cornernet">⚪ CornerNet</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/07/20/cornernet.html"><font color="blue">CornerNet: Detecting Objects as Paired Keypoints Learning</font></a></li>
+</ul>
+
+<p><strong>CornerNet</strong>检测目标框的左上角和右下角位置，通过<strong>Corner Pooling</strong>提取角点特征，通过预测角点嵌入进行角点匹配，并进一步预测角点位置的偏移量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64c0da391ddac507ccf07702.jpg" alt="" /></p>
+
+<h3 id="-centernet">⚪ CenterNet</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/23/centernet.html"><font color="blue">Objects as Points</font></a></li>
+</ul>
+
+<p><strong>CenterNet</strong>直接检测目标的中心点、目标的大小以及中心点的位置偏移。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64c382301ddac507cc461a53.jpg" alt="" /></p>
+
+<h3 id="-reppoints">⚪ RepPoints</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/28/reppoint.html"><font color="blue">RepPoints: Point Set Representation for Object Detection</font></a></li>
+</ul>
+
+<p><strong>RepPoints</strong>对特征图上面任何一点都学习出$9$个语义关键点坐标<strong>offset</strong>，同时将<strong>offset</strong>解码、<strong>refine</strong>和转换得到原始<strong>bbox</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6534a6f7c458853aef01c34d.jpg" alt="" /></p>
+
+<h2 id="4-基于transformer的目标检测模型">（4） 基于Transformer的目标检测模型</h2>
+
+<h3 id="-detr">⚪ DETR</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/06/20/detr.html"><font color="blue">DETR：End-to-End Object Detection with Transformers</font></a></li>
+</ul>
+
+<p><strong>DETR</strong>用<strong>Transformer</strong>架构一次性生成$N$个<strong>box</strong>预测，基于预测<strong>box</strong>和<strong>GT box</strong>的二分图匹配计算损失的大小。<strong>DETR</strong>的结构主要有三部分：</p>
+<ul>
+  <li>一个卷积神经网络<strong>backbone</strong>，用于提取紧凑的图像特征表示;</li>
+  <li>一个编码器-解码器结构的<strong>Transformer</strong>；</li>
+  <li>一个简单的前馈网络<strong>FFN</strong>，进行最终的检测预测。</li>
+</ul>
+
+<p><img src="https://pic.downk.cc/item/5eedb8e214195aa5948bbb07.jpg" alt="" /></p>
+
+<h3 id="-deformable-detr">⚪ Deformable DETR</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/06/13/ddetr.html"><font color="blue">Deformable DETR: Deformable Transformers for End-to-End Object Detection</font></a></li>
+</ul>
+
+<p><strong>Deformable DETR</strong>提出了可变形注意力模块(<strong>Deformable Attention Module</strong>)，其中每个查询向量<strong>Query</strong>的查询对象通过学习一组偏移<strong>offset</strong>得到，而注意力图通过线性变换得到。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6535e122c458853aef4a9378.jpg" alt="" /></p>
+
+<h1 id="3-目标检测的评估指标">3. 目标检测的评估指标</h1>
+
+<p>在目标检测中，所有置信度(<strong>Confidence Score</strong>)大于阈值的检测框都被视为检测到的目标样本。根据检测框的位置以及其中目标的类别，结果可以被划分到以下几类中的一个：</p>
+<ul>
+  <li>真阳性（<strong>True Positive, TP</strong>）：被正确检测的目标样本。需要满足两个条件：目标边界框与<strong>Ground Truth</strong>的交并比大于阈值；目标预测类别与标签类别匹配。</li>
+  <li>假阳性（<strong>False Positive, FP</strong>）：被错误检测为目标样本的非目标样本。通常为边界框与<strong>Ground Truth</strong>的交并比小于阈值的样本（定位错误），或目标预测类别与标签类别不匹配的样本（分类错误）。</li>
+  <li>假阴性（<strong>False Negative, FN</strong>）：没有被检测出的目标样本。通常为没有检测出的<strong>Ground Truth</strong>区域。</li>
+  <li>真阴性（<strong>True Negative, TN</strong>）：检测出的非目标样本，在目标检测中通常不关心。</li>
+</ul>
+
+<p>在划分检测框的类别时需要计算两者的<strong>交并比 (Intersection over Union, IoU)</strong>，即计算检测区域与<strong>Ground Truth</strong>区域的交集与并集之比：</p>
+
+<p><img src="https://pic.imgdb.cn/item/6482dd001ddac507ccacf5a1.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">IoU</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">tar</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">):</span> <span class="c1"># [n, 4]  (x1,y1,x2,y2)
+</span>    <span class="n">pred_area</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">pred</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">pred</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">pred</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">tar_area</span>  <span class="o">=</span> <span class="p">(</span><span class="n">tar</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>  <span class="o">-</span> <span class="n">tar</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>  <span class="o">*</span> <span class="p">(</span><span class="n">tar</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>  <span class="o">-</span> <span class="n">tar</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">inter_lt</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">pred</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">tar</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">inter_rb</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">pred</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:],</span> <span class="n">tar</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:])</span>
+    <span class="n">inter_wh</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">inter_rb</span> <span class="o">-</span> <span class="n">inter_lt</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">inter_area</span> <span class="o">=</span> <span class="n">inter_wh</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">inter_wh</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">inter_area</span> <span class="o">/</span> <span class="p">(</span><span class="n">pred_area</span> <span class="o">+</span> <span class="n">tar_area</span> <span class="o">-</span> <span class="n">inter_area</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>目标检测的常用评估指标包括准确率、召回率、<strong>F-score</strong>、<strong>P-R</strong>曲线、平均准确率<strong>AP</strong>、类别平均准确率<strong>mAP</strong>。</p>
+
+<h3 id="-准确率-precision">⚪ 准确率 Precision</h3>
+
+<p><strong>准确率</strong>也叫查准率，是指在所有识别出的物体中<strong>TP</strong>样本所占的比例：</p>
+
+\[Precision = \frac{TP}{TP+NP} = \frac{TP}{n_{pred}}\]
+
+<h3 id="-召回率-recall">⚪ 召回率 Recall</h3>
+
+<p><strong>召回率</strong>是指在所有<strong>Ground Truth</strong>物体中<strong>TP</strong>样本所占的比例：</p>
+
+\[Precision = \frac{TP}{TP+FN} = \frac{TP}{n_{gt}}\]
+
+<h3 id="-f-score">⚪ F-Score</h3>
+
+<p>准确率和召回率随着交并比的阈值而变化。当逐渐减小阈值时，倾向于把更多检测到的样本视为<strong>TP</strong>样本，则准确率逐渐下降，召回率逐渐增加。</p>
+
+<p><strong>F-Score</strong>是准确率和召回率的的调和平均数 (<strong>harmonic mean</strong>)：</p>
+
+\[F_{score} = \frac{(B^2+1)PR}{B^2P+R}\]
+
+<p>其中权重$B$调整准确率和召回率的比重关系。$B$越大则越重视召回率，$B$越小则越重视准确率。特别地，当$B=1$时称为<strong>F1-Score</strong>。</p>
+
+<h3 id="-p-r曲线">⚪ P-R曲线</h3>
+
+<p>对于某个指定的预测类别，可以根据给定的交并比阈值$a$把该类别下的所有预测区域划分到<strong>TP</strong>样本和<strong>FP</strong>样本。按照置信度对这些样本倒序排列后，依次计算前$i$个样本的准确率和召回率。例如：</p>
+
+\[\begin{array}{l|llll}
+    \text{编号} &amp; \text{置信度} &amp; \text{类别}&amp; \text{准确率}&amp; \text{召回率} \\
+    \hline
+    1 &amp; 88.9 &amp; \text{TP} &amp; 1 &amp; 0.2 \\
+    2 &amp; 88.0 &amp; \text{TP} &amp; 1 &amp; 0.4 \\
+    3 &amp; 86.5 &amp; \text{TP} &amp; 1 &amp; 0.6 \\
+    4 &amp; 82.3 &amp; \text{FP} &amp; 0.75 &amp; 0.6 \\
+    5 &amp; 77.2 &amp; \text{FP} &amp; 0.6 &amp; 0.6 \\
+    6 &amp; 75.3 &amp; \text{TP} &amp; 0.667 &amp; 0.8 \\
+    7 &amp; 67.3 &amp; \text{FP} &amp; 0.571 &amp; 0.8 \\
+    8 &amp; 64.4 &amp; \text{TP} &amp; 0.625 &amp; 1 \\
+\end{array}\]
+
+<p>此时召回率按照非单调递减的规律变化，而准确率大致按照递减规律变化（有时也会增加）。则可以绘制<strong>准确率-召回率曲线 (P-R plot)</strong>，召回率为横轴，准确率为纵轴：</p>
+
+<p><img src="https://pic.imgdb.cn/item/6482e86f1ddac507ccc14cee.jpg" alt="" /></p>
+
+<h3 id="-平均准确率-average-precision-ap">⚪ 平均准确率 Average Precision (AP)</h3>
+
+<p>某个类别的<strong>平均准确率 (AP)</strong>定义为该类别对应的<strong>P-R</strong>曲线之下的面积：</p>
+
+\[AP = \int_0^1P(r)dr\]
+
+<p><strong>Precision</strong>与<strong>Recall</strong>的值域在 $0$ 到 $1$ 之间，所以 <strong>AP</strong> 的值域也是在 $[0, 1]$ 范围。由于<strong>P-R</strong>曲线是由离散点构成的曲线，直接计算积分是不可行的。因此对<strong>P-R</strong>曲线进行平滑处理：给定任意一个 <strong>Recall</strong> 值，它对应的 <strong>Precision</strong> 值就等于它右侧的 <strong>Precision</strong> 中最大的值。</p>
+
+\[p_{interp}(r) = \mathop{\max}_{\overline{r}\geq r}P(\overline{r})\]
+
+<p><img src="https://pic.imgdb.cn/item/6482ea611ddac507ccc472a7.jpg" alt="" /></p>
+
+<p>在<strong>Pascal VOC 2009</strong>之前计算<strong>AP</strong>值时采用差值方法：在平滑处理的<strong>P-R</strong>曲线上，取横轴 $0.2-1$ 的 $9$ 等分点的 <strong>Precision</strong> 的值，计算其平均值为最终 <strong>AP</strong> 的值。如上图中的<strong>AP</strong>值为：</p>
+
+\[AP = \frac{1}{9}(1\times 5 + 0.667\times 2 + 0.625\times 2) = 0.843\]
+
+<p>上述计算方法使用的采样点较少，会有精度损失；并且在比较较小的<strong>AP</strong>值时显著性较差。在<strong>Pascal VOC 2010</strong>之后采用精度更高的方式：绘制出平滑后的<strong>P-R</strong>曲线后，用积分的方式计算平滑曲线下方的面积作为最终的 <strong>AP</strong> 值。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6482f6691ddac507ccd9f486.jpg" alt="" /></p>
+
+<p>如上图中的<strong>AP</strong>值为：</p>
+
+\[AP = 1\times(0.6-0.2) + 0.667\times(0.8-0.6) + 0.625\times(1-0.8) = 0.658\]
+
+<h3 id="-类别平均准确率-mean-average-precision-map">⚪ 类别平均准确率 mean Average Precision (mAP)</h3>
+
+<p><strong>类别平均准确率</strong>是指计算所有类别的<strong>AP</strong>值的平均值。</p>
+
+<h1 id="4-非极大值抑制算法">4. 非极大值抑制算法</h1>
+
+<p><strong>非极大值抑制 (non-maximum suppression,NMS)</strong>算法是目标检测等任务中常用的后处理方法，能够过滤掉多余的检测边界框。</p>
+
+<p><strong>NMS</strong>算法的流程如下：</p>
+<ul>
+  <li>输入边界框集合\(\mathcal{B}=\{(B_n,c_n)\}_{n=1,...,N}\)，其中$c_n$是边界框$B_n$的置信度；</li>
+  <li>选中集合\(\mathcal{B}\)中置信度最大的边界框$B_i$，将其从集合\(\mathcal{B}\)移动至输出边界框集合\(\mathcal{O}\)中；</li>
+  <li>遍历集合\(\mathcal{B}\)中的其余所有边界框$B_j$，计算边界框$B_i$和边界框$B_j$的交并比$\text{IoU}(B_i,B_j)$。若$\text{IoU}(B_i,B_j)≥\text{threshold}$，则删除边界框$B_j$；</li>
+  <li>重复上述步骤，直至集合\(\mathcal{B}\)为空集。</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># NMS from scratch
+</span><span class="k">def</span> <span class="nf">NMS</span><span class="p">(</span><span class="n">dets</span><span class="p">,</span> <span class="n">thresh</span><span class="p">):</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">dets</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">dets</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dets</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">dets</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">dets</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span>
+
+    <span class="n">areas</span> <span class="o">=</span> <span class="p">(</span><span class="n">x2</span><span class="o">-</span><span class="n">x1</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y2</span><span class="o">-</span><span class="n">y1</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># +1是把像素数量转换为长宽
+</span>    <span class="n">order</span> <span class="o">=</span> <span class="n">scores</span><span class="p">.</span><span class="n">argsort</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1"># 置信度降序排列
+</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">order</span><span class="p">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">keep</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">xx1</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">x1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">x1</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+        <span class="n">yy1</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">y1</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y1</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+        <span class="n">xx2</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">x2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">x2</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+        <span class="n">yy2</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">y2</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">y2</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">xx2</span> <span class="o">-</span> <span class="n">xx1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">yy2</span> <span class="o">-</span> <span class="n">yy1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">inter</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">h</span>
+        <span class="n">iou</span> <span class="o">=</span> <span class="n">inter</span> <span class="o">/</span> <span class="p">(</span><span class="n">areas</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">areas</span><span class="p">[</span><span class="n">order</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span> <span class="o">-</span> <span class="n">inter</span><span class="p">)</span>
+
+        <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">where</span><span class="p">(</span><span class="n">iou</span> <span class="o">&lt;=</span> <span class="n">thresh</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="n">idxs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="c1"># +1是修正order[1:]的偏移
+</span>    <span class="k">return</span> <span class="n">keep</span>
+
+
+<span class="c1"># NMS via torchvision
+</span><span class="kn">from</span> <span class="nn">torchvision.ops</span> <span class="kn">import</span> <span class="n">nms</span>
+<span class="n">keep</span> <span class="o">=</span> <span class="n">nms</span><span class="p">(</span>
+    <span class="n">boxes</span><span class="p">,</span>         <span class="c1"># Tensor[N, 4], (x1, y1, x2, y2) format
+</span>    <span class="n">scores</span><span class="p">,</span>        <span class="c1"># Tensor[N]
+</span>    <span class="n">iou_threshold</span>  <span class="c1"># float
+</span><span class="p">)</span>                  <span class="c1"># 返回按置信度降序排列的候选框索引
+</span><span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p><strong>NMS</strong>算法的处理精度有限、计算效率较低，主要原因包括：</p>
+<ol>
+  <li>算法采用顺序处理的模式，运算效率低；</li>
+  <li>根据阈值删除边界框的机制缺乏灵活性；</li>
+  <li>阈值通常是人工根据经验选定的；</li>
+  <li>评价标准是交并比<strong>IoU</strong>，只考虑两框的重叠面积。</li>
+</ol>
+
+<h2 id="1提高nms算法的精度">（1）提高NMS算法的精度</h2>
+
+<p>提高<strong>NMS</strong>算法精度的方法包括<strong>Soft-NMS</strong>, <strong>IoU-Guided NMS</strong>, <strong>Weighted NMS</strong>, <strong>Softer-NMS</strong>, <strong>Adaptive NMS</strong>, <strong>DIoU-NMS</strong>。</p>
+
+<h3 id="-soft-nms">⚪ Soft-NMS</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1704.04503">Soft-NMS – Improving Object Detection With One Line of Code</a></li>
+</ul>
+
+<p>对于<strong>IoU≥NMS</strong>阈值的检测框，<strong>NMS</strong>算法直接剔除这些检测框（将其置信度置零），这种严格的剔除机制对于存在遮挡的目标检测情况不友好。<strong>Soft-NMS</strong>引入得分惩罚机制，对于<strong>IoU≥</strong>阈值的检测框，使用一个与<strong>IoU</strong>正相关的惩罚函数$f(\cdot)$降低它们的置信度（而不是直接置零）。</p>
+
+\[s_i = \begin{cases} s_if\left( \text{IoU}(M,B_i) \right), &amp; \text{IoU}(M,B_i) \geq \text{thresh} \\ s_i, &amp; \text{IoU}(M,B_i) &lt; \text{thresh} \end{cases}\]
+
+<p>惩罚函数可以设置为线性惩罚或高斯惩罚：</p>
+
+\[f\left( \text{IoU}(M,B_i) \right) = 1-\text{IoU}(M,B_i)  \quad \text{or} \quad e^{-\frac{\text{IoU}(M,B_i) ^2}{\sigma}}\]
+
+<p>在对所有边界框的迭代终止之后，<strong>Soft-NMS</strong>依据预先设定的得分阈值（如$0.0001$）来保留最终的检测框。</p>
+
+<p><strong>Soft-NMS</strong>的主要缺点是处理边界框时存在定位与得分不一致的情况，即在存在遮挡目标的情况下，定位较好而得分低的框相比于定位较差而得分高的框具有更低的最终得分。</p>
+
+<h3 id="-iou-guided-nms">⚪ IoU-Guided NMS</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1807.11590">Acquisition of Localization Confidence for Accurate Object Detection</a></li>
+</ul>
+
+<p>考虑到边界框的定位与得分可能出现不一致的情况，<strong>IoU-Guided NMS</strong>在网络中额外引入了<strong>IoU</strong>预测分支来学习定位的置信度，进而使用定位置信度来引导<strong>NMS</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648fbe071ddac507ccb68fa0.jpg" alt="" /></p>
+
+<p>在实现时，<strong>IoU-Guided NMS</strong>使用定位置信度作为<strong>NMS</strong>的筛选依据，每次迭代挑选出具有最大定位置信度的候选框，然后将<strong>IoU≥NMS</strong>阈值的冗余框剔除，并把候选框的分类得分更新为所有冗余框及其自身的得分最大值。最终输出的框必定是同时具有最大分类得分与最大定位置信度的框。</p>
+
+<p><strong>IoU-Guided NMS</strong>有助于提高严格指标下的精度，如<strong>AP75</strong>, <strong>AP90</strong>；但需要额外添加<strong>IoU</strong>预测分支，造成计算开销。</p>
+
+<h3 id="-weighted-nms">⚪ Weighted NMS</h3>
+
+<ul>
+  <li>paper：<a href="https://ieeexplore.ieee.org/document/8026312">Inception Single Shot MultiBox Detector for object detection</a></li>
+</ul>
+
+<p><strong>NMS</strong>每次迭代所选出得分最大的框未必是精确定位的，而冗余框有可能是定位良好的。<strong>Weighted NMS</strong>是对边界框的坐标进行加权平均，加权平均的对象包括每次选出的候选框$M$以及<strong>IoU≥NMS</strong>阈值的冗余框。</p>
+
+\[M \leftarrow \frac{\sum_i w_i B_i}{\sum_i w_i}, B_i \in \{B\mid \text{IoU}(M,B)\geq \text{thresh}\} ∪ \{M\}\]
+
+<p>其中加权权重通过对应框的得分与<strong>IoU</strong>乘积计算：\(w_i=s_i\text{IoU}(M,B_i)\)。</p>
+
+<p><strong>Weighted NMS</strong>通常能够获得更高的<strong>Precision</strong>和<strong>Recall</strong>；但其加权权重通过得分与<strong>IoU</strong>计算，前者存在得分与定位不一致问题，后者只考虑两框重叠部分，位置关系描述不够全面。</p>
+
+<h3 id="-softer-nms">⚪ Softer-NMS</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1809.08545">Bounding Box Regression with Uncertainty for Accurate Object Detection</a></li>
+</ul>
+
+<p><strong>Softer-NMS</strong>也是对边界框的坐标进行加权平均，其加权平均形式为：</p>
+
+\[M \leftarrow \frac{\sum_i w_i B_i/\sigma_i^2}{\sum_i w_i/\sigma_i^2}, B_i \in \{B\mid \text{IoU}(M,B)\geq \text{thresh}\} ∪ \{M\}\]
+
+<p>其中权重$w_i$计算只与<strong>IoU</strong>相关：</p>
+
+\[w_i = e^{-\frac{(1-\text{IoU}(M,B_i) )^2}{\sigma_t}}\]
+
+<p>而$\sigma_i$是为每个边界框引入的定位不确定度，通过网络学习得到：</p>
+
+<p><img src="https://pic.imgdb.cn/item/648fc28b1ddac507ccbd6e69.jpg" alt="" /></p>
+
+<p><strong>Softer-NMS</strong>可以与标准的<strong>NMS</strong>或<strong>Soft-NMS</strong>结合使用，以稳定提升检测性能。但是需要修改模型来预测方差。</p>
+
+<h3 id="-adaptive-nms">⚪ Adaptive NMS</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1904.03629">Adaptive NMS: Refining Pedestrian Detection in a Crowd</a></li>
+</ul>
+
+<p><strong>NMS</strong>算法认为与当前候选框<strong>IoU</strong>越大的框越可能是冗余框，然而当目标之间存在严重遮挡时可能存在<strong>IoU</strong>大的独立框。通常期望当目标分布稀疏时，<strong>NMS</strong>可选用小阈值以剔除更多冗余框；而当目标分布密集时，<strong>NMS</strong>选用大阈值以获得更高的召回。<strong>Adaptive NMS</strong>为网络引入了一个密度预测模块，用于学习每一个检测框的密度。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ff7671ddac507cc10018f.jpg" alt="" /></p>
+
+<p>对于一个<strong>Ground Truth</strong>边界框$B_i$，其密度标签定义为：</p>
+
+\[d_i = \max_j \text{IoU}(B_i,B_j)\]
+
+<p>此时预测边界框的标签修改为$(x,y,w,h,s,d)$。密度$d$越大，代表该框所处位置的目标分布越密集，越有可能是遮挡严重的地方；反之密度越小，代表该框所处位置的目标分布越稀疏，不太可能有遮挡。</p>
+
+<p><strong>Adaptive NMS</strong>将每次迭代的<strong>NMS</strong>阈值更改为：</p>
+
+\[thresh = \max(min\_thresh, d_M)\]
+
+<p><strong>Adaptive NMS</strong>可以灵活地结合到各种<strong>NMS</strong>算法中，对存在目标遮挡的检测任务更加友好；但是需要额外添加密度预测模块，造成计算开销。</p>
+
+<h3 id="-diou-nms">⚪ DIoU-NMS</h3>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1911.08287">Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression</a></li>
+</ul>
+
+<p>考虑到在<strong>IoU</strong>相同的情况下，一个框的中心点越靠近当前候选框$M$的中心点，则前者更有可能是冗余框。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ffc801ddac507cc176aad.jpg" alt="" /></p>
+
+<p>因此使用<strong>DIoU</strong>替代<strong>IoU</strong>作为<strong>NMS</strong>的评判准则：</p>
+
+\[\text{DIoU} = \text{IoU} - \frac{d^2}{c^2}\]
+
+<p><img src="https://pic.imgdb.cn/item/648ffcd81ddac507cc17fb3f.jpg" alt="" /></p>
+
+<p>进一步引入参数$\beta$控制中心点偏移的惩罚幅度：</p>
+
+\[\text{DIoU} = \text{IoU} - \left(\frac{d^2}{c^2}\right)^\beta\]
+
+<p>当$\beta \to +\infty$时，<strong>DIoU</strong>退化为<strong>IoU</strong>；当$\beta \to 0$时，几乎所有中心点不重合的框都会被保留。</p>
+
+<p>在保持<strong>NMS</strong>阈值不变的情况下，<strong>DIoU</strong>计算得到的结果会小一些，因此会保留更多的框，从而实现更大的召回率，有助于缓解遮挡案例；然而每次迭代剩余更多的框会增加迭代轮数，进一步降低运算效率。</p>
+
+<h2 id="2提高nms算法的效率">（2）提高NMS算法的效率</h2>
+
+<p><strong>NMS</strong>中的<strong>IoU</strong>计算是顺序处理的。假设图像中一共有$N$个检测框，每一个框都需要和其余所有框计算一次<strong>IoU</strong>，则计算复杂度是$O(\frac{N(N-1)}{2})=O(N^2)$。</p>
+
+<p>提高<strong>NMS</strong>算法效率的方法包括<strong>CUDA NMS</strong>, <strong>Fast NMS</strong>, <strong>Cluster NMS</strong>, <strong>Matrix NMS</strong>。</p>
+
+<h3 id="-cuda-nms">⚪ CUDA NMS</h3>
+<p><strong>CUDA NMS</strong>是<strong>NMS</strong>的<strong>GPU</strong>版本，旨在将<strong>IoU</strong>的计算并行化，并通过矩阵运算加速。</p>
+
+<p>若将边界框集合\(\mathcal{B}\)按照置信度得分从高到低排序，即$B_1$是得分最高的框，$B_N$是得分最低的框；则可以计算<strong>IoU</strong>矩阵：</p>
+
+\[X=\text{IoU}(B,B)= \begin{pmatrix} x_{11} &amp; x_{12} &amp; ... &amp; x_{1N} \\ x_{21} &amp; x_{22} &amp; ... &amp; x_{2N} \\ ... &amp; ... &amp; ... &amp; ... \\ x_{N1} &amp; x_{N2} &amp; ... &amp; x_{NN} \\ \end{pmatrix} , \quad x_{ij}=\text{IoU}(B_i,B_j)\]
+
+<p>通过<strong>GPU</strong>的并行加速能力，可以一次性得到<strong>IoU</strong>矩阵的全部计算结果。</p>
+
+<p>许多深度学习框架已将<strong>CUDA NMS</strong>作为基本函数使用，如<strong>Pytorch</strong>在<strong>torchvision 0.3</strong>版本中正式集成了<strong>CUDA NMS</strong>。下面是<strong>CUDA NMS</strong>计算<strong>IoU</strong>矩阵的一种简单实现。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">box_iou</span><span class="p">(</span><span class="n">boxes1</span><span class="p">,</span> <span class="n">boxes2</span><span class="p">):</span> <span class="c1"># input: [M, 4], [N, 4]
+</span>
+    <span class="k">def</span> <span class="nf">box_area</span><span class="p">(</span><span class="n">box</span><span class="p">):</span> <span class="c1"># (x1, y1, x2, y2)
+</span>        <span class="k">return</span> <span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">area1</span> <span class="o">=</span> <span class="n">box_area</span><span class="p">(</span><span class="n">boxes1</span><span class="p">.</span><span class="n">t</span><span class="p">())</span> <span class="c1"># [M,]
+</span>    <span class="n">area2</span> <span class="o">=</span> <span class="n">box_area</span><span class="p">(</span><span class="n">boxes2</span><span class="p">.</span><span class="n">t</span><span class="p">())</span> <span class="c1"># [N,]
+</span>
+    <span class="n">lt</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">boxes1</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">boxes2</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>  <span class="c1"># [M,N,2]
+</span>    <span class="n">rb</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">boxes1</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">:],</span> <span class="n">boxes2</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:])</span>  <span class="c1"># [M,N,2]
+</span>
+    <span class="n">inter</span> <span class="o">=</span> <span class="p">(</span><span class="n">rb</span> <span class="o">-</span> <span class="n">lt</span><span class="p">).</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">).</span><span class="n">prod</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># [M, N]
+</span>    <span class="k">return</span> <span class="n">inter</span> <span class="o">/</span> <span class="p">(</span><span class="n">area1</span><span class="p">[:,</span> <span class="bp">None</span><span class="p">]</span> <span class="o">+</span> <span class="n">area2</span> <span class="o">-</span> <span class="n">inter</span><span class="p">)</span> <span class="c1"># [M, N]
+</span></code></pre></div></div>
+
+<p>计算得到<strong>IoU</strong>矩阵后，需要利用它抑制冗余框。可以采用矩阵查询的方法（仍然需要顺序处理，但计算<strong>IoU</strong>本身已经被并行加速）；也可以使用下面提出的一些算法。</p>
+
+<h3 id="-fast-nms">⚪ Fast NMS</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1904.02689">YOLACT: Real-time Instance Segmentation</a></li>
+</ul>
+
+<p>根据<strong>IoU</strong>矩阵的计算规则可以得出$\text{IoU}(B_i,B_j)=\text{IoU}(B_j,B_i)$，且计算$\text{IoU}(B_i,B_i)$是没有意义的。因此<strong>IoU</strong>矩阵$X$是对称矩阵。</p>
+
+<p><strong>Fast NMS</strong>算法首先对矩阵$X$使用<strong>pytorch</strong>提供的<code class="language-plaintext highlighter-rouge">triu</code>函数进行上三角化，得到上三角矩阵：</p>
+
+\[X=\text{IoU}(B,B)= \begin{pmatrix} 0 &amp; x_{12} &amp; ... &amp; x_{1N} \\ 0 &amp; 0 &amp; ... &amp; x_{2N} \\ ... &amp; ... &amp; ... &amp; ... \\ 0 &amp; 0 &amp; ... &amp; 0 \\ \end{pmatrix}\]
+
+<p>若按照<strong>NMS</strong>的规则，应该按行依次遍历矩阵$X$，如果某行$i$中元素$x_{ij}=\text{IoU}(B_i,B_j),j＞i$超过阈值，则应剔除边界框$B_j$，且不再考虑$j$所对应的行与列。</p>
+
+<p><strong>Fast NMS</strong>则对上述规则进行了化简，其思路是只要边界框$B_j$与任意边界框$B_i$重合度较大(超过阈值)，则认为其是冗余框，将其剔除。对矩阵$X$执行按列取最大值的操作，得到一维向量$b=[b_1,b_2,…,b_N]$，$b_n$代表矩阵$X$的第$n$列中元素的最大值（即边界框$B_j$与其余边界框的最大<strong>IoU</strong>）。然后进行阈值二值化：$b$中元素小于阈值对应保留的边界框，$b$中元素大于阈值对应冗余框。</p>
+
+<p><strong>Fast NMS</strong>容易删除更多边界框，因为假如边界框$B_j$与边界框$B_i$重合度较大，但边界框$B_i$已经被剔除，则边界框$B_j$还是有可能会被保留的。一个简单的例子如下，注意到边界框$B_4$被错误地剔除了。</p>
+
+\[\begin{aligned}
+X&amp;= \begin{pmatrix} 0 &amp; 0.6 &amp; 0.1 &amp; 0.3 &amp; 0.8 \\   &amp; 0 &amp; 0.2 &amp; 0.72 &amp; 0.1 \\   &amp;   &amp; 0 &amp; 0.45 &amp; 0.12 \\   &amp;   &amp;   &amp; 0 &amp; 0.28 \\   &amp;   &amp;   &amp;   &amp; 0 \\ \end{pmatrix} \\
+&amp; \downarrow (\text{按列取最大值}) \\
+b &amp;= [0, 0.6,0.2,0.72,0.8] \\
+&amp; \downarrow (\text{选定阈值为0.5}) \\
+b &amp;= [1,0,1,0,0] \\
+&amp;(\text{保留边界框1和边界框3})
+\end{aligned}\]
+
+<p>使用<strong>pytorch</strong>实现<strong>Fast NMS</strong>算法如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">fast_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">NMS_threshold</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="n">scores</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">scores</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>   <span class="c1"># 对框按得分降序排列
+</span>    <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">boxes</span><span class="p">)</span>  <span class="c1"># IoU矩阵
+</span>    <span class="n">iou</span><span class="p">.</span><span class="n">triu_</span><span class="p">(</span><span class="n">diagonal</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># 上三角化
+</span>    <span class="n">keep</span> <span class="o">=</span> <span class="n">iou</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">NMS_threshold</span>  <span class="c1"># 列最大值向量，二值化
+</span>    <span class="k">return</span> <span class="n">boxes</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p><strong>Fast NMS</strong>算法比<strong>NMS</strong>算法运算速度更快，但由于其会抑制更多边界框，会导致性能略微下降。</p>
+
+<h3 id="-cluster-nms">⚪ Cluster NMS</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2005.03572">Enhancing Geometric Factors in Model Learning and Inference for Object Detection and Instance Segmentation</a></li>
+</ul>
+
+<p><strong>Cluster NMS</strong>算法旨在弥补<strong>Fast NMS</strong>算法性能下降的问题，同时保持较快的运算速度。</p>
+
+<p>定义边界框的<strong>cluster</strong>，若边界框$B_i$属于该<strong>cluster</strong>，则边界框$B_i$与集合内任意边界框$B_j$的交并比$\text{IoU}(B_i,B_j)$均超过阈值，且边界框$B_i$与不属于该集合的任意边界框$B_k$的交并比$\text{IoU}(B_i,B_k)$均低于阈值。通过定义<strong>cluster</strong>将边界框分成不同的簇，如下图可以把边界框分成三组<strong>cluster</strong>：</p>
+
+<p><img src="https://pic.imgdb.cn/item/609b797bd1a9ae528fb1bd9f.jpg" alt="" /></p>
+
+<p><strong>Cluster NMS</strong>算法本质上是<strong>Fast NMS</strong>算法的迭代式。算法前半部分与<strong>Fast NMS</strong>算法相同，都是按降序排列边界框、计算<strong>IoU</strong>矩阵、矩阵上三角化、按列取最大值、阈值二值化得到一维向量$b$。</p>
+
+<p>不同于<strong>Fast NMS</strong>算法直接根据向量$b$输出结果，<strong>Cluster NMS</strong>算法将向量$b$按列复制后将其右乘到<strong>IoU</strong>矩阵中。然后再对新的矩阵按列取最大值、阈值二值化，得到新的向量$b$，再将其扩展后右乘<strong>IoU</strong>矩阵，直至相邻迭代中向量$b$不再变化。</p>
+
+<p><img src="https://pic.imgdb.cn/item/609b7a55d1a9ae528fb87c53.jpg" alt="" /></p>
+
+<p>矩阵右乘相当于进行<strong>行变换</strong>。向量$b$扩展后右乘到<strong>IoU</strong>矩阵，若$b$的第$n$项为$0$，代表对应的边界框$B_n$是冗余框，则不应考虑该框对其他框产生的影响，因此将<strong>IoU</strong>矩阵的第$n$行置零；反之若$b$的第$n$项为$1$，代表对应的边界框$B_n$不是冗余框，因此保留<strong>IoU</strong>矩阵的第$n$行。由数学归纳法可证，<strong>Cluster NMS</strong>算法的收敛结果与<strong>NMS</strong>算法相同。</p>
+
+<p>使用<strong>pytorch</strong>实现<strong>Cluster NMS</strong>算法如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">cluster_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">NMS_threshold</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+    <span class="n">scores</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">scores</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">view_as</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>   <span class="c1"># 对框按得分降序排列
+</span>    <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">boxes</span><span class="p">).</span><span class="n">triu_</span><span class="p">(</span><span class="n">diagonal</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># IoU矩阵，上三角化
+</span>    <span class="n">C</span> <span class="o">=</span> <span class="n">iou</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>    
+        <span class="n">A</span> <span class="o">=</span> <span class="n">C</span>
+        <span class="n">maxA</span> <span class="o">=</span> <span class="n">A</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>   <span class="c1"># 列最大值向量
+</span>        <span class="n">E</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxA</span> <span class="o">&lt;</span> <span class="n">NMS_threshold</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span> <span class="c1"># 二值化
+</span>        <span class="n">E</span> <span class="o">=</span> <span class="n">E</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">expand_as</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>   <span class="c1"># 对角矩阵E的替代
+</span>        <span class="n">C</span> <span class="o">=</span> <span class="n">iou</span><span class="p">.</span><span class="n">mul</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>     <span class="c1"># 按元素相乘
+</span>        <span class="k">if</span> <span class="n">A</span><span class="p">.</span><span class="n">equal</span><span class="p">(</span><span class="n">C</span><span class="p">)</span><span class="o">==</span><span class="bp">True</span><span class="p">:</span>     <span class="c1"># 终止条件
+</span>            <span class="k">break</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">maxA</span> <span class="o">&lt;</span> <span class="n">NMS_threshold</span>
+    <span class="k">return</span> <span class="n">boxes</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p><strong>NMS</strong>算法顺序处理每一个边界框，会在所有<strong>cluster</strong>上迭代，在计算时重复计算了不同<strong>cluster</strong>之间的边界框。<strong>Cluster NMS</strong>算法通过行变换使得迭代进行在拥有框数量最多的<strong>cluster</strong>上，其迭代次数不超过图像中最大<strong>cluster</strong>所拥有的<strong>边界框个数</strong>。因此<strong>Cluster NMS</strong>算法适合图像中有很多<strong>cluster</strong>的场合。</p>
+
+<p>实践中又提出了一些<strong>Cluster NMS</strong>的变体：</p>
+
+<h3 id="-cluster-nms--soft-nms引入得分惩罚机制">⭐ Cluster NMS + Soft-NMS：引入得分惩罚机制</h3>
+<p><strong>得分惩罚机制(score penalty mechanism, SPM)</strong>是指每次迭代后根据计算得到的<strong>IoU</strong>矩阵对边界框的置信度得分进行惩罚，即与该边界框重合度高的框越多，该边界框的置信度越低：</p>
+
+\[s_j = s_j \cdot \prod_{i}^{} e^{-\frac{c_{ij}^2}{\sigma}}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">SPM_cluster_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">NMS_threshold</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+    <span class="n">scores</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">scores</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">view_as</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>   <span class="c1"># 对框按得分降序排列
+</span>    <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">boxes</span><span class="p">).</span><span class="n">triu_</span><span class="p">(</span><span class="n">diagonal</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># IoU矩阵，上三角化
+</span>    <span class="n">C</span> <span class="o">=</span> <span class="n">iou</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>    
+        <span class="n">A</span> <span class="o">=</span> <span class="n">C</span>
+        <span class="n">maxA</span> <span class="o">=</span> <span class="n">A</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>   <span class="c1"># 列最大值向量
+</span>        <span class="n">E</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxA</span> <span class="o">&lt;</span> <span class="n">NMS_threshold</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span> <span class="c1"># 二值化
+</span>        <span class="n">E</span> <span class="o">=</span> <span class="n">E</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">expand_as</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>   <span class="c1"># 对角矩阵E的替代
+</span>        <span class="n">C</span> <span class="o">=</span> <span class="n">iou</span><span class="p">.</span><span class="n">mul</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>     <span class="c1"># 按元素相乘
+</span>        <span class="k">if</span> <span class="n">A</span><span class="p">.</span><span class="n">equal</span><span class="p">(</span><span class="n">C</span><span class="p">)</span><span class="o">==</span><span class="bp">True</span><span class="p">:</span>     <span class="c1"># 终止条件
+</span>            <span class="k">break</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">prod</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">C</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="mf">0.2</span><span class="p">),</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="n">scores</span>  <span class="c1">#惩罚得分
+</span>    <span class="n">keep</span> <span class="o">=</span> <span class="n">scores</span> <span class="o">&gt;</span> <span class="mf">0.1</span>    <span class="c1">#得分阈值筛选
+</span>    <span class="k">return</span> <span class="n">boxes</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="-cluster-nms--diou-nms引入中心点距离修正">⭐ Cluster NMS + DIoU-NMS：引入中心点距离修正</h3>
+<p>将<strong>IoU</strong>替换成<strong>DIoU</strong>，即在<strong>IoU</strong>的基础上加上中心点的归一化距离，能够更好的表达两框的距离；并对得分惩罚机制进行修改：</p>
+
+\[s_j = s_j \cdot \prod_{i}^{} \mathop{\min} \{ e^{-\frac{c_{ij}^2}{\sigma}} + (1-\text{DIoU})^{\beta}, 1 \}\]
+
+<p>上式中$\beta$用于控制中心点距离惩罚的程度，$\min$避免惩罚因子超过$1$。</p>
+
+<h3 id="-cluster-nms--weighted-nms引入加权平均法">⭐ Cluster NMS + Weighted NMS：引入加权平均法</h3>
+<p>在计算<strong>IoU</strong>矩阵时考虑边界框置信度得分的影响，即每次迭代时将<strong>IoU</strong>矩阵与边界框的置信度得分向量按列相乘。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">Weighted_cluster_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">NMS_threshold</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">epochs</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+    <span class="n">scores</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">scores</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">boxes</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">idx</span><span class="p">].</span><span class="n">view_as</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span>   <span class="c1"># 对框按得分降序排列
+</span>    <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">boxes</span><span class="p">).</span><span class="n">triu_</span><span class="p">(</span><span class="n">diagonal</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># IoU矩阵，上三角化
+</span>    <span class="n">C</span> <span class="o">=</span> <span class="n">iou</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>    
+        <span class="n">A</span> <span class="o">=</span> <span class="n">C</span>
+        <span class="n">maxA</span> <span class="o">=</span> <span class="n">A</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>   <span class="c1"># 列最大值向量
+</span>        <span class="n">E</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxA</span> <span class="o">&lt;</span> <span class="n">NMS_threshold</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span> <span class="c1"># 二值化
+</span>        <span class="n">E</span> <span class="o">=</span> <span class="n">E</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="n">expand_as</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>   <span class="c1"># 对角矩阵E的替代
+</span>        <span class="n">C</span> <span class="o">=</span> <span class="n">iou</span><span class="p">.</span><span class="n">mul</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>     <span class="c1"># 按元素相乘
+</span>        <span class="k">if</span> <span class="n">A</span><span class="p">.</span><span class="n">equal</span><span class="p">(</span><span class="n">C</span><span class="p">)</span><span class="o">==</span><span class="bp">True</span><span class="p">:</span>     <span class="c1"># 终止条件
+</span>            <span class="k">break</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">maxA</span> <span class="o">&lt;</span> <span class="n">NMS_threshold</span>  <span class="c1"># 列最大值向量，二值化
+</span>    <span class="n">weights</span> <span class="o">=</span> <span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="n">C</span><span class="o">&gt;</span><span class="n">NMS_threshold</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="n">eye</span><span class="p">(</span><span class="n">C</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">*</span> <span class="n">scores</span><span class="p">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">xx1</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span><span class="mi">0</span><span class="p">].</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">yy1</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span><span class="mi">1</span><span class="p">].</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">xx2</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span><span class="mi">2</span><span class="p">].</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">yy2</span> <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,</span><span class="mi">3</span><span class="p">].</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">weightsum</span> <span class="o">=</span> <span class="n">weights</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>         <span class="c1"># 坐标加权平均
+</span>    <span class="n">xx1</span> <span class="o">=</span> <span class="p">(</span><span class="n">xx1</span><span class="o">*</span><span class="n">weights</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">weightsum</span><span class="p">)</span>
+    <span class="n">yy1</span> <span class="o">=</span> <span class="p">(</span><span class="n">yy1</span><span class="o">*</span><span class="n">weights</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">weightsum</span><span class="p">)</span>
+    <span class="n">xx2</span> <span class="o">=</span> <span class="p">(</span><span class="n">xx2</span><span class="o">*</span><span class="n">weights</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">weightsum</span><span class="p">)</span>
+    <span class="n">yy2</span> <span class="o">=</span> <span class="p">(</span><span class="n">yy2</span><span class="o">*</span><span class="n">weights</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">weightsum</span><span class="p">)</span>
+    <span class="n">boxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">([</span><span class="n">xx1</span><span class="p">,</span> <span class="n">yy1</span><span class="p">,</span> <span class="n">xx2</span><span class="p">,</span> <span class="n">yy2</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">boxes</span><span class="p">[</span><span class="n">keep</span><span class="p">],</span> <span class="n">scores</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="-matrix-nms">⚪ Matrix NMS</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2003.10152">SOLOv2: Dynamic and Fast Instance Segmentation</a></li>
+</ul>
+
+<p><strong>Matrix NMS</strong>算法是对<strong>Soft-NMS</strong>算法的并行实现。在<strong>Soft-NMS</strong>算法中，对于每个边界框$B_j$，如果存在与其<strong>IoU</strong>超过阈值的边界框$B_i$，则说明$B_j$可能是潜在的冗余框，对其置信度得分$s_j$施加一定的惩罚：</p>
+
+\[s_j \leftarrow s_j f\left(\text{IoU}(B_i,B_j)\right)\]
+
+<p><strong>Soft-NMS</strong>算法在计算惩罚系数时是串行实现的。为了并行地计算惩罚系数，<strong>Matrix NMS</strong>考虑以下两点：</p>
+<ul>
+  <li>计算每个满足$s_i&gt;s_j$的边界框$B_i$对边界框$B_j$的惩罚；</li>
+  <li>计算边界框$B_i$被其余边界框抑制的概率。</li>
+</ul>
+
+<p><strong>Matrix NMS</strong>对边界框$B_j$的惩罚系数计算为：</p>
+
+\[w_j = \mathop{\min}_{\forall s_i &gt; s_j} \frac{f\left(\text{IoU}(B_i,B_j)\right)}{\mathop{\min}_{\forall s_k &gt; s_i}f\left(\text{IoU}(B_i,B_k)\right)}\]
+
+<p>其中惩罚函数的设置与<strong>Soft-NMS</strong>相同，可以设置为线性惩罚或高斯惩罚：</p>
+
+\[f\left( \text{IoU}(M,B_i) \right) = 1-\text{IoU}(M,B_i)  \quad \text{or} \quad e^{-\frac{\text{IoU}(M,B_i) ^2}{\sigma}}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">matrix_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">'gauss'</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="n">iou</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">boxes</span><span class="p">).</span><span class="n">triu_</span><span class="p">(</span><span class="n">diagonal</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># IoU矩阵，上三角化
+</span>    <span class="n">iou_cmax</span> <span class="o">=</span> <span class="n">iou</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># 计算Bj的最大IoU
+</span>    <span class="n">iou_cmax</span> <span class="o">=</span> <span class="n">iou_cmax</span><span class="p">.</span><span class="n">expand</span><span class="p">(</span><span class="n">iou</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">iou</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]).</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s">'gauss'</span><span class="p">:</span>
+        <span class="n">decay</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">iou</span><span class="o">**</span><span class="mi">2</span><span class="o">-</span><span class="n">iou_cmax</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">decay</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iou</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">iou_cmax</span><span class="p">)</span>
+    <span class="n">decay</span> <span class="o">=</span> <span class="n">decay</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">scores</span> <span class="o">*</span> <span class="n">decay</span>
+</code></pre></div></div>
+
+<h1 id="5-目标检测中的损失函数">5. 目标检测中的损失函数</h1>
+
+<p>目标检测中的损失函数包括边界框的<strong>分类</strong>损失和<strong>回归</strong>损失。其中分类损失用于区分边界框的类别，即边界框内目标的类别，对于两阶段的检测方法还包含边界框的正负类别；常用的分类损失函数包括<strong>Cross-Entropy loss</strong>, <strong>Focal loss</strong>, <strong>Generalized Focal Loss</strong>, <strong>Varifocal Loss</strong>, <strong>GHM</strong>, <strong>Poly loss</strong>。</p>
+
+<p>而回归损失衡量预测边界框坐标$x_{pred}$和<strong>GT</strong>边界框坐标$x_{gt}$之间的差异，常用的回归损失函数包括<strong>L1 / L2 loss</strong>, <strong>Smooth L1 loss</strong>, <strong>Dynamic SmoothL1 Loss</strong>, <strong>Balanced L1 loss</strong>, <strong>IoU loss</strong>, <strong>GIoU loss</strong>, <strong>DIoU loss</strong>, <strong>CIoU loss</strong>, <strong>EIoU loss</strong>, <strong>SIoU loss</strong>, <strong>MPDIoU loss</strong>。</p>
+
+<h2 id="1常用的分类损失">（1）常用的分类损失</h2>
+
+<h3 id="-cross-entropy-loss">⚪ Cross-Entropy loss</h3>
+
+<p>通用的分类损失采用交叉熵损失(<strong>Cross-Entropy loss</strong>)。给定网络输出边界框的预测类别概率分布$p=(p_0,…,p_K)$和标签类别$c$ ($0$表示背景类)，则可以构造多元交叉熵损失：</p>
+
+\[\begin{aligned}
+\mathcal{L}_{cls}(p,c) &amp;= -\log p_c \\
+\end{aligned}\]
+
+<p>对于一些两阶段的目标检测算法（如<strong>Faster RCNN</strong>），需要对<strong>RPN</strong>提取的<strong>proposal</strong>边界框进行二分类（区分是否为包含目标的边界框），此时需要构造二元交叉熵损失：</p>
+
+\[\begin{aligned}
+\mathcal{L}_{cls}(\hat{p},p) &amp;= -p \log \hat{p} - (1-p) \log (1-\hat{p}) \\
+\end{aligned}\]
+
+<h3 id="-focal-loss">⚪ <a href="https://0809zheng.github.io/2021/03/21/retinanet.html"><font color="blue">Focal Loss</font></a></h3>
+
+<p>目标检测中的边界框分类问题是一种类别不平衡分类，即大部分边界框都是无目标的背景框。</p>
+
+<p><strong>Focal loss</strong>显式地引入了权重因子$(1-p_t)^{\gamma},\gamma \geq 0$，使得$p_t$（目标类别的预测置信度）越大时权重越小，即对容易分类的样本减少权重。此外为了更好地控制损失函数的形状，额外引入一个权重系数$\alpha$。</p>
+
+\[\mathcal{L}_{\text{focal}}(p,t) = -\alpha(1-p_t)^\gamma \log p_t\]
+
+<p><img src="https://pic.imgdb.cn/item/648d08ef1ddac507cc9777f4.jpg" alt="" /></p>
+
+<h3 id="-generalized-focal-loss-gfl">⚪ <a href="https://0809zheng.github.io/2021/05/21/gfl.html"><font color="blue">Generalized Focal Loss (GFL)</font></a></h3>
+
+<p><img src="https://pic.imgdb.cn/item/6529fd6ec458853aefddb96b.jpg" alt="" /></p>
+
+<p><strong>Quality Focal Loss (QFL)</strong> 将离散标签的 <strong>Focal Loss</strong> 泛化到连续标签上，将预测框与 <strong>GT</strong> 的 <strong>IoU</strong> 软化作为分类分数的标签，使得分类分数关联回归质量。</p>
+
+\[QFL(p) = -|y-p|^\beta \left( y\log p + (1-y) \log(1-p) \right)\]
+
+<p><strong>Distribution Focal Loss (DFL)</strong> 把边界框位置建模为离散分布$S$，以类似交叉熵的形式去优化浮点值标签$y$的左右整数值$y_i$和$y_{i+1}$两个位置的概率。</p>
+
+\[DFL(S_i, S_{i+1}) = -\left( (y_{i+1}-y)\log S_i + (y-y_i) \log S_{i+1} \right)\]
+
+<p><strong>QFL</strong>和<strong>DFL</strong>可以统一地表示为<strong>GFL</strong>:</p>
+
+\[GFL\left(p_{y_l}, p_{y_r}\right)=-\left|y-\left(y_l p_{y_l}+y_r p_{y_r}\right)\right|^\beta\left(\left(y_r-y\right) \log \left(p_{y_l}\right)+\left(y-y_l\right) \log \left(p_{y_r}\right)\right)\]
+
+<p><a href="https://0809zheng.github.io/2021/05/26/gflv2.html"><font color="blue">GFLV2</font></a>则进一步用<strong>DFL</strong>分布形状的统计量去指导最终定位质量的估计。直接取学习到分布的<strong>Topk</strong>数值<strong>concat</strong>在一起形成一个维度非常低的输入特征向量，用这个向量再接一个非常小的全连接层，最后再变成一个<strong>Sigmoid</strong>之后的<strong>scalar</strong>乘到原来的分类表征中。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6533834dc458853aef943e01.jpg" alt="" /></p>
+
+<h3 id="-varifocal-loss">⚪ <a href="https://0809zheng.github.io/2021/05/25/varifocal.html"><font color="blue">Varifocal Loss</font></a></h3>
+
+<p><strong>Varifocal Loss</strong>针对正负样本提出了非对称的加权操作:</p>
+
+\[VFL(p) = 
+\begin{cases}
+-y \left( y\log p + (1-y) \log(1-p) \right) &amp; y &gt; 0 \\
+-\alpha p^\gamma \log(1-p) &amp; y = 0
+\end{cases}\]
+
+<p>其中 $y$ 是预测 <strong>bboxes</strong> 与 <strong>GT</strong> 的 <strong>IoU</strong>，使用软标签的形式作为分类的标签。 $p\in[0,1]$ 表示分类分数。</p>
+<ul>
+  <li>对于负样本，即当 $y = 0$ 时，使用 $\alpha p^\gamma$ 作为 <strong>focal weight</strong> 使样本聚焦于困难样本上，这与 <strong>Focal Loss</strong> 基本一致。</li>
+  <li>对于正样本，即当 $y &gt; 0$ 时，首先计算标准二值交叉熵部分，正样本的权重设置使用分类的标签 $y$， 即 <strong>IoU</strong> 作为 <strong>focal weight</strong>, 使得聚焦到具有高质量的样本上。</li>
+</ul>
+
+<h3 id="-gradient-harmonized-mechanism-ghm">⚪ <a href="https://0809zheng.github.io/2021/06/17/ghm.html"><font color="blue">Gradient Harmonized Mechanism (GHM)</font></a></h3>
+
+<p>对于一个已经收敛的目标检测模型，依然有部分样本梯度范数接近$1$，这些样本极可能是外点数据即标注有错误的数据，如果训练时候强行拟合，对最终性能反而有影响。</p>
+
+<p><strong>GHM</strong>对<strong>loss</strong>两端的梯度进行降低权重，具备了易学习样本降低损失权重并且外点数据梯度不会过大的效果。在实现时计算梯度密度函数，并把密度分布的倒数设置为样本的权值。</p>
+
+\[\begin{gathered}
+\hat{L}_{G H M-C}=\frac{1}{N} \sum_{i=1}^N \hat{\beta}_i L_{C E}\left(p_i, p_i^*\right) \\
+=\sum_{i=1}^N \frac{L_{C E}\left(p_i, p_i^*\right)}{G D\left(g_i\right)} \\
+\end{gathered}\]
+
+<h3 id="-poly-loss">⚪ <a href="https://0809zheng.github.io/2022/07/07/poly.html"><font color="blue">Poly Loss</font></a></h3>
+
+<p>交叉熵损失可以被泰勒展开为一系列多项式函数的线性组合：</p>
+
+\[\begin{aligned}
+\mathcal{L}_{CE}(p,t) &amp;= -\log p_t = \sum_{j=1}^\infty \frac{1}{j} (1-p_t)^j \\
+&amp;= (1-p_t)+ \frac{1}{2} (1-p_t)^2 +\frac{1}{3} (1-p_t)^3 + \cdots \\
+\end{aligned}\]
+
+<p>其中低阶部分倾向于得到正确的预测结果，高阶部分倾向于防止预测结果出错（如缓解类别不平衡问题）。<strong>Poly Loss</strong>为前$N$个多项式项引入扰动$\epsilon_1,…,\epsilon_N$，用于对更精确的任务目标进行更精确的调整。</p>
+
+\[\begin{aligned}
+\mathcal{L}_{\text{Poly-N}}(p,t) &amp;= (\epsilon_1+1)(1-p_t)+ \cdots +\left(\epsilon_N+\frac{1}{N}\right) (1-p_t)^N + \sum_{j=N+1}^\infty \frac{1}{j} (1-p_t)^j \\
+&amp;= -\log p_t + \sum_{j=1}^N \epsilon_j (1-p_t)^j
+\end{aligned}\]
+
+<h2 id="2常用的回归损失">（2）常用的回归损失</h2>
+
+<h3 id="-l1--l2-loss">⚪ L1 / L2 Loss</h3>
+<p>通用的回归损失采用<strong>L1 / L2 loss</strong>，计算如下：</p>
+
+\[L1 = |x| \qquad L2 = x^2\]
+
+<p>这两种损失函数存在缺点：</p>
+<ul>
+  <li><strong>L1 Loss</strong>的导数为常数，在训练后期，真实值与预测值的差值$x=x_{gt}-x_{pred}$很小时，如果学习率不变，损失函数会在稳定值附近波动，难以收敛到更高精度；</li>
+  <li><strong>L2 Loss</strong>在差值很大时，其导数非常大，故在训练初期不稳定。</li>
+</ul>
+
+<h3 id="-smooth-l1-loss">⚪ smooth L1 loss</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/03/07/fastrcnn.html"><font color="blue">Fast R-CNN</font></a></li>
+</ul>
+
+<p>针对<strong>L1 / L2 loss</strong>存在的问题，修正后得到<strong>smooth L1 loss</strong>：</p>
+
+\[\text{smooth-L1}(x) = \begin{cases} |x|-0.5, &amp; |x| ≥ 1 \\ 0.5x^2, &amp;|x| &lt; 1 \end{cases}\]
+
+<p>该损失函数在差值$x$较大时是<strong>L1 Loss</strong>，在其较小时是<strong>L2 Loss</strong>。也可以引入一个方差系数：</p>
+
+\[\text{smooth-L1}(x, \sigma) = \begin{cases} |x|-0.5/\sigma^2, &amp; |x| ≥ 1/\sigma^2 \\ 0.5\sigma^2x^2, &amp;|x| &lt; 1/\sigma^2 \end{cases}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">smoothL1Loss</span><span class="p">(</span><span class="n">pred_loc</span><span class="p">,</span> <span class="n">gt_loc</span><span class="p">,</span> <span class="n">sigma</span><span class="p">):</span>
+    <span class="n">sigma_squared</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">regression_diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">gt_loc</span> <span class="o">-</span> <span class="n">pred_loc</span><span class="p">)</span>
+    <span class="n">regression_diff</span> <span class="o">=</span> <span class="n">regression_diff</span><span class="p">.</span><span class="nb">abs</span><span class="p">().</span><span class="nb">float</span><span class="p">()</span>
+    <span class="n">regression_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">regression_diff</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">sigma_squared</span><span class="p">),</span>
+            <span class="mf">0.5</span> <span class="o">*</span> <span class="n">sigma_squared</span> <span class="o">*</span> <span class="n">regression_diff</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="n">regression_diff</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">sigma_squared</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">regression_loss</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-dynamic-smoothl1-loss">⚪ Dynamic SmoothL1 Loss</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/30/dynamicrcnn.html"><font color="blue">Dynamic R-CNN: Towards High Quality Object Detection via Dynamic Training</font></a></li>
+</ul>
+
+\[\text{DSL}(x, \beta_{now}) = \begin{cases} |x|-0.5\beta_{now}, &amp; |x| ≥ \beta_{now} \\ 0.5x^2/\beta_{now}, &amp;|x| &lt; \beta_{now} \end{cases}\]
+
+<p>$\beta_{now}$是需要动态确定的。其确定规则是先计算预测值和<strong>GT</strong>的回归误差，然后选择第$K_{\beta-th}$个最小值，然后在达到迭代次数后，采用中位数作为设置值。</p>
+
+<p>随着训练进行，高质量样本越来越多，回归误差会越来越小，并且高质量的预测框其误差会更小。引入动态$\beta_{now}$减少来修正，来增加高质量部分样本的梯度，可以不断突出高质量预测框的回归误差。</p>
+
+<h3 id="-balances-l1-loss">⚪ balances L1 loss</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/22/libra.html"><font color="blue">Libra R-CNN: Towards Balanced Learning for Object Detection</font></a></li>
+</ul>
+
+<p><strong>Balanced L1 Loss</strong>首先设计梯度的函数，增加梯度绝对值小于$1$的样本（<strong>inlier</strong>）的梯度值，以帮助网络更好地定位，也使得分类和回归过程更加均衡。梯度形式为：</p>
+
+\[\frac{\partial L_b}{\partial x} = \begin{cases}
+\alpha \ln (b|x|+1), &amp; |x| &lt; 1 \\
+\gamma, &amp; |x| ≥ 1
+\end{cases}\]
+
+<p>在梯度表达式的基础上，积分得到<strong>Balanced L1 Loss</strong>的表达式：</p>
+
+\[L_b(x)= \begin{cases}\frac{\alpha}{b}(b|x|+1) \ln (b|x|+1)-\alpha|x| &amp; \text { if }|x|&lt;1 \\ \gamma|x|+C &amp; \text { otherwise }\end{cases}\]
+
+<p>上述介绍的损失函数存在共通的缺点：</p>
+<ul>
+  <li>这些损失函数独立地计算每一个坐标分量(如$x$,$y$,$h$,$w$)的差异，然后相加得到最终的损失。这样做忽略了不同坐标分量之间的联系(如$x$,$y$靠近图像边缘时，$h$,$w$会受到限制)；</li>
+  <li>目标检测中，评估边界框定位质量的指标是<strong>交并比 IoU</strong>，与上述损失函数的计算是不匹配的(具有相同损失值的不同坐标组合可能具有不同的<strong>IoU</strong>)。</li>
+</ul>
+
+<h3 id="-iou-loss">⚪ IoU loss</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1608.01471">UnitBox: An Advanced Object Detection Network</a></li>
+</ul>
+
+<p>为使得边界框的定位与其评估指标<strong>IoU</strong>相匹配，不妨直接把<strong>IoU</strong>设置为损失函数（<strong>IoU loss</strong>）：</p>
+
+\[\text{IoU loss} = -\log\frac{\text{intersection}(x_{gt},x_{pred})}{\text{union}(x_{gt},x_{pred})}\]
+
+<p>实际计算中也简化为：</p>
+
+\[\text{IoU loss} = 1-\frac{\text{intersection}(x_{gt},x_{pred})}{\text{union}(x_{gt},x_{pred})}\]
+
+<p>该损失将边界框的不同坐标分量(如$x$,$y$,$h$,$w$)联系起来，具有尺度不变性。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">IoULoss</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">):</span> <span class="c1"># [n, 4]  format: xywh
+</span>    <span class="c1">#   求出预测框左上角右下角
+</span>    <span class="n">b1_xy</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b1_wh</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b1_wh_half</span>  <span class="o">=</span> <span class="n">b1_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b1_mins</span>     <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">-</span> <span class="n">b1_wh_half</span>
+    <span class="n">b1_maxes</span>    <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">+</span> <span class="n">b1_wh_half</span>
+    
+    <span class="c1">#   求出真实框左上角右下角
+</span>    <span class="n">b2_xy</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b2_wh</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b2_wh_half</span>  <span class="o">=</span> <span class="n">b2_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b2_mins</span>     <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">-</span> <span class="n">b2_wh_half</span>
+    <span class="n">b2_maxes</span>    <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">+</span> <span class="n">b2_wh_half</span>
+
+    <span class="c1">#   求真实框和预测框所有的iou
+</span>    <span class="n">intersect_mins</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">b1_mins</span><span class="p">,</span> <span class="n">b2_mins</span><span class="p">)</span>
+    <span class="n">intersect_maxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">b1_maxes</span><span class="p">,</span> <span class="n">b2_maxes</span><span class="p">)</span>
+    <span class="n">intersect_wh</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">intersect_maxes</span> <span class="o">-</span> <span class="n">intersect_mins</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">intersect_maxes</span><span class="p">))</span>
+    <span class="n">intersect_area</span>  <span class="o">=</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b1_area</span>         <span class="o">=</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b2_area</span>         <span class="o">=</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">union_area</span>      <span class="o">=</span> <span class="n">b1_area</span> <span class="o">+</span> <span class="n">b2_area</span> <span class="o">-</span> <span class="n">intersect_area</span>
+    <span class="n">iou</span>             <span class="o">=</span> <span class="n">intersect_area</span> <span class="o">/</span> <span class="n">union_area</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="o">-</span><span class="n">iou</span>
+</code></pre></div></div>
+
+<p><strong>IoU loss</strong>的缺点：</p>
+<ul>
+  <li>当预测边界框和实际边界框不相交时，<strong>IoU</strong>为$0$。此时<strong>IoU loss</strong>是不可导的，不能反映两个边界框的远近程度，无法优化；</li>
+  <li>假设预测框和目标框的大小都确定，只要两个框的相交值是确定的，其<strong>IoU</strong>值是相同时，不能反映两个框是如何相交的。如下图所示，通常认为右边的边界框更好，但两者<strong>IoU</strong>值相同：</li>
+</ul>
+
+<p><img src="https://img.imgdb.cn/item/60177c843ffa7d37b3a8976c.jpg" alt="" /></p>
+
+<h3 id="-giou-loss">⚪ GIoU loss</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1902.09630">Generalized Intersection over Union: A Metric and A Loss for Bounding Box Regression</a></li>
+</ul>
+
+<p><strong>IoU</strong>不能区分一些边界框的相交情况。作者提出了评估指标<strong>GIoU (Generalized IoU)</strong>，不仅关注重叠区域，还关注非重叠区域，能更好的反映两者的重合度。计算如下：</p>
+
+\[\text{GIoU} = \text{IoU} - \frac{|C-(A∪B)|}{|C|}\]
+
+<p>其中$A$、$B$表示两个边界框区域，$C$表示$A$和$B$的外接矩形。<strong>GIoU</strong>的取值范围是$-1 \sim 1$，当两框重合时取$1$，当两框未相交时取$-1$。</p>
+
+<p>通过<strong>GIoU</strong>可以定义<strong>GIoU loss</strong>：</p>
+
+\[\text{GIoU loss} = 1-\text{GIoU}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">GIoULoss</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">):</span> <span class="c1"># [n, 4]  format: xywh
+</span>    <span class="c1">#   求出预测框左上角右下角
+</span>    <span class="n">b1_xy</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b1_wh</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b1_wh_half</span>  <span class="o">=</span> <span class="n">b1_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b1_mins</span>     <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">-</span> <span class="n">b1_wh_half</span>
+    <span class="n">b1_maxes</span>    <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">+</span> <span class="n">b1_wh_half</span>
+    
+    <span class="c1">#   求出真实框左上角右下角
+</span>    <span class="n">b2_xy</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b2_wh</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b2_wh_half</span>  <span class="o">=</span> <span class="n">b2_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b2_mins</span>     <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">-</span> <span class="n">b2_wh_half</span>
+    <span class="n">b2_maxes</span>    <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">+</span> <span class="n">b2_wh_half</span>
+
+    <span class="c1">#   求真实框和预测框所有的iou
+</span>    <span class="n">intersect_mins</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">b1_mins</span><span class="p">,</span> <span class="n">b2_mins</span><span class="p">)</span>
+    <span class="n">intersect_maxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">b1_maxes</span><span class="p">,</span> <span class="n">b2_maxes</span><span class="p">)</span>
+    <span class="n">intersect_wh</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">intersect_maxes</span> <span class="o">-</span> <span class="n">intersect_mins</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">intersect_maxes</span><span class="p">))</span>
+    <span class="n">intersect_area</span>  <span class="o">=</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b1_area</span>         <span class="o">=</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b2_area</span>         <span class="o">=</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">union_area</span>      <span class="o">=</span> <span class="n">b1_area</span> <span class="o">+</span> <span class="n">b2_area</span> <span class="o">-</span> <span class="n">intersect_area</span>
+    <span class="n">iou</span>             <span class="o">=</span> <span class="n">intersect_area</span> <span class="o">/</span> <span class="n">union_area</span>
+
+    <span class="c1">#   找到真实框和预测框的外接矩形
+</span>    <span class="n">enclose_mins</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">b1_mins</span><span class="p">,</span> <span class="n">b2_mins</span><span class="p">)</span>
+    <span class="n">enclose_maxes</span>   <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">b1_maxes</span><span class="p">,</span> <span class="n">b2_maxes</span><span class="p">)</span>
+    <span class="n">enclose_wh</span>      <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">enclose_maxes</span> <span class="o">-</span> <span class="n">enclose_mins</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">intersect_maxes</span><span class="p">))</span>
+    
+    <span class="c1">#   计算GIoU
+</span>    <span class="n">enclose_area</span>    <span class="o">=</span> <span class="n">enclose_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">enclose_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">giou</span>            <span class="o">=</span> <span class="n">iou</span> <span class="o">-</span> <span class="p">(</span><span class="n">enclose_area</span> <span class="o">-</span> <span class="n">union_area</span><span class="p">)</span> <span class="o">/</span> <span class="n">enclose_area</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="o">-</span><span class="n">giou</span>
+</code></pre></div></div>
+
+<p><strong>GIoU loss</strong>的缺点：</p>
+<ul>
+  <li>当一个边界框完全包含另一个边界框时，<strong>GIoU</strong>退化为<strong>IoU</strong>，无法区分两者的相对位置关系。如下图三者的<strong>GIoU</strong>相同，但我们认为右边的结果更好：</li>
+</ul>
+
+<p><img src="https://img.imgdb.cn/item/60177d613ffa7d37b3a92f2f.jpg" alt="" /></p>
+
+<h3 id="-diou-loss">⚪ DIoU loss</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1911.08287">Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression</a></li>
+</ul>
+
+<p>作者分析边界框回归的三个重要因素：<strong>中心点距离</strong>、<strong>重叠面积</strong>和<strong>长宽比</strong>。笔者的理解如下，对于给定的<strong>GT</strong>边界框，中心点距离能够对预测框进行粗定位，重叠面积能够进一步筛选预测框，长宽比能够最终确定预测框。</p>
+
+<p><strong>IoU</strong>只衡量重叠面积，需要进一步考虑预测框和<strong>GT</strong>框的惩罚项，损失函数的通用范式如下：</p>
+
+\[L = 1-IoU+R(B_{pred},B_{gt})\]
+
+<p>作者提出了评估指标<strong>DIoU (Distance IoU)</strong>，将惩罚项设置为：</p>
+
+\[R_{DIoU} = \frac{ρ^2(b_{pred},b_{gt})}{c^2}\]
+
+<p>其中$b_{pred}$,$b_{gt}$表示边界框的中心点，$ρ$是欧式距离，$c$表示最小外接矩形的对角线距离，如下图所示：</p>
+
+<p><img src="https://img.imgdb.cn/item/6017d99c3ffa7d37b3ec6a3e.jpg" alt="" /></p>
+
+<p><strong>DIoU</strong>是在<strong>IoU</strong>的基础上加上中心点的归一化距离惩罚，能够更好的表达两框之间的距离，计算如下：</p>
+
+\[\text{DIoU} = \text{IoU} - R_{DIoU}\]
+
+<p>通过<strong>DIoU</strong>可以定义<strong>DIoU loss</strong>：</p>
+
+\[\text{DIoU loss} = 1-\text{DIoU}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">DIoULoss</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">):</span> <span class="c1"># [n, 4]  format: xywh
+</span>    <span class="c1">#   求出预测框左上角右下角
+</span>    <span class="n">b1_xy</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b1_wh</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b1_wh_half</span>  <span class="o">=</span> <span class="n">b1_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b1_mins</span>     <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">-</span> <span class="n">b1_wh_half</span>
+    <span class="n">b1_maxes</span>    <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">+</span> <span class="n">b1_wh_half</span>
+    
+    <span class="c1">#   求出真实框左上角右下角
+</span>    <span class="n">b2_xy</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b2_wh</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b2_wh_half</span>  <span class="o">=</span> <span class="n">b2_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b2_mins</span>     <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">-</span> <span class="n">b2_wh_half</span>
+    <span class="n">b2_maxes</span>    <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">+</span> <span class="n">b2_wh_half</span>
+
+    <span class="c1">#   求真实框和预测框所有的iou
+</span>    <span class="n">intersect_mins</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">b1_mins</span><span class="p">,</span> <span class="n">b2_mins</span><span class="p">)</span>
+    <span class="n">intersect_maxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">b1_maxes</span><span class="p">,</span> <span class="n">b2_maxes</span><span class="p">)</span>
+    <span class="n">intersect_wh</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">intersect_maxes</span> <span class="o">-</span> <span class="n">intersect_mins</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">intersect_maxes</span><span class="p">))</span>
+    <span class="n">intersect_area</span>  <span class="o">=</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b1_area</span>         <span class="o">=</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b2_area</span>         <span class="o">=</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">union_area</span>      <span class="o">=</span> <span class="n">b1_area</span> <span class="o">+</span> <span class="n">b2_area</span> <span class="o">-</span> <span class="n">intersect_area</span>
+    <span class="n">iou</span>             <span class="o">=</span> <span class="n">intersect_area</span> <span class="o">/</span> <span class="n">union_area</span>
+
+    <span class="c1">#   找到真实框和预测框的外接矩形
+</span>    <span class="n">enclose_mins</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">b1_mins</span><span class="p">,</span> <span class="n">b2_mins</span><span class="p">)</span>
+    <span class="n">enclose_maxes</span>   <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">b1_maxes</span><span class="p">,</span> <span class="n">b2_maxes</span><span class="p">)</span>
+    <span class="n">enclose_wh</span>      <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">enclose_maxes</span> <span class="o">-</span> <span class="n">enclose_mins</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">intersect_maxes</span><span class="p">))</span>
+    
+    <span class="c1">#   计算中心的距离
+</span>    <span class="n">center_wh</span>       <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">-</span> <span class="n">b2_xy</span>
+    <span class="n">center_distance</span>     <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="n">center_wh</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1">#   计算对角线距离
+</span>    <span class="n">enclose_diagonal</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="n">enclose_wh</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1">#   计算DIoU
+</span>    <span class="n">diou</span>                <span class="o">=</span> <span class="n">iou</span> <span class="o">-</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">center_distance</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">enclose_diagonal</span><span class="p">,</span> <span class="nb">min</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="o">-</span><span class="n">diou</span>
+</code></pre></div></div>
+
+<p><strong>DIoU loss</strong>的缺点是没有考虑边界框的长宽比的影响。</p>
+
+<h3 id="-ciou-loss">⚪ CIoU loss</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1911.08287">Distance-IoU Loss: Faster and Better Learning for Bounding Box Regression</a></li>
+</ul>
+
+<p><strong>DIoU</strong>的作者又进一步提出了<strong>CIoU (Complete IoU)</strong>，在惩罚项上增加长宽比影响因子$\alpha v$：</p>
+
+\[R_{CIoU} = \frac{ρ^2(b_{pred},b_{gt})}{c^2} + \alpha v\]
+
+<p>其中$v$衡量边界框长宽比的一致性，$\alpha$用于平衡$v$的值，计算如下：</p>
+
+\[\begin{aligned}
+v &amp;= \frac{4}{\pi^2} (\arctan\frac{w^{gt}}{h^{gt}}-\arctan\frac{w}{h})^2 \\
+\alpha &amp;= \frac{v}{(1-\text{IoU})+v}
+\end{aligned}\]
+
+<p>通过<strong>CIoU</strong>可以定义<strong>CIoU loss</strong>：</p>
+
+\[\text{CIoU loss} = 1-\text{CIoU}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">CIoULoss</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">):</span> <span class="c1"># [n, 4]  format: xywh
+</span>    <span class="c1">#   求出预测框左上角右下角
+</span>    <span class="n">b1_xy</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b1_wh</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b1_wh_half</span>  <span class="o">=</span> <span class="n">b1_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b1_mins</span>     <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">-</span> <span class="n">b1_wh_half</span>
+    <span class="n">b1_maxes</span>    <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">+</span> <span class="n">b1_wh_half</span>
+    
+    <span class="c1">#   求出真实框左上角右下角
+</span>    <span class="n">b2_xy</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b2_wh</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b2_wh_half</span>  <span class="o">=</span> <span class="n">b2_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b2_mins</span>     <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">-</span> <span class="n">b2_wh_half</span>
+    <span class="n">b2_maxes</span>    <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">+</span> <span class="n">b2_wh_half</span>
+
+    <span class="c1">#   求真实框和预测框所有的iou
+</span>    <span class="n">intersect_mins</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">b1_mins</span><span class="p">,</span> <span class="n">b2_mins</span><span class="p">)</span>
+    <span class="n">intersect_maxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">b1_maxes</span><span class="p">,</span> <span class="n">b2_maxes</span><span class="p">)</span>
+    <span class="n">intersect_wh</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">intersect_maxes</span> <span class="o">-</span> <span class="n">intersect_mins</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">intersect_maxes</span><span class="p">))</span>
+    <span class="n">intersect_area</span>  <span class="o">=</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b1_area</span>         <span class="o">=</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b2_area</span>         <span class="o">=</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">union_area</span>      <span class="o">=</span> <span class="n">b1_area</span> <span class="o">+</span> <span class="n">b2_area</span> <span class="o">-</span> <span class="n">intersect_area</span>
+    <span class="n">iou</span>             <span class="o">=</span> <span class="n">intersect_area</span> <span class="o">/</span> <span class="n">union_area</span>
+
+    <span class="c1">#   找到真实框和预测框的外接矩形
+</span>    <span class="n">enclose_mins</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">b1_mins</span><span class="p">,</span> <span class="n">b2_mins</span><span class="p">)</span>
+    <span class="n">enclose_maxes</span>   <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">b1_maxes</span><span class="p">,</span> <span class="n">b2_maxes</span><span class="p">)</span>
+    <span class="n">enclose_wh</span>      <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">enclose_maxes</span> <span class="o">-</span> <span class="n">enclose_mins</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">intersect_maxes</span><span class="p">))</span>
+    
+    <span class="c1">#   计算中心的距离
+</span>    <span class="n">center_wh</span>       <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">-</span> <span class="n">b2_xy</span>
+    <span class="n">center_distance</span>     <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="n">center_wh</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1">#   计算对角线距离
+</span>    <span class="n">enclose_diagonal</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="n">enclose_wh</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">diou</span>                <span class="o">=</span> <span class="n">iou</span> <span class="o">-</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">center_distance</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">enclose_diagonal</span><span class="p">,</span> <span class="nb">min</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span>
+
+    <span class="n">v</span>       <span class="o">=</span> <span class="p">(</span><span class="mi">4</span> <span class="o">/</span> <span class="p">(</span><span class="n">math</span><span class="p">.</span><span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">pow</span><span class="p">((</span><span class="n">torch</span><span class="p">.</span><span class="n">atan</span><span class="p">(</span><span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">],</span><span class="nb">min</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">))</span> <span class="o">-</span> <span class="n">torch</span><span class="p">.</span><span class="n">atan</span><span class="p">(</span><span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">],</span> <span class="nb">min</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">))),</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">alpha</span>   <span class="o">=</span> <span class="n">v</span> <span class="o">/</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">((</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">iou</span> <span class="o">+</span> <span class="n">v</span><span class="p">),</span> <span class="nb">min</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span>
+    <span class="n">ciou</span>     <span class="o">=</span> <span class="n">diou</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="o">-</span><span class="n">ciou</span>
+</code></pre></div></div>
+
+<p><strong>CIoU loss</strong>的主要缺点如下：</p>
+<ul>
+  <li>衡量长宽比的$v$计算过于复杂，减缓了收敛速度；</li>
+  <li>推导可得$\frac{\partial v}{\partial w}=-\frac{h}{w}\frac{\partial v}{\partial h}$，$w$和$h$的优化是相反的。</li>
+</ul>
+
+<h3 id="-eiou-loss">⚪ EIoU loss</h3>
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2101.08158">Focal and Efficient IOU Loss for Accurate Bounding Box Regression</a></li>
+</ul>
+
+<p>为简化<strong>CIoU</strong>中长宽比影响因子$\alpha v$的计算，作者提出<strong>EIoU (Efficient IoU)</strong>，用下式代替长宽比的影响因子$\alpha v$：</p>
+
+\[\frac{ρ^2(w_{pred},w_{gt})}{c_w^2} + \frac{ρ^2(h_{pred},h_{gt})}{c_h^2}\]
+
+<p><strong>EIoU</strong>的定义如下：</p>
+
+\[\text{EIoU} = \text{IoU} - \frac{ρ^2(b_{pred},b_{gt})}{c^2}-\frac{ρ^2(w_{pred},w_{gt})}{c_w^2} - \frac{ρ^2(h_{pred},h_{gt})}{c_h^2}\]
+
+<p>通过<strong>EIoU</strong>可以定义<strong>EIoU loss</strong>：</p>
+
+\[\text{EIoU loss} = 1-\text{EIoU}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">EIoULoss</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">):</span> <span class="c1"># [n, 4]  format: xywh
+</span>    <span class="c1">#   求出预测框左上角右下角
+</span>    <span class="n">b1_xy</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b1_wh</span>       <span class="o">=</span> <span class="n">b1</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b1_wh_half</span>  <span class="o">=</span> <span class="n">b1_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b1_mins</span>     <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">-</span> <span class="n">b1_wh_half</span>
+    <span class="n">b1_maxes</span>    <span class="o">=</span> <span class="n">b1_xy</span> <span class="o">+</span> <span class="n">b1_wh_half</span>
+    
+    <span class="c1">#   求出真实框左上角右下角
+</span>    <span class="n">b2_xy</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b2_wh</span>       <span class="o">=</span> <span class="n">b2</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">b2_wh_half</span>  <span class="o">=</span> <span class="n">b2_wh</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">b2_mins</span>     <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">-</span> <span class="n">b2_wh_half</span>
+    <span class="n">b2_maxes</span>    <span class="o">=</span> <span class="n">b2_xy</span> <span class="o">+</span> <span class="n">b2_wh_half</span>
+
+    <span class="c1">#   求真实框和预测框所有的iou
+</span>    <span class="n">intersect_mins</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">b1_mins</span><span class="p">,</span> <span class="n">b2_mins</span><span class="p">)</span>
+    <span class="n">intersect_maxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">b1_maxes</span><span class="p">,</span> <span class="n">b2_maxes</span><span class="p">)</span>
+    <span class="n">intersect_wh</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">intersect_maxes</span> <span class="o">-</span> <span class="n">intersect_mins</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">intersect_maxes</span><span class="p">))</span>
+    <span class="n">intersect_area</span>  <span class="o">=</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">intersect_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b1_area</span>         <span class="o">=</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b1_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">b2_area</span>         <span class="o">=</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b2_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">union_area</span>      <span class="o">=</span> <span class="n">b1_area</span> <span class="o">+</span> <span class="n">b2_area</span> <span class="o">-</span> <span class="n">intersect_area</span>
+    <span class="n">iou</span>             <span class="o">=</span> <span class="n">intersect_area</span> <span class="o">/</span> <span class="n">union_area</span>
+
+    <span class="c1">#   找到真实框和预测框的外接矩形
+</span>    <span class="n">enclose_mins</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="n">b1_mins</span><span class="p">,</span> <span class="n">b2_mins</span><span class="p">)</span>
+    <span class="n">enclose_maxes</span>   <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">b1_maxes</span><span class="p">,</span> <span class="n">b2_maxes</span><span class="p">)</span>
+    <span class="n">enclose_wh</span>      <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">enclose_maxes</span> <span class="o">-</span> <span class="n">enclose_mins</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">intersect_maxes</span><span class="p">))</span>
+    
+    <span class="c1">#   计算EIoU
+</span>    <span class="n">enclose_squared_w</span>    <span class="o">=</span> <span class="n">enclose_wh</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">enclose_squared_h</span>    <span class="o">=</span> <span class="n">enclose_wh</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">enclose_squared_diag</span> <span class="o">=</span> <span class="n">enclose_squared_w</span> <span class="o">+</span> <span class="n">enclose_squared_h</span>
+    <span class="n">center_squared_w</span>     <span class="o">=</span> <span class="p">(</span><span class="n">b1_xy</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">b2_xy</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">center_squared_h</span>     <span class="o">=</span> <span class="p">(</span><span class="n">b1_xy</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">b2_xy</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">center_squared_diag</span>  <span class="o">=</span> <span class="n">center_squared_w</span> <span class="o">+</span> <span class="n">center_squared_h</span>
+    <span class="n">eiou</span>                 <span class="o">=</span> <span class="n">iou</span> <span class="o">-</span> <span class="n">center_squared_w</span> <span class="o">/</span> <span class="n">enclose_squared_w</span> <span class="o">-</span> <span class="n">center_squared_h</span> <span class="o">/</span> <span class="n">enclose_squared_h</span> <span class="o">-</span> <span class="n">center_squared_diag</span> <span class="o">/</span> <span class="n">enclose_squared_diag</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="o">-</span><span class="n">eiou</span>
+</code></pre></div></div>
+
+<h3 id="-siou-loss">⚪ SIoU Loss</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/07/31/siou.html"><font color="blue">SIoU Loss: More Powerful Learning for Bounding Box Regression</font></a></li>
+</ul>
+
+<p><strong>SIoU</strong>包括交并比、角度损失、距离损失和形状损失。角度损失衡量两个边界框的水平或垂直夹角，距离损失衡量两个边界框的中心距离，形状损失衡量两个边界框长宽之间的差异。</p>
+
+\[\begin{aligned}
+\text{SIoU} &amp;= IoU - \frac{\Delta + \Omega}{2} \\
+\Lambda &amp;= 1-2 \cdot \sin^2 \left( \arcsin(x) - \frac{\pi}{4} \right) \\
+\Delta &amp;= \sum_{t=x,y} (1-e^{-\gamma \rho_t}) \\
+\Omega &amp;= \sum_{t=w,h} (1-e^{-\omega_t})^{\theta} \\
+\end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/6524ac55c458853aef876a2f.jpg" alt="" /></p>
+
+<p>通过<strong>SIoU</strong>可以定义<strong>SIoU loss</strong>：</p>
+
+\[L = 1 - \text{SIoU}\]
+
+<h3 id="-mpdiou-loss">⚪ MPDIoU loss</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2023/07/14/mpdiou.html"><font color="blue">MPDIoU: A Loss for Efficient and Accurate Bounding Box Regression</font></a></li>
+</ul>
+
+<p><strong>MPDIoU</strong>直接最小化预测边界框与实际标注边界框之间的左上角和右下角点距离。</p>
+
+\[\text{MPDIoU} = \text{IoU} - \frac{d_1^2}{w^2+h^2}- \frac{d_2^2}{w^2+h^2}\]
+
+<p><img src="https://pic.imgdb.cn/item/64c07dab1ddac507cc48af59.jpg" alt="" /></p>
+
+<p>通过<strong>MPDIoU</strong>可以定义<strong>MPDIoU loss</strong>：</p>
+
+\[\text{MPDIoU loss} = 1-\text{MPDIoU}\]
+
+<h1 id="6-目标检测中的标签分配策略">6. 目标检测中的标签分配策略</h1>
+
+<p><strong>标签分配(label assignment, LA)</strong>策略是指在训练目标检测器时，为特征图不同位置的预测样本分配合适的标签（即区分<strong>anchor</strong>是正样本还是负样本），用于计算损失。标签分配根据非负即正划分为<strong>硬标签分配(hard LA)</strong>和<strong>软标签分配(soft LA)</strong>。</p>
+<ul>
+  <li>硬标签分配策略是指根据阈值把样本划分为正样本或者负样本。依据在训练阶段是否动态调整阈值，硬标签分配策略又可以细分为静态和动态两种：
+    <ol>
+      <li><strong>静态分配</strong>策略主要依据于模型的先验知识（例如距离阈值和<strong>iou</strong>阈值等）来选取不同的正负样本；</li>
+      <li><strong>动态分配</strong>策略依据在训练阶段采用不同的统计量来动态地设置阈值，并划分正负样本；如<strong>DLA</strong>, <strong>MCA</strong>, <strong>HAMBox</strong>, <strong>ATSS</strong>, <strong>SimOTA</strong>, <strong>DSLA</strong>。</li>
+    </ol>
+  </li>
+  <li>软标签分配策略则会根据预测结果与<strong>GT</strong>计算正负权重，在候选正样本(中心点落在<strong>GT</strong>框内)的基础上依据正负样本权重分配正负样本，且在训练的过程中动态调整分配权重。常见的软标签分配策略包括<strong>Noisy Anchor</strong>, <strong>AutoAssign</strong>, <strong>SAPD</strong>, <strong>TOOD</strong>。</li>
+</ul>
+
+<h2 id="1静态分配策略">（1）静态分配策略</h2>
+
+<h3 id="-anchor-based的静态分配策略">⚪ Anchor-based的静态分配策略</h3>
+
+<p><strong>Anchor-based</strong>的静态分配策略是基于<strong>IoU</strong>阈值来实现的，通过计算预测框和<strong>GT</strong>之间的交并比来划分正负样本；常应用在<strong>Faster RCNN</strong>、<strong>YOLO</strong>等网络中。流程如下：</p>
+<ol>
+  <li>初始化时假设每个<strong>anchor</strong>的<strong>mask</strong>都是$-1$，表示都是忽略<strong>anchor</strong></li>
+  <li>计算每个<strong>anchor</strong>和所有<strong>GT</strong>的<strong>IoU</strong>，把最大<strong>IoU</strong>小于<strong>neg_iou_thr</strong>的<strong>anchor</strong>的<strong>mask</strong>设置为$0$，表示负样本(背景样本)</li>
+  <li>把最大<strong>IoU</strong>大于<strong>pos_iou_thr</strong>的<strong>anchor</strong>的<strong>mask</strong>设置为$1$，表示该<strong>anchor</strong>负责预测该<strong>gt bbox</strong>，是正样本</li>
+  <li>可能会出现某些<strong>GT</strong>没有分配到对应的<strong>anchor</strong>，因此对于每个<strong>GT</strong>还需要找出最大<strong>IoU</strong>的<strong>anchor</strong>位置，如果其<strong>IoU</strong>大于<strong>min_pos_iou</strong>，将该<strong>anchor</strong>的<strong>mask</strong>设置为$1$，表示该<strong>anchor</strong>负责预测该<strong>GT</strong></li>
+</ol>
+
+<p>在该分配策略中，每个<strong>anchor</strong>最多只能预测一个<strong>GT</strong>，而每个<strong>GT</strong>可能由多个<strong>anchor</strong>负责预测；<strong>IoU</strong>介于<strong>neg_iou_thr</strong>和<strong>pos_iou_thr</strong>之间的<strong>anchor</strong>可能被忽略。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># overlaps 表示anchor与gt的交并比矩阵
+# 1. 所有index全部设置为-1，表示忽略anchor
+</span><span class="n">assigned_gt_inds</span> <span class="o">=</span> <span class="n">overlaps</span><span class="p">.</span><span class="n">new_full</span><span class="p">((</span><span class="n">num_bboxes</span><span class="p">),</span>
+                                     <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+                                     <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">long</span><span class="p">)</span>
+
+<span class="c1"># 计算每个anchor和哪个gt的iou最大
+</span><span class="n">max_overlaps</span><span class="p">,</span> <span class="n">argmax_overlaps</span> <span class="o">=</span> <span class="n">overlaps</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># 计算每个gt和哪个anchor的iou最大
+</span><span class="n">gt_max_overlaps</span><span class="p">,</span> <span class="n">gt_argmax_overlaps</span> <span class="o">=</span> <span class="n">overlaps</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># 2. 对于每个anchor，如果其和gt的最大iou小于阈值neg_iou_thr，则分配负样本
+</span><span class="n">assigned_gt_inds</span><span class="p">[(</span><span class="n">max_overlaps</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+                 <span class="o">&amp;</span> <span class="p">(</span><span class="n">max_overlaps</span> <span class="o">&lt;</span> <span class="n">neg_iou_thr</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c1"># 3. 对于每个anchor，如果其和gt的最大iou大于阈值pos_iou_thr，则分配负样本
+</span><span class="n">pos_inds</span> <span class="o">=</span> <span class="n">max_overlaps</span> <span class="o">&gt;=</span> <span class="n">pos_iou_thr</span>
+<span class="n">assigned_gt_inds</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span> <span class="o">=</span> <span class="n">argmax_overlaps</span><span class="p">[</span><span class="n">pos_inds</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="c1"># 4. 对于每个gt，如果其和anchor的最大iou大于阈值min_pos_iou，则分配正样本
+</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_gts</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">gt_max_overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_pos_iou</span><span class="p">:</span>
+       <span class="n">assigned_gt_inds</span><span class="p">[</span><span class="n">gt_argmax_overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> 
+</code></pre></div></div>
+
+<h3 id="-anchor-free的静态分配策略">⚪ Anchor-free的静态分配策略</h3>
+
+<p><strong>Anchor-free</strong>的静态分配策略是基于距离阈值来实现的。以<strong>FCOS</strong>模型为例，将输入图像上的位置作为<strong>anchor point</strong>的中心点，并且对这些<strong>anchor point</strong>进行回归。</p>
+<ol>
+  <li>由于<strong>Anchor-free</strong>方法通常是多尺度预测输出，因此需要首先考虑<strong>GT</strong>由哪一个输出层具体负责。首先设计<strong>min_size</strong>和<strong>max_size</strong>来确定某个<strong>GT</strong>到底由哪一层负责，比如设置$0, 64, 128, 256, 512$和无穷大，则第<strong>1</strong>层负责预测尺度在<strong>0~64</strong>范围内的<strong>GT</strong>，第<strong>2</strong>层负责预测尺度在<strong>64~128</strong>范围内的<strong>GT</strong>，其余类推。通过该分配策略就可以将不同大小的<strong>GT</strong>分配到最合适的预测层进行学习。</li>
+  <li>然后需要确定在每个输出层上面，哪些空间位置是正样本区域，哪些是负样本区域。采用<strong>center sampling</strong>来确定正负样本，具体是：引入了<strong>center_sample_radius</strong>(基于当前<strong>stride</strong>参数)的参数用于确定在半径范围内的样本都属于正样本区域，其余区域作为负样本。默认配置<strong>center_sample_radius=1.5</strong>，以第<strong>1</strong>层为例，其<strong>stride=8</strong>，在该输出层上基于<strong>gt bbox</strong>中心点为起点，在半径为<strong>1.5*8=12</strong>个像素范围内都属于正样本区域。</li>
+</ol>
+
+<h2 id="2动态分配策略">（2）动态分配策略</h2>
+
+<h3 id="-dynamic-label-assignment-dla">⚪ Dynamic Label Assignment (DLA)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/30/dynamicrcnn.html"><font color="blue">Dynamic R-CNN: Towards High Quality Object Detection via Dynamic Training</font></a></li>
+</ul>
+
+<p><strong>IoU</strong>阈值$T_{now}$动态调整，做法是首先计算每个<strong>ROI</strong>和所有<strong>GT</strong>的最大<strong>IoU</strong>值，在每张图片上选取第$K_{I-th}$个最大值，遍历所有图片求均值作为$T_{now}$，并且每隔$C$个迭代更新一次该参数。</p>
+
+<h3 id="-minimum-cost-assignment-mca">⚪ Minimum Cost Assignment (MCA)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2020/12/26/onenet.html"><font color="blue">OneNet: Towards End-to-End One-Stage Object Detection</font></a></li>
+</ul>
+
+<p>在进行标签匹配时，同时考虑分类损失和位置损失，对每个<strong>GT</strong>只有一个具有最小分类损失和定位损失的样本被分配为正样本。</p>
+
+<h3 id="-online-high-quality-anchors-mining-hambox">⚪ Online High-quality Anchors Mining (HAMBox)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/06/16/hambox.html"><font color="blue">HAMBox: Delving into Online High-quality Anchors Mining for Detecting Outer Faces</font></a></li>
+</ul>
+
+<p><strong>HAMBox</strong>在保证<strong>IoU</strong>质量的前提下，尽可能保证每个<strong>GT</strong>都有指定数目的$K$个<strong>anchor</strong>进行匹配(并没有保证一定要$K$个)。</p>
+<ul>
+  <li>将每个<strong>GT</strong>匹配到<strong>IoU</strong>大于阈值的<strong>anchor</strong>，如果匹配到$K$个正样本，则不需要补充；否则假设只匹配到$M$个正样本；</li>
+  <li>在每次前向传播之后，每个<strong>anchor</strong>通过回归得到回归框$B_{reg}$；对每个未匹配完成的<strong>GT</strong>计算它与$B_{reg}$的<strong>IoU</strong>值，然后补偿$K-M$个<strong>unmatched anchor</strong>：
+    <ol>
+      <li><strong>IoU</strong>要大于阈值$T$</li>
+      <li>对上一步得到的<strong>anchor</strong>进行排序，选择<strong>IoU</strong>最大的<strong>top-(K-M)</strong>个<strong>anchor</strong>做补偿。</li>
+    </ol>
+  </li>
+</ul>
+
+<h3 id="-adaptive-training-sample-selection-atss">⚪ Adaptive Training Sample Selection (ATSS)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/23/atss.html"><font color="blue">Bridging the Gap Between Anchor-based and Anchor-free Detection via Adaptive Training Sample Selection</font></a></li>
+</ul>
+
+<p><strong>ATSS</strong>根据检测框中心的<strong>L2</strong>距离和<strong>IoU</strong>阈值自适应地选择正负样本：</p>
+<ol>
+  <li>针对每个<strong>GT</strong>，在每个尺度的特征图上计算预测框与<strong>GT</strong>的$l_{2}$距离，选取其中最小的前$k$(默认为$9$)个作为候选正样本；</li>
+  <li>计算每个<strong>GT</strong>和候选正样本的<strong>IoU</strong>值，并统计这些<strong>IoU</strong>值的均值和方差；</li>
+  <li>对均值和方差求和，并将该值作为划分正负样本的阈值：大于该值的候选正样本为最终正样本，反之就是负样本。</li>
+</ol>
+
+<h3 id="-simota">⚪ SimOTA</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/08/01/yolox.html"><font color="blue">YOLOX: Exceeding YOLO Series in 2021</font></a></li>
+</ul>
+
+<p><strong>SimOTA</strong>基于代价矩阵和<strong>IoU</strong>，在训练的过程中动态选择正负样本：</p>
+<ol>
+  <li>将落在<strong>GT</strong>框内的特征点作为候选正样本；</li>
+  <li>计算候选正样本与<strong>GT</strong>的分类交叉熵和回归损失，两值相加即为代价矩阵的元素值；</li>
+  <li>计算<strong>GT</strong>和候选正样本的<strong>IoU</strong>值，并对计算出的<strong>IoU</strong>值进行排序，选取前$k$个值(默认为$16$)进行相加，该值作为最终划分正样本的个数值$k_{2}$；</li>
+  <li>针对每个<strong>GT</strong>，选择代价矩阵最小的$k_{2}$个候选正样本作为最终的正样本，其余的为负样本。分配到多个<strong>GT</strong>的预测框取选取最小代价的进行匹配。</li>
+</ol>
+
+<h3 id="-dynamic-soft-label-assigner-dsla">⚪ Dynamic Soft Label Assigner (DSLA)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2022/12/07/rtmdet.html"><font color="blue">RTMDet: An Empirical Study of Designing Real-Time Object Detectors</font></a></li>
+</ul>
+
+<p><strong>Dynamic Soft Label Assigner</strong>主要包括使用位置先验信息损失、样本回归损失、样本分类损失，同时对三个损失进行了 <strong>Soft</strong> 处理进行参数调优, 以达到最佳的动态匹配效果。</p>
+
+<p>位置先验信息损失：</p>
+
+\[C_{center} = \alpha^{|x_{pred}-x_{gt}|-\beta}\]
+
+<p>样本回归损失：</p>
+
+\[C_{reg} = -\log(IOU)\]
+
+<p>样本分类损失：</p>
+
+\[C_{cls} = CE(P,Y_{soft}) *(Y_{soft}-P)^2\]
+
+<p>通过计算上述三个损失的和得到最终的 <strong>cost_matrix</strong> 后, 再使用 <strong>SimOTA</strong> 决定每一个 <strong>GT</strong> 匹配的样本的个数并决定最终的样本。具体操作如下所示：</p>
+<ol>
+  <li>首先通过自适应计算每一个 <strong>GT</strong> 要选取的样本数量： 取每一个 <strong>GT</strong> 与所有 <strong>bboxes</strong> 前 <strong>13</strong> 大的 <strong>IoU</strong>, 得到它们的和取整后作为这个 <strong>GT</strong> 的 样本数目 , 最少为 <strong>1</strong> 个, 记为 <strong>dynamic_ks</strong>。</li>
+  <li>对于每一个 <strong>GT</strong> , 将其 <strong>cost_matrix</strong> 矩阵前 <strong>dynamic_ks</strong> 小的位置作为该 <strong>GT</strong> 的正样本。</li>
+  <li>对于某一个 <strong>bbox</strong>, 如果被匹配到多个 <strong>GT</strong> 就将与这些 <strong>GTs</strong> 的 <strong>cost_marix</strong> 中最小的那个作为其 <strong>label</strong>。</li>
+</ol>
+
+<h2 id="3软标签分配策略">（3）软标签分配策略</h2>
+
+<h3 id="-noisy-anchor">⚪ Noisy Anchor</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/06/01/noisyanchor.html"><font color="blue">Learning from Noisy Anchors for One-stage Object Detection</font></a></li>
+</ul>
+
+<p><strong>Noisy Anchor</strong>对每个<strong>GT</strong>根据<strong>IoU</strong>分别选出<strong>TOP-N</strong>样本分别作为候选正样本$A_{pos}$和候选负样本$A_{neg}$，并为其设置软标签：</p>
+
+\[c = \begin{cases}
+\alpha\cdot \text{loc_a} + (1-\alpha)\cdot \text{cls_c}, &amp; b \in A_{pos} \\
+0, &amp; b \in A_{neg}
+\end{cases}\]
+
+<p><strong>loc_a</strong>表示定位置信度，采用预测<strong>box</strong>和对应的<strong>GT</strong>之间的<strong>IOU</strong>衡量；<strong>cls_c</strong>表示分类置信度，通过网络<strong>head</strong>直接预测。对于候选正样本$A_{pos}$，进一步引入了损失函数的软权重：</p>
+
+\[r = \left( \alpha\cdot f(\text{loc_a}) + (1-\alpha)\cdot f(\text{cls_c}) \right)^\gamma\]
+
+<h3 id="-autoassign">⚪ AutoAssign</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/27/autoassign.html"><font color="blue">AutoAssign: Differentiable Label Assignment for Dense Object Detection</font></a></li>
+</ul>
+
+<p><strong>AutoAssign</strong>基于预测框的分类得分、框回归得分、中心先验得分计算正负权重，实现对<strong>GT</strong>框内物体的形状自适应，以及不同<strong>FPN</strong>层物体正负样本的自动划分:</p>
+<ol>
+  <li>所有<strong>FPN</strong>特征点落在<strong>GT</strong>框内的作为候选正样本，其余的作为负样本；</li>
+  <li>针对负样本，其负样本属性权重为$1$，正样本属性权重为$0$；而针对候选正样本，其负样本属性权重计算方式为分类得分乘以前背景得分，而正样本属性权重来自于分类得分、前背景得分和<strong>IoU</strong>得分，以及综合考虑中心先验得分；</li>
+  <li>计算损失时考虑所有样本的负权重和候选正样本的正权重</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/65349bd6c458853aefddf9d8.jpg" alt="" /></p>
+
+<h3 id="-soft-anchor-point-detection-sapd">⚪ Soft Anchor-Point Detection (SAPD)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/05/24/sapd.html"><font color="blue">Soft Anchor-Point Object Detection</font></a></li>
+</ul>
+
+<p><strong>SAPD</strong>首先设计了一个和检测器联合训练的元选择(<strong>meta-selection</strong>)网络，它为每个<strong>GT</strong>预测各个特征金字塔<strong>level</strong>的软选择权重。然后对于正样本<strong>anchor point</strong>，会根据<strong>anchor point</strong>到对应目标中心点的距离以及它所属的特征金字塔<strong>level</strong>的软选择权重两个因素来调整该<strong>anchor point</strong>对整个网络损失的影响权重。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6530d84ac458853aefee9c77.jpg" alt="" /></p>
+
+<h3 id="-task-aligned-one-stage-object-detection-tood">⚪ Task-aligned One-stage Object Detection (TOOD)</h3>
+<ul>
+  <li>paper：<a href="https://0809zheng.github.io/2021/10/12/tood.html"><font color="blue">TOOD: Task-aligned One-stage Object Detection</font></a></li>
+</ul>
+
+<p>针对分类回归任务解耦所带来的空间不一致问题（即要求正样本高置信度高定位，负样本低置信度低定位），<strong>TOOD</strong>设计出一种预测框的度量方式，对预测框进行正负样本的划分：</p>
+<ol>
+  <li>所有候选点落在<strong>GT</strong>框内即为候选正样本；</li>
+  <li>针对每个<strong>GT</strong>，计算其与候选正样本的<strong>IoU</strong>值$u$，并与其置信度得分$s$相乘后作为度量值$t=s^\alpha\times u^\beta$；</li>
+  <li>根据$t$排序选择前$k$个候选正样本作为最终的正样本；</li>
+  <li>如果一个预测框和多个<strong>GT</strong>进行匹配，则选择<strong>IoU</strong>最大的<strong>GT</strong>。</li>
+</ol>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/05/09/deepface.html" class="read-next-link"></a>
+        <section>
+          <span>DeepFace: Closing the Gap to Human-Level Performance in Face Verification</span>
+          <p>  DeepFace: 实现人类水平的人脸验证与识别.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63c4d2dabe43e0d30e4ad207.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/05/07/semantic-segmentation.html" class="read-next-link"></a>
+          <section>
+            <span>图像分割(Image Segmentation)</span>
+            <p>  Image Segmentation.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63f2c620f144a01007e3c370.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

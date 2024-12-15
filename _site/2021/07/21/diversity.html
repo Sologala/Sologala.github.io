@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集成学习中的多样性度量(Diversity Measure) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="集成学习中的多样性度量(Diversity Measure)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="集成学习中的多样性度量(Diversity Measure) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/07/21/diversity.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>集成学习中的多样性度量(Diversity Measure)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-07-21"><i class="iconfont icon-date"></i>21 Jul 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/611deab74907e2d39c3e9f9c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Diversity Measure in Ensemble Learning.</p>
+</blockquote>
+
+<p><strong>集成学习(Ensemble Learning)</strong>是指构建若干子模型，并通过某种策略结合起来获得最终的模型。在集成学习中，通常希望构建的子模型具有一定的<strong>准确率</strong>(至少不差于<strong>弱学习器</strong>,即泛化性能略优于随机猜测的学习器)，又具有一定的<strong>多样性</strong>(即不同子模型之间具有一定的差异)。</p>
+
+<h1 id="1-多样性度量">1. 多样性度量</h1>
+<p><strong>多样性度量(diversity measure)</strong>是指衡量集成模型中子模型的多样性。通常是衡量子模型之间的两两相似/不相似性。
+以输出为$±1$的二分类任务为例，子模型$g_i$与$g_j$的预测结果<strong>列联表(contingency table)</strong>为：</p>
+
+\[\begin{array}{l|cc}
+     &amp; g_i=+1 &amp; g_i=-1 \\
+    \hline
+    g_j=+1 &amp; a &amp; c \\
+    g_j=-1 &amp; b &amp; d \\
+\end{array}\]
+
+<p>其中$a+b+c+d=N$为样本总数。基于该列联表给出一些常见的多样性度量：</p>
+
+<h3 id="1-不合度量-disagreement-measure">(1) 不合度量 disagreement measure</h3>
+
+\[\text{dis}_{ij} = \frac{b+c}{N}\]
+
+<p>$\text{dis}_{ij}$的值域为$[0,1]$，其值越大则多样性越大。</p>
+
+<h3 id="2-相关系数-correlation-coefficient">(2) 相关系数 correlation coefficient</h3>
+
+\[\rho_{ij} = \frac{ad-bc}{\sqrt{(a+b)(a+c)(c+d)(b+d)}}\]
+
+<p>$\rho_{ij}$的值域为$[-1,1]$。若$g_i$与$g_j$无关则值为$0$；若$g_i$与$g_j$正相关则其值为正，否则为负。</p>
+
+<h3 id="3-q-统计量-q-statistic">(3) Q-统计量 Q-statistic</h3>
+
+\[Q_{ij} = \frac{ad-bc}{ad+bc}\]
+
+<p>$Q_{ij}$与\(\rho_{ij}\)的符号相同，且$|Q_{ij}|≥ |\rho_{ij}|$。</p>
+
+<h3 id="4-kappa-统计量-kappa-statistic">(4) $\kappa$-统计量 $\kappa$-statistic</h3>
+
+\[\kappa = \frac{p_1-p_2}{1-p_2}\]
+
+<p>其中$p_1$是两个子模型取得一致的概率，$p_2$是两个子模型偶然达成一致的概率，估计为：</p>
+
+\[p_1 = \frac{a+d}{N}\]
+
+\[p_2 = \frac{(a+b)(a+c)+(c+d)(b+d)}{N^2}\]
+
+<p>若$g_i$与$g_j$完全一致，则$\kappa=1$；若$g_i$与$g_j$仅是偶然达成一致，则$\kappa=0$；$\kappa$通常取非负值，只有在$g_i$与$g_j$达成一致的概率甚至低于偶然达成一致的概率时取负值。$\kappa$<strong>-误差图</strong>是指将每一对(<strong>pairwise</strong>)子模型作为图上的一个点，横坐标是这对子模型的$\kappa$值，纵坐标是它们的平均误差。数据分布越靠上，每个子模型的准确率越低；数据分布越靠右，子模型的多样性越小。</p>
+
+<p><img src="https://pic.imgdb.cn/item/611deab74907e2d39c3e9f9c.jpg" alt="" /></p>
+
+<h1 id="2-多样性增强">2. 多样性增强</h1>
+<p>集成学习中需要多样性较大的子模型，增强子模型的多样性的方法一般是在学习过程中引入<strong>随机性</strong>，如：</p>
+<ul>
+  <li><strong>数据样本</strong>扰动：从初始数据集中采样不同的子数据集，进而训练出不同的子模型；如<strong>bagging, boosting</strong>。该方法适用于对数据样本的扰动敏感的子模型(如决策树,神经网络)，训练样本的轻微扰动会导致子模型的显著变化。不适合对于数据样本的扰动不敏感的子模型(如线性模型,支持向量机,朴素贝叶斯,k近邻)。</li>
+  <li><strong>输入特征</strong>扰动：从初始的高维特征空间投影到低维特征空间，构成不同的子空间，进而训练出不同的子模型；如随机森林。</li>
+  <li><strong>输出表示</strong>扰动：改变输出的表示以增强多样性。</li>
+  <li><strong>算法参数</strong>扰动：改变模型的超参数以增强多样性。</li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/07/22/ead.html" class="read-next-link"></a>
+        <section>
+          <span>集成学习中的误差-分歧分解(Error-Ambiguity Decomposition)</span>
+          <p>  Error-Ambiguity Decomposition in Ensemble Learning.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60f508195132923bf8403c92.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/07/20/me.html" class="read-next-link"></a>
+          <section>
+            <span>Maximum Entropy：最大熵模型</span>
+            <p>  Maximum Entropy.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/634e4a9f16f2c2beb14bec87.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

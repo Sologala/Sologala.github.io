@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Batch Normalized Inference Network Keeps the KL Vanishing Away - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="A Batch Normalized Inference Network Keeps the KL Vanishing Away">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="A Batch Normalized Inference Network Keeps the KL Vanishing Away - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/18/bnvae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>A Batch Normalized Inference Network Keeps the KL Vanishing Away</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-18"><i class="iconfont icon-date"></i>18 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6290831d0947543129a88c0a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>BN-VAE: 通过批量归一化缓解KL散度消失问题.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2004.12585">A Batch Normalized Inference Network Keeps the KL Vanishing Away</a></li>
+</ul>
+
+<h1 id="1-kl-vanishing-problem">1. KL Vanishing Problem</h1>
+
+<p><strong>VAE</strong>的目标函数为最小化负<strong>ELBO</strong>：</p>
+
+\[\mathcal{L}  = \mathbb{E}_{z \text{~} q(z|x)} [-\log p(x | z)] + KL[q(z|x)||p(z)]\]
+
+<p>损失包括重构损失和变分后验的正则化项。如果正则化项过强，会导致$KL[q(z|x)||p(z)]=0$。此时后验分布$q(z|x)$退化为高斯先验$p(z)$，即数据$x$和隐变量$z$无关。此时<strong>VAE</strong>会退化为常规的自编码器，编码器输出常数向量，<strong>VAE</strong>失去了无监督构建编码向量的能力，这个问题称为<strong>KL Vanishing</strong>问题。<strong>KL Vanishing</strong>问题多存在于自然语言处理任务中。</p>
+
+<h1 id="2-将bn引入vae">2. 将BN引入VAE</h1>
+
+<p><strong>KL Vanishing</strong>问题是指在训练时KL散度项变成$KL[q(z|x)||p(z)]=0$，若通过调整编码器输出使得<strong>KL</strong>散度有一个大于零的下界，则能够缓解<strong>KL Vanishing</strong>问题。</p>
+
+<p>$KL[q(z|x)||p(z)]$衡量后验分布$q(z|x)$和先验分布$p(z)$之间的<strong>KL</strong>散度。$q(z|x)$优化的目标是趋近标准正态分布，此时$p(z)$指定为标准正态分布$z$~\(\mathcal{N}(0,I)\)。$q(z|x)$通过神经网络进行拟合(即概率编码器)，其形式人为指定为<strong>多维对角正态分布</strong> \(\mathcal{N}(\mu,\sigma^{2})\)。</p>
+
+<p>由于两个分布都是正态分布，<strong>KL</strong>散度有闭式解(<strong>closed-form solution</strong>)，计算如下：</p>
+
+\[KL[q(z|x)||p(z)] =\frac{1}{B} \sum_{b=1}^{B} \sum_{d=1}^{D} \frac{1}{2}  (-\log \sigma_{b,d}^2 + \mu_{b,d}^2+\sigma_{b,d}^2-1)\]
+
+<p>上式表示采样$B$个样本，且隐变量的编码维度为$D$。由于$e^x≥x+1$，所以$\sigma_{b,d}^2−\log \sigma_{b,d}^2−1≥0$，因此:</p>
+
+\[KL[q(z|x)||p(z)] \geq \frac{1}{B} \sum_{b=1}^{B} \sum_{d=1}^{D} \frac{1}{2} \mu_{b,d}^2 = \frac{1}{2}\sum_{d=1}^{D} (\frac{1}{B} \sum_{b=1}^{B} \mu_{b,d}^2)\]
+
+<p>对上式取期望：</p>
+
+\[\Bbb{E}[KL[q(z|x)||p(z)]] \geq \Bbb{E}[\frac{1}{2}\sum_{d=1}^{D} (\frac{1}{B} \sum_{b=1}^{B} \mu_{b,d}^2)] = \frac{1}{2}\sum_{d=1}^{D} (\frac{1}{B} \sum_{b=1}^{B} \Bbb{E}[\mu_{b,d}^2])\]
+
+<p>根据均值方差公式$Var[\mu]=\Bbb{E}[\mu^2]-(\Bbb{E}[\mu])^2$，因此:</p>
+
+\[\Bbb{E}[KL[q(z|x)||p(z)]] \geq \frac{1}{2}\sum_{d=1}^{D} (\frac{1}{B} \sum_{b=1}^{B} (Var[\mu_{b,d}]+(\Bbb{E}[\mu_{b,d}])^2))\]
+
+<p>上式给出了<strong>KL</strong>散度项的一个下界，由编码器的输出均值$μ$在一个批量样本内的二阶矩决定。如果在均值$μ$后增加<strong>BatchNorm</strong>层，则能够将均值$μ$的均值调整为$\beta$，方差调整为$\gamma^2$，此时有：</p>
+
+\[\Bbb{E}[KL[q(z|x)||p(z)]] \geq   \frac{D}{2}(\gamma^2+\beta^2)\]
+
+<p>通过引入<strong>BatchNorm</strong>层，使得<strong>KL</strong>散度项有个正的下界，从而缓解了<strong>KL Vanishing</strong>问题。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/19/svae.html" class="read-next-link"></a>
+        <section>
+          <span>Hyperspherical Variational Auto-Encoders</span>
+          <p>  Hyperspherical VAE: 为隐变量引入vMF分布.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62933e7a09475431294dbcc3.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/17/dipvae.html" class="read-next-link"></a>
+          <section>
+            <span>Variational Inference of Disentangled Latent Concepts from Unlabeled Observations</span>
+            <p>  DIP-VAE: 分离推断先验VAE.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/628ee54909475431298ce103.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

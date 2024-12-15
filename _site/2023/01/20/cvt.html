@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CvT: Introducing Convolutions to Vision Transformers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="CvT: Introducing Convolutions to Vision Transformers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="CvT: Introducing Convolutions to Vision Transformers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/20/cvt.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>CvT: Introducing Convolutions to Vision Transformers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-20"><i class="iconfont icon-date"></i>20 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6427d3e8a682492fcc5e8593.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>CvT：向视觉Transformer中引入卷积.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2103.15808">CvT: Introducing Convolutions to Vision Transformers</a></li>
+</ul>
+
+<p>卷积神经网络具有一些优良的特征，比如局部感受野、共享卷积权重、空间下采样等，从而在视觉任务上具有突出的表现。而视觉<strong>Transformer</strong>能够捕捉全局信息，比卷积网络具有更强的表示能力，因此往往需要更多的数据量以支持训练。本文提出了一种融合卷积与视觉<strong>Transformer</strong>的模型<strong>CvT</strong>，通过构造多阶段的层次结构，在<strong>ImageNet-1k</strong>和<strong>ImageNet-22k</strong>数据集上训练，达到了<strong>SOTA</strong>的性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6427d594a682492fcc60956d.jpg" alt="" /></p>
+
+<p><strong>CvT</strong>结构引入了两种卷积操作，分别叫做<strong>Convolutional Token Embedding</strong>和<strong>Convolutional Projection</strong>。</p>
+
+<h2 id="1-convolutional-token-embedding">1. Convolutional Token Embedding</h2>
+
+<p>在每个<strong>stage</strong>中会进行下面的操作：输入的<strong>2D token map</strong>会先进入<strong>Convolutional Token Embedding</strong>这个层，相当于在<strong>2D reshaped token map</strong>上做一次卷积操作。这个层的输入是个<strong>reshape</strong>成<strong>2D</strong>的<strong>token</strong>。再通过一个<strong>Layer Normalization</strong>。卷积的目的是保证在每个阶段都减小<strong>token</strong>的数量，也就是减小<strong>feature resolution</strong>；在每个阶段都扩大<strong>token width</strong>，也就是扩大<strong>feature dimension</strong>。这样实现的效果就和<strong>CNN</strong>差不多，都是随着层数的加深而逐渐减小<strong>feature resolution</strong>和逐渐增加<strong>feature dimension</strong>。</p>
+
+<p>假设前一层的输出维度是$x_{i-1}\in R^{H_{i-1}\times W_{i-1} \times C_{i-1}}$，先通过<strong>Convolutional Token Embedding</strong>的常规的卷积操作得到$f(x_{i-1})\in R^{H_{i}\times W_{i} \times C_{i}}$，再把它<strong>flatten</strong>成一个$H_iW_i\times C_i$的张量并进行<strong>Layer Normalization</strong>操作，得到的结果进入下面的第$i$个<strong>stage</strong>的<strong>Transformer Block</strong>的操作。这些操作的目的是保证在每个阶段都减小<strong>token</strong>的数量，也就是减小<strong>feature resolution</strong>；在每个阶段都扩大<strong>token width</strong>，也就是扩大<strong>feature dimension</strong>。</p>
+
+<h2 id="2-convolutional-projection">2. Convolutional Projection</h2>
+
+<p>在每个<strong>stage</strong>中，<strong>Convolutional Token Embedding</strong>的输出会再通过<strong>Convolutional Transformer Blocks</strong>。这个结构长得和普通<strong>Transformer</strong>的<strong>Block</strong>差不多，只是把普通<strong>Transformer</strong>的<strong>Block</strong>中的<strong>Linear Projection</strong>操作换成了<strong>Convolutional Projection</strong>操作，说白了就是用<strong>Depth-wise separable convolution</strong>操作来代替了<strong>Linear Projection</strong>操作。</p>
+
+<p>具体来讲，<strong>token</strong>首先<strong>reshape</strong>成<strong>2D</strong>的<strong>token map</strong>，再分别通过<strong>3</strong>个<strong>Depthwise-separable Convolution</strong> (<strong>kernel</strong> $=s\times s$)变成<strong>query</strong>，<strong>key</strong>和<strong>value</strong>值。最后再把这些<strong>query</strong>，<strong>key</strong>和<strong>value</strong>值通过<strong>flatten</strong>操作。</p>
+
+<p>对于常规的<strong>Convolution</strong>所需的参数量和计算量分别是$s^2C^2$和$O(s^2C^2T)$。式中$C$是<strong>token</strong>的<strong>channel dimension</strong>，$T$是<strong>token</strong>的数量。<strong>Depthwise-separable Convolution</strong>所需的参数量和计算量分别是$s^2C$和$O(s^2CT)$。</p>
+
+<p>为了使得模型进一步简化，作者又提出了<strong>Squeezed convolutional projection</strong>操作。在计算<strong>query</strong>时，采用的<strong>Depthwise-separable Convolution</strong>的<strong>stride</strong>值为<strong>1</strong>。在计算<strong>key</strong>和<strong>value</strong>时，采用的<strong>Depthwise-separable Convolution</strong>的<strong>stride</strong>值为<strong>2</strong>。按照这种方式，<strong>token</strong>的数量对于<strong>key</strong>和<strong>value</strong>来说可以减少<strong>4</strong>倍，性能只有很少的下降。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6427d8e2a682492fcc6535b7.jpg" alt="" /></p>
+
+<p>此外，<strong>CvT</strong>不再采用位置编码（卷积的<strong>zero-padding</strong>操作可以暗含位置信息）；<strong>class token</strong>只加在最后一个<strong>stage</strong>里面。</p>
+
+<p><strong>CvT</strong>的完整实现可参考<a href="https://github.com/lucidrains/vit-pytorch/blob/main/vit_pytorch/cvt.py">vit-pytorch</a>。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PreNorm</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fn</span> <span class="o">=</span> <span class="n">fn</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">FeedForward</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">mult</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span> <span class="o">*</span> <span class="n">mult</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">GELU</span><span class="p">(),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span> <span class="o">*</span> <span class="n">mult</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">DepthWiseConv2d</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim_in</span><span class="p">,</span> <span class="n">dim_out</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim_in</span><span class="p">,</span> <span class="n">dim_in</span><span class="p">,</span> <span class="n">kernel_size</span> <span class="o">=</span> <span class="n">kernel_size</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span><span class="p">,</span> <span class="n">groups</span> <span class="o">=</span> <span class="n">dim_in</span><span class="p">,</span> <span class="n">stride</span> <span class="o">=</span> <span class="n">stride</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="n">bias</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">dim_in</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim_in</span><span class="p">,</span> <span class="n">dim_out</span><span class="p">,</span> <span class="n">kernel_size</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="n">bias</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">net</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+<span class="k">class</span> <span class="nc">Attention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">proj_kernel</span><span class="p">,</span> <span class="n">kv_proj_stride</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">inner_dim</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">*</span>  <span class="n">heads</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">proj_kernel</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">dim_head</span> <span class="o">**</span> <span class="o">-</span><span class="mf">0.5</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">attend</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Softmax</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_q</span> <span class="o">=</span> <span class="n">DepthWiseConv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span><span class="p">,</span> <span class="n">proj_kernel</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span><span class="p">,</span> <span class="n">stride</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_kv</span> <span class="o">=</span> <span class="n">DepthWiseConv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">inner_dim</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">proj_kernel</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span><span class="p">,</span> <span class="n">stride</span> <span class="o">=</span> <span class="n">kv_proj_stride</span><span class="p">,</span> <span class="n">bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">inner_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="o">*</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">heads</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">to_q</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="o">*</span><span class="bp">self</span><span class="p">.</span><span class="n">to_kv</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">chunk</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="s">'b (h d) x y -&gt; (b h) (x y) d'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">h</span><span class="p">),</span> <span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+
+        <span class="n">dots</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s">'b i d, b j d -&gt; b i j'</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">attend</span><span class="p">(</span><span class="n">dots</span><span class="p">)</span>
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">attn</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">einsum</span><span class="p">(</span><span class="s">'b i j, b j d -&gt; b i d'</span><span class="p">,</span> <span class="n">attn</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="s">'(b h) (x y) d -&gt; b (h d) x y'</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">h</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_out</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Transformer</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">proj_kernel</span><span class="p">,</span> <span class="n">kv_proj_stride</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">heads</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">mlp_mult</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span>
+                <span class="n">PreNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">Attention</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">proj_kernel</span> <span class="o">=</span> <span class="n">proj_kernel</span><span class="p">,</span> <span class="n">kv_proj_stride</span> <span class="o">=</span> <span class="n">kv_proj_stride</span><span class="p">,</span> <span class="n">heads</span> <span class="o">=</span> <span class="n">heads</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="n">dim_head</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span><span class="p">)),</span>
+                <span class="n">PreNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">FeedForward</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">mlp_mult</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span><span class="p">))</span>
+            <span class="p">]))</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">attn</span><span class="p">,</span> <span class="n">ff</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">attn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">ff</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+<span class="k">class</span> <span class="nc">CvT</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">num_classes</span><span class="p">,</span>
+        <span class="n">s1_emb_dim</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span>        <span class="c1"># stage 1 - dimension
+</span>        <span class="n">s1_emb_kernel</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span>      <span class="c1"># stage 1 - conv kernel
+</span>        <span class="n">s1_emb_stride</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>      <span class="c1"># stage 1 - conv stride
+</span>        <span class="n">s1_proj_kernel</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>     <span class="c1"># stage 1 - attention ds-conv kernel size
+</span>        <span class="n">s1_kv_proj_stride</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>  <span class="c1"># stage 1 - attention key / value projection stride
+</span>        <span class="n">s1_heads</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>           <span class="c1"># stage 1 - heads
+</span>        <span class="n">s1_depth</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>           <span class="c1"># stage 1 - depth
+</span>        <span class="n">s1_mlp_mult</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>        <span class="c1"># stage 1 - feedforward expansion factor
+</span>        <span class="n">s2_emb_dim</span> <span class="o">=</span> <span class="mi">192</span><span class="p">,</span>       <span class="c1"># stage 2 - (same as above)
+</span>        <span class="n">s2_emb_kernel</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">s2_emb_stride</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">s2_proj_kernel</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">s2_kv_proj_stride</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">s2_heads</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">s2_depth</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">s2_mlp_mult</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">s3_emb_dim</span> <span class="o">=</span> <span class="mi">384</span><span class="p">,</span>       <span class="c1"># stage 3 - (same as above)
+</span>        <span class="n">s3_emb_kernel</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">s3_emb_stride</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">s3_proj_kernel</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">s3_kv_proj_stride</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">s3_heads</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">s3_depth</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">s3_mlp_mult</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">dim</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">prefix</span> <span class="ow">in</span> <span class="p">(</span><span class="s">'s1_'</span><span class="p">,</span> <span class="s">'s2_'</span><span class="p">,</span> <span class="s">'s3_'</span><span class="p">):</span>
+            <span class="n">layers</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'emb_dim'</span><span class="p">],</span> <span class="n">kernel_size</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'emb_kernel'</span><span class="p">],</span> <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'emb_kernel'</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">),</span> <span class="n">stride</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'emb_stride'</span><span class="p">]),</span>
+                <span class="n">LayerNorm</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'emb_dim'</span><span class="p">]),</span>
+                <span class="n">Transformer</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'emb_dim'</span><span class="p">],</span> <span class="n">proj_kernel</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'proj_kernel'</span><span class="p">],</span> <span class="n">kv_proj_stride</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'kv_proj_stride'</span><span class="p">],</span> <span class="n">depth</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'depth'</span><span class="p">],</span> <span class="n">heads</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'heads'</span><span class="p">],</span> <span class="n">mlp_mult</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'mlp_mult'</span><span class="p">],</span> <span class="n">dropout</span> <span class="o">=</span> <span class="n">dropout</span><span class="p">)</span>
+            <span class="p">))</span>
+
+            <span class="n">dim</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">prefix</span><span class="o">+</span><span class="s">'emb_dim'</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">layers</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_logits</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">Rearrange</span><span class="p">(</span><span class="s">'... () () -&gt; ...'</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">latents</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">layers</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_logits</span><span class="p">(</span><span class="n">latents</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/21/ceit.html" class="read-next-link"></a>
+        <section>
+          <span>Incorporating Convolution Designs into Visual Transformers</span>
+          <p>  CeiT：将卷积设计整合到视觉Transformers中.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6427ddfba682492fcc6c47ad.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/19/maskformer.html" class="read-next-link"></a>
+          <section>
+            <span>Per-Pixel Classification is Not All You Need for Semantic Segmentation</span>
+            <p>  MaskFormer：逐像素分类并不是语义分割所必需的.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6422b1f2a682492fcc95eb45.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

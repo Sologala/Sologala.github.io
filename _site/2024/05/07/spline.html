@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>样条曲线(Spline Curve) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="样条曲线(Spline Curve)">
+    <meta name="keywords"  content="数学">
+    <!-- Open Graph -->
+    <meta property="og:title" content="样条曲线(Spline Curve) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/05/07/spline.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%95%B0%E5%AD%A6" class="post-tag">数学</a>
+          
+        
+      </div>
+      <h1>样条曲线(Spline Curve)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-05-07"><i class="iconfont icon-date"></i>07 May 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6639f3fe0ea9cb140379ee9e.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Spline Curve.</p>
+</blockquote>
+
+<p><strong>样条</strong>（<strong>Spline</strong>）是工人用来在已知若干控制点的情况下画光滑曲线的工具，它是一根柔软但有弹性的金属片；使用时将金属片绕过控制点便可以构造一条光滑的曲线。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6639f3fe0ea9cb140379ee9e.png" alt="" /></p>
+
+<p>给定一系列控制点，通过这些点构造的光滑曲线称为样条曲线(<strong>Spline Curve</strong>)。样条曲线一般分为插值样条和拟合样条。</p>
+<ul>
+  <li><strong>插值</strong>：在原有数据点上进行填充生成曲线，曲线必经过原有数据点。</li>
+  <li><strong>拟合</strong>：依据原有数据点，通过参数调整设置，使得生成曲线与原有点差距最小，曲线未必会经过原有数据点。</li>
+</ul>
+
+<h1 id="1-贝塞尔曲线-bézier-curve">1. 贝塞尔曲线 (Bézier Curve)</h1>
+
+<p>对于空间中的任意两点$P_0,P_1$，光滑曲线构造为连接两点的直线：</p>
+
+\[P_x= P_0+(P_1-P_0)t=(1-t)P_0+tP_1, t\in[0,1]\]
+
+<p><img src="https://pic.imgdb.cn/item/66a219e5d9c307b7e94cc14f.png" alt="" /></p>
+
+<p>对于空间中的任意三点$P_0,P_1,P_2$，先分别构造连接两组点$P_0,P_1$、$P_1,P_2$的直线，再对两个直线上的点$P_i,P_j$进行插值：</p>
+
+\[\begin{aligned}
+P_i&amp;= (1-t)P_0+tP_1, P_j= (1-t)P_1+tP_2 \\
+P_x &amp;= (1-t)P_i+tP_j \\
+&amp;= (1-t)[(1-t)P_0+tP_1]+t[(1-t)P_1+tP_2] \\
+&amp;= (1-t)^2P_0+2t(1-t)P_1 + t^2P_2
+\end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/66a21bd2d9c307b7e94e6143.png" alt="" /></p>
+
+<p>上式分别为一阶和二阶<strong>贝塞尔曲线(Bézier Curve)</strong>，其中阶数是指变量$t$的最高幂次。贝塞尔曲线是递推的：$n$阶贝塞尔曲线（对应$n+1$个控制点）是两个$n-1$阶贝塞尔曲线的线性组合。</p>
+
+<p>假设一共有$n+1$个控制点$P_0,P_1,\cdots,P_n$，这$n+1$个点确定了$n$阶贝塞尔曲线$B^{n}(t)$，可以由前$n$个点决定的$n-1$阶贝塞尔曲线$B^{n-1}(t|P_0,\cdots,P_{n-1})$与后$n$个点决定的$n-1$阶贝塞尔曲线$B^{n-1}(t|P_1,\cdots,P_n)$线性组合递推而来，即:</p>
+
+\[\begin{aligned}
+&amp;B^{n}(t|P_0,P_1,\cdots,P_n) = (1-t)B^{n-1}(t|P_0,P_1,\cdots,P_{n-1}) + t B^{n-1}(t|P_1,P_2,\cdots,P_n) \\
+&amp;= (1-t)^2B^{n-2}(t|P_0,P_1,\cdots,P_{n-2}) + 2t(1-t)B^{n-2}(t|P_1,P_2,\cdots,P_{n-1}) + t^2B^{n-2}(t|P_2,P_3,\cdots,P_n) \\
+&amp;= \sum\limits_{i=0}^n C_n^i(1-t)^{n-i}t^i B^0(t| P_i)= \sum\limits_{i=0}^n C_n^i(1-t)^{n-i}t^i P_i
+\end{aligned}\]
+
+<p>其中$C_n^i$是组合数，$B^0$是零阶曲线（即控制点本身）。使用<strong>Python</strong>绘制贝塞尔曲线：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">comb</span>
+
+<span class="k">def</span> <span class="nf">getInterpolationPoints</span><span class="p">(</span><span class="n">controlPoints</span><span class="p">,</span> <span class="n">tList</span><span class="p">):</span>
+	<span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">controlPoints</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+	<span class="n">interPoints</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tList</span><span class="p">:</span>
+		<span class="n">Bt</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">float64</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">controlPoints</span><span class="p">)):</span>
+			<span class="n">Bt</span> <span class="o">=</span> <span class="n">Bt</span> <span class="o">+</span> <span class="n">comb</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">power</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">t</span><span class="p">,</span><span class="n">n</span><span class="o">-</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">power</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">controlPoints</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+		<span class="n">interPoints</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">Bt</span><span class="p">))</span>
+	<span class="k">return</span> <span class="n">interPoints</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+	<span class="n">points</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],[</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">],[</span><span class="mi">7</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span>
+	<span class="n">tList</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+	<span class="n">interPointsList</span> <span class="o">=</span> <span class="n">getInterpolationPoints</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">tList</span><span class="p">)</span>
+	<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">interPointsList</span><span class="p">)[:,</span><span class="mi">0</span><span class="p">]</span>
+	<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">interPointsList</span><span class="p">)[:,</span><span class="mi">1</span><span class="p">]</span>
+
+	<span class="n">plt</span><span class="p">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">'b'</span><span class="p">)</span>
+	<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">points</span><span class="p">)[:,</span><span class="mi">0</span><span class="p">],</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">points</span><span class="p">)[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s">'r'</span><span class="p">)</span>
+	<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h1 id="2-b样条曲线-b-spline-curve">2. B样条曲线 (B-Spline Curve)</h1>
+
+<p>贝塞尔曲线幂次等于控制点个数减一，目标曲线越复杂，需要的控制点就越多，计算也越复杂。并且贝塞尔曲线改变其中一个控制点，整条曲线都会随之改变。</p>
+
+<p>观察贝塞尔曲线的表达式，本质是不同控制点的加权累加。对于$n+1$个控制点$P_0,P_1,\cdots,P_n$，<strong>B样条曲线 (B-Spline Curve)</strong>额外引入$m+1$个节点$t_0,t_1,\cdots,t_m$将曲线分成$m$段，使得各段有所影响但也有一定独立性。在生成某区间内的点时，某些控制点权重置零，从而实现曲线控制的局部性。<strong>B</strong>样条曲线的表达式：</p>
+
+\[B(t) = \sum\limits_{i=0}^n B_{i,k}P_i\]
+
+<p>其中权重函数$B_{i,k}$是关于$t$的$k$阶函数，表示第$i$点的权重，称作$k$<strong>次B样条基函数</strong>。$k$<strong>次B样条基函数</strong>的计算可以通过列出节点表实现：</p>
+<ul>
+  <li>$k = 0$时 ($0$阶)，如果$t\in [t_j,t_{j+1}]$，则规定$b_{j,0} = 1$，其余都为$0$。</li>
+</ul>
+
+\[B_{i,0}(t) = \begin{cases}
+1, &amp; t∈[t_i,t_{i+1}] \\
+0,  &amp;  \text{Otherwise}
+\end{cases}\]
+
+<ul>
+  <li>$k = 1$时，$b_{j,1}$取值与低一次的相邻两节点$b_{j,0},b_{j+1,0}$相关，求解关系形式为关于 $t$ 的一次幂函数：</li>
+</ul>
+
+\[\begin{aligned}
+b_{j,1} &amp;= A(t)\ b_{j,0} + B(t)\ b_{j+1,0} \\
+A(t) &amp;= \frac{t-t_j}{t_{j+k}-t_j} , B(t) = \frac{t_{j+k+1}-t}{t_{j+k+1}-t_{j+1}}
+\end{aligned}\]
+
+<ul>
+  <li>重复上述过程，构造$k$<strong>次B样条基函数</strong>的递推公式（<strong>de Boor递推式</strong>），形式为关于 $t$ 的$k$次幂函数：</li>
+</ul>
+
+\[B_{i,k}(t) = \frac{t-t_i}{t_{i+k}-t_i} B_{i,k-1}(t) + \frac{t_{i+k+1}-t}{t_{i+k+1}-t_{i+1}} B_{i+1,k-1}(t)\]
+
+<p>下图给出了$t$取值在$[t_2,t_3]$范围的条件下的计算过程。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66a2313fd9c307b7e961b2d8.png" alt="" /></p>
+
+<p>对于$t\in[t_j,t_{j+1}]$时，最终非零$B_{j,k}$为$B_{j-k,k},\cdots,B_{j,k}$，即第$j−k$至第$j$个控制点控制影响着$[t_j,t_{j+1}]$区间内曲线点。故<strong>B</strong>样条曲线可进行局部控制。并且最终得到的非<strong>0</strong>权重始终不止一个，因此最终所得曲线结果一般不会经过控制点。下图对$10$个节点下的$1$至$4$阶<strong>B</strong>样条基函数进行可视化：</p>
+
+<p><img src="https://pic.imgdb.cn/item/66a234a9d9c307b7e9644c14.png" alt="" /></p>
+
+<p>注意到阶次每提高$1$阶，计算得到的$B_{\cdot,k}$会减少$1$个。因此若$k$<strong>次B样条基函数</strong>对应$n+1$个控制点，则节点数量$m+1$应满足：</p>
+
+\[m-k = n+1 \quad \to \quad m=n+k+1\]
+
+<p>节点值$t_i$为非递减的，可以取重复值：</p>
+<ul>
+  <li>均匀 <strong>B</strong> 样条（<strong>uniform B-spline curve</strong>）：节点均匀分布</li>
+  <li>准均匀 <strong>B</strong> 样条：在开始和结束处的节点可重复，中间节点均匀分布</li>
+  <li>非均匀 <strong>B</strong> 样条：节点非均匀分布</li>
+  <li>受限 <strong>B</strong> 样条（<strong>clamped B-spline curve</strong>）：节点列表中首末两端$0,1$重复$k+1$次，曲线会经过首末控制点</li>
+</ul>
+
+<p>使用<strong>Python</strong>绘制<strong>B</strong>样条曲线：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="c1"># 计算在某一特定t下的 B_{i,k}
+</span><span class="k">def</span> <span class="nf">getBt</span><span class="p">(</span><span class="n">controlPoints</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+	<span class="c1"># calculate m,n,k
+</span>	<span class="n">m</span> <span class="o">=</span> <span class="n">knots</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+	<span class="n">n</span> <span class="o">=</span> <span class="n">controlPoints</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+	<span class="n">k</span> <span class="o">=</span> <span class="n">m</span> <span class="o">-</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+	<span class="c1"># initialize B by zeros 
+</span>	<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+
+	<span class="c1"># get t region
+</span>	<span class="n">tStart</span> <span class="o">=</span> <span class="mi">0</span>
+	<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">t</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+			<span class="n">tStart</span> <span class="o">=</span> <span class="n">m</span><span class="o">-</span><span class="mi">1</span>
+		<span class="k">if</span> <span class="n">knots</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">:</span>
+			<span class="n">tStart</span> <span class="o">=</span> <span class="n">x</span><span class="o">-</span><span class="mi">1</span>
+			<span class="k">break</span>
+	 
+	<span class="c1"># calculate B(t)
+</span>	<span class="k">for</span> <span class="n">_k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">_k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="n">B</span><span class="p">[</span><span class="n">_k</span><span class="p">,</span> <span class="n">tStart</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">-</span><span class="n">_k</span><span class="p">):</span>
+				<span class="k">if</span> <span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">_k</span><span class="p">]</span><span class="o">-</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="n">w1</span> <span class="o">=</span> <span class="mi">0</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">w1</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">_k</span><span class="p">]</span><span class="o">-</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> 
+				<span class="k">if</span> <span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">_k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="n">w2</span> <span class="o">=</span> <span class="mi">0</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">w2</span> <span class="o">=</span> <span class="p">(</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">_k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="n">_k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+				<span class="n">B</span><span class="p">[</span><span class="n">_k</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">w1</span><span class="o">*</span><span class="n">B</span><span class="p">[</span><span class="n">_k</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">w2</span><span class="o">*</span><span class="n">B</span><span class="p">[</span><span class="n">_k</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+	<span class="k">return</span> <span class="n">B</span>
+
+<span class="c1"># 根据最后一列（最高阶次）的 B(t)，即权重，乘以控制点坐标，从而求出曲线上点坐标
+</span><span class="k">def</span> <span class="nf">getPt</span><span class="p">(</span><span class="n">Bt</span><span class="p">,</span> <span class="n">controlPoints</span><span class="p">):</span>
+	<span class="n">Bt</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">Bt</span><span class="p">)</span>
+	<span class="n">ptArray</span> <span class="o">=</span> <span class="n">Bt</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">controlPoints</span>
+	<span class="n">pt</span> <span class="o">=</span> <span class="n">ptArray</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">pt</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+	<span class="n">controlPoints</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">],</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">300</span><span class="p">],</span> <span class="p">[</span><span class="mi">300</span><span class="p">,</span><span class="mi">100</span><span class="p">],</span> <span class="p">[</span><span class="mi">380</span><span class="p">,</span><span class="mi">200</span><span class="p">],</span> <span class="p">[</span><span class="mi">400</span><span class="p">,</span><span class="mi">600</span><span class="p">]])</span>
+	<span class="n">knots</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span><span class="mi">2</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span><span class="mi">3</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span><span class="mi">4</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span><span class="mi">5</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span><span class="mi">6</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span><span class="mi">7</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span><span class="mi">8</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+	<span class="n">m</span> <span class="o">=</span> <span class="n">knots</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+	<span class="n">n</span> <span class="o">=</span> <span class="n">controlPoints</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span>
+	<span class="n">k</span> <span class="o">=</span> <span class="n">m</span> <span class="o">-</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+    
+	<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">np</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">100</span><span class="p">):</span>
+		<span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="n">t</span> <span class="o">&gt;=</span> <span class="n">knots</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="ow">and</span> <span class="n">t</span><span class="o">&lt;=</span> <span class="n">knots</span><span class="p">[</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">]):</span>
+			<span class="k">continue</span>
+		<span class="n">Bt</span> <span class="o">=</span> <span class="n">getBt</span><span class="p">(</span><span class="n">controlPoints</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+		<span class="n">Pt</span> <span class="o">=</span> <span class="n">getPt</span><span class="p">(</span><span class="n">Bt</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="p">:</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">controlPoints</span><span class="p">)</span>
+		<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">Pt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">Pt</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">color</span><span class="o">=</span><span class="s">'b'</span><span class="p">)</span>
+	<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">controlPoints</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">controlPoints</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span><span class="n">color</span> <span class="o">=</span> <span class="s">'r'</span><span class="p">)</span>
+	<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h1 id="3-nurbs曲线-nurbs-curve">3. NURBS曲线 (NURBS Curve)</h1>
+
+<p><strong>B</strong>样条无法描述圆锥曲线，为解决此问题，引入非均匀有理<strong>B</strong>样条（<strong>non-uniform rational b-spline, NURBS</strong>）。</p>
+<ul>
+  <li>非均匀：节点距离不相等</li>
+  <li>有理：控制点权值不相等</li>
+</ul>
+
+<p><strong>NURBS</strong>在<strong>B</strong>样条的基础上为每个控制点$p_i$加入了一个权重$w_i$：</p>
+
+\[C(t) = \sum\limits_{i=0}^n \left(\frac{B_{i,k}(t)w_i}{\sum_{j=0}^nB_{j,k}(t)w_j}\right)P_i\]
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/05/20/ssd.html" class="read-next-link"></a>
+        <section>
+          <span>Learning Spatial Similarity Distribution for Few-shot Object Counting</span>
+          <p>  学习少样本目标计数的空间相似度分布.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6685f25ed9c307b7e97f179e.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/05/06/kan.html" class="read-next-link"></a>
+          <section>
+            <span>KAN: Kolmogorov-Arnold Networks</span>
+            <p>  KAN：柯尔莫哥洛夫-阿诺德网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/66387b270ea9cb1403259331.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轻量级梯度提升机(Light Gradient Boosting Machine, LightGBM) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="轻量级梯度提升机(Light Gradient Boosting Machine, LightGBM)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="轻量级梯度提升机(Light Gradient Boosting Machine, LightGBM) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/12/28/lightgbm.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>轻量级梯度提升机(Light Gradient Boosting Machine, LightGBM)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-12-28"><i class="iconfont icon-date"></i>28 Dec 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63ab972308b6830163d494de.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>LightGBM: A Highly Efficient Gradient Boosting Decision Tree.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://proceedings.neurips.cc/paper/2017/hash/6449f44a102fde848669bdd9eb6b76fa-Abstract.html">LightGBM: A Highly Efficient Gradient Boosting Decision Tree</a></li>
+</ul>
+
+<p><a href="https://0809zheng.github.io/2020/03/21/GBDT.html">梯度提升决策树GBDT</a>是把决策树作为基学习器的梯度提升方法，通过顺序生成基学习器构造强学习器。<strong>LightGBM（Light Gradient Boosting Machine）</strong>是一个实现<strong>GBDT</strong>算法的工程框架，支持高效率的并行训练，并且具有更快的训练速度、更低的内存消耗、更好的准确率、支持分布式、可以快速处理海量数据等特点。</p>
+
+<p><strong>GBDT</strong>在每一次迭代时都需要多次遍历整个训练数据集。如果把整个数据集装进内存则需要限制训练数据的大小；如果在硬盘中反复地读写数据又会消耗非常多的时间。在面对工业级的海量数据时，<strong>GBDT</strong>算法不能满足需求。<strong>LightGBM</strong>解决了<strong>GBDT</strong>在海量数据时遇到的问题，可以更好更快地用于工业实践。</p>
+
+<p><strong>LightGBM</strong>的主要优点是：</p>
+<ul>
+  <li><strong>速度更快</strong>
+    <ol>
+      <li>通过直方图算法把样本特征存储为直方图，降低了时间复杂度；</li>
+      <li>在训练过程中采用单边梯度算法过滤掉梯度小的样本，减少了大量的计算；</li>
+      <li>采用了按叶生长的决策树生成策略，减少了不必要的计算量；</li>
+      <li>采用优化后的特征并行和数据并行方法加速计算，当数据量非常大的时候还可以采用投票并行策略；</li>
+      <li>对缓存进行了优化，增加了缓存命中率。</li>
+    </ol>
+  </li>
+  <li><strong>内存更小</strong>
+    <ol>
+      <li>通过直方图算法把特征值存储为直方图箱子值，且不需要记录特征到样本的索引，极大的减少了内存消耗；</li>
+      <li>在训练过程中采用互斥特征捆绑算法减少了特征数量，降低了内存消耗。</li>
+    </ol>
+  </li>
+</ul>
+
+<p><strong>LightGBM</strong>的主要缺点是：</p>
+<ol>
+  <li>按叶生长可能会长出比较深的决策树，产生过拟合，需要限制树的最大深度；</li>
+  <li><strong>LightGBM</strong>是基于偏差的集成算法，对噪声点较为敏感；</li>
+  <li>在寻找最优解时，依次考虑每个特征的最优切分变量，没有综合考虑全部特征。</li>
+</ol>
+
+<h2 id="1-直方图算法-histogram-algorithm">1. 直方图算法 Histogram algorithm</h2>
+
+<p><strong>LightGBM</strong>把数据的每一个特征存储在一个<strong>直方图(histogram)</strong>中。直方图算法的基本思想是：先把连续的浮点特征值按照范围均分成$k$个区间，并离散化成$k$个整数；同时构造一个具有$k$个<strong>箱子(bin)</strong>的直方图。在遍历数据特征的时候，在直方图中累积离散化的特征值。在切分数据时根据直方图的离散值遍历寻找最优的分割点。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aba08f08b6830163e0fc87.jpg" alt="" /></p>
+
+<p>直方图算法的主要优点：</p>
+<ul>
+  <li><strong>内存占用更小</strong>：对比<strong>XGBoost</strong>需要额外存储预排序的结果，通常需要用<strong>32</strong>位的浮点数存储特征值，并用<strong>32</strong>位的整形存储索引；<strong>LightGBM</strong>只需要用<strong>8</strong>位的整形存储特征离散化后的直方图，内存占用减少为$1/8$。<img src="https://pic.imgdb.cn/item/63aba19f08b6830163e26b4c.jpg" alt="" /></li>
+  <li><strong>计算代价更小</strong>：<strong>XGBoost</strong>对于特征的每个取值都需要计算一次分裂增益，时间复杂度为$O(data)$；<strong>LightGBM</strong>只需要计算$k$个取值，时间复杂度为$O(k)$。</li>
+</ul>
+
+<p>特征被离散化后找到的分割点并不是很精确，但对最终精度的影响并不是很大。原因是决策树本来就是一种弱学习器，分割点是否精确并不是太重要；较粗的分割点也有正则化的效果，可以有效地防止过拟合；即使单棵树的训练误差比精确分割的算法大，在梯度提升的框架下整体没有太大的影响。</p>
+
+<p>把数据存储为直方图后，可以通过直方图<strong>做差加速</strong>。一个子结点的直方图可以由父结点的直方图与兄弟结点的直方图做差得到，并且直方图做差仅需遍历直方图的$k$个箱子。在实际构建树的过程中，<strong>LightGBM</strong>首先计算直方图小的子结点，然后利用直方图做差来获得直方图大的子结点，以实现较小的计算代价。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aba4ef08b6830163e78146.jpg" alt="" /></p>
+
+<h2 id="2-决策树的按叶生长策略-leaf-wise">2. 决策树的按叶生长策略 Leaf-wise</h2>
+
+<p>大多数<strong>GBDT</strong>工具使用按层生长(<strong>level-wise</strong>)的决策树生长策略。该策略遍历一次数据时可以同时分裂同一层的结点，容易进行多线程优化，容易控制模型复杂度，不容易过拟合。但实际上按层生长是一种低效的算法，因为它不加区分的对待同一层的结点，实际上很多结点的分裂增益较低，没必要进行搜索和分裂，因此带来了很多不必要的计算开销。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aba57e08b6830163e85f11.jpg" alt="" /></p>
+
+<p><strong>LightGBM</strong>采用按叶生长(<strong>Leaf-wise</strong>)的决策树生长策略，该策略每次从当前所有结点中找到分裂增益最大的结点进行分裂，并循环该过程。在分裂次数相同的情况下，按叶生长可以降低更多的误差，得到更好的精度。按叶生长的缺点是可能会长出比较深的决策树，产生过拟合。因此<strong>LightGBM</strong>在按叶生长的基础上限制了树的最大深度，在保证高效率的同时防止过拟合。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63aba60e08b6830163e93e39.jpg" alt="" /></p>
+
+<h2 id="3-单边梯度采样算法-gradient-based-one-side-sampling">3. 单边梯度采样算法 Gradient-based One-Side Sampling</h2>
+
+<p>单边梯度采样算法（<strong>GOSS</strong>）从减少样本量的角度出发，只使用具有较大梯度的样本和一小部分小梯度的样本计算分裂增益，在减少数据量和保证精度上实现平衡。</p>
+
+<p>在<strong>LightGBM</strong>方法中，每个数据都有不同的梯度值，梯度小的样本训练误差也比较小，说明数据已经被模型学习得很好了；而梯度大的样本对分裂增益有更大的影响。<strong>GOSS</strong>的想法就是丢掉对计算分裂增益没有帮助的梯度小的数据，然而直接丢弃这些数据会改变原数据的总体分布，将会影响模型的训练精度。</p>
+
+<p><strong>GOSS</strong>首先将要进行分裂的特征的所有取值按照梯度绝对值大小降序排序，选取梯度绝对值最大的$a$个数据；然后在剩下的较小梯度数据中随机选择$b$个数据，将这$b$个数据乘以一个常数$\frac{1-a}{b}$。这样算法就会更关注训练不足的样本，而不会过多改变原数据集的分布。最后使用这$a+b$个数据来计算分裂增益。</p>
+
+<h2 id="4-互斥特征捆绑算法-exclusive-feature-bundling">4. 互斥特征捆绑算法 Exclusive Feature Bundling</h2>
+
+<p>高维度的数据往往是稀疏的，其中的部分特征是互斥的（即特征之间具有较强的相关性），把这些互斥特征捆绑起来不会丢失信息，能够无损地减少特征的数量。</p>
+
+<p>互斥特征捆绑算法(<strong>EFB</strong>)把特征的互斥问题转化为图着色问题来求解，将所有的特征视为图的各个节点，把互斥的特征用一条边连接起来，边的权重就是两个相连接的特征的互斥值。此时需要捆绑的特征就是在图着色问题中要涂上同一种颜色的点。具体步骤如下：</p>
+<ol>
+  <li>构造一个加权无向图，节点是特征，边有权重，其权重与两个特征间的互斥程度相关；</li>
+  <li>根据节点的度进行降序排序，度越大，与其它特征的互斥程度越大；</li>
+  <li>遍历每个特征，把它分配给现有特征包，或者新建一个特征包，使得总体互斥程度最小。</li>
+</ol>
+
+<p>可以用<strong>互斥比率</strong> $\gamma$ 衡量总体互斥程度，$\gamma$越小则可以得到更少的特征包，进一步提高计算效率，同时对精度的影响为$O([(1-\gamma)n]^{-2/3})$；通过设置合适的$\gamma$能够完成精度和效率之间的平衡。</p>
+
+<p><strong>EFB</strong>算法的时间复杂度和特征数量的平方成正比。当特征数量特别大时，<strong>LightGBM</strong>提出了一种更加高效的无图的排序策略：将特征按照非零值的个数排序，因为更多的非零值通常会导致特征的互斥。</p>
+
+<p>对互斥的特征进行捆绑时，应能保证原始特征能从合并的特征中分离出来。由于特征在保存时将连续的值保存为直方图中离散的箱子，可以通过在特征值中加一个偏置常量，使得不同特征的值分到不同箱子中。比如捆绑两个特征A和B，A特征的原始取值为区间$[0,10)$，B特征的原始取值为区间$[0,20)$，可以在B特征的取值上加一个偏置常量$10$，将其取值范围变为$[10,30)$，最终捆绑后的特征取值范围为$[0,30)$。</p>
+
+<h2 id="5-支持类别特征">5. 支持类别特征</h2>
+
+<p>大多数机器学习工具都无法直接支持类别特征，一般需要把类别特征通过<strong>one-hot</strong>编码转化到多维的$0/1$特征。但决策树并不推荐使用<strong>one-hot</strong>编码，尤其当类别个数很多的情况下，会存在以下问题：</p>
+<ul>
+  <li>会产生样本切分不平衡问题，导致切分增益非常小，可能会浪费这个特征。使用<strong>one-hot</strong>编码意味着在每一个结点上只能使用<strong>one vs rest</strong>的切分方式，切分样本会产生不平衡。较小的切分样本集占总样本的比例太小，无论增益多大，乘以该比例之后几乎可以忽略；较大的切分样本集几乎就是原始的样本集，增益几乎为零。此时极度不平衡的切分和不切分没有区别。</li>
+  <li>会影响决策树的学习。对类别特征进行切分时，<strong>one-hot</strong>编码会把数据切分到很多零散的小空间上，每个数据量小的空间上的统计信息不准确，决策树的学习效果会变差。</li>
+</ul>
+
+<p>为了解决<strong>one-hot</strong>编码处理类别特征的不足，<strong>LightGBM</strong>优化了对类别特征的支持，可以直接输入类别特征，不需要额外的$0/1$展开。<strong>LightGBM</strong>采用<strong>many-vs-many</strong>的切分方式把类别特征分为两个子集，实现类别特征的最优切分。假设某维特征有$k$个类别，则共有$2^{k-1}-1$种切分方式，时间复杂度为$O(2^k)$，<strong>LightGBM</strong>进一步优化为$O(k \log k)$的时间复杂度。</p>
+
+<p><strong>LightGBM</strong>切分类别特征的方法如下。在枚举分割点之前，先把直方图按照每个类别对应的标签均值$avg(y)=\frac{sum(y)}{count(y)}$进行排序；然后按照排序的结果依次枚举最优分割点。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63abb48008b68301630809fb.jpg" alt="" /></p>
+
+<h2 id="6-支持高效并行">6. 支持高效并行</h2>
+
+<h3 id="-特征并行-feature-parallelization">⚪ 特征并行 Feature Parallelization</h3>
+
+<p>特征并行的主要思想是不同机器在不同特征集合上分别寻找最优的分割点，然后在机器间同步最优的分割点。特征并行方法的缺点是需对数据进行垂直划分，每台机器所存储的数据不同，使用不同机器找到不同特征的最优分裂点后，划分结果需要通过机器之间的通信进行同步，增加了额外的复杂度。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63abb58808b68301630ab486.jpg" alt="" /></p>
+
+<p><strong>LightGBM</strong>则不进行数据垂直划分，而是在每台机器上保存全部训练数据，在得到最佳划分方案后可在本地执行划分而减少了不必要的通信。</p>
+
+<h3 id="-数据并行-data-parallelization">⚪ 数据并行 Data Parallelization</h3>
+
+<p>数据并行的主要思想是水平划分数据，让不同的机器先在本地构造直方图，然后进行全局的合并，最后在合并的直方图上寻找最优分割点。这种数据并行的主要缺点是机器间的通信开销过大。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63abb65f08b68301630cb5a7.jpg" alt="" /></p>
+
+<p><strong>LightGBM</strong>在数据并行中使用分散规约(<strong>Reduce scatter</strong>)把直方图合并的任务分摊到不同的机器，降低通信和计算，并利用直方图做差，进一步减少了一半的通信量。</p>
+
+<h3 id="-投票并行-voting-based-parallelization">⚪ 投票并行 Voting-based Parallelization</h3>
+
+<p>基于投票的数据并行进一步优化数据并行中的通信代价，使通信代价变成常数级别。在数据量很大的时候，使用投票并行的方式只合并部分特征的直方图从而达到降低通信量的目的，可以得到非常好的加速效果。大致步骤为两步：</p>
+<ol>
+  <li>本地找出<strong>Top K</strong>特征，并基于投票筛选出可能是最优分割点的特征；</li>
+  <li>合并每个机器挑选出来的特征。</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/63abb71b08b68301630e89d2.jpg" alt="" /></p>
+
+<h2 id="7-缓存命中率优化-cache">7. 缓存命中率优化 cache</h2>
+
+<p><strong>LightGBM</strong>所使用的直方图算法对缓存天生友好：</p>
+<ul>
+  <li>所有的特征都采用相同的方式获得梯度，只需要对梯度进行排序并可实现连续访问，大大提高了缓存命中率；</li>
+  <li>因为不需要存储行索引数组，降低了存储消耗，而且也不存在<strong>Cache Miss</strong>的问题。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/63abb7b708b6830163102891.jpg" alt="" /></p>
+
+<h2 id="8-lightgbm的代码实现">8. LightGBM的代码实现</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pip</span> <span class="n">install</span> <span class="n">lightgbm</span>
+</code></pre></div></div>
+
+<h2 id="1-lightgbm的主要参数">(1) LightGBM的主要参数</h2>
+
+<p>下面介绍<a href="https://lightgbm.readthedocs.io/en/v3.3.2/Parameters.html">lightgbm</a>库中定义的<strong>LightGBM</strong>模型的主要参数：</p>
+
+<h3 id="-核心参数-core-parameters">⚪ 核心参数 Core Parameters</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">objective</code>：设置损失函数。对于回归任务可选<code class="language-plaintext highlighter-rouge">'regression', 'regression_l1', 'huber', 'fair', 'poisson', 'quantile', 'mape'</code>，对于二分类任务可选<code class="language-plaintext highlighter-rouge">'binary'</code>，对于多分类任务可选<code class="language-plaintext highlighter-rouge">'multiclass'</code>(通过<code class="language-plaintext highlighter-rouge">'num_class'</code>指定类别数)。</li>
+  <li><code class="language-plaintext highlighter-rouge">boosting='gbdt'</code>：设置提升模式，可选<code class="language-plaintext highlighter-rouge">'gbdt'</code>, <code class="language-plaintext highlighter-rouge">'rf'</code>(随机森林), <code class="language-plaintext highlighter-rouge">'dart'</code>(决策树+<strong>dropout</strong>，通过<code class="language-plaintext highlighter-rouge">drop_rate=0.1</code>设置)和<code class="language-plaintext highlighter-rouge">'goss'</code>(基于梯度的单边采样，通过<code class="language-plaintext highlighter-rouge">top_rate=0.2,other_rate=0.1</code>设置不同梯度值样本的留存率)。</li>
+  <li><code class="language-plaintext highlighter-rouge">num_iterations=100</code>：学习的迭代轮数。</li>
+  <li><code class="language-plaintext highlighter-rouge">learning_rate=0.1</code>：加法模型的<strong>shrinkage</strong>系数，相当于学习率。</li>
+  <li><code class="language-plaintext highlighter-rouge">num_leaf=31</code>：允许单棵树具有的最大叶结点数量。</li>
+  <li><code class="language-plaintext highlighter-rouge">tree_learner='serial'</code>：并行模式，可选特征并行<code class="language-plaintext highlighter-rouge">'feature'</code>, 数据并行<code class="language-plaintext highlighter-rouge">'data'</code>或投票并行<code class="language-plaintext highlighter-rouge">'voting'</code>(通过<code class="language-plaintext highlighter-rouge">top_k=20</code>设置)。</li>
+  <li><code class="language-plaintext highlighter-rouge">nthread</code>：多线程数量，默认选择最大的线程数。</li>
+  <li><code class="language-plaintext highlighter-rouge">device_type='cpu'</code>：设备类型，可选<code class="language-plaintext highlighter-rouge">'cpu','gpu','cuda'</code>。</li>
+  <li><code class="language-plaintext highlighter-rouge">seed</code>：随机数种子。</li>
+  <li><code class="language-plaintext highlighter-rouge">deterministic=False</code>：若设置为<code class="language-plaintext highlighter-rouge">True</code>则在<strong>cpu</strong>环境下提供可复现的结果。</li>
+</ul>
+
+<h3 id="-学习控制参数-learning-control-parameters">⚪ 学习控制参数 Learning Control Parameters</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">max_depth=-1</code>：树的最大深度，负值表示无限制。</li>
+  <li><code class="language-plaintext highlighter-rouge">min_data_in_leaf=20</code>：每个叶结点应划分的最少样本数。</li>
+  <li><code class="language-plaintext highlighter-rouge">min_sum_hessian_in_leaf=1e-3</code>：每个叶结点应具有的最少二阶导数累积值。</li>
+  <li><code class="language-plaintext highlighter-rouge">bagging_fraction=1.0</code>：设置训练时的<strong>bootstrapping</strong>采样率。</li>
+  <li><code class="language-plaintext highlighter-rouge">bagging_freq=0</code>：设置进行<strong>bootstrapping</strong>采样的频率。</li>
+  <li><code class="language-plaintext highlighter-rouge">feature_fraction=1.0</code>：设置每轮迭代时随机使用特征数量的比例。</li>
+  <li><code class="language-plaintext highlighter-rouge">feature_fraction_bynode=1.0</code>：设置每次划分结点时随机使用特征数量的比例。</li>
+  <li><code class="language-plaintext highlighter-rouge">early_stopping_round=1.0</code>：设置允许验证损失不变化的轮数，用于<strong>Early stopping</strong>。</li>
+  <li><code class="language-plaintext highlighter-rouge">max_delta_step=0.0</code>：允许叶结点输出的最大值，非正数表示不限制。</li>
+  <li><code class="language-plaintext highlighter-rouge">lambda_l2=0.0</code>：权重的<strong>L2</strong>正则化系数。</li>
+  <li><code class="language-plaintext highlighter-rouge">lambda_l1=0.0</code>：权重的<strong>L1</strong>正则化系数。</li>
+  <li><code class="language-plaintext highlighter-rouge">linear_lambda=0.0</code>：线性树正则化系数。</li>
+  <li><code class="language-plaintext highlighter-rouge">min_gain_to_split=0.0</code>：允许结点切分的最小增益值。</li>
+  <li><code class="language-plaintext highlighter-rouge">min_data_per_group=100</code>：每组类别特征的最少样本数。</li>
+  <li><code class="language-plaintext highlighter-rouge">max_cat_threshold=32</code>：类别特征的最少切分点。</li>
+  <li><code class="language-plaintext highlighter-rouge">verbosity=1</code>：打印信息的模式，可选<code class="language-plaintext highlighter-rouge">&lt;0</code>(<strong>fatal</strong>模式), <code class="language-plaintext highlighter-rouge">0</code>(<strong>warning</strong>模式), <code class="language-plaintext highlighter-rouge">1</code>(<strong>info</strong>模式), <code class="language-plaintext highlighter-rouge">&gt;1</code>(<strong>debug</strong>模式)。</li>
+</ul>
+
+<h3 id="-数据集参数-dataset-parameters">⚪ 数据集参数 Dataset Parameters</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">max_bin=255</code>：特征划分直方图的最大箱子数。</li>
+  <li><code class="language-plaintext highlighter-rouge">min_data_in_bin=3</code>：每个箱子中的最小样本数。</li>
+  <li><code class="language-plaintext highlighter-rouge">categorical_feature=""</code>：指定类别特征对应的列数。</li>
+</ul>
+
+<h2 id="2-使用lightgbm原生接口进行多分类">(2) 使用LightGBM原生接口进行多分类</h2>
+
+<p>下面以<strong>IRIS</strong>鸢尾花分类数据集为例，介绍使用<strong>LightGBM</strong>原生接口进行多分类任务的例子：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">lightgbm</span> <span class="k">as</span> <span class="n">lgb</span>
+<span class="c1"># 设置LightGBM的参数
+</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'objective'</span><span class="p">:</span> <span class="s">'multiclass'</span><span class="p">,</span>
+    <span class="s">'num_class'</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s">'learning_rate'</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s">'lambda_l1'</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s">'lambda_l2'</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+    <span class="s">'max_depth'</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="c1"># 准备数据集
+</span><span class="n">iris</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">()</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">iris</span><span class="p">.</span><span class="n">data</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">iris</span><span class="p">.</span><span class="n">target</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+
+<span class="c1"># 转换为Dataset数据格式
+</span><span class="n">train_data</span> <span class="o">=</span> <span class="n">lgb</span><span class="p">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">y_train</span><span class="p">)</span>
+<span class="n">validation_data</span> <span class="o">=</span> <span class="n">lgb</span><span class="p">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">y_test</span><span class="p">)</span>
+
+<span class="c1"># 训练LightGBM
+</span><span class="n">gbm</span> <span class="o">=</span> <span class="n">lgb</span><span class="p">.</span><span class="n">train</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">train_data</span><span class="p">,</span> <span class="n">valid_sets</span><span class="o">=</span><span class="p">[</span><span class="n">validation_data</span><span class="p">])</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span>
+<span class="c1"># 对测试集进行预测
+</span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">gbm</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">index</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">y_pred</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">))</span>
+</code></pre></div></div>
+
+<h2 id="3-使用基于scikit-learn接口的lightgbm进行回归">(3) 使用基于Scikit-learn接口的LightGBM进行回归</h2>
+
+<p>本节以<strong>kaggle</strong>竞赛中的<a href="https://www.kaggle.com/c/house-prices-advanced-regression-techniques">House Prices回归问题</a>为例，介绍使用基于<strong>Scikit-learn</strong>接口的<strong>LightGBM</strong>进行回归的方法。</p>
+
+<p>该数据集一共有81列，第一列是id，最后一列是标签，中间79列是特征。这79列特征中，有43列是分类型变量，33列是整数变量，3列是浮点型变量。训练数据集中存在缺失值。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="c1"># 1.读文件
+</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">'./dataset/train.csv'</span><span class="p">)</span>
+<span class="n">data</span><span class="p">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s">'SalePrice'</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># 2.切分数据 (输入：特征) (输出：预测目标变量)
+</span><span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">SalePrice</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">drop</span><span class="p">([</span><span class="s">'SalePrice'</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">).</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="p">[</span><span class="s">'object'</span><span class="p">])</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="c1"># 3.切分训练集、测试集, 切分比例75 : 25
+</span><span class="n">train_X</span><span class="p">,</span> <span class="n">test_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">values</span><span class="p">,</span> <span class="n">y</span><span class="p">.</span><span class="n">values</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.impute</span> <span class="kn">import</span> <span class="n">SimpleImputer</span>
+<span class="c1"># 4.空值处理，默认方法：使用特征列的平均值进行填充
+</span><span class="n">my_imputer</span> <span class="o">=</span> <span class="n">SimpleImputer</span><span class="p">()</span>
+<span class="n">train_X</span> <span class="o">=</span> <span class="n">my_imputer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">train_X</span><span class="p">)</span>
+<span class="n">test_X</span> <span class="o">=</span> <span class="n">my_imputer</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">test_X</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">lightgbm</span> <span class="k">as</span> <span class="n">lgb</span>
+<span class="c1"># 5.调用LightGBM模型，使用训练集数据进行训练
+</span><span class="n">my_model</span> <span class="o">=</span> <span class="n">lgb</span><span class="p">.</span><span class="n">LGBMRegressor</span><span class="p">(</span>
+    <span class="n">objective</span><span class="o">=</span><span class="s">'regression'</span><span class="p">,</span> <span class="n">num_leaves</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># 对应的lgb.LGBClassifier()为分类模型
+</span><span class="n">my_model</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_X</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># 6.使用模型对测试集数据进行预测
+</span><span class="n">predictions</span> <span class="o">=</span> <span class="n">my_model</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_X</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_absolute_error</span>
+<span class="c1"># 7.对模型的预测结果进行评判（平均绝对误差）
+</span><span class="k">print</span><span class="p">(</span><span class="s">"Mean Absolute Error : "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">test_y</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Feature importances:'</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">my_model</span><span class="p">.</span><span class="n">feature_importances_</span><span class="p">))</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.externals</span> <span class="kn">import</span> <span class="n">joblib</span>
+<span class="c1"># 8.模型存储和加载
+</span><span class="n">joblib</span><span class="p">.</span><span class="n">dump</span><span class="p">(</span><span class="n">my_model</span><span class="p">,</span> <span class="s">'load_model.pkl'</span><span class="p">)</span>
+<span class="n">my_model</span> <span class="o">=</span> <span class="n">joblib</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="s">'load_model.pkl'</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+<span class="c1"># 9.超参数的网格搜索
+</span><span class="n">estimator</span> <span class="o">=</span> <span class="n">lgb</span><span class="p">.</span><span class="n">LGBMRegressor</span><span class="p">(</span><span class="n">num_leaves</span><span class="o">=</span><span class="mi">31</span><span class="p">)</span>
+<span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'learning_rate'</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+    <span class="s">'num_iterations'</span><span class="p">:</span> <span class="p">[</span><span class="mi">20</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
+<span class="p">}</span>
+<span class="n">lgbm</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">param_grid</span><span class="p">)</span>
+<span class="n">lgbm</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Best parameters found by grid search are:'</span><span class="p">,</span> <span class="n">lgbm</span><span class="p">.</span><span class="n">best_params_</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/12/29/catboost.html" class="read-next-link"></a>
+        <section>
+          <span>类别型特征提升(Categorical Boosting, CatBoost)</span>
+          <p>  CatBoost: unbiased boosting with categorical features.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63acf00808b6830163ef7949.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/12/27/xgboost.html" class="read-next-link"></a>
+          <section>
+            <span>极限梯度提升(eXtreme Gradient Boosting, XGBoost)</span>
+            <p>  XGBoost: A Scalable Tree Boosting System.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63aa471108b6830163ef2890.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

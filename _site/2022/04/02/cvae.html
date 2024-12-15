@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Structured Output Representation using Deep Conditional Generative Models - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Learning Structured Output Representation using Deep Conditional Generative Models">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Learning Structured Output Representation using Deep Conditional Generative Models - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/02/cvae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Learning Structured Output Representation using Deep Conditional Generative Models</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-02"><i class="iconfont icon-date"></i>02 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/627e0985094754312968c36f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>CVAE: 使用深度条件生成模型学习结构化输出表示.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://proceedings.neurips.cc/paper/2015/hash/8d55a249e6baa5c06772297520da2051-Abstract.html">Learning Structured Output Representation using Deep Conditional Generative Models</a></li>
+</ul>
+
+<h1 id="1-变分自编码器">1. 变分自编码器</h1>
+
+<p>变分自编码器(<strong>VAE</strong>)是一种有向图模型，其隐变量通常选择高斯隐变量。<strong>VAE</strong>的生成过程为由先验分布$p(z)$生成一组隐变量$z$，再由生成分布$p(x|z)$生成数据$x$。一般情况下，有向图模型的参数估计由于其后验推断难以处理而具有挑战性。在随机梯度变分贝叶斯(<strong>SGVB</strong>)框架中，将<strong>对数似然的变分下界</strong>作为替代目标函数，可以有效地估计参数。变分下界为:</p>
+
+\[\begin{aligned} \log p(x)  &amp;= \log \Bbb{E}_{z \text{~} q(z|x)}[\frac{p(x,z)}{q(z|x)}] \geq \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{q(z|x)}] \\ \text{ELBO}  &amp;= \mathbb{E}_{z \text{~} q(z|x)} [\log \frac{p(z)p(x|z)}{q(z|x)}] \\ &amp;= \mathbb{E}_{z \text{~}q(z|x)} [\log \frac{p(z)}{q(z|x)}] + \mathbb{E}_{z \text{~} q(z|x)} [\log p(x | z)]  \\ &amp;= - KL[q(z|x)||p(z)]+\mathbb{E}_{z \text{~} q(z|x)} [\log p(x | z)]  \end{aligned}\]
+
+<p>在此框架下，引入建议分布$q(z|x)$逼近真正的后验$p(z|x)$。利用神经网络对建议分布和生成分布进行建模。</p>
+
+<h1 id="2-条件变分自编码器">2. 条件变分自编码器</h1>
+
+<p><strong>VAE</strong>是无监督训练的，如果数据有对应的标签，则可以把标签信息加进去辅助生成样本，或者通过控制某个变量来实现生成某一类样本。实现条件变分自编码器<strong>Conditional VAE</strong>的方式有很多，一种思路是把数据分布建模为条件概率分布$p(x|y)$,则对应的变分下界为：</p>
+
+\[\begin{aligned}  \log p(x|y)  &amp;\geq \Bbb{E}_{z \text{~} q(z|x,y)}[\log \frac{p(x,z|y)}{q(z|x,y)}] \\ \text{ELBO} &amp; = - KL[q(z|x,y)||p(z|y)]+\mathbb{E}_{z \text{~} q(z|x,y)} [\log p(x | z,y)]  \end{aligned}\]
+
+<p>此时建议分布$q(z|x,y)$的输入为样本$x$及其标签$y$，生成分布$p(x|z,y)$的输入为采样值$z$及其标签$y$。</p>
+
+<p>也可以建模输出分布$p(y|x)$，即构造条件图模型，调换上式中$x$和$y$的顺序可以得到：</p>
+
+\[\begin{aligned} \log p(y|x) &amp; \geq \Bbb{E}_{z \text{~} q(z|x,y)}[\log \frac{p(y,z|x)}{q(z|x,y)}] \\ \text{ELBO}  &amp;= - KL[q(z|x,y)||p(z|x)]+\mathbb{E}_{z \text{~} q(z|x,y)} [\log p(y | z,x)] \end{aligned}\]
+
+<p>此时建议分布$q(z|x,y)$的输入仍然是样本$x$及其标签$y$；而生成分布$p(y|z,x)$的输入为采样值$z$和样本$x$，输出为其标签$y$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/627e14940947543129873131.jpg" alt="" /></p>
+
+<h1 id="3-cvae的pytorch实现">3. CVAE的pytorch实现</h1>
+
+<p><strong>CVAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/cvae.py">PyTorch-VAE</a>，下面分析模型的推理过程。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">'labels'</span><span class="p">].</span><span class="nb">float</span><span class="p">()</span>
+    <span class="n">embedded_class</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">embed_class</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="n">embedded_class</span> <span class="o">=</span> <span class="n">embedded_class</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">img_size</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">img_size</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">embedded_input</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">embed_data</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">embedded_input</span><span class="p">,</span> <span class="n">embedded_class</span><span class="p">],</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">reparameterize</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span><span class="p">)</span>
+
+    <span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span>  <span class="p">[</span><span class="bp">self</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="n">z</span><span class="p">),</span> <span class="nb">input</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>编码器<code class="language-plaintext highlighter-rouge">self.encode</code>的输入同时包含样本与标签信息，具体做法是把<strong>onehot</strong>标签$y$通过全连接层嵌入到与图像$x$尺寸相同的特征中，连接后共同作为输入。</p>
+
+<p>解码器<code class="language-plaintext highlighter-rouge">self.decode</code>的输入同时包含采样与标签信息，具体做法是通过重参数化采样获得$z$后，与标签$y$连接共同作为输入。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/03/cmma.html" class="read-next-link"></a>
+        <section>
+          <span>Variational methods for Conditional Multimodal Learning: Generating Human Faces from Attributes</span>
+          <p>  CMMA: 条件多模态学习的变分方法.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6295c3ce09475431293b00e2.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/01/vae.html" class="read-next-link"></a>
+          <section>
+            <span>变分自编码器(Variational Autoencoder)</span>
+            <p>  Variational Autoencoder.本文目录：  变分自编码器之“自编码器”：概率编码器与概率解码...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fb715b8b18d627113d7ae88.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

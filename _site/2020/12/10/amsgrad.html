@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>On the Convergence of Adam and Beyond - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="On the Convergence of Adam and Beyond">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="On the Convergence of Adam and Beyond - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/10/amsgrad.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>On the Convergence of Adam and Beyond</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-10"><i class="iconfont icon-date"></i>10 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/620089762ab3f51d917ee290.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>AMSGrad：改进Adam算法的收敛性.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1904.09237">On the Convergence of Adam and Beyond</a></li>
+</ul>
+
+<p><strong>Adam</strong>等优化方法使用平方梯度的指数滑动平均值的平方根对梯度进行缩放，这些算法在较大的输出空间中经常无法收敛到最优解。作者证明其原因是算法中使用了指数滑动平均，通过赋予这些算法对过去梯度的“长期记忆”可以解决收敛问题，基于此提出了<strong>AMSGrad</strong>算法。</p>
+
+<h2 id="1-自适应优化算法">1. 自适应优化算法</h2>
+
+<p>自适应优化方法通常使用指数滑动平均累计梯度的低阶矩估计，如<strong>Adam</strong>算法在更新过程中计算梯度和平方梯度的指数滑动平均值：</p>
+
+\[m_t = \beta_1 \cdot m_{t-1} + (1-\beta_1) \cdot g_t\]
+
+\[v_t = \beta_2 \cdot v_{t-1} + (1-\beta_2) \cdot g_t^2\]
+
+<p>其中$m_t$是一阶矩(均值)的估计，$v_t$是二阶矩(未中心化的方差)的估计。若忽略偏差修正和分母的小值，则参数的更新步骤为：</p>
+
+\[\theta_t = \theta_{t-1} - \alpha \cdot \frac{m_t}{\sqrt{v_t}}\]
+
+<p>注意到指数滑动平均值也可以表示为：</p>
+
+\[m_t = \beta_1 \cdot m_{t-1} + (1-\beta_1) \cdot g_t \\ = \beta_1 \cdot (\beta_1 \cdot m_{t-2} + (1-\beta_1) \cdot g_{t-1}) + (1-\beta_1) \cdot g_t \\ = \beta_1^tm_0 + \beta_1^{t-1} (1-\beta_1)  g_{1} + ... + \beta_1 (1-\beta_1)  g_{t-1} +  (1-\beta_1)  g_t \\ = (1-\beta_1)\sum_{i=1}^{t}\beta_1^{t-i}g_{i}\]
+
+\[v_t = \beta_2 \cdot v_{t-1} + (1-\beta_2) \cdot g_t^2 \\ = (1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}g_{i}^2\]
+
+<h2 id="2-收敛性问题">2. 收敛性问题</h2>
+
+<p>在<strong>Adam</strong>论文中，原作者声称<strong>Adam</strong>在凸优化问题上是收敛的。然而本文作者指出，即使在一些简单的一维凸环境中，<strong>Adam</strong>也不能收敛到最优解，造成该问题的原因是在计算自适应学习率时使用了指数滑动平均值。</p>
+
+<p>为便于讨论，假设$\beta_1=0$(即不使用动量)，则自适应优化公式为：</p>
+
+\[v_t  = (1-\beta_2)\sum_{i=1}^{t}\beta_2^{t-i}g_{i}^2\]
+
+\[\theta_t = \theta_{t-1} - \frac{\alpha_t}{\sqrt{v_t}} \cdot g_t\]
+
+<p>参数更新中的自适应学习率为$\frac{\alpha_t}{\sqrt{v_t}}$。观察学习率的倒数的变化：</p>
+
+\[\Gamma_{t+1} = \frac{\sqrt{v_{t+1}}}{\alpha_{t+1}}-\frac{\sqrt{v_t}}{\alpha_t}\]
+
+<p>通常随着更新轮数$t$增大，自适应学习率应该减小。假设基本学习率$\alpha$不变，对于<strong>SGD</strong>和<strong>AdaGrad</strong>等算法，有$v_{t+1} \geq v_t$，因此$\Gamma_{t} \geq 0, \forall t$，算法是收敛的。</p>
+
+<p>当引入指数滑动平均时：</p>
+
+\[v_{t+1} = \beta_2 \cdot v_{t} + (1-\beta_2) \cdot g_{t+1}^2\]
+
+<p>此时无法保证$v_{t+1} \geq v_t$，因此可能出现$\Gamma_{t}&lt;0$的情况，使得算法不能收敛到最优解。</p>
+
+<h2 id="3-一个使adam不收敛的例子">3. 一个使Adam不收敛的例子</h2>
+
+<p>假设特征$x$的取值为$[-1,1]$，损失函数为：</p>
+
+\[f_t(x) = \begin{cases} Cx, &amp; \text{for }t\text{ mod }3=1 \\ -x, &amp; \text{otherwise} \end{cases}\]
+
+<p>其中$C&gt;2$。注意到该损失函数是一个凸函数，且极小值点为$x=-1$。在更新中，每三轮中的一轮算法会获得一次较大的梯度$C$，使得参数向最优值($-1$)更新；其余两轮算法的梯度是$-1$，使得参数向错误的方向(增大)更新。</p>
+
+<p>不失一般性地假设$\beta_2 = 1/(1+C^2)$，则算法在前几轮的更新如下：</p>
+
+\[v_{1} = \frac{C^4}{1+C^2} \\ x_1 = x_{0} - \frac{\sqrt{1+C^2}}{C} \cdot \alpha\]
+
+\[v_{2} = \frac{C^2(1+2C^2)}{(1+C^2)^2} \\ x_2 = x_{0} - (\frac{\sqrt{1+C^2}}{C}-\frac{1+C^2}{C\sqrt{1+2C^2}}) \cdot \alpha\]
+
+\[v_{3} = \frac{C^2(2+4C^2+C^4)}{(1+C^2)^3} \\ x_3 = x_{0} - (\frac{\sqrt{1+C^2}}{C}-\frac{1+C^2}{C\sqrt{1+2C^2}}-\frac{(1+C^2)^{3/2}}{C\sqrt{2+4C^2+C^4}}) \cdot \alpha\]
+
+<p>通常$\alpha&gt;0$，若假设$x_0=0$，则经过三次更新后$x_3&gt;0$，这意味着第一次更新中获得的较大的梯度$C$经过指数滑动平均后的影响已经减小，后两轮更新提供的错误梯度使得算法没有收敛到最优解。</p>
+
+<h2 id="4-amsgrad算法">4. AMSGrad算法</h2>
+
+<p>作者指出<strong>Adam</strong>算法中无法保证$v_{t+1} \geq v_t$，因此它具有较差的收敛性，并提出了改进的<strong>AMSGrad</strong>算法。</p>
+
+<p><strong>AMSGrad</strong>算法使用截止到当前轮数的平方梯度的滑动平均$v_t$的历史最大值来代替该平均值，使得梯度更新的有效步长$\frac{\alpha_t}{\sqrt{v_t}}$至少不会增加。</p>
+
+\[\hat{v}_t = \max(\hat{v}_{t-1},v_t)\]
+
+\[\theta_t = \theta_{t-1} - \alpha \cdot \frac{m_t}{\sqrt{\hat{v}_t}}\]
+
+<p><img src="https://pic.imgdb.cn/item/620261542ab3f51d912fc385.jpg" alt="" /></p>
+
+<h2 id="5-实验结果">5. 实验结果</h2>
+
+<p><strong>AMSGrad</strong>算法在逻辑回归和神经网络模型等非凸优化问题上取得比<strong>Adam</strong>算法更好的收敛性：</p>
+
+<p><img src="https://pic.imgdb.cn/item/620262bb2ab3f51d9131176a.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/11/hook.html" class="read-next-link"></a>
+        <section>
+          <span>Pytorch中的Hook机制</span>
+          <p>  Hook mechanism in Pytorch.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/09/adam.html" class="read-next-link"></a>
+          <section>
+            <span>Adam: A Method for Stochastic Optimization</span>
+            <p>  Adam：自适应矩估计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/620089762ab3f51d917ee290.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

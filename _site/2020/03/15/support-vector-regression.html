@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支持向量回归(Support Vector Regression, SVR) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="支持向量回归(Support Vector Regression, SVR)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="支持向量回归(Support Vector Regression, SVR) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/03/15/support-vector-regression.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>支持向量回归(Support Vector Regression, SVR)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-03-15"><i class="iconfont icon-date"></i>15 Mar 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5ed759b9c2a9a83be54d254c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Support Vector Regression.</p>
+</blockquote>
+
+<p><strong>支持向量回归</strong>（<strong>Support Vector Regression，SVR</strong>）是一种启发于<a href="https://0809zheng.github.io/2020/03/14/SVM.html">支持向量机</a>和<a href="https://0809zheng.github.io/2020/03/29/tube.html">Tube回归</a>的回归方法。<strong>SVR</strong>从使用了<strong>L2</strong>正则化的<strong>Tube</strong>回归出发，借鉴了支持向量机中的“支持向量”的思想，使用稀疏的样本点来决定回归函数。</p>
+
+<p><img src="https://pic.downk.cc/item/5ed759b9c2a9a83be54d254c.jpg" alt="" /></p>
+
+<h1 id="1-原问题">1. 原问题</h1>
+<p>若样本集\(X=\{x^{(1)},...,x^{(N)}\}\)，标签集\(y=\{y^{(1)},...,y^{(N)}\}\)，则使用了<strong>L2</strong>正则化的<strong>Tube</strong>回归的目标函数定义如下：</p>
+
+\[\mathop{\min}_{w,b}  \frac{λ}{N}w^Tw + \frac{1}{N} \sum_{n=1}^{N} {\max(0,| w^Tx^{(n)}+b-y^{(n)} | - ε)}\]
+
+<p>参数$ε$表明我们能容忍预测值$w^Tx^{(n)}$和真实值$y^{(n)}$之间最多有$ε$的偏差。这相当于在回归线两侧设置了以宽度为$2ε$的中立区，当样本点落入中立区中则被认为是正确的，只有当样本点的位置远离了回归线的中立区，才计算其损失。</p>
+
+<p>借鉴支持向量机的流程，用参数$C$取代参数$λ$，平衡正则化和对损失的容忍:</p>
+
+\[\mathop{\min}_{w,b}  \frac{1}{2}w^Tw + C \sum_{n=1}^{N} {\max(0,| w^Tx^{(n)}+b-y^{(n)} | - ε)}\]
+
+<p>引入<strong>松弛变量</strong>$ξ_n^-,ξ_n^+$放松中立区(中立区两侧的松弛程度可能有所不同)，其中$ξ_n^+$表示<strong>upper tube violations</strong>，$ξ_n^-$表示<strong>lower tube violations</strong>。使得放松后的中立区能够覆盖所有样本点，此时问题转化成约束优化问题(所有样本点都在中立区内)，优化的经验风险变为引入的松弛变量尽可能地小：</p>
+
+\[\begin{aligned} \mathop{\min}_{w,b,ξ}  &amp; \frac{1}{2}w^Tw + C \sum_{n=1}^{N} {ξ_n^++ξ_n^-} \\ \text{s.t. }  &amp;  -ε-ξ_n^- ≤ w^Tx^{(n)}+b-y^{(n)} ≤ ε+ξ_n^+ \\ &amp;ξ_n^+ ≥ 0,ξ_n^- ≥ 0 \end{aligned}\]
+
+<p>上式是标准的二次规划问题。支持向量回归中需要设置的超参数是$C$和$ε$，求解的二次规划问题具有$2N+d+1$个变量，具有$2N+2$个约束条件。由于变量数量与样本特征维度$d$有关，为了减少计算量引入对偶问题。</p>
+
+<h1 id="2-对偶问题">2. 对偶问题</h1>
+<p>引入拉格朗日乘子$α_n^-$、$α_n^+$、$β_n^-$、$β_n^+$，则拉格朗日函数：</p>
+
+\[\begin{aligned} L(α,β) = &amp;\frac{1}{2}w^Tw + C \sum_{n=1}^{N} {(ξ_n^++ξ_n^-)} \\ &amp;+ \sum_{n=1}^{N} {α_n^- (-ε-ξ_n^- - w^Tx^{(n)}+b-y^{(n)})} \\ &amp;+ \sum_{n=1}^{N} {α_n^+ (w^Tx^{(n)}+b-y^{(n)} - ε+ξ_n^+)} \\ &amp;+ \sum_{n=1}^{N} {-β_n^-ξ_n^-} + \sum_{n=1}^{N} {-β_n^+ξ_n^+} \end{aligned}\]
+
+<p>原问题记为：</p>
+
+\[\begin{aligned} \mathop{\min}_{w,b,ξ}  \mathop{\max}_{α,β}  &amp; L(α,β) \\ \text{s.t. }  &amp;-ε-ξ_n^- ≤ w^Tx^{(n)}+b-y^{(n)} ≤ ε+ξ_n^+ \\ &amp; ξ_n^+ ≥ 0,ξ_n^- ≥ 0 \end{aligned}\]
+
+<p>根据<a href="https://0809zheng.github.io/2022/09/23/minimax.html">约束优化的对偶理论</a>转化为对偶问题：</p>
+
+\[\begin{aligned} \mathop{\max}_{α,β}  \mathop{\min}_{w,b,ξ} &amp; L(α,β) \\ \text{s.t. }&amp; α_n^- ≥ 0,α_n^+ ≥ 0,β_n^- ≥ 0,β_n^+ ≥ 0 \end{aligned}\]
+
+<p>由$KKT$条件：</p>
+<ul>
+  <li>原问题的约束条件：$-ε-ξ_n^- ≤ w^Tx^{(n)}+b-y^{(n)} ≤ ε+ξ_n^+ , ξ_n^+ ≥ 0,ξ_n^- ≥ 0$</li>
+  <li>对偶问题的约束条件：$α_n^- ≥ 0,α_n^+ ≥ 0,β_n^- ≥ 0,β_n^+ ≥ 0$</li>
+  <li>拉格朗日函数的梯度为零：由$\frac{\partial L(α,β)}{\partial w_i}=0$得$w=\sum_{n=1}^{N} {(α_n^+-α_n^-)x^{(n)}}$；由$\frac{\partial L(α,β)}{\partial b}=0$得$\sum_{n=1}^{N} {(α_n^+-α_n^-)}=0$</li>
+  <li><strong>互补松弛条件complementary slackness</strong>：$α_n^+ (w^Tx^{(n)}+b-y^{(n)} - ε+ξ_n^+)=0$、$α_n^- (-ε-ξ_n^- - w^Tx^{(n)}+b-y^{(n)})=0$</li>
+</ul>
+
+<p>整理并化简：</p>
+
+\[\begin{aligned} \mathop{\min}_{α} &amp; \frac{1}{2}\sum_{n=1}^{N} {\sum_{m=1}^{N} {(α_n^+-α_n^-)(α_m^+-α_m^-){(x^{(n)})}^Tx^{(m)}}} \\&amp;+ \sum_{n=1}^{N} {((ε-y^{(n)})α_n^++(ε+y^{(n)})α_n^-)} \\ \text{s.t. }&amp; \sum_{n=1}^{N} {(α_n^+-α_n^-)}=0 \\&amp; C ≥ α_n^- ≥ 0,C ≥ α_n^+ ≥ 0 \end{aligned}\]
+
+<p>这也是一个二次规划问题，具有$2N$个变量，具有$2N+1$个约束条件，与样本维度$d$无关。</p>
+
+<p>求解得到$α_n^-$、$α_n^+$后，原问题的解为：</p>
+
+\[\begin{aligned} w&amp;=\sum_{n=1}^{N} {(α_n^+-α_n^-)x^{(n)}} \\ y&amp;=w^Tx=\sum_{n=1}^{N} {(α_n^+-α_n^-)(x^{(n)})^Tx} \end{aligned}\]
+
+<p>稀疏性的说明：</p>
+<ul>
+  <li>对于分布在中立区$| w^Tx^{(n)}+b-y^{(n)} | &lt; ε+ξ_n$内的点，由互补松弛条件，$α_n^-=0$、$α_n^+=0$；因此这些样本点对结果没有贡献。而位于中立区之上的点，起到支持向量的作用。</li>
+</ul>
+
+<h1 id="3-核方法">3. 核方法</h1>
+<p>将<a href="https://0809zheng.github.io/2021/07/23/kernel.html">核方法</a>引入支持向量回归，可以增强其非线性表示能力。</p>
+
+<p>引入核函数$K(x,x’)={φ(x)}^Tφ(x’)$来代替样本的特征转换和内积运算，可以得到支持向量回归的对偶形式：</p>
+
+\[\begin{aligned} \mathop{\min}_{α} &amp; \frac{1}{2}\sum_{n=1}^{N} \sum_{m=1}^{N} {(α_n^+-α_n^-)(α_m^+-α_m^-){K(x^{(n)},x^{(m)})}} \\&amp;+ \sum_{n=1}^{N} {((ε-y^{(n)})α_n^++(ε+y^{(n)})α_n^-)} \\ \text{s.t. }&amp; \sum_{n=1}^{N} {(α_n^+-α_n^-)}=0 \\ &amp;C ≥ α_n^- ≥ 0,C ≥ α_n^+ ≥ 0 \end{aligned}\]
+
+<p>引入核方法后支持向量回归的最终结果为：</p>
+
+\[y=w^Tx=\sum_{n=1}^{N} {(α_n^+-α_n^-)K(x^{(n)},x)}\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/03/16/blending.html" class="read-next-link"></a>
+        <section>
+          <span>集成学习中的组合(Blending)策略</span>
+          <p>  An Ensemble Learning Method：Blending.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5eda2944c2a9a83be55ec478.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/03/14/SVM.html" class="read-next-link"></a>
+          <section>
+            <span>支持向量机(Support Vector Machine, SVM)</span>
+            <p>  Support Vector Machine.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/5ed75966c2a9a83be54cb0f5.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Descending through a Crowded Valley - Benchmarking Deep Learning Optimizers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Descending through a Crowded Valley - Benchmarking Deep Learning Optimizers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Descending through a Crowded Valley - Benchmarking Deep Learning Optimizers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/07/08/optimizer.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Descending through a Crowded Valley - Benchmarking Deep Learning Optimizers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-07-08"><i class="iconfont icon-date"></i>08 Jul 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/60e6cedb5132923bf82a0a31.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>对不同深度学习优化器的基准测试.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Descending through a Crowded Valley - Benchmarking Deep Learning Optimizers</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2007.01547v2">link</a></li>
+</ul>
+
+<h1 id="1-研究背景">1. 研究背景</h1>
+<p>选择<strong>优化器(optimizer)</strong>是训练深度学习模型的重要决策之一，目前已经有大量优化器被提出，如下表所示。在缺乏理论指导的情况下，优化器的选择很大程度上依赖于经验。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60e6d1235132923bf830a780.jpg" alt="" /></p>
+
+<p>本文通过对$14$种广泛使用的优化器进行标准化基准测试，进行了约$35,000$次实验，通过实验总结以下结论：</p>
+<ol>
+  <li>不同的优化器在各个任务之间的性能差异很大；</li>
+  <li>从多个默认参数优化器中进行评估选择的效果与调优单个优化器超参数的效果大致相同；</li>
+  <li>提出了一个具有较少特定优化器和参数选择的子集，只需要在这个子集中搜索也通常会在任务中获得满意的结果。</li>
+</ol>
+
+<h1 id="2-测试过程">2. 测试过程</h1>
+
+<p><img src="https://pic.imgdb.cn/item/60e6d35e5132923bf836f727.jpg" alt="" /></p>
+
+<p>测试过程如上图所示。首先选定$8$个差异较大的特定任务数据集，为每个数据集选择一个基准模型(值得一提的是，这些模型尺寸较小，这是因为大模型的训练成本太高)；选择$14$个常用的优化器；使用优化器时预先设定$3$种微调策略；再应用$4$种不同的学习率策略，最终得到评估结果。</p>
+
+<h3 id="1-problem">(1) Problem</h3>
+<p>作者选择了$4$种较小的任务($P1$-$P4$)和$4$种较大的任务($P5$-$P8$).这些任务的细节如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60e6d36d5132923bf8372126.jpg" alt="" /></p>
+
+<h3 id="2-optimizer">(2) Optimizer</h3>
+<p>作者统计了在<strong>ArXiv</strong>文章的标题和摘要中出现过的优化器次数，并选择出现频率最高的$14$个优化器作为选定优化器，这些优化器的使用频率如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60e6d28b5132923bf834a197.jpg" alt="" /></p>
+
+<h3 id="3-tuning">(3) Tuning</h3>
+<p>作者设置了$3$种微调策略，分别是：</p>
+<ol>
+  <li><strong>one-shot</strong>：使用优化器的默认超参数配置</li>
+  <li><strong>small budget</strong>：在超参数空间中进行$25$次随机搜索，选择最优配置</li>
+  <li><strong>large budget</strong>：在超参数空间中进行$50$次随机搜索，选择最优配置</li>
+</ol>
+
+<p>各优化器的默认超参数配置和随机搜索空间如下图所示。其中$\mathcal{U}$表示均匀分布，$\mathcal{LU}$表示对数均匀分布：</p>
+
+<p><img src="https://pic.imgdb.cn/item/60e6d39d5132923bf837b2e8.jpg" alt="" /></p>
+
+<h3 id="4-schedule">(4) Schedule</h3>
+<p>作者又预设了四种学习率策略，分别是：</p>
+<ul>
+  <li>学习率为常数；</li>
+  <li>学习率余弦衰减；</li>
+  <li>带热启动的学习率余弦衰减；</li>
+  <li>学习率梯形策略.</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/60e6d3b25132923bf837f06b.jpg" alt="" /></p>
+
+<h1 id="3-实验分析">3. 实验分析</h1>
+<p>下表表示将使用<strong>one-shot</strong>策略的未经过微调的优化器($y$轴)换成使用<strong>small budget</strong>策略的经过微调的优化器($x$轴)在不同任务上的表现提升结果。实验表明，对于某些优化器(如<strong>Adadelta</strong>)，使用任意微调后的优化器均能得到性能的提升，这表明这些优化器的默认设置并不是很合适；对于另外一些优化器(如<strong>Adam</strong>)，替换后性能的提升并不明显，这表明这些优化器已经足够好用。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60e6d3e95132923bf8388c86.jpg" alt="" /></p>
+
+<p>下表表示所有$14$个优化器在$8$个任务上经过不同微调后的性能相对提升平均值。橙色线表示平均趋势，浅黄色区域表示$25$至$75$分区间。实验表明，通过超参数搜索(即<strong>budget</strong>结果)能够明显提高优化器性能；学习率策略也能够提高表现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60e6d4025132923bf838d2b0.jpg" alt="" /></p>
+
+<p>下表表示所有$14$个优化器在$8$个任务上经过<strong>large budget</strong>策略的性能。实验表明，不同的优化器在不同的任务上具有显著差异的表现；其中有一些优化器在所有任务上都具有不错的表现。</p>
+
+<p><img src="https://pic.imgdb.cn/item/60e6d4165132923bf8390eb7.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/07/09/hypothesis.html" class="read-next-link"></a>
+        <section>
+          <span>机器学习中的假设检验(Hypothesis Test)</span>
+          <p>  Hypothesis Test in Machine Learning.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/60e807c55132923bf84e8654.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/07/07/feedback.html" class="read-next-link"></a>
+          <section>
+            <span>Addressing Some Limitations of Transformers with Feedback Memory</span>
+            <p>  Feedback Transformer：改进Transformer的序列信息提取能力.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/60e52ec95132923bf80b16ff.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

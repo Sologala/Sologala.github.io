@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsupervised Data Augmentation for Consistency Training - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Unsupervised Data Augmentation for Consistency Training">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Unsupervised Data Augmentation for Consistency Training - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/09/07/uda.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Unsupervised Data Augmentation for Consistency Training</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-09-07"><i class="iconfont icon-date"></i>07 Sep 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63bbe4ffbe43e0d30e4cf951.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>一致性训练的无监督数据增强.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1904.12848">Unsupervised Data Augmentation for Consistency Training</a></li>
+</ul>
+
+<p><strong>无监督数据增强 (Unsupervised Data Augmentation, UDA)</strong>旨在使模型对一个无标签样本及其增强样本预测相同的输出，重点关注增强噪声的质量将会如何影响半监督学习方法的一致性训练表现。<strong>UDA</strong>采用比较先进的数据增强策略生成有意义和高效的噪声样本，而好的增强策略应能提供有效的(不改变样本标签)、多样性的噪声，并引入有目标的归纳偏置。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63bbf895be43e0d30e769e1b.jpg" alt="" /></p>
+
+<p>在计算无监督损失时，<strong>UDA</strong>采用了以下技巧：</p>
+<ul>
+  <li>低置信度遮挡(<strong>low confidence masking</strong>)：丢弃预测置信度低于阈值$\tau$的样本；</li>
+  <li>锐化预测分布(<strong>sharpening prediction distribution</strong>)：在<strong>softmax</strong>中引入温度系数$T$；</li>
+  <li>域内数据过滤(<strong>in-domain data filtration</strong>)：为了在域外数据集中提取更多域内数据，训练一个分类器预测域标签，并保留域内分类置信度高的样本。</li>
+</ul>
+
+<p><strong>UDA</strong>的损失函数为：</p>
+
+\[\mathcal{L}_u^{UDA} = \sum_{x \in \mathcal{D}} \Bbb{I} [\mathop{\max}_c f_{\theta}^c(x) &gt; \tau] \cdot \text{D}[\text{sg}(f_{\theta}(x;T)),f_{\theta}(\hat{x})]\]
+
+<p>其中\(\hat{x}\)是应用数据增强的样本，\(\text{sg}(\cdot)\)表示不计算梯度，\(\Bbb{I}\)是示性函数，\(\text{D}\)是距离函数，对于分类任务常取KL散度；温度$T$用于调整<strong>softmax</strong>计算：</p>
+
+\[f_{\theta}^i(x;T) = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)}\]
+
+<p>对于图像任务，<strong>UDA</strong>采用<a href="https://0809zheng.github.io/2021/11/28/randaug.html"><strong>RandAugment</strong></a>，该方法随机均匀地从<strong>PIL</strong>提供的图像增强策略中采样增强方式，不需要学习或优化过程，因此是一种高效的自动增强策略。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63bc1552be43e0d30eb5b815.jpg" alt="" /></p>
+
+<p>在<strong>CIFAR-10</strong>和<strong>SVHN</strong>分类数据集上，监督学习的<strong>Wide-ResNet-28-2</strong>和<strong>PyramidNet</strong>分别报告了$5.4$和$2.7$的错误率，而半监督学习方法的错误率为：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63bc1406be43e0d30eb3047e.jpg" alt="" /></p>
+
+<p>对于语言任务，<strong>UDA</strong>采用<strong>反向翻译(back-translation)</strong>和基于<strong>TF-IDF</strong>的单词替换。反向翻译保留了高级语义信息但不会保持精确的单词，<strong>TF-IDF</strong>词替换丢弃了具有较低<strong>TF-IDF</strong>得分的信息量较小的单词。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63bc1571be43e0d30eb5eac8.jpg" alt="" /></p>
+
+<p>结果表明<strong>UDA</strong>能够作为语言领域中迁移学习和表示学习的补充：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63bc152cbe43e0d30eb5769f.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/09/08/labelprop.html" class="read-next-link"></a>
+        <section>
+          <span>Label Propagation for Deep Semi-supervised Learning</span>
+          <p>  深度无监督学习的标签传播.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63bcd2b0be43e0d30ee1cf48.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/09/06/ict.html" class="read-next-link"></a>
+          <section>
+            <span>Interpolation Consistency Training for Semi-Supervised Learning</span>
+            <p>  半监督学习的插值一致性训练.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63bb9d41be43e0d30ebca553.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

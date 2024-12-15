@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrastive Learning Rivals Masked Image Modeling in Fine-tuning via Feature Distillation - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Contrastive Learning Rivals Masked Image Modeling in Fine-tuning via Feature Distillation">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Contrastive Learning Rivals Masked Image Modeling in Fine-tuning via Feature Distillation - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/11/30/featuredistillation.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Contrastive Learning Rivals Masked Image Modeling in Fine-tuning via Feature Distillation</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-11-30"><i class="iconfont icon-date"></i>30 Nov 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6687ac8dd9c307b7e9bb2c84.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>特征蒸馏使对比学习在微调时击败了掩码图像建模.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2205.14141">Contrastive Learning Rivals Masked Image Modeling in Fine-tuning via Feature Distillation</a></li>
+</ul>
+
+<p>本文提出了特征蒸馏(<strong>Feature Distillation, FD</strong>)方法，可以处理任意预训练方法获得的特征，已经学习到的特征会再被蒸馏成为全新的特征，可以极大地提升自监督学习模型的微调性能。</p>
+
+<p>对于任意基于对比的自监督预训练模型，<strong>FD</strong>使用特征作为蒸馏的目标。在所有的训练目标里面，使用全部特征图得到的结果是最好的；与使用其他简化的特征作为蒸馏目标的方法相比，对完整特征图的蒸馏可以保持教师模型中涉及的更多信息，这会得到更好的性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6687bf64d9c307b7e9dd7a47.png" alt="" /></p>
+
+<p>为了使得教师和学生模型的特征相当，作者对每张输入图像使用了相同的数据增强策略；为了使得特征的维度得到匹配，作者额外使用了 1×1 卷积$g(\cdot)$将学生模型的特征映射成和教师模型相同的大小。</p>
+
+<p>作者提出了一些非常有用的设计，包括白化蒸馏目标 (<strong>whitened distillation targets</strong>)，共享相对位置编码 (<strong>shared relative position bias</strong>)，以及非对称的 <strong>Drop Path</strong> 率 (<strong>asymmetric drop path rates</strong>)。在以上这些精心设计的方法之下，基于对比的自监督预训练方法的微调性能达到与掩码图像建模方法相当的表现。</p>
+
+<p>白化蒸馏目标是指对要蒸馏的教师特征进行白化处理，通过降低每个特征之间的关联性并统一每个特征的方差，减少冗余信息。白化蒸馏目标是一个不含 <strong>scaling</strong> 参数和 <strong>bias</strong> 参数的 <strong>Layer Normalization</strong>。</p>
+
+<p>在蒸馏中作者使用了 <strong>smooth L1 loss</strong> 来优化学生和教师模型的特征：</p>
+
+\[L(s,t) = \begin{cases}
+\frac{1}{2}(g(s)-whiten(t))^2/\beta, &amp; |g(s)-whiten(t)| \leq \beta \\
+(g(s)-whiten(t) - \frac{1}{2}\beta), &amp; g(s)-whiten(t)| &gt; \beta
+\end{cases}\]
+
+<p>在特征蒸馏的框架中，作者重新思考了学生网络中的位置编码方式。共享相对位置编码就是每一层共享一样的相对位置编码，实验结果表明这样做效果最好。</p>
+
+<p>特征蒸馏的双分支框架允许教师和学生模型使用非对称的 <strong>Drop Path</strong> 率。作者发现，对学生和教师模型使用不同的 <strong>Drop Path</strong> 率对于学生模型学习到更好的表征是更加有利的。适度增加学生网络的 <strong>Drop Path</strong> 率是有益的，可能是由于过拟合的缓解。</p>
+
+<p>作者对使用特征蒸馏前后模型每一层的每个注意力头的平均注意力距离和头之间的余弦相似度进行可视化。平均注意力距离可以部分反映出每个注意力头的感受野大小。对于特征蒸馏之前的特征而言，随着层数的加深，不同头的注意力距离范围变得更加接近了，最终都落在了一个较小的区间中。这表明不同的头学习到了非常相似的视觉线索，可能会浪费模型的容量。但是对于特征蒸馏之后的特征而言，所有的表征变得更加不同，注意力的距离分布更加平均，尤其是在更深的层中，这一现象变得更加明显。每一层注意力不同头之间的余弦相似度结果也呈现出了类似的特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6687c15bd9c307b7e9e0d16a.png" alt="" /></p>
+
+<p>作者对使用特征蒸馏前后的平均注意力图进行可视化。注意力模式呈现出了2个明显的特征，即对角线以及列状。对角线模式对应的是某些固定相对位置的图像 <strong>Patch</strong> 之间的关系，而列状模式则表示某些位置的图像 <strong>Patch</strong> 对其他所有位置的影响。从图中可以看出，特征蒸馏后的平均注意力图具有更多的对角模式，这意味着特征蒸馏之后的模型更多地依赖于相对位置关系对图像 <strong>Patch</strong> 进行视觉建模。这表明模型具有更好的平移不变性，而平移不变性通常是各种视觉任务的有利属性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6687c1cdd9c307b7e9e1a629.png" alt="" /></p>
+
+<p>注意到学生网络中包含了共享相对位置编码 (<strong>RPB</strong>)，为了研究其效果，作者还尝试在学生体系结构中使用绝对位置编码 (<strong>APE</strong>)，其注意力映射如图所示。即使是用了 <strong>APE</strong>，特征蒸馏得到的表征依然呈对角线形状，这表明更多的对角线模式主要是由特征蒸馏算法本身，而不是由位置编码的方式造成的。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6687c1ffd9c307b7e9e2031a.png" alt="" /></p>
+
+<p>作者可对不同模型的损失/精度<strong>landscape</strong>进行可视化。在该可视化方法中，模型的训练权重被一系列不同程度的高斯噪声干扰，为了考虑不同模型的权重幅值变化的影响，每个噪声级在定义时依据每个滤波器的$l_2$范数。特征蒸馏后的表征比蒸馏前的表征更加平坦，这与其从结果上更好的微调性能是一致的。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6687c266d9c307b7e9e2bc63.png" alt="" /></p>
+
+<p>作者还对掩码图像建模 (<strong>MIM</strong>) 方法的平均注意力距离和损失<strong>landscape</strong>进行可视化。使用 <strong>MAE</strong> 预训练得到的不同的注意力头之间的平均注意力距离更大，损失<strong>landscape</strong>相对平坦。结果表明，特征蒸馏后处理带来的良好的微调性能与掩码图像建模方法在功能上有一定的重叠。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6687c2b4d9c307b7e9e34225.png" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/12/02/amos.html" class="read-next-link"></a>
+        <section>
+          <span>Amos: An Adam-style Optimizer with Adaptive Weight Decay towards Model-Oriented Scale</span>
+          <p>  Amos：一种面向模型的自适应权重衰减的Adam风格优化器.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63f5d7a9f144a01007252dc9.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/11/29/pic.html" class="read-next-link"></a>
+          <section>
+            <span>Parametric Instance Classification for Unsupervised Visual Feature Learning</span>
+            <p>  无监督视觉特征学习的参数化实例分类.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/66879a96d9c307b7e99871d4.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic ReLU - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Dynamic ReLU">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Dynamic ReLU - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/10/27/dyrelu.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Dynamic ReLU</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-10-27"><i class="iconfont icon-date"></i>27 Oct 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61793ad02ab3f51d91fc412e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DY-ReLU：动态整流线性单元.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2003.10027">Dynamic ReLU</a></li>
+</ul>
+
+<p>作者提出了动态<strong>ReLU</strong>函数，将所有输入元素$x$的全局上下文信息编码到超函数$\theta(x)$中，并使用超函数决定激活函数$f_{\theta(x)}(x)$的形状，从而提高激活函数的表示能力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/617a65492ab3f51d91e854cb.jpg" alt="" /></p>
+
+<p><strong>ReLU</strong>激活函数表示为$y_c=\max(x_c,0)$，可推广为分段线性函数$y_c=\max_k(a_c^kx_c+b_c^k)$。作者提出的<strong>dynamic ReLU</strong>使用输入元素\(x=\{x_c\}\)自适应地计算参数$a_c^k$和$b_c^k$：</p>
+
+\[y_c = f_{\theta(x)}(x_c) = \mathop{\max}_{1\leq k \leq K} \{a_c^k(x)x_c+b_c^k(x)\}\]
+
+<p>此处的超函数$\theta(x)$的输出为：</p>
+
+\[[a_1^1,...,a_C^1,...,a_1^K,...,a_C^K,b_1^1,...,b_C^1,...,b_1^K,...,b_C^K]^T=\theta(x)\]
+
+<p>超函数$\theta(x)$的实现参考了<strong>SENet</strong>中的<strong>SE</strong>模块，即首先沿某些维度进行全局平均池化，再通过两个全连接层输出$2KC$个参数$\Delta a_{1:C}^{1:K}$和$\Delta b_{1:C}^{1:K}$。参数$a_c^k$和$b_c^k$计算为：</p>
+
+\[a_c^k(x)=\alpha^k+\lambda_a \Delta a_{c}^{k}(x),\quad b_c^k(x)=\beta^k+\lambda_b \Delta b_{c}^{k}(x)\]
+
+<p>实验中设置$K=2$，$\alpha^1=1,\alpha^2=\beta^1=\beta^2=0$，$\lambda_1=1,\lambda_2=0.5$。</p>
+
+<p>一些其他的激活函数可以看作<strong>dynamic ReLU</strong>的特殊情况：</p>
+
+<p><img src="https://pic.imgdb.cn/item/619707ca2ab3f51d919c3e19.jpg" alt="" /></p>
+
+<p>根据超函数输入的维度不同，作者设计了三种形式的动态<strong>ReLU</strong>函数：</p>
+<ul>
+  <li><strong>DY-ReLU-A</strong>：每一层的神经元共享激活函数</li>
+  <li><strong>DY-ReLU-B</strong>：每层神经元的每个通道共享激活函数</li>
+  <li><strong>DY-ReLU-C</strong>：每层神经元的每个元素独立使用激活函数</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/617a6aef2ab3f51d91ed2dbb.jpg" alt="" /></p>
+
+<p><strong>DY-ReLU-A</strong>引入了$2K$个参数，<strong>DY-ReLU-B</strong>引入了$2KC$个参数。若直接实现<strong>DY-ReLU-C</strong>，需要$2KCHW$个参数。为了降低参数量，作者将<strong>DY-ReLU-C</strong>的通道参数和空间参数分别计算，再通过相乘构造，从而把参数量降低为$2KC+HW$。</p>
+
+<p>作者将<strong>ResNet</strong>和<strong>MobileNet</strong>中的<strong>ReLU</strong>替换为<strong>dynamic ReLU</strong>，实验结果如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61970c562ab3f51d919ea994.jpg" alt="" /></p>
+
+<p>作者展示了不同输入图像在网络的不同模块上的激活函数的形状分布，图中显示激活函数对于输入是动态变化的：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61970eb82ab3f51d91a00ecd.jpg" alt="" /></p>
+
+<p>对于$K=2$的情况，作者统计了每个模块中分段线性函数两段斜率的差异变化$|a_c^1-a_c^2|$。图中可知随着更深的网络层数，分段线性斜率差异越小，表明曲线弯曲度越低。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61970f492ab3f51d91a06a44.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/10/28/zero.html" class="read-next-link"></a>
+        <section>
+          <span>ZerO Initialization: Initializing Neural Networks with only Zeros and Ones</span>
+          <p>  ZerO初始化: 仅使用0和1初始化神经网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64a2b3ad1ddac507cc249b06.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/10/26/apl.html" class="read-next-link"></a>
+          <section>
+            <span>Learning Activation Functions to Improve Deep Neural Networks</span>
+            <p>  APL：自适应分段线性单元.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6177560e2ab3f51d9196efa4.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

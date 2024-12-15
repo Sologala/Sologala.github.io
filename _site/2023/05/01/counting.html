@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>目标计数(Object Counting) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="目标计数(Object Counting)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="目标计数(Object Counting) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/05/01/counting.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>目标计数(Object Counting)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-05-01"><i class="iconfont icon-date"></i>01 May 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/667bda30d9c307b7e968c2b3.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Object Counting.</p>
+</blockquote>
+
+<p>人类的视觉系统在计算图像中的物体数量时具有<strong>速算 (subbitizing)</strong>能力，即当给定不超过<strong>5</strong>个物体集合的视觉场景，人类能够对物体数量进行快速、准确和自信的判断。然而在物体数量不断增加的场景中，人类判断的准确性和可信度往往会急剧下降。</p>
+
+<p><a href="https://paperswithcode.com/task/object-counting"><strong>目标计数 (Object Counting)</strong>任务</a>旨在从图像或视频中统计特定目标实例的数量。值得一提的是，通过目标<strong>检测</strong>和<strong>分割</strong>技术可以获得目标实例的边界框或<strong>mask</strong>，从而进一步计算出目标的数量；上述方法在标注样本较少的场合实施比较困难。本文主要讨论基于<strong>回归</strong>的计数方式，即直接学习图像到目标数量或目标密度图的映射关系。</p>
+
+<p>通用的目标技术方案包括：</p>
+<ol>
+  <li><strong>少样本计数 (Few-Shot Counting)</strong>：提供目标样本<strong>exemplar</strong>在查询图像中进行匹配，如<strong>GMN</strong>, <strong>FamNet</strong>, <strong>LaoNet</strong>, <strong>CFOCNet</strong>, <strong>SAFECount</strong>, <strong>BMNet+</strong>, <strong>Counting-DETR</strong>, <strong>CounTR</strong>, <strong>LOCA</strong>, <strong>SPDCN</strong>, <strong>VCN</strong>, <strong>SAM Counting</strong>, <strong>CACViT</strong>, <strong>DAVE</strong>, <strong>SSD</strong>。</li>
+  <li><strong>无参考计数 (Reference-less Counting)</strong>：自动挖掘和计数所有显著性目标，如<strong>LC</strong>, <strong>RLC</strong>, <strong>MoVie</strong>, <strong>DSAA</strong>, <strong>CaOC</strong>, <strong>RepRPN-Counter</strong>, <strong>RCC</strong>, <strong>GCNet</strong>, <strong>ZSC</strong>, <strong>ABC123</strong>, <strong>OmniCount</strong>。</li>
+  <li><strong>文本引导计数 (Text-Guided Counting)</strong>：通过预训练视觉语言模型进行目标计数，如<strong>CountCLIP</strong>, <strong>CLIP-Count</strong>, <strong>CounTX</strong>, <strong>VLCounter</strong>, <strong>CLIP Counting</strong>, <strong>ExpressCount</strong>。</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/667bcafad9c307b7e94dd04c.png" alt="" /></p>
+
+<h2 id="1-少样本计数-few-shot-counting">1. 少样本计数 (Few-Shot Counting)</h2>
+
+<p>少样本计数是指预先指定若干目标样本作为计数时的模板(<strong>exemplar</strong>或<strong>support</strong>)，把计数问题转换为查询图像中的块匹配问题；这类方法的两个重要组成部分是特征提取模块和特征相似度度量，在训练和推理时需要额外引入图像块级别的标注成本。</p>
+
+<h3 id="-generic-matching-network-gmn">⚪ <a href="https://0809zheng.github.io/2023/05/02/gmn.html"><font color="blue">Generic Matching Network (GMN)</font></a></h3>
+<ul>
+  <li>(arXiv1811) Class-Agnostic Counting</li>
+</ul>
+
+<p><strong>GMN</strong>模型通过<strong>resnet-50</strong>双流网络分别对查询图像和模板样本进行编码，将查询特征与样本特征连接后通过卷积回归预测密度图；并在特征编码中加入<strong>residual adapter</strong>模块，在微调计数任务时只训练该模块的参数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667be2b3d9c307b7e976e54e.png" alt="" /></p>
+
+<h3 id="-few-shot-adaptation--matching-network-famnet">⚪ <a href="https://0809zheng.github.io/2023/05/03/famnet.html"><font color="blue">Few-shot adaptation &amp; matching Network (FamNet)</font></a></h3>
+<ul>
+  <li>(arXiv2104) Learning To Count Everything</li>
+</ul>
+
+<p><strong>FamNet</strong>模型通过冻结的<strong>resnet-50</strong>提取查询特征与样本特征，并通过<strong>FPN</strong>的多尺度来强化特征；然后通过<strong>ROI pooling</strong>将样本特征池化到统一大小，将查询特征与用作卷积核的样本特征进行卷积并生成多个相似性图，并通过密度估计模块预测密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667cc6d2d9c307b7e9c3e8a0.png" alt="" /></p>
+
+<h3 id="-look-at-one-instance-laonet">⚪ <a href="https://0809zheng.github.io/2023/05/04/laonet.html"><font color="blue">Look At One instance (LaoNet)</font></a></h3>
+<ul>
+  <li>(arXiv2112) Object Counting: You Only Need to Look at One</li>
+</ul>
+
+<p><strong>LaoNet</strong>仅采用包含一个查询样本边界框的图像作为输入，来统计出该类别所有目标的个数。主要由三个部分组成：特征提取、特征关联、密度回归。</p>
+<ul>
+  <li><strong>特征提取</strong>模块采用<strong>VGG-19</strong>，对于查询样本采用尺度聚合机制融合不同尺度的信息；</li>
+  <li><strong>特征关联</strong>模块通过自注意力和交叉注意力学习查询样本和图像特征的类内和类间关系</li>
+  <li><strong>密度回归</strong>模块用于回归密度图。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/667cce3ad9c307b7e9cf0745.png" alt="" /></p>
+
+<h3 id="-class-agnostic-fewshot-object-counting-network-cfocnet">⚪ <a href="https://0809zheng.github.io/2023/05/18/cfocnet.html"><font color="blue">Class-agnostic Fewshot Object Counting Network (CFOCNet)</font></a></h3>
+<ul>
+  <li>(WACV2021) Class-agnostic Few-shot Object Counting</li>
+</ul>
+
+<p><strong>CFOCNet</strong>网络由一个双流<strong>Resnet</strong>编码器和一个解码器组成。编码器分别提取查询图像和参考图像的特征，通过无参数卷积计算不同尺度下的匹配分数图（其中参考图像池化特征作为卷积核，自注意力增强的查询特征作为输入特征）；解码器通过可训练的加权求和机制融合编码器生成的分数图，以生成预测的密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66825ae1d9c307b7e987af93.png" alt="" /></p>
+
+<h3 id="-similarity-aware-feature-enhancement-safecount">⚪ <a href="https://0809zheng.github.io/2023/05/05/safecount.html"><font color="blue">Similarity-Aware Feature Enhancement (SAFECount)</font></a></h3>
+<ul>
+  <li>(arXiv2201) Few-shot Object Counting with Similarity-Aware Feature Enhancement</li>
+</ul>
+
+<p><strong>SAFECount</strong>首先采用相似度对比模块<strong>SCM</strong>对比目标模板和整个图像的特征并生成相似度图；然后采用特征增强模块<strong>FEM</strong>将相似度图作为引导，用目标模板的特征来提升整个图像的特征；最后从提升过的特征中回归密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667cd778d9c307b7e9dd3107.png" alt="" /></p>
+
+<h3 id="-bilinear-matching-network-bmnet">⚪ <a href="https://0809zheng.github.io/2023/05/06/bmnet.html"><font color="blue">Bilinear Matching Network (BMNet+)</font></a></h3>
+<ul>
+  <li>(arXiv2203) Represent, Compare, and Learn: A Similarity-Aware Framework for Class-Agnostic Counting</li>
+</ul>
+
+<p><strong>BMNet+</strong>以端到端方式同时学习特征表示和相似度度量。对于特征表示，使用自注意力提取特征的类内信息；对于相似度度量，使用可学习的双线性相似度度量，并通过特征选择模块计算动态相似性度量，且对相似性图施加相似性损失。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667d0d59d9c307b7e939c89e.png" alt="" /></p>
+
+<h3 id="-counting-detr">⚪ <a href="https://0809zheng.github.io/2023/05/08/countingdetr.html"><font color="blue">Counting-DETR</font></a></h3>
+<ul>
+  <li>(arXiv2207) Few-shot Object Counting and Detection</li>
+</ul>
+
+<p><strong>Counting-DETR</strong>采用两阶段训练策略：首先在几个目标样本边界框上预训练，然后用预训练网络以点标注为查询点生成伪边界框，最后使用这些边界框作为监督来训练目标检测。考虑到伪边界框的不确定性，引入了不确定性损失来正则化边界框的学习。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667d260fd9c307b7e9674e6a.png" alt="" /></p>
+
+<h3 id="-countr">⚪ <a href="https://0809zheng.github.io/2023/05/10/countr.html"><font color="blue">CounTR</font></a></h3>
+<ul>
+  <li>(arXiv2208) CounTR: Transformer-based Generalised Visual Counting</li>
+</ul>
+
+<p><strong>CounTR</strong>模型首先通过掩码图像重建进行自监督预训练，然后对下游计数任务进行微调。进一步采用一种可扩展的<strong>Mosaic</strong>数据增强来合成训练图像。该模型首先通过视觉编码器对目标样本和查询图像进行编码，再通过特征交互模块进行信息交互，最后通过视觉解码器生成密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667e1acad9c307b7e9d0d602.png" alt="" /></p>
+
+<h3 id="-low-shot-object-counting-network-with-iterative-prototype-adaptation-loca">⚪ <a href="https://0809zheng.github.io/2023/05/11/loca.html"><font color="blue">Low-shot Object Counting network with iterative prototype Adaptation (LOCA)</font></a></h3>
+<ul>
+  <li>(arXiv2211) A Low-Shot Object Counting Network With Iterative Prototype Adaptation</li>
+</ul>
+
+<p><strong>LOCA</strong>模型包括图像特征提取、目标原型提取、原型匹配和密度回归。图像特征提取生成编码后的图像特征，目标原型提取为每个边界框计算一个目标原型，原型匹配通过目标原型和图像特征的深度相关运算构造相似度图，密度回归预测密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667e250dd9c307b7e9e0e68e.png" alt="" /></p>
+
+<h3 id="-scale-prior-deformable-convolution-network-spdcn">⚪ <a href="https://0809zheng.github.io/2023/05/13/spdcn.html"><font color="blue">Scale-Prior Deformable Convolution Network (SPDCN)</font></a></h3>
+<ul>
+  <li>(BMVC2022) Scale-Prior Deformable Convolution for Exemplar-Guided Class-Agnostic Counting</li>
+</ul>
+
+<p><strong>SPDCN</strong>将样本的尺度信息集成到计数网络主干中。主干网络使用了尺度先验的可变形卷积，给定样本的尺度来学习相应的尺度嵌入，然后根据这些嵌入向量调整可变形卷积的偏移量。作者进一步提出了一种尺度敏感的广义损失，该算法根据目标尺度自适应地调整损失函数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667e5f68d9c307b7e9449e36.png" alt="" /></p>
+
+<h3 id="-vicinal-counting-network-vcn">⚪ <a href="https://0809zheng.github.io/2023/05/19/vcn.html"><font color="blue">Vicinal Counting Network (VCN)</font></a></h3>
+<ul>
+  <li>(CVPRW2022) Vicinal Counting Networks</li>
+</ul>
+
+<p><strong>VCN</strong>由一个生成器和一个计数回归器组成，共同学习计数和增加现有训练数据。生成器将图像与随机噪声向量一起作为输入，并生成输入图像的增强版本。计数回归器学习对原始图像和增强图像中的物体进行计数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66826308d9c307b7e99568ad.png" alt="" /></p>
+
+<h3 id="-sam-counting">⚪ <a href="https://0809zheng.github.io/2023/05/20/samcounting.html"><font color="blue">SAM Counting</font></a></h3>
+<ul>
+  <li>(arXiv2304) Can SAM Count Anything? An Empirical Study on SAM Counting</li>
+</ul>
+
+<p>首先利用<strong>SAM</strong>的图像编码器(<strong>ViT-H</strong>)对给定图像进行特征提取；其次利用给定的目标边界框作为提示来生成参考目标的分割掩码，并与图像特征相乘并取平均以产生参考目标的特征向量；之后使用点网格(每边设定32个点)作为提示对所有内容进行分割，并将输出掩码与图像特征相乘并取平均生成所有掩码的特征向量；最后计算预测掩码的特征向量与参考目标的特征向量之间的余弦相似度，如果余弦相似度超过预定阈值，则将其视为目标对象。</p>
+
+<h3 id="-class-agnostic-counting-vision-transformer-cacvit">⚪ <a href="https://0809zheng.github.io/2023/05/15/cacvit.html"><font color="blue">Class-Agnostic Counting Vision Transformer (CACViT)</font></a></h3>
+<ul>
+  <li>(arXiv2305) Vision Transformer Off-the-Shelf: A Surprising Baseline for Few-Shot Class-Agnostic Counting</li>
+</ul>
+
+<p><strong>CACViT</strong>通过视觉<strong>Transformer</strong>中的自注意力机制能够实现特征提取与匹配过程：<strong>ViT</strong>中的自注意力过程分为自注意力组和交叉注意力组，前者关注的是查询图像与样本的特征提取，后者关注的是查询图像与样本的匹配过程。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667e7205d9c307b7e966f3cd.png" alt="" /></p>
+
+<h3 id="-detect-and-verify-paradigm-dave">⚪ <a href="https://0809zheng.github.io/2024/04/25/dave.html"><font color="blue">Detect-and-Verify Paradigm (DAVE)</font></a></h3>
+<ul>
+  <li>(arXiv2404) DAVE – A Detect-and-Verify Paradigm for Low-Shot Counting</li>
+</ul>
+
+<p><strong>DAVE</strong>采用检测-验证的两阶段框架。检测阶段基于现成的计数器<strong>LOCA</strong>来估计目标位置密度图，通过非极大值抑制获得目标中心位置，然后预测每个目标的边界框参，构造高召回率的候选区域；验证阶段对候选区域的特征进行聚类，以识别和拒绝异常的候选区域，并更新密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668612c8d9c307b7e9b088a2.png" alt="" /></p>
+
+<h3 id="-spatial-similarity-distribution-ssd">⚪ <a href="https://0809zheng.github.io/2024/05/20/ssd.html"><font color="blue">Spatial Similarity Distribution (SSD)</font></a></h3>
+<ul>
+  <li>(arXiv2405) Learning Spatial Similarity Distribution for Few-shot Object Counting</li>
+</ul>
+
+<p><strong>SSD</strong>框架包括特征提取模块、特征交叉增强模块、相似度金字塔计算模块、相似度学习模块与回归解码器模块组成。特征提取模块使用冻结的<strong>ResNet-50</strong>从查询图像和样本图像中提取金字塔特征；特征交叉增强模块增强特定类别的物体特征的相似度；相似度金字塔计算模块计算相似度图；相似度学习模块采用中心-枢轴<strong>4D</strong>卷积提取融合特征图；回归解码器模块预测密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668608bcd9c307b7e9a05e37.png" alt="" /></p>
+
+<h2 id="2-无参考计数-reference-less-counting">2. 无参考计数 (Reference-less Counting)</h2>
+
+<p>无参考计数是指直接从图像中提取显著的目标区域并进行计数；这类方法不需要额外标记与模板，但无法指定计数的目标类型，只能对所有目标进行计数。</p>
+
+<h3 id="-lower-count-lc">⚪ <a href="https://0809zheng.github.io/2023/05/27/lc.html"><font color="blue">Lower-Count (LC)</font></a></h3>
+<ul>
+  <li>(arXiv1903) Object Counting and Instance Segmentation with Image-level Supervision</li>
+</ul>
+
+<p><strong>LC</strong>框架是一种低数量图像级监督的计数框架，仅需要标记出小于4个计数样本的类别。<strong>LC</strong>框架由图像分类分支和密度分支组成：图像分类分支估计当前图像内是否存在目标类别；密度分支预测目标类别的目标数量，对于标记类别优化目标定位与类别计数，对于剩余类别惩罚过低计数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6684c60ed9c307b7e9767942.png" alt="" /></p>
+
+<h3 id="-reduced-lower-count-rlc">⚪ <a href="https://0809zheng.github.io/2023/05/28/rlc.html"><font color="blue">Reduced Lower-Count (RLC)</font></a></h3>
+<ul>
+  <li>(arXiv1912) Towards Partial Supervision for Generic Object Counting in Natural Scenes</li>
+</ul>
+
+<p><strong>RLC</strong>框架是对<strong>LC</strong>框架的改进，仅需要标记出小于4个计数样本的类别的一个子集，使得计数器能够泛化到任意新类别上。<strong>RLC</strong>引入一个权重调制层，将在标记训练上训练好的卷积核迁移到未标注的类别上；并在密度分支上引入了一个类别无关的子分支，可以估计一幅图像的所有目标数量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6684f50bd9c307b7e9d4eac2.png" alt="" /></p>
+
+<h3 id="-modulated-convolutional-bottleneck-movie">⚪ <a href="https://0809zheng.github.io/2023/05/25/movie.html"><font color="blue">Modulated conVolutional bottleneck (MoVie)</font></a></h3>
+<ul>
+  <li>(arXiv2004) MoVie: Revisiting Modulated Convolutions for Visual Counting and Beyond</li>
+</ul>
+
+<p>本文关注视觉计数<strong>VQA</strong>：给定一幅图像和一个序列，旨在预测出图像中与序列相关的目标数量。使用<strong>ResNet</strong>提取图像特征后送入到 <strong>Movie</strong> 模块。<strong>MoVie</strong> 模块由 <strong>4</strong> 个调制卷积瓶颈结构组成，每一个瓶颈结构将序列作为额外的输入来建模特征图，并输出相同尺寸的特征图，最后采用平均池化和两层的分类器来预测答案。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6684b827d9c307b7e95b0402.png" alt="" /></p>
+
+<h3 id="-dilated-scale-aware-attention-dsaa">⚪ <a href="https://0809zheng.github.io/2023/05/24/dsaac.html"><font color="blue">Dilated-Scale-Aware Attention (DSAA)</font></a></h3>
+<ul>
+  <li>(arXiv2012) Dilated-Scale-Aware Attention ConvNet For Multi-Class Object Counting</li>
+</ul>
+
+<p><strong>DSAA</strong>在给定点标注的情况下预测所有类别的密度图，首先利用<strong>VGG16</strong>提取特征图，然后采用扩张尺度感知模块<strong>DSAM</strong>通过不同的卷积扩张率来提取不同尺度的特征，最后通过类别注意力模块<strong>CAM</strong>减少不同类别密度图中的负关联。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6684b223d9c307b7e9514206.png" alt="" /></p>
+
+<h3 id="-class-aware-object-counting-caoc">⚪ <a href="https://0809zheng.github.io/2023/05/26/caoc.html"><font color="blue">Class-aware Object Counting (CaOC)</font></a></h3>
+<ul>
+  <li>(WACV Workshop 2022) Class-aware Object Counting</li>
+</ul>
+
+<p>本文基于检测的方法，使用多类别密度估计分支估计类别密度图，然后将检测结果与类别密度图输入计数估计网络，从而预测出每个类别的数量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6684bb34d9c307b7e96051a8.png" alt="" /></p>
+
+<h3 id="-reprpn-counter">⚪ <a href="https://0809zheng.github.io/2023/05/09/reprpn.html"><font color="blue">RepRPN-Counter</font></a></h3>
+<ul>
+  <li>(arXiv2205) Exemplar Free Class Agnostic Counting</li>
+</ul>
+
+<p><strong>RepRPN-Counter</strong>首先使用<strong>Resnet-50</strong>提取输入图像的特征表示，并使用<strong>RepRPN</strong>预测每个<strong>anchor</strong>位置处的<strong>Proposal</strong>边界框、目标得分和重复得分。其中重复得分是指<strong>Proposal</strong>中的目标在图像中出现的次数。然后选择重复分数最高的<strong>Proposal</strong>作为示例样本，通过密度预测网络预测密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667d3242d9c307b7e97c5cf1.png" alt="" /></p>
+
+<h3 id="-reference-less-class-agnostic-counting-rcc">⚪ <a href="https://0809zheng.github.io/2023/05/07/rcc.html"><font color="blue">Reference-less Class-agnostic Counting (RCC)</font></a></h3>
+<ul>
+  <li>(arXiv2205) Learning to Count Anything: Reference-less Class-agnostic Counting with Weak Supervision</li>
+</ul>
+
+<p><strong>RCC</strong>使用自监督知识蒸馏从<strong>ViT-small</strong>教师网络$g_t$中学习一个学生网络$g_s$，然后通过线性投影直接回归目标计数值。损失函数选用绝对百分比误差$\mid c -\hat{c}\mid / c$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667d1a2bd9c307b7e951c201.png" alt="" /></p>
+
+<h3 id="-generalized-counting-network-gcnet">⚪ <a href="https://0809zheng.github.io/2023/05/17/gcnet.html"><font color="blue">Generalized Counting Network (GCNet)</font></a></h3>
+<ul>
+  <li>(arXiv2302) GCNet: Probing Self-Similarity Learning for Generalized Counting Network</li>
+</ul>
+
+<p><strong>GCNet</strong>通过利用固有重复模式的自相似性来构造伪目标样本，进一步将提取的伪目标样本与原始图像的低级特征进行比较，以生成高保真的自相似图，作为随后计数回归的输入，并仅使用计数级监督信号进行端到端训练。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66821c44d9c307b7e9276632.png" alt="" /></p>
+
+<h3 id="-zero-shot-object-counting-zsc">⚪ <a href="https://0809zheng.github.io/2023/05/14/zsc.html"><font color="blue">Zero-shot Object Counting (ZSC)</font></a></h3>
+<ul>
+  <li>(arXiv2303) Zero-shot Object Counting</li>
+</ul>
+
+<p><strong>ZSC</strong>可以对输入图像中的特定目标物体进行计数，在计数过程中只需要给定物体类别名：</p>
+<ol>
+  <li>给定查询类别，通过预训练的条件<strong>VAE</strong>在特征空间中生成类别原型；</li>
+  <li>给定查询图像，随机抽取若干图像<strong>patch</strong>，为每个<strong>patch</strong>提取特征嵌入；</li>
+  <li>选择特征嵌入与类别原型最邻近的<strong>patch</strong>作为类相关<strong>patch</strong>；</li>
+  <li>对选择的类相关<strong>patch</strong>，使用预训练的类别无关计数模型获得密度图；</li>
+  <li>使用误差预测器预测所有密度图的计数误差，选择误差最小的<strong>patch</strong>作为最终的样本<strong>exemplar</strong>。</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/667e6a02d9c307b7e957b2e2.png" alt="" /></p>
+
+<h3 id="-a-blind-counter-abc123">⚪ <a href="https://0809zheng.github.io/2023/09/09/abc123.html"><font color="blue">A Blind Counter (ABC123)</font></a></h3>
+<ul>
+  <li>(arXiv2309) ABC Easy as 123: A Blind Counter for Exemplar-Free Multi-Class Class-agnostic Counting</li>
+</ul>
+
+<p><strong>ABC123</strong>同时学习预测类别数与每个类别的密度图。使用<strong>ViT-Small</strong>提取图像特征后，使用$m$个卷积上采样头回归$m$个类别密度图($m$通常大于所有可能出现的类别数)。之后构造$m$个预测密度图和$n$个真实密度图之间的最优二分匹配。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6683af4ad9c307b7e9959f56.png" alt="" /></p>
+
+<h3 id="-omnicount">⚪ <a href="https://0809zheng.github.io/2024/03/08/omnicount.html"><font color="blue">OmniCount</font></a></h3>
+<ul>
+  <li>(arXiv2403) OmniCount: Multi-label Object Counting with Semantic-Geometric Priors</li>
+</ul>
+
+<p><strong>OmniCount</strong>模型无需训练，利用预训练模型<strong>SAN</strong>对每个类别输出二元语义掩码，利用深度图渲染模型<strong>Marigold</strong>为图像生成深度图，使用深度图细化语义掩码以减少重复计数问题；对语义掩码应用基于k近邻的几何校正并生成一组参考点，输入预训练分割模型<strong>SAM</strong>生成每个目标物体的掩码进行计数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66850f55d9c307b7e90d89c8.png" alt="" /></p>
+
+<h2 id="3-文本引导计数-text-guided-counting">3. 文本引导计数 (Text-Guided Counting)</h2>
+
+<p>文本引导计数是指通过视觉语言模型进行计数，通过文本提示来指定计数的类别。<strong>视觉语言模型(Vision Language Model, VLM)</strong>是在大量数据集上预训练的图像-文本匹配模型。</p>
+
+<h3 id="-countclip">⚪ <a href="https://0809zheng.github.io/2023/05/21/clipcount.html"><font color="blue">CountCLIP</font></a></h3>
+<ul>
+  <li>(arXiv2302) Teaching CLIP to Count to Ten</li>
+</ul>
+
+<p>本文通过基于计数的对比损失微调<strong>CLIP</strong>来提高其对计数概念的定量理解。预测时将文本提示中的数字替换为所有数字可能的目标数量，并计算图像与每个文本提示之间的相似度得分。文本提示中与图像相似度得分最高的数字被认为是预测数量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668276cdd9c307b7e9b40cdb.png" alt="" /></p>
+
+<h3 id="-clip-count">⚪ <a href="https://0809zheng.github.io/2023/05/12/clipcount.html"><font color="blue">CLIP-Count</font></a></h3>
+<ul>
+  <li>(arXiv2305) CLIP-Count: Towards Text-Guided Zero-Shot Object Counting</li>
+</ul>
+
+<p><strong>CLIP-Count</strong>模型设计了块-文本对比损失，将<strong>CLIP</strong>模型的视觉编码器特征块与目标类别文本对齐；并进一步设计了层次化文本-块交互模块生成不同分辨率的特征图，并将这些特征图解码为目标的密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/667bd0f8d9c307b7e9583f9f.png" alt="" /></p>
+
+<h3 id="-countx">⚪ <a href="https://0809zheng.github.io/2023/06/30/countx.html"><font color="blue">CounTX</font></a></h3>
+<ul>
+  <li>(arXiv2306) Open-world Text-specified Object Counting</li>
+</ul>
+
+<p><strong>CounTX</strong>模型由图像编码器、文本编码器、特征交互模块和解码器组成。图像编码器和文本编码器使用预训练的<strong>CLIP</strong>模型；特征交互模块是两个<strong>Transformer</strong>解码器层，使用图像特征计算查询向量，使用文本特征计算键向量和值向量；解码器将特征解码为单通道密度图。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668206f1d9c307b7e90a89c0.png" alt="" /></p>
+
+<h3 id="-visual-language-counter-vlcounter">⚪ <a href="https://0809zheng.github.io/2023/12/27/vlcounter.html"><font color="blue">Visual-language Counter (VLCounter)</font></a></h3>
+<ul>
+  <li>(arXiv2312) VLCounter: Text-aware Visual Representation for Zero-Shot Object Counting</li>
+</ul>
+
+<p><strong>VLBase</strong>由<strong>CLIP</strong>编码器和计数解码器组成。利用<strong>CLIP</strong>的嵌入空间，实现文本和<strong>Token</strong>嵌入的隐式关联，从而对目标物体进行定位。在<strong>VLBase</strong>的基础上作者进一步提出了<strong>VLCounter</strong>，通过引入语义条件提示微调、可学习仿射变换与语义感知跳跃连接，增强预测相似度图与密度图中的语义信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66824eacd9c307b7e9739c62.png" alt="" /></p>
+
+<h3 id="-clip-counting">⚪ <a href="https://0809zheng.github.io/2023/05/22/clipcounting.html"><font color="blue">CLIP Counting</font></a></h3>
+<ul>
+  <li>(NeurIPS workshop 2023) Zero-shot Improvement of Object Counting with CLIP</li>
+</ul>
+
+<p>本文操纵<strong>CLIP</strong>模型的文本嵌入空间来提高<strong>CLIP</strong>模型的计数精度。作者提出了零样本文本嵌入编辑方法，从容易计数的目标中提取计数知识（表示为嵌入空间中的线性方向），然后通过向目标嵌入中增加特定计数向量，将该知识应用于目标对象。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6683c13bd9c307b7e9c66198.png" alt="" /></p>
+
+<h3 id="-expresscount">⚪ <a href="https://0809zheng.github.io/2024/02/08/expresscount.html"><font color="blue">ExpressCount</font></a></h3>
+<ul>
+  <li>(arXiv2402) Enhancing Zero-shot Counting via Language-guided Exemplar Learning</li>
+</ul>
+
+<p><strong>ExpressCount</strong>模型由一个面向语言的模板感知模块和一个零样本目标计数模块组成。其中面向语言的模板感知模块由一个语言编码器（预训练<strong>CLIP</strong>）、一个视觉编码器和一个基于<strong>Transformer</strong>的多模态集成模块组成，通过学习文本表达式与目标示例的边界框之间的映射，来提取目标样本进行后续的计数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66820d02d9c307b7e911724d.png" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/05/02/gmn.html" class="read-next-link"></a>
+        <section>
+          <span>Class-Agnostic Counting</span>
+          <p>  类别无关计数.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/667be090d9c307b7e973869e.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/04/13/LSH.html" class="read-next-link"></a>
+          <section>
+            <span>局部敏感哈希(Locality Sensitive Hashing)</span>
+            <p>  Locality Sensitive Hashing.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64390d600d2dde5777c1469a.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

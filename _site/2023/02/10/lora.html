@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoRA: Low-Rank Adaptation of Large Language Models - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="LoRA: Low-Rank Adaptation of Large Language Models">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="LoRA: Low-Rank Adaptation of Large Language Models - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/02/10/lora.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>LoRA: Low-Rank Adaptation of Large Language Models</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-02-10"><i class="iconfont icon-date"></i>10 Feb 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648e71ec1ddac507cc25e63e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>LoRA：大型语言模型的低秩调整.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2106.09685">LoRA: Low-Rank Adaptation of Large Language Models</a></li>
+</ul>
+
+<p>神经网络包含很多全连接层，其借助于矩阵乘法得以实现，然而很多全连接层的权重矩阵都是满秩的。当针对特定任务进行微调后，模型中权重矩阵其实具有很低的本征秩（<strong>intrinsic rank</strong>），因此本文作者认为权重更新的那部分参数矩阵可以随机投影到较小的子空间中进行有效的学习，可以理解为针对特定的下游任务这些权重矩阵就不要求满秩。</p>
+
+<p><strong>LoRA</strong>的核心思想就是通过低秩分解来模拟参数的改变量，从而以极小的参数量来实现大模型的间接训练。</p>
+
+<p>在涉及到矩阵相乘的模块，在原始矩阵乘法旁边增加一个新的通路，通过两个矩阵$A,B$相乘，第一个矩阵$A$负责降维，第二个矩阵$B$负责升维，中间层维度为$r$，用来模拟微调后矩阵的本征秩。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e89651ddac507cc464d42.jpg" alt="" /></p>
+
+<p>可训练层维度和预训练模型层维度一致为$d$，先将维度$d$通过全连接层降维至$r$，再从$r$通过全连接层映射回$d$维度，其中$r&lt; &lt;d$，这样矩阵计算就从$d^2$变为$2dr$，参数量减少很多。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e722b1ddac507cc263fee.jpg" alt="" /></p>
+
+<p>在下游任务训练时，固定模型的其他参数，只优化新增的矩阵权重参数，并将预训练模型与新增的通路两部分的结果加起来作为最终的结果（两边通路的输入跟输出维度是一致的）。</p>
+
+\[h = W_0x+\Delta Wx = W_0x+BAx\]
+
+<p>第一个矩阵$A$的权重参数会通过高斯函数初始化，而第二个矩阵$B$的权重参数则会初始化为零矩阵，这样能保证训练开始时新增的通路$BA=0$对模型结果没有影响。</p>
+
+<p>在推理时，只要将训练完成的矩阵乘积$BA$跟原本的权重矩阵$W$加到一起作为新权重参数替换原本的$W$即可，对于推理来说，不会增加额外的计算资源。</p>
+
+\[h = W_0x+BAx= (W_0+BA)x\]
+
+<p><strong>Transformer</strong>的权重矩阵包括<strong>Attention</strong>模块里用于计算<strong>query, key, value</strong>的$W_q, W_k, W_v$以及多头<strong>attention</strong>的$W_o$,以及<strong>MLP</strong>层的权重矩阵。<strong>LoRA</strong>只应用于<strong>Attention</strong>模块中的<strong>4</strong>种权重矩阵，而且通过消融实验发现同时调整 $W_q$ 和 $W_v$ 会产生最佳结果。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e8b3d1ddac507cc486215.jpg" alt="" /></p>
+
+<p>实验还发现，保证权重矩阵的种类的数量比起增加隐藏层维度$r$更为重要，增加$r$并不一定能覆盖更加有意义的子空间。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e8b6a1ddac507cc4892e2.jpg" alt="" /></p>
+
+<p>关于秩的选择，通常情况下，$r=4,8,16$即可。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e8bb01ddac507cc48dd3e.jpg" alt="" /></p>
+
+<p>通过实验发现在众多数据集上，<strong>LoRA</strong>在只训练极少量参数的前提下，最终在性能上能和全量微调匹配，甚至在某些任务上优于全量微调。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e8cea1ddac507cc4a32f1.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/02/11/wifidensepose.html" class="read-next-link"></a>
+        <section>
+          <span>DensePose From WiFi</span>
+          <p>  通过WiFi信号实现密集的人体姿态估计.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63e6e3464757feff339444f9.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/02/09/adapterdrop.html" class="read-next-link"></a>
+          <section>
+            <span>AdapterDrop: On the Efficiency of Adapters in Transformers</span>
+            <p>  AdapterDrop：提高Transformer中的Adapter模块的效率.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/648ee7f51ddac507cccafe28.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

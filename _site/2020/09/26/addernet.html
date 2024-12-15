@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdderNet: Do We Really Need Multiplications in Deep Learning? - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="AdderNet: Do We Really Need Multiplications in Deep Learning?">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="AdderNet: Do We Really Need Multiplications in Deep Learning? - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/26/addernet.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>AdderNet: Do We Really Need Multiplications in Deep Learning?</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-26"><i class="iconfont icon-date"></i>26 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f6ee69e160a154a67498aec.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>AdderNet：仅使用加法运算的卷积神经网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：AdderNet: Do We Really Need Multiplications in Deep Learning?</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/2002.08909">link</a></li>
+  <li>code：<a href="https://github.com/huawei-noah/AdderNet">github</a></li>
+</ul>
+
+<h1 id="加法神经网络">加法神经网络</h1>
+<p>给定滤波器$F \in \Bbb{R}^{d \times d \times c_{in} \times c_{out}}$和输入特征$X \in \Bbb{R}^{H \times W \times c_{in}}$，其中$d$是滤波器的大小，$c_{in}$和$c_{out}$是输入和输出通道数，$H$和$W$是特征的高度和宽度。卷积神经网络的计算可以被表示为：</p>
+
+\[Y(m,n,t)=\sum_{i=0}^{d} {\sum_{j=0}^{d} {\sum_{k=0}^{c_{in}} {S(X(m+i,n+j,k),F(i,j,k,t))}}}\]
+
+<p>此时可以理解为卷积网络在度量特征和滤波器之间的<strong>相关性</strong>，其中$S$是距离度量函数。</p>
+
+<p>当选择<strong>互相关</strong>作为距离度量函数时，有$S(x,y)=x \times y$，这就是通常使用的卷积运算，用来计算特征和卷积核之间的互相关性。特别地，当$d=1$时，公式表示全连接层的运算。</p>
+
+<p>作者提出了一种只具有加法运算的度量函数，使用<strong>L1</strong>距离代替卷积计算。此时计算表示为：</p>
+
+\[Y(m,n,t)=-\sum_{i=0}^{d} {\sum_{j=0}^{d} {\sum_{k=0}^{c_{in}} {\mid X(m+i,n+j,k)-F(i,j,k,t) \mid }}}\]
+
+<h1 id="优化方法">优化方法</h1>
+<p>网络使用反向传播算法计算参数的梯度，并通过梯度下降法更新参数。<strong>AdderNet</strong>中输出特征$Y$对滤波器$F$的偏导数计算为：</p>
+
+\[\frac{\partial Y(m,n,t)}{\partial F(i,j,k,t)} = sgn(X(m+i,n+j,k)-F(i,j,k,t))\]
+
+<p>其中$sgn$代表符号函数。这样计算只有\(\{-1,0,+1\}\)三个值的输出，不能很好的反应输入特征$X$和滤波器$F$之间的距离关系，也不利于滤波器的优化。作者提出将符号函数去掉：</p>
+
+\[\frac{\partial Y(m,n,t)}{\partial F(i,j,k,t)} = X(m+i,n+j,k)-F(i,j,k,t)\]
+
+<p>使用改进方式计算的梯度更能表达输入特征$X$和滤波器$F$之间的距离大小关系，也更加有利于梯度的优化。</p>
+
+<p>特别地，由于使用改进的梯度计算出的结果量级可能大于$1$，在对输入特征$X$求偏导数时，对其进行截断：</p>
+
+\[\frac{\partial Y(m,n,t)}{\partial X(m+i,n+j,k)} = HT(F(i,j,k,t)-X(m+i,n+j,k))\]
+
+\[HT(x) = \begin{cases} x, \quad \text{if }-1&lt;x&lt;1 \\ 1 \quad x&gt;1 \\ -1 \quad x&lt;-1 \end{cases}\]
+
+<p>其中$HT$为<strong>HardTanh</strong>函数，即将输出截断到$-1$到$+1$。如果不对$X$的梯度进行截断，多层的反向传播会使得改进梯度的量级和真实梯度的量级有着很大的累计误差，导致梯度爆炸。</p>
+
+<h1 id="自适应学习率调整">自适应学习率调整</h1>
+<p>在训练卷积网络时，通常希望每一层的输出分布相似，使得网络的计算更加稳定。假设输入特征$X$和滤波器$F$都是标准正态分布，在卷积网络中输出特征的方差可以被计算为：</p>
+
+\[Var[Y_{CNN}] = \sum_{i=0}^{d} {\sum_{j=0}^{d} {\sum_{k=0}^{c_{in}} {Var[X \times F]}}} = d^2c_{in}Var[X]Var[F]\]
+
+<p>通过给定滤波器$F$初始化一个很小的方差，输出特征$Y$的方差可以被控制为和输入特征$X$相似。</p>
+
+<p>在<strong>AdderNet</strong>中，输出特征的方差可以被计算为：</p>
+
+\[Var[Y_{AdderNet}] = \sum_{i=0}^{d} {\sum_{j=0}^{d} {\sum_{k=0}^{c_{in}} {Var[\mid X - F \mid]}}} = \sqrt{\frac{\pi}{2}} d^2c_{in}(Var[X]+Var[F])\]
+
+<p>对于<strong>AdderNet</strong>，无法给定滤波器$F$的方差使得输出特征的方差维持不变，于是输出特征的量级会大大高于输入特征，如果不对其进行归一化，将会导致输出的数量级随着网络的深度爆炸。</p>
+
+<p>卷积网络通常用<strong>Batch Norm</strong>控制每层的特征量级相似，通过如下计算实现：</p>
+
+\[y = \gamma \frac{x-\mu_{B}}{\sigma_{B}} + \beta\]
+
+<p>其中$\gamma$和$\beta$是可学习的参数，$\mu_{B}$和$\sigma_{B}$是特征的均值和方差。在<strong>Batch Norm</strong>层，梯度被计算为：</p>
+
+\[\frac{\partial l}{\partial x_i} = \sum_{j=1}^{m} {\frac{\gamma}{m^2 \sigma_{B}}\{\frac{\partial l}{\partial y_i}-\frac{\partial l}{\partial y_i}[1+\frac{(x_i-x_j)(x_j-\mu_{B})}{\sigma_{B}}]\}}\]
+
+<p>由于<strong>AdderNet</strong>的方差很大，计算出的偏导数的量级会很小，对滤波器的梯度将会变的很小，不利于网络的训练：</p>
+
+<p><img src="https://pic.downk.cc/item/5f6ef192160a154a674d0d04.jpg" alt="" /></p>
+
+<p>作者提出了基于归一化的自适应学习率，以便于<strong>AdderNet</strong>的训练。具体地，每层的梯度计算为：</p>
+
+\[\Delta F_l = \gamma \times \alpha_l \times \Delta L(F_l)\]
+
+<p>其中$\gamma$是整个网络的全局学习率，$\Delta L(F_l)$是第$l$层的梯度，$\alpha_l$是$l$层的学习率。每层的学习率计算为：</p>
+
+\[\alpha_l = \frac{\eta}{\sqrt{k} \mid\mid \Delta L(F_l) \mid\mid_2}\]
+
+<p>其中$k$代表中$F_l$元素的个数，$\eta$为超参数。通过使用这个方法，每层的滤波器可以以相同且更快的更新速度进行优化。</p>
+
+<p>该算法的完整流程如下：</p>
+
+<p><img src="https://pic.downk.cc/item/5f6ef30b160a154a674d873e.jpg" alt="" /></p>
+
+<h1 id="实验分析">实验分析</h1>
+<p>作者通过实验证明了去掉符号函数（<strong>FP</strong>）以及自适应学习率（<strong>ALR</strong>）能够帮助网络训练：</p>
+
+<p><img src="https://pic.downk.cc/item/5f6ef641160a154a674ea7f8.jpg" alt="" /></p>
+
+<p>作者比较了卷积神经网络、二值神经网络（<strong>BNN</strong>，加法和异或）与<strong>AdderNet</strong>在<strong>CIFAR</strong>数据集上的分类结果：</p>
+
+<p><img src="https://pic.downk.cc/item/5f6ef485160a154a674e2bcb.jpg" alt="" /></p>
+
+<p>为进一步测试网络在大型分类任务上的表现，作者还在<strong>ImageNet</strong>数据集上进行实验：</p>
+
+<p><img src="https://pic.downk.cc/item/5f6ef4bd160a154a674e3884.jpg" alt="" /></p>
+
+<p>作者对<strong>AdderNet</strong>和卷积网络的特征进行了可视化。由于卷积网络使用互相关性作为特征提取的度量，不同的类别被按照角度分开。而<strong>AdderNet</strong>使用的<strong>L1</strong>距离把不同的类别分成不同的聚类中心。</p>
+
+<p><img src="https://pic.downk.cc/item/5f6ef534160a154a674e5e9d.jpg" alt="" /></p>
+
+<p>作者还对<strong>AdderNet</strong>和卷积网络的滤波器进行了可视化。两种网络虽然采用不同的度量方式，它们的滤波器都具有较强的纹理特征，都具有提取图片中特征的能力。</p>
+
+<p><img src="https://pic.downk.cc/item/5f6ef569160a154a674e6b80.jpg" alt="" /></p>
+
+<p>作者还对<strong>AdderNet</strong>和卷积网络的权重参数分布进行了可视化。<strong>AdderNet</strong>的参数更接近于拉普拉斯分布，而卷积网络的权重更接近于正态分布。这是由于<strong>L1</strong>度量的先验分布为拉普拉斯分布，<strong>AdderNet</strong>的参数更倾向于产生拉普拉斯分布。</p>
+
+<p><img src="https://pic.downk.cc/item/5f6ef5c6160a154a674e8377.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/27/vdb.html" class="read-next-link"></a>
+        <section>
+          <span>Variational Discriminator Bottleneck: Improving Imitation Learning, Inverse RL, and GANs by Constraining Information Flow</span>
+          <p>  变分判别瓶颈：通过约束信息流改进深度学习模型.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6475c5c8f024cca17388360b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/25/curve.html" class="read-next-link"></a>
+          <section>
+            <span>使用Matplotlib绘制训练曲线</span>
+            <p>  Draw training curves via Matplotlib.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f6dd030160a154a67ef3205.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

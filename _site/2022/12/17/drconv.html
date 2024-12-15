@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Region-Aware Convolution - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Dynamic Region-Aware Convolution">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Dynamic Region-Aware Convolution - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/12/17/drconv.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Dynamic Region-Aware Convolution</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-12-17"><i class="iconfont icon-date"></i>17 Dec 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/64d592e71ddac507cc838c27.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>动态区域感知卷积.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2003.12243">Dynamic Region-Aware Convolution</a></li>
+</ul>
+
+<p>本文提出了动态区域感知卷积(<strong>DRConv</strong>)，它结合了局部共享的思想，自动的将多个卷积核分配给具有相似表示的对应空间区域，并且为卷积操作增加了平移不变性，让其可以在分类任务中正常使用。</p>
+
+<p><strong>DRConv</strong>能够可学习地为不同的像素位置匹配不同的卷积核，不仅具有强大的特征表达能力，还可以保持平移不变性。由于卷积核是动态生成的，能减少大量的参数，而整体计算量几乎和标准卷积一致。</p>
+
+<p><strong>DRConv</strong>结构主要由两个模块组成，一个是用来决定哪个滤波器分配给哪个区域的可学习的引导掩模模块（<strong>Learnable guided mask</strong>），另一个是用来生成不同区域滤波器的滤波器生成模块（<strong>Filter generator module</strong>）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d593921ddac507cc85096c.jpg" alt="" /></p>
+
+<h2 id="1-learnable-guided-mask">1. Learnable guided mask</h2>
+
+<p>可学习的引导掩模模块通过标准卷积来生成<strong>guided feature</strong>，根据<strong>guided feature</strong>将空间维度分成多个区域，在图中显示为<strong>guided mask</strong>中不同颜色的区域。</p>
+
+<p>对于输入为$X \in R^{H\times W\times C}$，使用$m$个$k\times k$的卷积生成<strong>guided feature</strong> $F \in R^{H\times W\times m}$。再通过<strong>hardmax()</strong>生成<strong>guided mask</strong> $M \in R^{H\times W}$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d594bb1ddac507cc876b61.jpg" alt="" /></p>
+
+<h2 id="2-filter-generator-module">2. Filter generator module</h2>
+
+<p>卷积核生成模块$G(\cdot)$根据输入图片动态生成每个区域对应的卷积核，可以增强捕获不同图像样本特征的能力。基本结构如图所示，为了得到$m$个$k\times k$的卷积核，首先将输入$X \in R^{H\times W\times C}$通过<strong>adaptive average pooling</strong>下采样为$R^{k\times k\times C}$，然后通过连续的两个$1\times 1$的卷积层，第一个卷积层使用<strong>Sigmoid</strong>激活，第二个使用<strong>group=</strong>$m$的分组卷积。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d595fa1ddac507cc8a3435.jpg" alt="" /></p>
+
+<h2 id="3-实验分析">3. 实验分析</h2>
+
+<p>下图展示了<strong>guided mask</strong>划分区域的可视化结果，可以很明显的看出划分的区域具有很明显的语义信息，能够帮助模型的学习。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d5966e1ddac507cc8b4019.jpg" alt="" /></p>
+
+<p>下图展现了不同模型大小的情况下，<strong>DRConv</strong>和<strong>baseline</strong>方法的性能差距，可以看出<strong>DRConv</strong>在小模型上能得到显著的效果提升。可能的原因是小模型获取语义信息的情况更加困难，而<strong>DRConv</strong>显著改善了这一缺点。</p>
+
+<p><img src="https://pic.imgdb.cn/item/64d596d11ddac507cc8cbd3a.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/12/18/octave.html" class="read-next-link"></a>
+        <section>
+          <span>Drop an Octave: Reducing Spatial Redundancy in Convolutional Neural Networks with Octave Convolution</span>
+          <p>  OctConv：通过八度卷积降低卷积神经网络的空间复杂度.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63b27c355d94efb26fdf2897.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/12/16/coordconv.html" class="read-next-link"></a>
+          <section>
+            <span>An Intriguing Failing of Convolutional Neural Networks and the CoordConv Solution</span>
+            <p>  卷积神经网络的一个有趣的弱点与CoordConv解.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64d49ec61ddac507cc923c71.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

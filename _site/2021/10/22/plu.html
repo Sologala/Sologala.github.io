@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning specialized activation functions with the Piecewise Linear Unit - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Learning specialized activation functions with the Piecewise Linear Unit">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Learning specialized activation functions with the Piecewise Linear Unit - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/10/22/plu.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Learning specialized activation functions with the Piecewise Linear Unit</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-10-22"><i class="iconfont icon-date"></i>22 Oct 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61729bee2ab3f51d91e00048.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>PWLU：使用分段线性单元学习激活函数.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2104.03693">Learning specialized activation functions with the Piecewise Linear Unit</a></li>
+</ul>
+
+<p>最近对激活函数进行自动搜索的方法(如<strong>Swish</strong>)逐渐取代了手工设计的激活函数(如<strong>ReLU</strong>族)。然而这种自动设计的方法具有一些局限性：</p>
+<ul>
+  <li>自动搜索的空间通常是受限和离散的，激活函数组合的微小变化可能导致完全不同的结果，增加了搜索困难。</li>
+  <li>搜索方法通常需要评估大量不同的候选激活函数，计算成本较高。</li>
+  <li>搜索时通常在给定数据集和网络结构上进行，针对不同数据集或网络结构设计不同的激活函数是不现实的。</li>
+</ul>
+
+<p>也有一些工作使用通用近似器作为激活函数(如<strong>APL</strong>和<strong>PAU</strong>)。这些通用近似器的参数是连续的，可以通过梯度更新。但这些方法给出的近似器公式复杂，可能导致学习不稳定或推理效率低。</p>
+
+<p>作者提出了一种<strong>分段线性单元</strong>(<strong>piecewise linear unit, PWLU</strong>)，包括一种基于分段线性公式的近似器和一种基于梯度的学习方法。分段线性公式实现简单，覆盖了任意标量函数，可以通过梯度学习参数，且推理效率高。<strong>PWLU</strong>可以实现在不同数据集和网络结构上学习不同的激活函数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61736d9c2ab3f51d91a2d1c2.jpg" alt="" /></p>
+
+<p><strong>PWLU</strong>的函数形式如上图所示。给定区间数量$N$，$N$越大函数拟合能力越强；左边界$B_L$和右边界$B_R$，定义函数关注的有效区域；$N+1$个分界点的函数值$Y_P$，控制函数的形状；最左端斜率$K_L$和最右端斜率$K_R$，控制边界外的区域。</p>
+
+<p><strong>PWLU</strong>的形式如下：</p>
+
+\[\text{PWLU}_N(x,B_L,B_R,Y_P,K_L,K_R) = \\ \begin{cases}  (x-B_L)*K_L+Y_P^0, &amp; x&lt;B_L \\ (x-B_R)*K_R+Y_P^N, &amp; x\geq B_R \\ (x-B_{idx})*K_{idx}+Y_P^{idx}, &amp; B_L\leq x&lt;B_R \end{cases}\]
+
+<p>其中$idx$为$x$所属区间的索引号，$B_{idx}$为该区间的左端点，$K_{idx}$为该区间的斜率。区间$[B_L,B_R]$被均分为$N$份，则每个子区间的宽度为$d=\frac{B_R-B_L}{N}$，所属区间计算为：</p>
+
+\[idx=\lfloor \frac{x-B_L}{d} \rfloor\]
+
+\[B_{idx} = B_L+idx*d\]
+
+\[K_{idx}=\frac{Y_P^{idx+1}-Y_P^{idx}}{d}\]
+
+<p><strong>PWLU</strong>具有以下性质：</p>
+<ul>
+  <li><strong>PWLU</strong>是一种通用近似器，可以近似任意连续有界标量函数。</li>
+  <li><strong>PWLU</strong>随其参数连续变化，可以通过梯度优化。</li>
+  <li><strong>PWLU</strong>的自由度在一个有界区间内，可以充分利用可学习参数。</li>
+  <li>由于等分区间，<strong>PWLU</strong>在计算方面非常高效。</li>
+</ul>
+
+<p><strong>PWLU</strong>的梯度计算如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/617372bb2ab3f51d91a77a74.jpg" alt="" /></p>
+
+<p><strong>PWLU</strong>随网络训练一起更新。通常把<strong>PWLU</strong>初始化为<strong>ReLU</strong>(设置$N$为偶数)，此时$K_L=0,K_R=1,B_L=-B_R,Y_P^{idx}=\text{ReLU}(B_{idx})$。</p>
+
+<p><strong>PWLU</strong>在训练时可能会出现<strong>输入边界不对齐</strong>(<strong>Input-boundary misalignment</strong>)。<strong>PWLU</strong>的主要自由度分布在区间$[B_L,B_R]$内，如果输入数据的分布没有和该区域对其，则会降低有效自由度。如下图所示，输入分布主要在左端，与区间$[B_L,B_R]$只有很少的交集，则<strong>PWLU</strong>学习到的大部分参数对网络的贡献很小，从而影响网络的性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/617375142ab3f51d91a94574.jpg" alt="" /></p>
+
+<p>作者提出了一种基于统计的对齐方法，如下图所示。首先将所有<strong>PWLU</strong>初始化为<strong>ReLU</strong>。该对齐方法在整个$T$轮训练中分成两个阶段（实验中$T’=5$,$N=16$）。</p>
+
+<p><img src="https://pic.imgdb.cn/item/617375f02ab3f51d91a9ec68.jpg" alt="" /></p>
+
+<p>第一阶段($0$~$T’-1$轮)不更新<strong>PWLU</strong>的参数(保持为<strong>ReLU</strong>)，每轮统计输入数据的均值$\mu$和标准差$\sigma$，并滑动更新参数：</p>
+
+\[\mu=\mu*0.9+\text{mean}(x)*0.1\]
+
+\[\sigma=\sigma*0.9+\text{std}(x)*0.1\]
+
+<p>第二阶段($T’$~$T$轮)将每个<strong>PWLU</strong>的参数重置如下：</p>
+
+\[B_L=\mu-3*\sigma, B_R=\mu+3*\sigma\]
+
+\[K_L=0,K_R=1\]
+
+\[Y_P^{idx}=\text{ReLU}(B_{idx}),idx \in \{0,1,2,...,N\}\]
+
+<p>参数重置后<strong>PWLU</strong>会与输入数据对齐，此时再通过梯度更新<strong>PWLU</strong>的参数。</p>
+
+<p>下图展示了不同激活函数在不同网络结构上的性能表现，以及相对于<strong>ReLU</strong>激活函数的改进。同一个激活函数在不同的网络上的改进是不一致的。<strong>PWLU</strong>在不同结构上均有较大的性能提升。</p>
+
+<p><img src="https://pic.imgdb.cn/item/617399d22ab3f51d91c80e78.jpg" alt="" /></p>
+
+<p>作者进一步可视化不同层学习到的<strong>PWLU</strong>函数。结果表明，浅层激活函数类似于线性函数，而深层激活函数呈“V”型。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61739b6f2ab3f51d91c9f772.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/10/23/maxout.html" class="read-next-link"></a>
+        <section>
+          <span>Maxout Networks</span>
+          <p>  Maxout：自适应分段线性单元.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/617937662ab3f51d91f9cffa.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/10/12/tood.html" class="read-next-link"></a>
+          <section>
+            <span>TOOD: Task-aligned One-stage Object Detection</span>
+            <p>  TOOD：任务对齐的单阶段目标检测方法.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6530e289c458853aef0b2052.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

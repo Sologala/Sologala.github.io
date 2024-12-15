@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使用numpy.bincount计算混淆矩阵 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="使用numpy.bincount计算混淆矩阵">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="使用numpy.bincount计算混淆矩阵 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/11/bincount.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>使用numpy.bincount计算混淆矩阵</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-11"><i class="iconfont icon-date"></i>11 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Confusion matrix using numpy.bincount.</p>
+</blockquote>
+
+<h1 id="1-npbincount函数">1. np.bincount函数</h1>
+
+<p><a href="https://numpy.org/doc/stable/reference/generated/numpy.bincount.html"><code class="language-plaintext highlighter-rouge">np.bincount</code></a>用于统计一个非负数组中元素的出现次数。函数格式如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="n">np</span><span class="p">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>通常默认数组$x$的最小值为$0$，若其最大值为$n$，则会返回长度为$n+1$的数组，其索引$i$表示数值$i$在数组$x$中出现的次数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># x中最大的数为7，因此bin的数量为8，其索引值为0-&gt;7
+</span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
+<span class="c1"># 索引0出现了1次，索引1出现了3次......索引7出现了1次
+</span><span class="n">np</span><span class="p">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="c1">#输出结果为：array([1, 3, 1, 1, 0, 0, 0, 1])
+</span></code></pre></div></div>
+
+<p>参数<code class="language-plaintext highlighter-rouge">weights</code>指定了数组$x$每个位置的权重(默认权重为$1$)，如果在位置$i$出现值$n$，则有<code class="language-plaintext highlighter-rouge">out[n]+=weights[i]</code>而不是<code class="language-plaintext highlighter-rouge">out[n]+=1</code>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.6</span><span class="p">])</span>
+<span class="c1"># x中最大的数为4，因此bin的数量为5，其索引值为0-&gt;4
+</span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="c1"># 索引0 -&gt; 0
+# 索引1 -&gt; w[1] = 0.5
+# 索引2 -&gt; w[0] = 0.3
+# 索引3 -&gt; w[2] + w[5] = 0.2 - 0.6 = -0.4
+# 索引4 -&gt; w[3] + w[4] = 0.7 + 1 = 1.7
+</span><span class="n">np</span><span class="p">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">w</span><span class="p">)</span>
+<span class="c1"># 输出结果为：array([ 0. ,  0.5,  0.3, -0.4,  1.7])
+</span></code></pre></div></div>
+
+<p>参数<code class="language-plaintext highlighter-rouge">minlength</code>指定了<strong>bin</strong>的最小长度。其最小长度不会低于数组最大值加$1$：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># x中最大的数为3，因此bin的数量为4，其索引值为0-&gt;3
+</span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="c1"># bin的默认数量为4，若指定参数为7，则bin的数量为7，其索引值为0-&gt;6
+</span><span class="n">np</span><span class="p">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+<span class="c1"># 输出结果为：array([0, 2, 1, 2, 0, 0, 0])
+</span>
+<span class="c1"># bin的默认数量为4，若指定参数为1，指定数量小于默认值，索引值还是0-&gt;3
+</span><span class="n">np</span><span class="p">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># 输出结果为：array([0, 2, 1, 2])
+</span></code></pre></div></div>
+
+<h1 id="2-使用npbincount计算混淆矩阵">2. 使用np.bincount计算混淆矩阵</h1>
+<p><strong>混淆矩阵</strong>是分类任务的常用评估方法，对于多分类任务，混淆矩阵会统计每个类别的预测情况。一个具有$3$个类别的混淆矩阵表示如下</p>
+
+\[\begin{array}{l|ccc} \text{真实情况\预测结果} &amp; \text{类别1} &amp; \text{类别2} &amp; \text{类别3} \\ \hline  \text{类别1} &amp; a &amp; b &amp; c \\  \text{类别2} &amp; d &amp; e &amp; f \\ \text{类别3} &amp; g &amp; h &amp; i \\ \end{array}\]
+
+<p>注意到真实类别为$i$，预测类别为$j$的样本被统计到第$i$行第$j$列，若将混淆矩阵拉直成一个行向量，则对应索引位置为$n*i+j$。</p>
+
+<p>若预测数组为<code class="language-plaintext highlighter-rouge">pred</code>，标签数组为<code class="language-plaintext highlighter-rouge">label</code>，类别数为<code class="language-plaintext highlighter-rouge">n</code>。则数组<code class="language-plaintext highlighter-rouge">n*label+pred</code>存储了混淆矩阵的索引值。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="k">def</span> <span class="nf">genConfusionMatrix</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+    <span class="s">'''
+    Parameters
+    ----------
+    pred : 预测数组.
+    label : 标签数组.
+    n : 类别数(不包括背景).
+    '''</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">n</span><span class="o">*</span><span class="n">label</span><span class="o">+</span><span class="n">pred</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">n</span><span class="o">**</span><span class="mi">2</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+<span class="n">pred</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">genConfusionMatrix</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="c1">###
+</span><span class="p">[[</span><span class="mi">3</span> <span class="mi">0</span> <span class="mi">1</span><span class="p">]</span>
+ <span class="p">[</span><span class="mi">0</span> <span class="mi">2</span> <span class="mi">0</span><span class="p">]</span>
+ <span class="p">[</span><span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="c1">###
+</span></code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/12/transcoder.html" class="read-next-link"></a>
+        <section>
+          <span>Unsupervised Translation of Programming Languages</span>
+          <p>  TransCoder：无监督的编程语言转换模型.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f5c2b23160a154a6705a2b1.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/10/nas-without-train.html" class="read-next-link"></a>
+          <section>
+            <span>Neural Architecture Search without Training</span>
+            <p>  不需要训练网络的神经结构搜索.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f5a0b56160a154a67c3e647.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

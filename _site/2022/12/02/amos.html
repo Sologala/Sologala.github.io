@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amos: An Adam-style Optimizer with Adaptive Weight Decay towards Model-Oriented Scale - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Amos: An Adam-style Optimizer with Adaptive Weight Decay towards Model-Oriented Scale">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Amos: An Adam-style Optimizer with Adaptive Weight Decay towards Model-Oriented Scale - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/12/02/amos.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Amos: An Adam-style Optimizer with Adaptive Weight Decay towards Model-Oriented Scale</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-12-02"><i class="iconfont icon-date"></i>02 Dec 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63f5d7a9f144a01007252dc9.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Amos：一种面向模型的自适应权重衰减的Adam风格优化器.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2210.11693">Amos: An Adam-style Optimizer with Adaptive Weight Decay towards Model-Oriented Scale</a></li>
+</ul>
+
+<p>本文作者提出了<strong>Amos</strong>优化器，旨在自适应地调整梯度更新过程中的学习率和权重衰减系数。一般地，参数$\theta$的梯度下降更新公式为：</p>
+
+\[\theta_{t+1} = \theta_t - \alpha_tu_t\]
+
+<p>其中$u_t$代表$t$时刻的更新向量，标量$α_t&gt;0$代表$t$时刻的学习率。额外引入权重衰减项$\rho_t&gt;0$：</p>
+
+\[\theta_{t+1} = \theta_t - (\alpha_tu_t+\rho_t\theta_t)\]
+
+<p>因此需要选择合适的学习率$\alpha_t$和权重衰减项$\rho_t$。通常权重衰减项作为正则化目标，应该比主目标对参数更新的影响更小。因此引入约束：权重衰减带来的更新量始终要比目标相关的更新量高一阶：</p>
+
+\[\mathcal{O}(\alpha_t^2) = \mathcal{O}(\rho_t)\]
+
+<p>记最优参数$\theta^{*}$，则当前时刻$t$的参数误差为$\epsilon_t=\theta_t-\theta^{*}$，并且有以下关系：</p>
+
+\[\begin{aligned} ||\epsilon_{t+1}||^2 &amp; = ||\theta_{t+1}-\theta^*||^2 \\ &amp; = ||\theta_t - (\alpha_tu_t+\rho_t\theta_t)-\theta^*||^2 \\ &amp; = ||\epsilon_t - (\alpha_tu_t+\rho_t\theta_t)||^2 \\ &amp; = ||\epsilon_t||^2  - 2\epsilon_t(\alpha_tu_t+\rho_t\theta_t)+||\alpha_tu_t+\rho_t\theta_t||^2 \\&amp; \approx ||\epsilon_t||^2  - 2\alpha_tu_t \cdot \epsilon_t +(\alpha_t^2||u_t||^2-2\rho_t\theta_t \cdot \epsilon_t)  \end{aligned}\]
+
+<p>为使参数误差减小，不妨考察：</p>
+
+\[\begin{aligned} \alpha_t^2||u_t||^2&amp;=2\rho_t\theta_t \cdot \epsilon_t \\ &amp;= 2\rho_t(\epsilon_t+\theta^*) \\ &amp;= 2\rho_t ||\epsilon_t||^2+2\rho_t\theta^* \cdot \epsilon_t \\ &amp; \approx 2\rho_tq ||\epsilon_t||^2 \end{aligned}\]
+
+<p>通过引入参数$q$使得上式近似满足。此时参数误差的关系为：</p>
+
+\[\begin{aligned} ||\epsilon_{t+1}||^2 &amp; \approx ||\epsilon_t||^2  - 2\alpha_tu_t \cdot \epsilon_t  \\ &amp; = ||\epsilon_t||^2  - 2\alpha_t||u_t|| \cdot || \epsilon_t || \cos(u_t,\epsilon_t) \\ &amp; \approx ||\epsilon_t||^2  - 2\alpha_t p||u_t|| \cdot || \epsilon_t || \\ &amp; = ||\epsilon_t||^2  - 2 p \sqrt{2\rho_tq} || \epsilon_t ||^2 \\ &amp; = ||\epsilon_t||^2(1 - 2 p \sqrt{2\rho_tq} ) \\ &amp; \approx ||\epsilon_t||^2 \exp(- 2 p \sqrt{2\rho_tq})  \end{aligned}\]
+
+<p>进一步递推得到：</p>
+
+\[||\epsilon_{t}||^2 \approx ||\epsilon_0||^2 \exp(- 2 \sum_{i=1}^{t-1} p \sqrt{2\rho_iq})\]
+
+<p>注意到上式满足的条件是\(\alpha_t^2\|u_t\|^2= 2\rho_tq \|\epsilon_t\|^2\)，为使得$\alpha_t$和$\rho_t$具有同等程度地衰减，不妨设\(2\rho_tq = \lambda^2\|\epsilon\|^2\)，联立解得：</p>
+
+\[\begin{aligned} \alpha_t &amp;\approx \frac{\lambda ||\epsilon_t||^2}{||u_t||} \approx \frac{\lambda ||\epsilon_0||^2}{||u_t||} \exp(- 2 \sum_{i=1}^{t-1} p \sqrt{2\rho_iq}) \\ \rho_t  &amp;\approx  \frac{\lambda^2 ||\epsilon_t||^2}{2q} \approx \frac{\lambda^2 ||\epsilon_0||^2}{2q} \exp(- 2 \sum_{i=1}^{t-1} p \sqrt{2\rho_iq}) \end{aligned}\]
+
+<p>此外由假设\(\alpha_t^2\|u_t\|^2= 2\rho_tq \|\epsilon_t\|^2\)和\(2\rho_tq = \lambda^2\|\epsilon\|^2\)可得\(\alpha_0\|u_0\|=\lambda \|\epsilon_0\|^2\)，不妨假设初始时刻的更新向量$|u_0|=|\epsilon_0|$，则有$\lambda = \alpha_0 / |\epsilon_0|$。代入得：</p>
+
+\[\begin{aligned} \alpha_t &amp;\approx  \frac{\alpha_0 ||\epsilon_0||}{||u_t||} \exp(- 2 \sum_{i=1}^{t-1} p \sqrt{2\rho_iq}) \\ \rho_t  &amp;\approx  \frac{\alpha_0^2}{2q} \exp(- 2 \sum_{i=1}^{t-1} p \sqrt{2\rho_iq}) \end{aligned}\]
+
+<p>因此，若自适应地设置$\alpha_t$和$\rho_t$，需要选择参数$\alpha_0, ||\epsilon_0||, p, q$。其中$\alpha_0$代表了每一步的相对更新幅度（全局学习率）一般取$1e−3$，任务简单也可以取到$1e−2$。$q=1$，其余参数的设置思路如下。</p>
+
+<p>$||\epsilon_0||$定义为初始化参数与最优参数的距离，代表参数的变化尺度：</p>
+
+\[||\epsilon_0||=||\theta_0-\theta^*||\]
+
+<p>网络参数通常初始化为$0$均值, $\sigma^2$方差。因此对于参数\(\theta \Bbb{R}^k\)，有$||\theta_0||^2\approx k\sigma^2$。在合理的初始化下，训练完成后参数的均值方差也不会有太大变化，因此有$||\theta^{*}||^2\approx k\sigma^2$。则有：</p>
+
+\[||\epsilon_0||^2=||\theta_0-\theta^*||^2 \approx k\sigma^2\]
+
+<p>此外对于全零初始化的参数（如偏置项或归一化层的<strong>reshift</strong>参数）或全一初始化的参数（如归一化层的<strong>rescale</strong>参数），不妨假设预测训练好的模型参数都在$±σ$附近，则也有$||\epsilon_0||^2 \approx k\sigma^2$。此时可设置$\sigma=0.5$。</p>
+
+<p>至于参数$p$的取值，不妨分析参数$p$如何影响权重衰减函数，即求出$\rho_t$的解析近似。假设参数$p$是步数$t$的函数$p_t$，则有：</p>
+
+\[\begin{aligned} \sqrt{ 2\rho_t q}  &amp;\approx  \alpha_0 \exp(- \sum_{i=1}^{t-1} p_i \sqrt{2\rho_iq}) \end{aligned}\]
+
+<p>把指数求和$\sum_{i=1}^{t-1}p_i\sqrt{2\rho_iq}$记为$S_t$，则上式对应一个差分方程：</p>
+
+\[S_{t+1}-S_t \approx \alpha_0 p_t \exp(-S_t)\]
+
+<p>近似于微分方程：</p>
+
+\[\frac{d S_t}{dt} \approx \alpha_0 p_t \exp(-S_t)\]
+
+<p>对上式进行调整并两端积分得：</p>
+
+\[\begin{aligned} \exp(S_t) \frac{d S_t}{dt} &amp;= \alpha_0 p_t \\ \int_0^t \exp(S_t) \frac{d S_t}{dt} dt &amp;= \int_0^t \alpha_0 p_t dt \\ \exp(S_t) - \exp(S_0) &amp;= \alpha_0 \int_0^t p_t dt  \end{aligned}\]
+
+<p>不妨取$p_t = p_0 \exp(-S_t)$，代入上式得：</p>
+
+\[\exp(S_t) - \exp(S_0) = \alpha_0 p_0 \int_0^t \exp(-S_t) dt\]
+
+<p>假设$S_0=0$，解上述微分方程得：</p>
+
+\[\exp(-2S_t) = \frac{1}{2 \alpha_0 p_0 t+1}\]
+
+<p>至此可以得到学习率$\alpha_t$和权重衰减项$\rho_t$的设置公式：</p>
+
+\[\begin{aligned} \alpha_t &amp;\approx  \frac{\alpha_0 ||\epsilon_0||}{||u_t||} \frac{1}{2 \alpha_0 p_0 t+1} \\ \rho_t  &amp;\approx  \frac{\alpha_0^2}{2q} \frac{1}{2 \alpha_0 p_0 t+1} \end{aligned}\]
+
+<p>学习率和权重衰减都采用逆时间衰减（<strong>Inverse Time Decay</strong>）的形式。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/12/06/ipm.html" class="read-next-link"></a>
+        <section>
+          <span>积分概率度量(Integral Probability Metric)</span>
+          <p>  Integral Probability Metric.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63904005b1fccdcd3609179e.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/11/30/featuredistillation.html" class="read-next-link"></a>
+          <section>
+            <span>Contrastive Learning Rivals Masked Image Modeling in Fine-tuning via Feature Distillation</span>
+            <p>  特征蒸馏使对比学习在微调时击败了掩码图像建模.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6687ac8dd9c307b7e9bb2c84.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

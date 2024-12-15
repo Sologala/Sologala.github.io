@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/02/bvae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-02"><i class="iconfont icon-date"></i>02 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5fc740c0394ac5237895ee10.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>β-VAE：学习变分自编码器隐空间的解耦表示.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://openreview.net/forum?id=Sy2fzU9gl">β-VAE: Learning Basic Visual Concepts with a Constrained Variational Framework</a></li>
+</ul>
+
+<p>本文作者提出了<strong>β-VAE</strong>，用于学习数据生成过程的解耦表示。作者进一步设计了一种基于线性分类器的评估方法，用于衡量模型学习的解耦程度。</p>
+
+<h1 id="1-β-vae">1. β-VAE</h1>
+
+<p><strong>β-VAE</strong>的出发点是对特征空间进行<strong>解耦(disentanglement)</strong>，即使得隐变量空间$Z$的每一个维度作为一个<strong>factor</strong>，每一个<strong>factor</strong>表示独立的特征，而不影响其他<strong>factor</strong>表示的特征。</p>
+
+<p>如一个在人脸数据集上训练的<strong>VAE</strong>，训练后隐空间中的每一个<strong>factor</strong>可以表示性别、肤色、表情…而不互相影响。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62833df709475431295c0fd4.jpg" alt="" /></p>
+
+<p>与<strong>VAE</strong>类似，模型希望最大化生成真实数据的概率，同时使得隐变量的后验分布$q(z|x)$与先验分布$p(z)$的距离小于常数$\epsilon&gt;0$：</p>
+
+\[\begin{aligned} \mathop{\max}_{\theta,\phi}&amp; \mathbb{E}_{x \text{~} D} [\mathbb{E}_{q_{\phi}(z|x)} [\log p_{\theta}(x | z)]] \\ \text{s.t. } &amp;D_{KL}(q_{\phi}(z|x)||p_{\theta}(z))&lt;\epsilon \end{aligned}\]
+
+<p>引入拉格朗日乘子$\beta$，问题转换成最大化拉格朗日函数：</p>
+
+\[\begin{aligned} \mathcal{F}(\theta,\phi,\beta) &amp;= \mathbb{E}_{q_{\phi}(z|x)} [\log p_{\theta}(x | z)] - \beta (D_{KL}(q_{\phi}(z|x)||p_{\theta}(z)) - \epsilon) \\ &amp;= \mathbb{E}_{q_{\phi}(z|x)} [\log p_{\theta}(x | z)] - \beta D_{KL}(q_{\phi}(z|x)||p_{\theta}(z)) + \beta\epsilon \\ &amp;≥ \mathbb{E}_{q_{\phi}(z|x)} [\log p_{\theta}(x | z)] - \beta D_{KL}(q_{\phi}(z|x)||p_{\theta}(z)) \end{aligned}\]
+
+<p>因此<strong>β-VAE</strong>的损失函数定义为：</p>
+
+\[L(\theta,\phi,\beta) = -\mathbb{E}_{q_{\phi}(z|x)} [\log p_{\theta}(x | z)] + \beta D_{KL}(q_{\phi}(z|x)||p_{\theta}(z))\]
+
+<p>当$\beta = 1$时，模型和<strong>VAE</strong>相同。当$\beta &gt; 1$时，引入了信息瓶颈，限制了模型的重构能力，但增加了模型的解耦能力。</p>
+
+<h1 id="2-解耦评估得分-disentanglement-metric-score">2. 解耦评估得分 disentanglement metric score</h1>
+
+<p>如果模型的解耦程度较好，则其学习的隐变量不同维度之间应该具有独立性，则可以使用非常简单的线性分类器实现稳健的分类。作者设计了如下评估方法：</p>
+<ol>
+  <li>随机选择一个解耦因子$y$（如尺寸）；</li>
+  <li>采样$L$对图像$x_{1,l}$和$x_{2,l}$，将它们的因子$y$设置为相等\([x_{1,l}]_y=[x_{2,l}]_y\)，其他因子随机；</li>
+  <li>使用编码器$q(z|x)$构造图像对的隐变量$z_{1,l}$和$z_{2,l}$；</li>
+  <li>计算所有图像对的隐变量差异$z_{diff}^l=|z_{1,l}-z_{2,l}|$并取平均$z_{diff}^b=\frac{1}{L} \sum_{l=1}^{L} z_{diff}^l$；</li>
+  <li>使用线性分类器$p(y|z_{diff}^b)$预测解耦因子$y$；</li>
+  <li>分类准确率即可作为最终的解耦评估得分。</li>
+</ol>
+
+<p><img src="https://pic.imgdb.cn/item/628345a0094754312974c9a5.jpg" alt="" /></p>
+
+<p>作者汇报了不同模型在一个二维形状数据集上的解耦表现，并给出了不同隐变量长度和不同$\beta$对结构结果的影响。</p>
+
+<p><img src="https://pic.imgdb.cn/item/628346e4094754312978b7a0.jpg" alt="" /></p>
+
+<h1 id="3-β-vae的pytorch实现">3. β-VAE的pytorch实现</h1>
+
+<p><strong>β-VAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/beta_vae.py">PyTorch-VAE</a>，与标准的<strong>VAE</strong>主要区别在损失函数上，即引入$\beta$：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span><span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+<span class="n">kld_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="n">exp</span><span class="p">(),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">recons_loss</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">kld_loss</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/03/bvae2.html" class="read-next-link"></a>
+        <section>
+          <span>Understanding disentangling in β-VAE</span>
+          <p>  使用信息瓶颈解释β-VAE的解耦表示能力.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5fc8ac85394ac5237844da3b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/01/aff.html" class="read-next-link"></a>
+          <section>
+            <span>Attentional Feature Fusion</span>
+            <p>  AFF：特征通道注意力融合.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5fed80673ffa7d37b3310432.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

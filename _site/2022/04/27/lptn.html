@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High-Resolution Photorealistic Image Translation in Real-Time: A Laplacian Pyramid Translation Network - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="High-Resolution Photorealistic Image Translation in Real-Time: A Laplacian Pyramid Translation Network">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="High-Resolution Photorealistic Image Translation in Real-Time: A Laplacian Pyramid Translation Network - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/27/lptn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>High-Resolution Photorealistic Image Translation in Real-Time: A Laplacian Pyramid Translation Network</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-27"><i class="iconfont icon-date"></i>27 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6397de24b1fccdcd369575d4.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>LPTN：高分辨率真实感实时图像翻译.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2105.09188">High-Resolution Photorealistic Image Translation in Real-Time: A Laplacian Pyramid Translation Network</a></li>
+</ul>
+
+<h1 id="1-拉普拉斯金字塔-laplacian-pyramid">1. 拉普拉斯金字塔 Laplacian Pyramid</h1>
+
+<p>首先介绍高斯金字塔(Gaussian Pyramid)。对于原始图像$G_0$，对其应用高斯模糊后下采样，得到尺寸减半的图像$G_1$；类似地，可以构造$G_2,G_3…$。下图给出了一个四阶高斯金字塔的结构。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6397e072b1fccdcd3699f955.jpg" alt="" /></p>
+
+<p>拉普拉斯金字塔结构上与高斯金字塔类似，但每一层存储的不是高斯金字塔构造图像$G_i$，而是插值图像$L_i=G_i-rescale(G_{i+1})$；即先构造高斯金字塔图像$G_{i+1}$，然后与上一层的高斯金字塔图像$G_i$作差。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6397e1e3b1fccdcd369c0bfe.jpg" alt="" /></p>
+
+<p>相比于存储原始图像$G_0$，存储插值图像$L_0,L_1,…$和顶部的高斯图像$G_N$需要更少的内存。这是因为插值图像的数值范围小，因此可以通过更少的比特数来存储像素；而且顶层高斯图像尺寸小。</p>
+
+<p>拉普拉斯金字塔是可逆的，因此可以通过顶层高斯图像和每一层的插值图像无损地恢复原始图像。因此拉普拉斯金字塔是一种无损的图像压缩方法。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6397e2afb1fccdcd369cfa59.jpg" alt="" /></p>
+
+<h1 id="2-拉普拉斯金字塔翻译网络-laplacian-pyramid-translation-network">2. 拉普拉斯金字塔翻译网络 Laplacian Pyramid Translation Network</h1>
+
+<p>作者指出，给定两张具有相同内容和不同风格的图像，其图像的高频部分几乎是相同的，用于存储纹理和内容信息，在图像翻译过程中应该被保留；图像的低频部分则具有领域特定的风格信息，是在翻译过程中应该变化的部分。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63981fdeb1fccdcd3600b88f.jpg" alt="" /></p>
+
+<p>基于该发现，作者构造了拉普拉斯金字塔翻译网络<strong>(Laplacian Pyramid Translation Network, LPTN)</strong>。将图像用拉普拉斯金字塔表示，其中不同层次中的拉普拉斯图像存储了图像中的高频内容信息，因此通过轻量的卷积网络做简单处理；网络顶层的高斯图像存储图像中的低频风格信息，通过一个相对复杂的网络进行处理。整体网络仍然是轻量型的，可以实现实时图像翻译。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6398211fb1fccdcd36025ba9.jpg" alt="" /></p>
+
+<p>网络底层的高斯图像通过堆叠$1\times 1$卷积、$3\times 3$残差块和$1\times 1$卷积变换到另一个图像域，并通过<strong>tanh</strong>激活函数生成另一个图像域中的低频高斯图像。</p>
+
+<p>网络第二层的拉普拉斯图像与两个域的低频图像上采样后链接共同作为输入，通过一个较为简单的卷积网络($1\times 1$卷积、$3\times 3$残差块和$1\times 1$卷积)生成一个模板图像$M$，与输入拉普拉斯图像相乘后生成另一个图像域中的拉普拉斯图像。作者不直接生成拉普拉斯图像的原因是图像的高频内容不容易被卷积神经网络捕捉到，并且堆叠卷积层会导致图像模糊。</p>
+
+<p>更底层的模板图像$M$是由上一层模板图像下采样并通过简单的卷积层构造的。</p>
+
+<p>网络的损失函数包括重构损失和对抗损失。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/28/tunit.html" class="read-next-link"></a>
+        <section>
+          <span>Rethinking the Truly Unsupervised Image-to-Image Translation</span>
+          <p>  TUNIT：完全无监督图像到图像翻译.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6398242eb1fccdcd3608824d.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/26/munit.html" class="read-next-link"></a>
+          <section>
+            <span>Multimodal Unsupervised Image-to-Image Translation</span>
+            <p>  MUNIT：多模态无监督图像到图像翻译网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6396ee98b1fccdcd3644f4ba.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

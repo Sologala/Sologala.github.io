@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大模型的参数高效微调(Parameter-Efficient Fine-Tuning) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="大模型的参数高效微调(Parameter-Efficient Fine-Tuning)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="大模型的参数高效微调(Parameter-Efficient Fine-Tuning) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/02/02/peft.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>大模型的参数高效微调(Parameter-Efficient Fine-Tuning)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-02-02"><i class="iconfont icon-date"></i>02 Feb 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648d6a3c1ddac507ccb6536c.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Parameter-Efficient Fine-Tuning for Large Pretrained Models.</p>
+</blockquote>
+
+<p>基于<a href="https://0809zheng.github.io/2020/04/25/transformer.html">Transformer</a>架构的大型语言模型(<strong>LLM</strong>)在自然语言处理、计算机视觉和音频等任务上取得突出的表现。然而这些模型通常具有大量参数（如<strong>GPT3.5</strong>具有<strong>1.75</strong>万亿参数），从头训练需要极大的算力和训练成本；因此为不同的下游任务训练不同的大型模型是不现实的。</p>
+
+<p>将预训练好的大型模型在下游任务上进行微调已成为处理不同任务的通用范式。与直接使用冻结参数的预训练模型相比，在下游数据集上微调这些预训练模型会带来巨大的性能提升。但是随着模型越来越大，对模型进行全部参数的微调（<strong>full fine-tuning</strong>）变得非常昂贵，因为微调模型（调整模型的所有参数）与原始预训练模型的大小完全相同。</p>
+
+<p>近年来研究者们提出了各种各样的<strong>参数高效微调（Parameter-Efficient Fine-Tuning, PEFT）</strong>方法，即冻结预训练模型的大部分参数，仅微调少量或额外的模型参数（微调参数可以是模型的自有参数，也可以是额外引入的一些参数），以此达到与微调全部参数相当的性能。参数高效微调方法大大降低了计算和存储成本，甚至在某些情况下比全部参数的微调效果更好，可以更好地泛化到域外场景。</p>
+
+<p>参数高效微调方法有以下几种形式：</p>
+<ul>
+  <li>增加额外参数(<strong>addition</strong>)：在原始模型中引入额外的可训练参数，如<strong>Adapter</strong>, <strong>AdapterFusion</strong>, <strong>AdapterDrop</strong>, <strong>AdapterFormer</strong>, <strong>AdaMix</strong>, <strong>Ladder Side-Tuning</strong></li>
+  <li>引入额外提示(<strong>prompt</strong>)：在输入序列中引入可学习的<strong>prompt</strong>，如<strong>P-Tuning</strong>, <strong>Prompt Tuning</strong>, <strong>Prefix-Tuning</strong>, <strong>P-Tuning v2</strong>, <strong>VPT</strong></li>
+  <li>选取部分参数(<strong>specification</strong>)：指定原始模型中的部分参数可训练，如<strong>BitFit</strong>, <strong>Child-Tuning</strong></li>
+  <li>重参数化(<strong>reparameterization</strong>)：将微调过程重参数化为低维子空间的优化，如<strong>Diff Pruning</strong>, <strong>LoRA</strong>, <strong>AdaLoRA</strong>, <strong>QLoRA</strong>, <strong>GLoRA</strong>, <strong>LoRA+</strong>, <strong>LoRA-GA</strong></li>
+  <li>混合方法：如<strong>MAM Adapter</strong>, <strong>UniPELT</strong></li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/648d6de51ddac507ccbea4ec.jpg" alt="" /></p>
+
+<p>扩展阅读：</p>
+<ul>
+  <li><a href="https://www.nature.com/articles/s42256-023-00626-4">Parameter-efficient Fine-tuning of Large-scale Pre-trained Language Models</a></li>
+  <li><a href="https://arxiv.org/abs/2303.15647">Scaling Down to Scale Up: A Guide to Parameter-Efficient Fine-Tuning</a></li>
+</ul>
+
+<h1 id="1-增加额外参数的参数高效微调方法">1. 增加额外参数的参数高效微调方法</h1>
+
+<p>这类方法在原始模型中引入额外的可训练参数，比如将小规模的神经网络模块插入到模型中，并且只微调这一小部分参数。由于引入了额外参数，这类方法的优化效率往往比其他微调范式更低，收敛时间更长，并且在中小型模型上表现不佳。</p>
+
+<h3 id="-adapter">⚪ Adapter</h3>
+<ul>
+  <li>arXiv1902：<a href="https://0809zheng.github.io/2023/02/01/adapter.html"><font color="blue">Parameter-Efficient Transfer Learning for NLP</font></a></li>
+</ul>
+
+<p><strong>Adapter</strong>在每个<strong>Transformer</strong>模块的两个位置（分别是多头注意力投影之后和全连接层之后）引入了带有少量参数的<strong>adapter</strong>模块。<strong>adapter</strong>模块由两个全连接层和一个非线性函数组成。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d68991ddac507ccb24dbb.jpg" alt="" /></p>
+
+<h3 id="-adapterfusion">⚪ AdapterFusion</h3>
+<ul>
+  <li>arXiv2005：<a href="https://0809zheng.github.io/2023/02/08/adapterfusion.html"><font color="blue">Parameter-Efficient Transfer Learning for NLP</font></a></li>
+</ul>
+
+<p><strong>Adapter Fusion</strong>是一种融合多任务信息的<strong>Adapter</strong>变体，通过将学习过程分为两阶段来提升下游任务表现。</p>
+<ul>
+  <li>知识提取阶段：在不同任务下引入各自的<strong>Adapter</strong>模块，用于学习特定任务的信息。</li>
+  <li>知识组合阶段：将预训练模型与特定任务的<strong>Adapter</strong>参数固定，引入包含新参数的<strong>AdapterFusion</strong>来学习组合多个<strong>Adapter</strong>中的知识，以提高模型在目标任务中的表现。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/648e633b1ddac507cc11a233.jpg" alt="" /></p>
+
+<h3 id="-adapterdrop">⚪ AdapterDrop</h3>
+<ul>
+  <li>arXiv2010：<a href="https://0809zheng.github.io/2023/02/09/adapterdrop.html"><font color="blue">AdapterDrop: On the Efficiency of Adapters in Transformers</font></a></li>
+</ul>
+
+<p><strong>AdapterDrop</strong>从较低的<strong>Transformer</strong>层中删除可变数量的<strong>Adapter</strong>，尽可能地减少模型的参数量，提高模型在反向传播（训练）和正向传播（推理）时的效率。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648e68af1ddac507cc191a6a.jpg" alt="" /></p>
+
+<h3 id="-adaptformer">⚪ AdaptFormer</h3>
+<ul>
+  <li>arXiv2205：<a href="https://0809zheng.github.io/2023/02/16/adapterformer.html"><font color="blue">AdaptFormer: Adapting Vision Transformers for Scalable Visual Recognition</font></a></li>
+</ul>
+
+<p><strong>AdaptFormer</strong>用<strong>AdaptMLP</strong>代替了<strong>Transformer</strong>编码器中的<strong>MLP</strong>块。<strong>AdaptMLP</strong>由两个并行的子分支组成：左分支中的<strong>MLP</strong>层与原始网络相同；右分支是引入的<strong>task-specific</strong>轻量级模块，设计为轻量级编码器-解码器结构。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6579225ac458853aef47800d.jpg" alt="" /></p>
+
+<h3 id="-adamix">⚪ AdaMix</h3>
+<ul>
+  <li>arXiv2205：<a href="https://0809zheng.github.io/2023/02/17/adamix.html"><font color="blue">AdaMix: Mixture-of-Adaptations for Parameter-efficient Model Tuning</font></a></li>
+</ul>
+
+<p><strong>AdaMix</strong>将<strong>Adapter</strong>的两个 <strong>FFN</strong> 层（<strong>up</strong> 映射和 <strong>down</strong> 映射）设置为多专家模型，在训练时采用随机平均选择专家的方式，在推理阶段将所有专家平均参数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/657a7524c458853aef38c4ec.jpg" alt="" /></p>
+
+<h3 id="-ladder-side-tuning">⚪ Ladder Side-Tuning</h3>
+<ul>
+  <li>arXiv2206：<a href="https://0809zheng.github.io/2023/02/15/lst.html"><font color="blue">LST: Ladder Side-Tuning for Parameter and Memory Efficient Transfer Learning</font></a></li>
+</ul>
+
+<p><strong>Ladder Side-Tuning (LST)</strong>在原有大模型的基础上搭建了一个“旁支”，将大模型的部分层输出作为旁枝模型的输入。由于大模型仅提供输入，并不需要直接在大模型上执行反向传播，因此可以明显提升训练效率。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ebba91ddac507cc8dc488.jpg" alt="" /></p>
+
+<h1 id="2-引入额外提示的参数高效微调方法">2. 引入额外提示的参数高效微调方法</h1>
+
+<p>这类方法把通过冻结预训练好的模型并添加一些可训练的<strong>prompt</strong>迁移到新任务上。把可学习参数插入到<strong>token</strong>空间既可以在线性投影之前预先添加到嵌入<strong>token</strong>中，也可以在线性投影之后添加到<strong>Q, K, V token</strong>中。</p>
+
+<h3 id="-p-tuning">⚪ P-Tuning</h3>
+<ul>
+  <li>arXiv2103：<a href="https://0809zheng.github.io/2023/02/06/ptuning.html"><font color="blue">GPT Understands, Too</font></a></li>
+</ul>
+
+<p><strong>P-Tuning</strong>方法把传统人工设计模版中的自然语言<strong>token</strong>替换成可微的<strong>virtual token</strong>，并用一个提示编码器来建模<strong>virtual token</strong>的相互依赖。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d8fa31ddac507cc059627.jpg" alt="" /></p>
+
+<h3 id="-prompt-tuning">⚪ Prompt Tuning</h3>
+<ul>
+  <li>arXiv2104：<a href="https://0809zheng.github.io/2023/02/05/prompttuning.html"><font color="blue">The Power of Scale for Parameter-Efficient Prompt Tuning</font></a></li>
+</ul>
+
+<p><strong>Prompt Tuning</strong>方法给每个任务定义了自己的<strong>Prompt</strong>（可学习<strong>token</strong>），然后在输入层拼接到输入数据上。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d89fb1ddac507ccfda28d.jpg" alt="" /></p>
+
+<h3 id="-prefix-tuning">⚪ Prefix-Tuning</h3>
+<ul>
+  <li>arXiv2106：<a href="https://0809zheng.github.io/2023/02/04/prefixtuning.html"><font color="blue">Prefix-Tuning: Optimizing Continuous Prompts for Generation</font></a></li>
+</ul>
+
+<p><strong>Prefix-Tuning</strong>在每一层输入<strong>token</strong>之前构造一段任务相关的<strong>virtual tokens</strong>作为<strong>Prefix</strong>，在训练时只更新<strong>Prefix</strong>部分的参数，而语言模型中的其他部分参数固定。对于自回归结构，构造<strong>z = [PREFIX; x; y]</strong>；对于编码器-解码器结构，构造<strong>z = [PREFIX; x; PREFIX’; y]</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d79631ddac507ccda7778.jpg" alt="" /></p>
+
+<h3 id="-p-tuning-v2">⚪ P-Tuning v2</h3>
+<ul>
+  <li>arXiv2110：<a href="https://0809zheng.github.io/2023/02/07/ptuning2.html"><font color="blue">P-Tuning v2: Prompt Tuning Can Be Comparable to Fine-tuning Universally Across Scales and Tasks</font></a></li>
+</ul>
+
+<p><strong>P-Tuning v2</strong>在<strong>Transformer</strong>网络的每一层都加入了可学习的<strong>Prompts tokens</strong>作为输入。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d92c61ddac507cc0a44b0.jpg" alt="" /></p>
+
+<h3 id="-vpt">⚪ VPT</h3>
+<ul>
+  <li>arXiv2110：<a href="https://0809zheng.github.io/2023/02/18/vpt.html"><font color="blue">Visual Prompt Tuning</font></a></li>
+</ul>
+
+<p><strong>VPT</strong>在视觉<strong>Transformer</strong>的输入<strong>prompt</strong>空间引入少量的可训练<strong>prompt</strong>，并同时微调输出<strong>head</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/657bf5cbc458853aef3f9841.jpg" alt="" /></p>
+
+<h1 id="3-选取部分参数的参数高效微调方法">3. 选取部分参数的参数高效微调方法</h1>
+
+<p>这类方法指定原始模型中的某些特定参数变得可训练，而其他参数则被冻结。这类方法不会在模型中引入任何新参数，也不改变模型的结构，而是直接指定要优化的部分参数。尽管方法简单，但是通常效果比较好。</p>
+
+<h3 id="-bitfit-bias-terms-fine-tuning">⚪ BitFit (Bias-terms Fine-tuning)</h3>
+<ul>
+  <li>arXiv2106：<a href="https://0809zheng.github.io/2023/02/03/bitfit.html"><font color="blue">BitFit: Simple Parameter-efficient Fine-tuning for Transformer-based Masked Language-models</font></a></li>
+</ul>
+
+<p><strong>BitFit</strong>训练时只更新网络中的<strong>bias</strong>参数。<strong>Transformer</strong>模型涉及到的<strong>bias</strong>参数有：<strong>attention</strong>模块中计算<strong>query,key,value</strong>与合并多个<strong>attention</strong>结果时涉及到的<strong>bias</strong>、<strong>MLP</strong>层和<strong>LayerNorm</strong>层的<strong>bias</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d76471ddac507ccd1f4fd.jpg" alt="" /></p>
+
+<h3 id="-child-tuning">⚪ Child-Tuning</h3>
+<ul>
+  <li>arXiv2109：<a href="https://0809zheng.github.io/2020/09/29/childtuning.html"><font color="blue">Raise a Child in Large Language Model: Towards Effective and Generalizable Fine-tuning</font></a></li>
+</ul>
+
+<p><strong>ChildTuning</strong>方法每次从预训练模型中选择一个子网络进行优化；子网络的选择又分为两种方式：<strong>ChildTuning-D</strong>和<strong>ChildTuning-F</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/647af86ef024cca173e0f099.jpg" alt="" /></p>
+
+<p><strong>ChildTuning-D</strong>是任务相关的选择方式，通过计算每个参数的<strong>Fisher</strong>信息作为该参数的重要性，选择最重要的<strong>top</strong>-$p$个参数，在模型更新过程中只优化这些参数。</p>
+
+<p><strong>ChildTuning-F</strong>是任务无关的选择方式。在每步更新时随机构建一个与梯度同尺寸的<strong>0/1</strong>矩阵$M$，其中设置$1$的比例为$p$，然后将梯度修改为\(g \leftarrow \frac{g \otimes M}{p}\)。</p>
+
+<h1 id="4-重参数化的参数高效微调方法">4. 重参数化的参数高效微调方法</h1>
+
+<p>通常尽管预训练模型的参数量很大，但每个下游任务对应的<strong>本征维度（Intrinsic Dimension）</strong>并不大，理论上可以微调非常小的参数量，就能在下游任务取得不错的效果。</p>
+
+<p>重参数化方法把预训练模型的参数微调过程重参数化为为一个低维子空间的优化过程，可以仅仅通过微调子空间内的参数就达到令人满意的性能。对于预训练参数矩阵$W_0$，不直接微调$W_0$，而是微调一个子空间中的增量$\Delta W$：</p>
+
+\[W \leftarrow W_0 + \Delta W\]
+
+<h3 id="-diff-pruning">⚪ Diff Pruning</h3>
+<ul>
+  <li>arXiv2012：<a href="https://0809zheng.github.io/2023/02/12/diff.html"><font color="blue">Parameter-Efficient Transfer Learning with Diff Pruning</font></a></li>
+</ul>
+
+<p><strong>Diff Pruning</strong>把模型微调时的参数更新量建模为与下游任务相关的差异向量$\delta$，并通过在损失中引入$\delta$的<strong>L0-norm</strong>惩罚来约束其稀疏性。</p>
+
+\[W \leftarrow W_0 + \delta\]
+
+<h3 id="-lora-low-rank-adaptation">⚪ LoRA (Low-Rank Adaptation)</h3>
+<ul>
+  <li>arXiv2106：<a href="https://0809zheng.github.io/2023/02/10/lora.html"><font color="blue">LoRA: Low-Rank Adaptation of Large Language Models</font></a></li>
+</ul>
+
+<p><strong>LoRA</strong>通过低秩分解来模拟参数的改变量。在原始矩阵乘法$Wx$旁边增加一个新的通路$BAx$，第一个矩阵$A$负责降维，第二个矩阵$B$负责升维，中间层维度为$r$，用来模拟微调后矩阵的本征秩。</p>
+
+\[W \leftarrow W_0 + BA\]
+
+<p><img src="https://pic.imgdb.cn/item/648e722b1ddac507cc263fee.jpg" alt="" /></p>
+
+<h3 id="-adalora">⚪ AdaLoRA</h3>
+<ul>
+  <li>arXiv2303：<a href="https://0809zheng.github.io/2023/03/18/adalora.html"><font color="blue">Adaptive Budget Allocation for Parameter-Efficient Fine-Tuning</font></a></li>
+</ul>
+
+<p><strong>AdaLoRA</strong>根据重要性评分动态分配参数预算给权重矩阵：</p>
+<ul>
+  <li>对重要性评分高的增量矩阵分配更高的秩；</li>
+  <li>增量更新以奇异值分解的形式进行，并根据重要性指标裁剪掉不重要的奇异值；</li>
+  <li>在训练损失中添加了额外的惩罚项，以规范奇异矩阵$P$和$Q$的正交性。</li>
+</ul>
+
+\[W \leftarrow W_0 + P\Lambda Q\]
+
+<h3 id="-qlora">⚪ QLoRA</h3>
+<ul>
+  <li>arXiv2305：<a href="https://0809zheng.github.io/2023/05/23/qlora.html"><font color="blue">QLoRA: Efficient Finetuning of Quantized LLMs</font></a></li>
+</ul>
+
+<p><strong>QLoRA</strong>将预训练模型量化为<strong>4 bit</strong>后添加可学习的低秩权重。为实现高保真<strong>4 bit</strong>微调，<strong>QLoRA</strong>引入了以下技术：</p>
+<ul>
+  <li>设计了一种低精度存储数据类型<strong>4bit NormalFloat（NF4）</strong>，该数据类型能产生更好的<strong>4 bit</strong>正态分布数据；</li>
+  <li>采用双量化，即对第一次量化后的常量再进行一次量化；</li>
+  <li>分页优化器：使用<strong>NVIDIA</strong>统一内存特性，该特性可以在<strong>GPU</strong>偶尔<strong>OOM</strong>的情况下，进行<strong>CPU</strong>和<strong>GPU</strong>之间自动分页传输，以实现无错误的<strong>GPU</strong>处理。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/648e97f41ddac507cc58b740.jpg" alt="" /></p>
+
+<h3 id="-glora">⚪ GLoRA</h3>
+<ul>
+  <li>arXiv2306：<a href="https://0809zheng.github.io/2023/06/13/glora.html"><font color="blue">One-for-All: Generalized LoRA for Parameter-Efficient Fine-tuning</font></a></li>
+</ul>
+
+<p><strong>GLoRA</strong>同时考虑权重空间和特征空间中的可调维度，并通过进化搜索来学习网络每层的微调参数。可调参数包括：$A$用于缩放权重参数，$B$用于缩放输入和偏移权重参数，$C$用于补充层级可训练<strong>prompt</strong>（与<strong>prompt tuning</strong>相似），$D,E$用于缩放和偏移偏置参数。</p>
+
+\[\begin{aligned}
+f(x) &amp;= (W_0 + \underbrace{W_0A + B}_{\text{weight space}} )x + \underbrace{CW_0+Db_0+E}_{\text{feature space}}+b_0 \\
+\end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/648ec9d31ddac507cca27daa.jpg" alt="" /></p>
+
+<h3 id="-lora">⚪ LoRA+</h3>
+<ul>
+  <li>arXiv2402：<a href="https://0809zheng.github.io/2024/02/19/lora+.html"><font color="blue">LoRA+: Efficient Low Rank Adaptation of Large Models</font></a></li>
+</ul>
+
+<p><strong>LoRA+</strong>指出设置权重$B$的学习率应该要大于权重$A$的学习率。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66963a38d9c307b7e9d539e2.png" alt="" /></p>
+
+<h3 id="-lora-ga">⚪ LoRA-GA</h3>
+<ul>
+  <li>arXiv2407：<a href="https://0809zheng.github.io/2024/07/16/loraga.html"><font color="blue">LoRA-GA: Low-Rank Adaptation with Gradient Approximation</font></a></li>
+</ul>
+
+<p><strong>LoRA-GA</strong>采样一批样本计算初始梯度\(\frac{\partial \mathcal{L}}{\partial W}\)，并进行奇异值分解\(\frac{\partial \mathcal{L}}{\partial W}=U\Sigma V\)；取$U$的前$r$列初始化
+$B$，取$V$的第$r+1\sim 2r$行初始化$A$；从而使得在初始阶段参数高效微调接近全量微调。</p>
+
+<p><img src="https://pic.imgdb.cn/item/66963093d9c307b7e9c83a96.png" alt="" /></p>
+
+<h1 id="5-混合方法">5. 混合方法</h1>
+
+<p>一些参数高效的微调方法通过混合上述不同类型的微调方法，进一步提高下游任务中微调的性能。</p>
+
+<h3 id="-mam-adapter">⚪ MAM Adapter</h3>
+<ul>
+  <li>arXiv2110：<a href="https://0809zheng.github.io/2023/02/13/mam.html"><font color="blue">Towards a Unified View of Parameter-Efficient Transfer Learning</font></a></li>
+</ul>
+
+<p>作者分析了当下最先进的参数高效迁移学习方法（<strong>Adapter, Prefix Tuning</strong>和<strong>LoRA</strong>）的设计，并提出了一种在它们之间建立联系的统一框架<strong>MAM Adapter</strong>。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648eb09f1ddac507cc7caea5.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/648eb0e41ddac507cc7d0458.jpg" alt="" /></p>
+
+<p><strong>MAM Adapter</strong>是用于<strong>FFN</strong>的并行<strong>Adapter</strong>和<strong>soft prompt</strong>的组合：</p>
+<ul>
+  <li>并行放置的<strong>Adapter</strong>优于串行放置的<strong>Adapter</strong>，并且与<strong>FFN</strong>并行放置的<strong>Adapter</strong>优于与<strong>MHA</strong>并行放置的<strong>Adapter</strong>。</li>
+  <li><strong>soft prompt</strong>可以通过仅更改 $0.1\%$ 的参数来有效地修改注意力。</li>
+</ul>
+
+<h3 id="-unipelt">⚪ UniPELT</h3>
+<ul>
+  <li>arXiv2110：<a href="https://0809zheng.github.io/2023/02/14/unipelt.html"><font color="blue">UniPELT: A Unified Framework for Parameter-Efficient Language Model Tuning</font></a></li>
+</ul>
+
+<p><strong>UniPELT</strong>是<strong>LoRA</strong>、<strong>Prefix Tuning</strong>和<strong>Adapter</strong>的门控组合。对于每个模块，通过线性层实现门控，通过$G_P$控制<strong>Prefix-tuning</strong>方法的开关，$G_L$控制<strong>LoRA</strong>方法的开关，$G_A$控制<strong>Adapter</strong>方法的开关。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648eb58d1ddac507cc83cea1.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/02/03/bitfit.html" class="read-next-link"></a>
+        <section>
+          <span>BitFit: Simple Parameter-efficient Fine-tuning for Transformer-based Masked Language-models</span>
+          <p>  BitFit：基于Transformer的掩码语言模型的简单参数高效微调.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/648d74131ddac507cccc8353.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/02/01/adapter.html" class="read-next-link"></a>
+          <section>
+            <span>Parameter-Efficient Transfer Learning for NLP</span>
+            <p>  自然语言处理中的参数高效的迁移学习.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/648d64d21ddac507ccaabefd.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

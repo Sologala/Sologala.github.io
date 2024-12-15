@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAM: Bottleneck Attention Module - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="BAM: Bottleneck Attention Module">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="BAM: Bottleneck Attention Module - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/10/04/bam.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>BAM: Bottleneck Attention Module</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-10-04"><i class="iconfont icon-date"></i>04 Oct 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63a50cca08b6830163b3d18d.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>BAM：瓶颈注意力模块.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1807.06514">BAM: Bottleneck Attention Module</a></li>
+</ul>
+
+<p><strong>BAM</strong>模块通过并联使用通道注意力和空间注意力增强特征的表达能力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a50e2908b6830163b5939c.jpg" alt="" /></p>
+
+<p>其中通道注意力模块对输入特征沿着通道维度计算一阶统计量(全局平均池化)，然后通过带有瓶颈层的全连接层学习通道之间的相关性。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ChannelGate</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">reduction_ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ChannelGate</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">avgpool</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gate_c</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">channel</span><span class="o">//</span><span class="n">reduction_ratio</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="n">channel</span><span class="o">//</span><span class="n">reduction_ratio</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">channel</span><span class="o">//</span><span class="n">reduction_ratio</span><span class="p">,</span><span class="n">channel</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">avg_pool</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">avgpool</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># [b, c]
+</span>        <span class="n">channel_attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">gate_c</span><span class="p">(</span><span class="n">avg_pool</span><span class="p">)</span> <span class="c1"># [b, c]
+</span>        <span class="k">return</span> <span class="n">channel_attn</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># [b, c, h, w]
+</span></code></pre></div></div>
+
+<p>空间注意力模块首先应用$1 \times 1$卷积压缩通道维度，然后使用两个空洞率为$4$的$3 \times 3$空洞卷积提取多感受野特征，并最终应用$1 \times 1$卷积把通道数压缩为$1$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SpatialGate</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">channel</span><span class="p">,</span>
+                 <span class="n">reduction_ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+                 <span class="n">dilation_conv_num</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                 <span class="n">dilation_val</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SpatialGate</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">reduced_c</span> <span class="o">=</span> <span class="n">channel</span> <span class="o">//</span> <span class="n">reduction_ratio</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span>
+            <span class="s">'gate_s_conv_reduce0'</span><span class="p">,</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">reduced_c</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span><span class="s">'gate_s_bn_reduce0'</span><span class="p">,</span>
+                               <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span><span class="s">'gate_s_relu_reduce0'</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">())</span>
+
+        <span class="c1"># 进行多个空洞卷积，丰富感受野
+</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dilation_conv_num</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span>
+                <span class="s">'gate_s_conv_di_%d'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">,</span> <span class="n">reduced_c</span><span class="p">,</span>
+                          <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                          <span class="n">padding</span><span class="o">=</span><span class="n">dilation_val</span><span class="p">,</span>
+                          <span class="n">dilation</span><span class="o">=</span><span class="n">dilation_val</span><span class="p">))</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span>
+                <span class="s">'gate_s_bn_di_%d'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span>
+                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">))</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span><span class="s">'gate_s_relu_di_%d'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span>
+            <span class="s">'gate_s_conv_final'</span><span class="p">,</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>BAM</strong>模块并联空间注意力和通道注意力生成的注意力图，使用<strong>Sigmoid</strong>进行归一化后与输入特征相乘，并通过残差连接构造输出特征。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="k">class</span> <span class="nc">BAM</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BAM</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">channel_att</span> <span class="o">=</span> <span class="n">ChannelGate</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">spatial_att</span> <span class="o">=</span> <span class="n">SpatialGate</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">att</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channel_att</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">spatial_att</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">att</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<p><strong>BAM</strong>模块可以即插即用到任意卷积神经网络中，作者把该模块放到下采样层(池化层)之前，相当于放置在网络的瓶颈层处，因此称为瓶颈注意力模块。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63a513a308b6830163bcb3a3.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/10/05/cbam.html" class="read-next-link"></a>
+        <section>
+          <span>CBAM: Convolutional Block Attention Module</span>
+          <p>  CBAM：卷积块注意力模块.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63a5164e08b6830163c00573.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/10/03/gsopnet.html" class="read-next-link"></a>
+          <section>
+            <span>Global Second-order Pooling Convolutional Networks</span>
+            <p>  GSoP-Net：全局二阶池化卷积网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63a4416608b6830163cc9d2b.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

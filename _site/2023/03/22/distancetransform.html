@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二值图像的距离变换(Distance Transform) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="二值图像的距离变换(Distance Transform)">
+    <meta name="keywords"  content="数学">
+    <!-- Open Graph -->
+    <meta property="og:title" content="二值图像的距离变换(Distance Transform) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/03/22/distancetransform.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%95%B0%E5%AD%A6" class="post-tag">数学</a>
+          
+        
+      </div>
+      <h1>二值图像的距离变换(Distance Transform)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-03-22"><i class="iconfont icon-date"></i>22 Mar 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/641c0a6aa682492fcc7d1da6.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Distance Transform Algorithm of Binary Images.</p>
+</blockquote>
+
+<p><strong>距离变换(Distance Transform)</strong>是一种针对二值图像（背景: $0$, 前景: $1$）的变换算法，把图像中的每个像素值替换为该像素到前景像素的最近距离。通过距离变换能够基本找出二值图像中前景形状的骨架。</p>
+
+<p><img src="https://pic.imgdb.cn/item/641c0a6aa682492fcc7d1da6.jpg" alt="" /></p>
+
+<p>对于距离的度量可以选择：</p>
+
+<ul>
+  <li>欧氏距离：在事实上比较直观，但是平方根计算比较费时，且距离可能不是整数。</li>
+</ul>
+
+\[D_E =\sqrt{(i-k)^2+(j-l)^2}\]
+
+<ul>
+  <li>城市街区距离：在只允许横向和纵向运动的情况下，从起点到终点的移动步数。该距离中像素点是4邻接的，即每个点只与它的上、下、左、右相邻的4个点之间的距离为1。</li>
+</ul>
+
+\[D_4 =|i-k|+|j-l|\]
+
+<ul>
+  <li>棋盘距离：允许横向、纵向和沿对角线方向移动的情况下，从起点到终点的移动步数。在这种定义下，像素点是8邻接的，即每个点只与它的上、下、左、右、四个对角线方向相邻的8个点之间的距离为1。</li>
+</ul>
+
+\[D_8 =\max \left \{ |i-k|,|j-l| \right \}\]
+
+<h1 id="1-距离变换的算法实现">1. 距离变换的算法实现</h1>
+
+<p>距离变换算法可以通过广度优先搜索或动态规划实现（对应<a href="https://leetcode.cn/problems/01-matrix/description/">LeetCode 542. 01 矩阵</a>），也可以直接调用第三方库。</p>
+
+<h2 id="-通过广度优先搜索实现距离变换">⚪ 通过广度优先搜索实现距离变换</h2>
+
+<p>对于矩阵中的每一个元素，如果它的值为1，那么离它最近的1就是它自己。如果它的值为0，那么我们就需要找出离它最近的1，并且返回这个距离值。</p>
+
+<p>我们可以从1的位置开始进行<strong>广度优先搜索</strong>。广度优先搜索可以找到从起点到其余所有点的最短距离，因此如果我们从1开始搜索，每次搜索到一个0，就可以得到1到这个0的最短距离，也就是离这个0最近的1的距离了。</p>
+
+<p>在进行广度优先搜索的时候会使用到队列，我们在搜索前会把所有的1的位置加入队列（对应距离为0）。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_</span> <span class="n">_</span> <span class="n">_</span> <span class="n">_</span>
+<span class="n">_</span> <span class="mi">0</span> <span class="n">_</span> <span class="n">_</span>
+<span class="n">_</span> <span class="n">_</span> <span class="mi">0</span> <span class="n">_</span>
+<span class="n">_</span> <span class="n">_</span> <span class="n">_</span> <span class="n">_</span>
+</code></pre></div></div>
+
+<p>随后我们进行广度优先搜索，找到所有距离为1的0：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_</span> <span class="mi">1</span> <span class="n">_</span> <span class="n">_</span>
+<span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span> <span class="n">_</span>
+<span class="n">_</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="n">_</span> <span class="n">_</span> <span class="mi">1</span> <span class="n">_</span>
+</code></pre></div></div>
+
+<p>接着重复步骤，直到搜索完成：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_</span> <span class="mi">1</span> <span class="n">_</span> <span class="n">_</span>         <span class="mi">2</span> <span class="mi">1</span> <span class="mi">2</span> <span class="n">_</span>         <span class="mi">2</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span>
+<span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span> <span class="n">_</span>   <span class="o">==&gt;</span>   <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span>   <span class="o">==&gt;</span>   <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">2</span>
+<span class="n">_</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>         <span class="mi">2</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>         <span class="mi">2</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">1</span>
+<span class="n">_</span> <span class="n">_</span> <span class="mi">1</span> <span class="n">_</span>         <span class="n">_</span> <span class="mi">2</span> <span class="mi">1</span> <span class="mi">2</span>         <span class="mi">3</span> <span class="mi">2</span> <span class="mi">1</span> <span class="mi">2</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">DistanceTransform</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">n</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span>
+
+    <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">if</span> <span class="n">mat</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">queue</span><span class="p">.</span><span class="n">popleft</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="ow">in</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)]:</span>
+            <span class="n">new_x</span><span class="p">,</span> <span class="n">new_y</span> <span class="o">=</span> <span class="n">x</span><span class="o">+</span><span class="n">dx</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="n">dy</span>
+            <span class="k">if</span> <span class="mi">0</span><span class="o">&lt;=</span><span class="n">new_x</span><span class="o">&lt;</span><span class="n">m</span> <span class="ow">and</span> <span class="mi">0</span><span class="o">&lt;=</span><span class="n">new_y</span><span class="o">&lt;</span><span class="n">n</span> <span class="ow">and</span> <span class="p">(</span><span class="n">new_x</span><span class="p">,</span><span class="n">new_y</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                <span class="n">res</span><span class="p">[</span><span class="n">new_x</span><span class="p">][</span><span class="n">new_y</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="n">x</span><span class="p">][</span><span class="n">y</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span>
+                <span class="n">queue</span><span class="p">.</span><span class="n">append</span><span class="p">((</span><span class="n">new_x</span><span class="p">,</span><span class="n">new_y</span><span class="p">))</span>       
+                <span class="n">visited</span><span class="p">.</span><span class="n">add</span><span class="p">((</span><span class="n">new_x</span><span class="p">,</span><span class="n">new_y</span><span class="p">))</span>                 
+
+    <span class="k">return</span> <span class="n">res</span>
+</code></pre></div></div>
+
+<h2 id="-通过动态规划实现距离变换">⚪ 通过动态规划实现距离变换</h2>
+
+<p>距离矩阵中任意一个元素0最近的元素1只可能出现在四个方向：左上、左下、右上、右下。因此我们可以进行四次动态搜索：</p>
+<ul>
+  <li>水平向左移动 和 竖直向上移动；</li>
+  <li>水平向左移动 和 竖直向下移动；</li>
+  <li>水平向右移动 和 竖直向上移动；</li>
+  <li>水平向右移动 和 竖直向下移动。</li>
+</ul>
+
+<p>以「水平向左移动」和「竖直向上移动」为例，用$f(i, j)$表示位置$(i, j)$到最近的 1 的距离，那么我们可以向上移动一步，再移动$f(i - 1, j)$步到达某一个 1；也可以向左移动一步，再移动$f(i, j - 1)$步到达某一个 1。因此可以写出如下的状态转移方程：</p>
+
+<p>\(f(i, j) = \begin{cases} 1 + \min\big(f(i - 1, j), f(i, j - 1)\big) &amp;, \text{位置 } (i, j) \text{ 的元素为 } 0 \\ 0 &amp;, \text{位置 } (i, j) \text{ 的元素为 } 1 \end{cases}\)
+​
+通过这种遍历，我们搜索到任意位置$x$左上角的元素1，并作为最近距离的候选。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_</span> <span class="n">_</span> <span class="n">_</span> <span class="n">_</span>         <span class="n">o</span> <span class="n">o</span> <span class="n">o</span> <span class="n">_</span>
+<span class="n">_</span> <span class="n">_</span> <span class="n">_</span> <span class="n">_</span>   <span class="o">==&gt;</span>   <span class="n">o</span> <span class="n">o</span> <span class="n">o</span> <span class="n">_</span>
+<span class="n">_</span> <span class="n">_</span> <span class="n">x</span> <span class="n">_</span>         <span class="n">o</span> <span class="n">o</span> <span class="n">x</span> <span class="n">_</span>
+<span class="n">_</span> <span class="n">_</span> <span class="n">_</span> <span class="n">_</span>         <span class="n">_</span> <span class="n">_</span> <span class="n">_</span> <span class="n">_</span>
+</code></pre></div></div>
+
+<p>对于另外三种移动方法，我们也可以写出类似的状态转移方程，得到四个$f(i, j)$的值，那么其中最小的值就表示位置$(i, j)$到最近的 1 的距离。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">DistanceTransform</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># 初始化动态规划的数组，所有的距离值都设置为一个很大的数
+</span>    <span class="n">dp</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">1e9</span><span class="p">]</span><span class="o">*</span><span class="n">n</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">mat</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># 只有 水平向左移动 和 竖直向上移动，注意动态规划的计算顺序
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">j</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># 只有 水平向左移动 和 竖直向下移动，注意动态规划的计算顺序
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">j</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># 只有 水平向右移动 和 竖直向上移动，注意动态规划的计算顺序
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">j</span><span class="o">&lt;</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+    
+   <span class="c1"># 只有 水平向右移动 和 竖直向下移动，注意动态规划的计算顺序
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">j</span><span class="o">&lt;</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>                        
+
+    <span class="k">return</span> <span class="n">dp</span>
+</code></pre></div></div>
+
+<h3 id="-进一步化简">⭐ 进一步化简</h3>
+
+<p>我们发现上述方法中的代码有一些重复计算的地方。实际上，只需要保留</p>
+<ul>
+  <li>只有 水平向左移动 和 竖直向上移动；</li>
+  <li>只有 水平向右移动 和 竖直向下移动。</li>
+</ul>
+
+<p>这两者即可（或者另外两者），下面尝试说明。按照之前的思路，进行两次动态搜索后，某个元素$x$左上角和右下角的候选元素1已经被找到。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_</span> <span class="n">_</span> <span class="n">_</span> <span class="n">_</span>         <span class="n">o</span> <span class="n">o</span> <span class="n">o</span> <span class="n">_</span>
+<span class="n">_</span> <span class="n">_</span> <span class="n">_</span> <span class="n">_</span>   <span class="o">==&gt;</span>   <span class="n">o</span> <span class="n">o</span> <span class="n">o</span> <span class="n">_</span>
+<span class="n">_</span> <span class="n">_</span> <span class="n">x</span> <span class="n">_</span>         <span class="n">o</span> <span class="n">o</span> <span class="n">x</span> <span class="n">o</span>
+<span class="n">_</span> <span class="n">_</span> <span class="n">_</span> <span class="n">_</span>         <span class="n">_</span> <span class="n">_</span> <span class="n">o</span> <span class="n">o</span>
+</code></pre></div></div>
+
+<p>接下来考察左下角和右上角元素。在这给出一个性质： 假如距离$x=(i,j)$最近的1在右上角$(i-a,j+b),a&gt;0,b&gt;0$，则距离$(i,j+b)$最近的1也在$(i-a,j+b)$。</p>
+
+<p>该性质可以采用反证法证明： 如果距离$(i,j+b)$最近的点$(x,y)$不在$(i-a,j+b)$，则$(i,j+b)$和$(x,y)$距离$d&lt;a$，这时点$(i,j)$和$(x,y)$的距离$d’&lt;=b+d&lt;a+b$，与假设矛盾。</p>
+
+<p>利用这个性质，如果距离$(i,j)$最近的1在右上角$(i-a,j+b),a&gt;0,b&gt;0$，在第一次动态搜索时$(i,j)$没有取得最优值，但在搜索中$(i,j+b)$取得最优值(因为这个最优值在他正上方)；在第二次动态搜索时$(i,j)$可以搜索到$(i,j+b)$，进而间接地访问到原本位于其右上角的1。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">DistanceTransform</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># 初始化动态规划的数组，所有的距离值都设置为一个很大的数
+</span>    <span class="n">dp</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">1e9</span><span class="p">]</span><span class="o">*</span><span class="n">n</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">mat</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># 只有 水平向左移动 和 竖直向上移动，注意动态规划的计算顺序
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">j</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    
+   <span class="c1"># 只有 水平向右移动 和 竖直向下移动，注意动态规划的计算顺序
+</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">m</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">][</span><span class="n">j</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">j</span><span class="o">&lt;</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="mi">1</span><span class="o">+</span><span class="n">dp</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>                        
+
+    <span class="k">return</span> <span class="n">dp</span>
+</code></pre></div></div>
+
+<h2 id="-通过scipyndimagedistance_transform_edt实现距离变换">⚪ 通过<code class="language-plaintext highlighter-rouge">scipy.ndimage.distance_transform_edt</code>实现距离变换</h2>
+
+<p><code class="language-plaintext highlighter-rouge">scipy.ndimage.distance_transform_edt</code>的作用是计算一张图上每个前景像素点$1$到背景$0$的最近距离，并且支持多通道输入。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
+ 
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">((([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+             <span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+              <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+             <span class="p">)</span>
+ 
+<span class="n">y1</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">y1</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># (2, 5, 5)
+</span><span class="k">print</span><span class="p">(</span><span class="n">y1</span><span class="p">)</span>
+<span class="c1"># [[[0.         1.         1.41421356 2.23606798 3.        ]
+#   [0.         0.         1.         2.         2.        ]
+#   [0.         1.         1.41421356 1.41421356 1.        ]
+#   [0.         1.         1.41421356 1.         0.        ]
+#   [0.         1.         1.         0.         0.        ]]
+#  [[0.         1.         1.41421356 2.23606798 3.        ]
+#   [0.         0.         1.         2.         2.        ]
+#   [0.         1.         1.41421356 1.41421356 1.        ]
+#   [0.         1.         1.41421356 1.         0.        ]
+#   [0.         1.         1.         0.         0.        ]]]
+</span></code></pre></div></div>
+
+<h1 id="2-距离变换的应用">2. 距离变换的应用</h1>
+
+<h2 id="1-构造分割任务的损失函数">(1) 构造分割任务的损失函数</h2>
+
+<p>分割任务的真实标签为多通道的二值图像，因此可以通过构造真实标签的距离变换图为每个像素生成距离目标轮廓边界的距离，并进一步根据距离信息对不同像素的损失进行加权，从而使模型更加关注分割的轮廓边界区域。</p>
+
+<h3 id="-distance-map-penalized-ce-loss">⚪ <a href="https://arxiv.org/abs/1908.03679">Distance Map Penalized CE Loss</a></h3>
+
+<p>距离图惩罚交叉熵损失通过由真实标签计算的<a href="https://0809zheng.github.io/2023/03/22/distancetransfrom.html">距离变换图</a>对交叉熵进行加权，引导网络重点关注难以分割的边界区域。</p>
+
+\[L_{D P C E}=-\frac{1}{N} \sum_{c=1}^c\left(1+D^c\right) \circ \sum_{i=1}^N g_i^c \log s_i^c\]
+
+<p>其中$D^c$是类别$c$的距离惩罚项，通过取真实标签的距离变换图的倒数来生成。通过这种方式可以为边界上的像素分配更大的权重。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
+
+<span class="k">class</span> <span class="nc">DisPenalizedCE</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DisPenalizedCE</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">one_hot2dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">posmask</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span>
+            <span class="k">if</span> <span class="n">posmask</span><span class="p">.</span><span class="nb">any</span><span class="p">():</span>
+                <span class="n">negmask</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">-</span><span class="n">posmask</span>
+                <span class="n">pos_edt</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">posmask</span><span class="p">)</span>
+                <span class="n">pos_edt</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">pos_edt</span><span class="p">)</span><span class="o">-</span><span class="n">pos_edt</span><span class="p">)</span><span class="o">*</span><span class="n">posmask</span> 
+                <span class="n">neg_edt</span> <span class="o">=</span>  <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">negmask</span><span class="p">)</span>
+                <span class="n">neg_edt</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">neg_edt</span><span class="p">)</span><span class="o">-</span><span class="n">neg_edt</span><span class="p">)</span><span class="o">*</span><span class="n">negmask</span>        
+                <span class="n">res</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span> <span class="o">=</span> <span class="n">pos_edt</span> <span class="o">+</span> <span class="n">neg_edt</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 h w'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())</span><span class="o">+</span><span class="mi">1</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">result_logs</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">result_logs</span> <span class="o">*</span> <span class="n">y_onehot</span>
+        <span class="n">weighted_loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">*</span><span class="n">dist</span>
+        <span class="k">return</span> <span class="n">weighted_loss</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-boundary-loss">⚪ <a href="https://0809zheng.github.io/2021/03/25/boundary.html"><font color="Blue">Boundary Loss</font></a></h3>
+
+<p>在<strong>Boundary Loss</strong>中，每个点$q$的<strong>softmax</strong>输出$s_{\theta}(q)$通过$ϕ_G$进行加权。$ϕ_G:Ω→R$是真实标签边界$∂G$的水平集表示：如果$q∈G$则$ϕ_G(q)=−D_G(q)$否则$ϕ_G(q)=D_G(q)$。$D_G:Ω→R^+$是一个相对于边界$∂G$的<a href="https://0809zheng.github.io/2023/03/22/distancetransfrom.html">距离变换图</a>。</p>
+
+\[\mathcal{L}_B(\theta) = \int_{\Omega} \phi_G(q) s_{\theta}(q) d q\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
+
+<span class="k">class</span> <span class="nc">BDLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BDLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">one_hot2dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">posmask</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span>
+            <span class="k">if</span> <span class="n">posmask</span><span class="p">.</span><span class="nb">any</span><span class="p">():</span>
+                <span class="n">negmask</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">-</span><span class="n">posmask</span>
+                <span class="n">neg_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">negmask</span><span class="p">)</span>
+                <span class="n">pos_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">posmask</span><span class="p">)</span>
+                <span class="n">res</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span> <span class="o">=</span> <span class="n">neg_map</span> <span class="o">*</span> <span class="n">negmask</span> <span class="o">-</span> <span class="p">(</span><span class="n">pos_map</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">posmask</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 h w'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">bound</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())).</span><span class="nb">float</span><span class="p">()</span>
+        <span class="c1"># only compute the loss of foreground
+</span>        <span class="n">pc</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">...]</span>
+        <span class="n">dc</span> <span class="o">=</span> <span class="n">bound</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">...]</span>
+        <span class="n">multipled</span> <span class="o">=</span> <span class="n">pc</span> <span class="o">*</span> <span class="n">dc</span>
+        <span class="k">return</span> <span class="n">multipled</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="-hausdorff-distance-loss">⚪ <a href="https://arxiv.org/abs/1904.10030">Hausdorff Distance Loss</a></h3>
+
+<p>豪斯多夫距离损失通过<a href="https://0809zheng.github.io/2023/03/22/distancetransfrom.html">距离变换图</a>来近似并优化真实标签和预测分割之间的<a href="https://0809zheng.github.io/2021/03/03/distance.html#-%E8%B1%AA%E6%96%AF%E5%A4%9A%E5%A4%AB%E8%B7%9D%E7%A6%BB-hausdorff-distance">Hausdorff距离</a>：</p>
+
+\[L_{H D}=\frac{1}{N} \sum_{c=1}^c \sum_{i=1}^N\left[\left(s_i^c-g_i^c\right)^2 \circ\left(d_{G_i^c}^{\alpha}+d_{S_i^c}^{\alpha}\right)\right]\]
+
+<p>其中$d_G,d_S$分别是真实标签和预测分割的距离变换图，计算每个像素与目标边界之间的最短距离。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span>
+<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
+
+<span class="k">class</span> <span class="nc">HausdorffDTLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="s">"""Binary Hausdorff loss based on distance transform"""</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">HausdorffDTLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+
+    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">one_hot2dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">posmask</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span>
+            <span class="k">if</span> <span class="n">posmask</span><span class="p">.</span><span class="nb">any</span><span class="p">():</span>
+                <span class="n">negmask</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">-</span><span class="n">posmask</span>
+                <span class="n">pos_edt</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">posmask</span><span class="p">)</span>
+                <span class="n">neg_edt</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">negmask</span><span class="p">)</span>      
+                <span class="n">res</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span> <span class="o">=</span> <span class="n">pos_edt</span> <span class="o">+</span> <span class="n">neg_edt</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 h w'</span><span class="p">)</span>
+
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">pred_dt</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())).</span><span class="nb">float</span><span class="p">()</span>
+        <span class="n">target_dt</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())).</span><span class="nb">float</span><span class="p">()</span>
+
+        <span class="n">pred_error</span> <span class="o">=</span> <span class="p">(</span><span class="n">result</span> <span class="o">-</span> <span class="n">y_onehot</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">pred_dt</span> <span class="o">**</span> <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">+</span> <span class="n">target_dt</span> <span class="o">**</span> <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span>
+
+        <span class="n">dt_field</span> <span class="o">=</span> <span class="n">pred_error</span> <span class="o">*</span> <span class="n">distance</span>
+        <span class="k">return</span> <span class="n">dt_field</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/03/25/submodularity.html" class="read-next-link"></a>
+        <section>
+          <span>集函数的子模性(Submodularity)与Lovász延拓(Lovász Extension)</span>
+          <p>  Submodular Functions and Lovász Extension.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6421507da682492fcc7ed807.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/03/21/pct.html" class="read-next-link"></a>
+          <section>
+            <span>Human Pose as Compositional Tokens</span>
+            <p>  人体姿态作为构图令牌.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/668e31ccd9c307b7e96a7fce.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-training with Noisy Student improves ImageNet classification - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Self-training with Noisy Student improves ImageNet classification">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Self-training with Noisy Student improves ImageNet classification - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/08/07/noisy-student-training.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Self-training with Noisy Student improves ImageNet classification</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-08-07"><i class="iconfont icon-date"></i>07 Aug 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5f2e66f614195aa5945b2dc5.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Noisy Student Training：一种半监督图像分类方法.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Self-training with Noisy Student improves ImageNet classification</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1911.04252">link</a></li>
+</ul>
+
+<h1 id="模型">模型</h1>
+
+<p><img src="https://pic.downk.cc/item/5f2e651314195aa5945a6fe3.jpg" alt="" /></p>
+
+<p>作者提出了一种半监督图像分类方法，主要包括$4$个步骤：</p>
+<ul>
+  <li>使用标记数据训练<strong>教师网络</strong>；</li>
+  <li>使用训练好的<strong>教师网络</strong>对大量无标签数据分类，制造伪标签；</li>
+  <li>训练一个模型容量相等或更大的<strong>学生网络</strong>学习原标记数据和伪标签数据，同时引入噪声干扰，包括：
+    <ol>
+      <li>数据增强：引入<strong>data noise</strong>；</li>
+      <li><strong>Dropout</strong>：引入<strong>model noise</strong>；</li>
+      <li>随机深度 <strong>Stochastic depth</strong> ：引入<strong>model noise</strong>。</li>
+    </ol>
+  </li>
+  <li>将训练好的<strong>学生网络</strong>作为新的<strong>教师网络</strong>重复上述过程。</li>
+</ul>
+
+<h1 id="算法">算法</h1>
+<p>记标记数据为\(\{(x_1,y_1),...,(x_n,y_n)\}\)，无标签数据为\(\{\tilde{x}_1,...,\tilde{x}_m\}\)，通常\(n&lt;m\)；</p>
+
+<p>1: 使用标记数据训练<strong>教师网络</strong>$θ^t$，在训练中引入<strong>noise</strong>；</p>
+
+\[\frac{1}{n} \sum_{i=1}^{n} {l(y_i,f^{noised}(x_i,θ^t))}\]
+
+<p>2: 使用无<strong>noise</strong>的<strong>教师网络</strong>$θ^t$预测无标签数据的标签：</p>
+
+\[\tilde{y}_i = f(\tilde{x}_i,θ^t)\]
+
+<p>3: 训练一个模型容量相等或更大的<strong>学生网络</strong>$θ^s$，在标记数据和无标签数据上进行：</p>
+
+\[\frac{1}{n} \sum_{i=1}^{n} {l(y_i,f^{noised}(x_i,θ^s))} + \frac{1}{m} \sum_{i=1}^{m} {l(\tilde{y}_i,f^{noised}(\tilde{x}_i,θ^s))}\]
+
+<p>4: 将训练好的<strong>学生网络</strong>作为新的<strong>教师网络</strong>重复上述过程。</p>
+
+<h1 id="实验">实验</h1>
+
+<p><img src="https://pic.downk.cc/item/5f2e66d314195aa5945b1d8d.jpg" alt="" /></p>
+
+<p>作者共训练了三轮，使用<strong>ImageNet</strong>作为标记数据集，每轮的设置如下：</p>
+<ol>
+  <li><strong>教师网络</strong>：<strong>EfficientNet-B7</strong>；<strong>学生网络</strong>：<strong>EfficientNet-L2</strong>；<strong>batch size ratio</strong>：（无标签数据：有标签数据）\(14:1\)；</li>
+  <li><strong>教师网络</strong>：<strong>EfficientNet-L2</strong>；<strong>学生网络</strong>：<strong>EfficientNet-L2</strong>；<strong>batch size ratio</strong>：（无标签数据：有标签数据）\(14:1\)；</li>
+  <li><strong>教师网络</strong>：<strong>EfficientNet-L2</strong>；<strong>学生网络</strong>：<strong>EfficientNet-L2</strong>；<strong>batch size ratio</strong>：（无标签数据：有标签数据）\(28:1\).</li>
+</ol>
+
+<p><img src="https://pic.downk.cc/item/5f2e6a8b14195aa5945ce70d.jpg" alt="" /></p>
+
+<p>作者进行了大量消融实验，得到以下结论：</p>
+<ol>
+  <li>使用更大的<strong>教师网络</strong>可以得到更好的结果；</li>
+  <li>大量的无标签数据是必须的；</li>
+  <li><strong>soft</strong>伪标签比<strong>hard</strong>伪标签表现好；</li>
+  <li>使用更大的<strong>学生网络</strong>能够增强模型能力；</li>
+  <li>对于小模型，数据平衡是有用的（对无标签数据进行过滤）；</li>
+  <li>训练<strong>学生网络</strong>时，在无标签数据上预训练，在标记数据上微调；</li>
+  <li>使用更大的无标签数据与有标签数据的<strong>batch size ratio</strong>得到更高的准确率；</li>
+  <li>从头开始训练<strong>学生网络</strong>比使用<strong>教师网络</strong>初始化<strong>学生网络</strong>效果更好。</li>
+</ol>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/08/08/bigbird.html" class="read-next-link"></a>
+        <section>
+          <span>Big Bird: Transformers for Longer Sequences</span>
+          <p>  Big Bird：一种应用于长序列的Transformer模型.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f2e375114195aa594475f52.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/08/06/edsr.html" class="read-next-link"></a>
+          <section>
+            <span>Enhanced Deep Residual Networks for Single Image Super-Resolution</span>
+            <p>  EDSR：增强的深度超分辨率网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f487fba160a154a67994401.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

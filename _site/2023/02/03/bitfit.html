@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitFit: Simple Parameter-efficient Fine-tuning for Transformer-based Masked Language-models - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="BitFit: Simple Parameter-efficient Fine-tuning for Transformer-based Masked Language-models">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="BitFit: Simple Parameter-efficient Fine-tuning for Transformer-based Masked Language-models - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/02/03/bitfit.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>BitFit: Simple Parameter-efficient Fine-tuning for Transformer-based Masked Language-models</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-02-03"><i class="iconfont icon-date"></i>03 Feb 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648d74131ddac507cccc8353.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>BitFit：基于Transformer的掩码语言模型的简单参数高效微调.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2106.10199">BitFit: Simple Parameter-efficient Fine-tuning for Transformer-based Masked Language-models</a></li>
+</ul>
+
+<p>对于预训练语言模型，虽然对每个任务进行全量微调（微调所有参数）非常有效，但它也会为每个预训练任务生成一个独特的大型模型，特别是随着任务数量的增加，部署和维护的成本也会增大。</p>
+
+<p>理想状况的高效微调方法应满足：</p>
+<ul>
+  <li>到达能够匹配全量微调的效果。</li>
+  <li>仅更改一小部分模型参数。</li>
+  <li>使数据可以通过流的方式到达，而不是同时到达，便于高效的硬件部署。</li>
+  <li>改变的参数集合在不同下游任务中是一致的。</li>
+</ul>
+
+<p>本文作者提出了一种参数量更小的稀疏的微调方法<strong>BitFit (Bias-terms Fine-tuning)</strong>，它训练时只更新<strong>bias</strong>参数与特定任务的输出层参数。</p>
+
+<p>对于<strong>Transformer</strong>模型而言，涉及到的<strong>bias</strong>参数有<strong>attention</strong>模块中计算<strong>query,key,value</strong>跟合并多个<strong>attention</strong>结果时涉及到的<strong>bias</strong>、<strong>MLP</strong>层中的<strong>bias</strong>、<strong>LayerNorm</strong>层的<strong>bias</strong>参数。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d76471ddac507ccd1f4fd.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/648d75441ddac507cccf5c89.jpg" alt="" /></p>
+
+<p>在<strong>Bert-Base/Bert-Large</strong>这种模型里，<strong>bias</strong>参数仅占模型全部参数量的$0.08\%～0.09\%$。但是通过在<strong>Bert-Large</strong>模型上基于<strong>GLUE</strong>数据集进行了 <strong>BitFit</strong>、<strong>Adapter</strong>和<strong>Diff-Pruning</strong>的效果对比发现，<strong>BitFit</strong>在参数量远小于<strong>Adapter</strong>、<strong>Diff-Pruning</strong>的情况下，效果与<strong>Adapter</strong>、<strong>Diff-Pruning</strong>相当，甚至在某些任务更优。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d75e31ddac507ccd0df86.jpg" alt="" /></p>
+
+<p>同时，通过实验结果还可以看出，<strong>BitFit</strong>微调结果相对全量参数微调而言, 只更新极少量参数的情况下，在多个数据集上都达到了不错的效果。虽不及全量参数微调，但是远超固定全部模型参数的<strong>Frozen</strong>方式。</p>
+
+<p>同时，通过对比<strong>BitFit</strong>训练前后的参数，发现很多<strong>bias</strong>参数并没有太多变化（例如计算<strong>key</strong>所涉及到的<strong>bias</strong>参数）。发现计算<strong>query</strong>和将特征维度从<strong>N</strong>放大到<strong>4N</strong>的<strong>FFN</strong>层（<strong>intermediate</strong>）的<strong>bias</strong>参数变化最为明显，只更新这两类<strong>bias</strong>参数也能达到不错的效果，反之，固定其中任何一者，模型的效果都有较大损失。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648d76961ddac507ccd2eb76.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/02/04/prefixtuning.html" class="read-next-link"></a>
+        <section>
+          <span>Prefix-Tuning: Optimizing Continuous Prompts for Generation</span>
+          <p>  Prefix-Tuning：优化生成的连续提示.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/648d79211ddac507ccda0f9d.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/02/02/peft.html" class="read-next-link"></a>
+          <section>
+            <span>大模型的参数高效微调(Parameter-Efficient Fine-Tuning)</span>
+            <p>  Parameter-Efficient Fine-Tuning for Large Pretrained Mo...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/648d6a3c1ddac507ccb6536c.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLOv10: Real-Time End-to-End Object Detection - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="YOLOv10: Real-Time End-to-End Object Detection">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="YOLOv10: Real-Time End-to-End Object Detection - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2024/05/23/yolov10.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>YOLOv10: Real-Time End-to-End Object Detection</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="24-05-23"><i class="iconfont icon-date"></i>23 May 2024</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/668bb30cd9c307b7e9d3b5ac.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>YOLOv10：实时端到端目标检测.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2405.14458">YOLOv10: Real-Time End-to-End Object Detection</a></li>
+</ul>
+
+<p>实时目标检测一直是计算机视觉领域的研究重点，旨在以较低的延迟准确预测图像中目标的类别和位置。其中<strong>YOLOs</strong>因其性能和效率之间的巧妙平衡而受欢迎。<strong>YOLOs</strong>的检测流程包括两部分：模型前向传播过程和非极大值抑制<strong>NMS</strong>后处理。其中<strong>NMS</strong>后处理阻碍了<strong>YOLOs</strong>的端到端部署，并增大了推理阶段的延迟。此外<strong>YOLOs</strong>中各种模型组件的设计缺乏全面彻底的检查，存在明显的计算冗余并限制了模型的能力。</p>
+
+<p>本文作者设计了<strong>YOLOv10</strong>模型，针对检测流程中的后处理和模型架构进一步推进<strong>YOLOs</strong>在准确率与推理速度上的发展。</p>
+<ul>
+  <li>为了解决后处理中的冗余预测问题，<strong>YOLOv10</strong>采用一致的对偶分配策略，该策略允许模型在训练期间同时采用一对多与一对一的标签分配策略；在推理期间仅使用无需<strong>NMS</strong>的一对一预测结果。</li>
+  <li>通过对<strong>YOLO</strong>各个组件的全面检查，<strong>YOLOv10</strong>采用整体效率-准确性驱动的模型设计策略；为了降低计算冗余，采用轻量级分类头、空间-通道解耦下采样和秩引导的模块设计；为了提高准确率，采用大核卷积与部分自注意力模块。</li>
+</ul>
+
+<p>基于这些方法，<strong>YOLOv10</strong>实现了一系列不同模型规模的实时端到端检测器，即<strong>YOLOv10-N / S / M / B / L / X</strong>。在目标检测基准<strong>COCO</strong>测试上的大量实验证明了<strong>YOLOv10</strong>的各种规模模型显著超越之前的最佳模型，在推理速度-准确率权衡方面表现出色。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668bc2a1d9c307b7e9e9ef5d.png" alt="" /></p>
+
+<h2 id="1-一致的对偶分配策略-consistent-dual-assignment">1. 一致的对偶分配策略 Consistent Dual Assignment</h2>
+
+<p>在训练过程中，<strong>YOLOs</strong>通常为每个目标分配多个正样本，这种一对一多的分配策略产生了丰富的监督信号，促进了优化过程。然而这使得<strong>YOLOs</strong>依赖于<strong>NMS</strong>后处理，导致部署时推理效率的下降。本文作者提出了一种无需<strong>NMS</strong>的<strong>YOLO</strong>训练策略，采用对偶标签分配和一致性匹配度量，实现了高效率和有竞争力的性能。</p>
+
+<h3 id="-对偶标签分配-dual-label-assignment">⚪ 对偶标签分配 Dual Label Assignment</h3>
+
+<p>与一对一多的分配策略相反，一对一分配策略只为每个目标分配一个预测正样本，避免了<strong>NMS</strong>后处理。然而这导致较弱的监督，并影响准确性和收敛速度。为此作者引入了对偶标签分配，以结合两种策略的优点。</p>
+<ul>
+  <li>在训练过程中，<strong>YOLOv10</strong>同时使用一个一对多的预测头与一个一对一的预测头。一对多的预测头为每个目标分配多个正样本，而一对一的预测头为每个目标分配一个正样本。两个头采用相同的结构与优化目标。</li>
+  <li>在推理过程中，丢弃一对多的预测头，仅使用一对一的预测头进行预测。这使得<strong>YOLOv10</strong>能够端到端部署，而不会产生任何额外的推理成本。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/668bca2cd9c307b7e9f4d5d1.png" alt="" /></p>
+
+<h3 id="-一致性匹配度量-consistent-matching-metric">⚪ 一致性匹配度量 Consistent Matching Metric</h3>
+
+<p>在标签分配的过程中，一对一多的分配策略与一对一分配策略采用统一的匹配度量来定量评估预测结果与目标实例之间的一致性程度：</p>
+
+\[m(\alpha, \beta) = s\cdot p^\alpha \cdot IoU(\hat{b},b)^\beta\]
+
+<p>其中$p$是分类得分，$s$是空间先验，指示预测<strong>anchor</strong>是否位于实例内；$\hat{b},b$分别表示预测和真实边界框。超参数$\alpha,\beta$平衡语义预测任务和位置回归任务的影响。</p>
+
+<p>作者统计了训练后的一对多匹配结果前<strong>1/5/10</strong>中一对一匹配的数量，结果表明在一致性匹配度量下，结果的对齐得到了改善。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668bcd7ad9c307b7e9f9194b.png" alt="" /></p>
+
+<h2 id="2-整体效率-准确性驱动的模型设计策略-holistic-efficiency-accuracy-driven-model-design">2. 整体效率-准确性驱动的模型设计策略 Holistic Efficiency-Accuracy Driven Model Design</h2>
+
+<p><strong>YOLOs</strong>的模型架构对效率-准确率权衡提出了挑战。尽管以前的工作探索了各种设计策略，但仍然缺乏对<strong>YOLOs</strong>中各种组件的全面检查。因此模型架构展现出不可忽视的计算冗余和受限性，这阻碍了其高效率和高性能的实现。作者从效率和准确率两个方面全面进行<strong>YOLOs</strong>的模型设计。</p>
+
+<h3 id="-以效率为导向的模型设计-efficiency-driven-model-design">⚪ 以效率为导向的模型设计 Efficiency Driven Model Design</h3>
+
+<p><strong>YOLO</strong>中的组件包括<strong>Stem</strong>、下采样层、带有基本构建块的阶段和预测头。<strong>Stem</strong>产生的计算成本很少，因此<strong>YOLOv10</strong>对其他三个部分进行以效率为导向的模型设计。</p>
+<ul>
+  <li>轻量级分类头（<strong>lightweight classification head</strong>）：采用简单的轻量级架构，包括两个$3\times 3$的深度可分离卷积和一个$1\times 1$卷积。</li>
+  <li>空间-通道解耦下采样（<strong>spatial-channel decoupled downsampling</strong>）：将空间维度与通道维度的下采样解耦，用$1\times 1$卷积调节通道维度，然后使用深度卷积进行空间下采样。</li>
+  <li>秩引导的模块设计（<strong>rank-guided block design</strong>）：计算网络每个模块最后一个卷积的数值秩，以衡量每个模块的冗余性；结果表明深层模块和大模型容易出现更多冗余。作者提出了一种秩引导的模块设计方案，旨在通过紧凑型架构设计减少冗余：作者首先提出了一个紧凑型倒置块（<strong>compact inverted block, CIB</strong>）结构，采用深度卷积+$1\times 1$卷积的形式。对于给定的模型，根据它们的内在秩将所有模块升序排序，用<strong>CIB</strong>替换秩较高的基本模块。如果性能没有退化就继续替换下一个模块，否则停止该过程。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/668bd0a2d9c307b7e9fd2101.png" alt="" /></p>
+
+<h3 id="-以准确率为导向的模型设计-accuracy-driven-model-design">⚪ 以准确率为导向的模型设计 Accuracy Driven Model Design</h3>
+
+<p>作者进一步探索了将大核卷积和自注意力应用到模型设计中，旨在以最小的成本提升性能。</p>
+<ul>
+  <li>大核卷积（<strong>large-kernel convolution</strong>）：大核卷积能够扩大感受野并增强模型能力，但引入额外推理开销。作者将<strong>CIB</strong>的第二个$3\times 3$深度卷积增大到$7\times 7$，另一个$3\times 3$深度卷积采用结构重参数化技术。只对小型模型采用大核卷积。</li>
+  <li>部分自注意力（<strong>partial self-attention, PSA</strong>）：自注意力模块能够增强模型对全局信息的感知能力，但引入额外计算开销。作者将第四个模块中的$1\times 1$卷积后的特征沿通道维度分成两部分，其中一部分使用自注意力模块处理，之后两部分通过$1\times 1$卷积进行拼接融合。此外查询矩阵和键矩阵的特征维度设置为值矩阵的一半，并且用<strong>BatchNorm</strong>替换<strong>LayerNorm</strong>。</li>
+</ul>
+
+<h2 id="3-实验分析">3. 实验分析</h2>
+
+<p>实验结果表明，<strong>YOLOv10</strong>在各种模型规模上均取得了最先进的性能和最低的端到端延迟，并且取得了准确率和计算成本之间的权衡。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668bd2efd9c307b7e9001108.png" alt="" /></p>
+
+<p>作者展示了<strong>YOLOv10</strong>在复杂且具有挑战性的场景下的可视化结果。可以看出，<strong>YOLOv10</strong>在各种困难环境下都能实现精确检测，例如低能见度、图像旋转等，并且在检测多种且密集排列的物体（如瓶子、杯子和人）方面具有强大能力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/668bd3a5d9c307b7e901016f.png" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2024/06/01/rfbased.html" class="read-next-link"></a>
+        <section>
+          <span>射频人体感知(RF-based Human Perception)</span>
+          <p>  Radio Frequency-based Human Perception.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6749a84dd0e0a243d4db403d.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2024/05/20/ssd.html" class="read-next-link"></a>
+          <section>
+            <span>Learning Spatial Similarity Distribution for Few-shot Object Counting</span>
+            <p>  学习少样本目标计数的空间相似度分布.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6685f25ed9c307b7e97f179e.png" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

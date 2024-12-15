@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSD: Single Shot MultiBox Detector - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="SSD: Single Shot MultiBox Detector">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="SSD: Single Shot MultiBox Detector - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/03/20/ssd.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>SSD: Single Shot MultiBox Detector</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-03-20"><i class="iconfont icon-date"></i>20 Mar 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/648aca4e1ddac507cc6fe2b4.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SSD：单次多边界框检测器.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1512.02325">SSD: Single Shot MultiBox Detector</a></li>
+</ul>
+
+<h2 id="1-ssd模型的结构">1. SSD模型的结构</h2>
+
+<p><strong>SSD</strong>模型是首次尝试使用卷积神经网络的金字塔特征层次来有效检测不同尺度目标的方法。该模型采用在<strong>ImageNet</strong>上训练的<strong>VGG16</strong>作为预训练网络提取图像特征，在网络顶部，<strong>SSD</strong>模型增加了一些卷积层进行空间下采样，从而提取包含不同尺度的图像的特征金字塔表示，并在每个尺度上执行目标检测，其中较大尺度的特征图用于检测小目标，较小尺度的特征图用于检测大目标。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648acd401ddac507cc7a016f.jpg" alt="" /></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">add_extras</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">backbone_name</span><span class="p">):</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">backbone_name</span> <span class="o">==</span> <span class="s">'vgg'</span><span class="p">:</span>
+        <span class="c1"># Block 6
+</span>        <span class="c1"># 19,19,1024 -&gt; 19,19,256 -&gt; 10,10,512
+</span>        <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+
+        <span class="c1"># Block 7
+</span>        <span class="c1"># 10,10,512 -&gt; 10,10,128 -&gt; 5,5,256
+</span>        <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+
+        <span class="c1"># Block 8
+</span>        <span class="c1"># 5,5,256 -&gt; 5,5,128 -&gt; 3,3,256
+</span>        <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        
+        <span class="c1"># Block 9
+</span>        <span class="c1"># 3,3,256 -&gt; 3,3,128 -&gt; 1,1,256
+</span>        <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">layers</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">SSD300</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">backbone_name</span> <span class="o">=</span> <span class="s">"vgg"</span><span class="p">,</span> <span class="n">pretrained</span> <span class="o">=</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SSD300</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span>    <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="k">if</span> <span class="n">backbone_name</span>    <span class="o">==</span> <span class="s">"vgg"</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">vgg</span>        <span class="o">=</span> <span class="n">add_vgg</span><span class="p">(</span><span class="n">pretrained</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">extras</span>     <span class="o">=</span> <span class="n">add_extras</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="n">backbone_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">L2Norm</span>     <span class="o">=</span> <span class="n">L2Norm</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+            <span class="n">mbox</span>            <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+            
+            <span class="n">loc_layers</span>      <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">conf_layers</span>     <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">backbone_source</span> <span class="o">=</span> <span class="p">[</span><span class="mi">21</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+            <span class="c1">#---------------------------------------------------#
+</span>            <span class="c1">#   在add_vgg获得的特征层里
+</span>            <span class="c1">#   第21层和-2层可以用来进行回归预测和分类预测。
+</span>            <span class="c1">#   分别是conv4-3(38,38,512)和conv7(19,19,1024)的输出
+</span>            <span class="c1">#---------------------------------------------------#
+</span>            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">backbone_source</span><span class="p">):</span>
+                <span class="n">loc_layers</span>  <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">vgg</span><span class="p">[</span><span class="n">v</span><span class="p">].</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">mbox</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">kernel_size</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)]</span>
+                <span class="n">conf_layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">vgg</span><span class="p">[</span><span class="n">v</span><span class="p">].</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">mbox</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">kernel_size</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)]</span>
+            <span class="c1">#-------------------------------------------------------------#
+</span>            <span class="c1">#   在add_extras获得的特征层里
+</span>            <span class="c1">#   第1层、第3层、第5层、第7层可以用来进行回归预测和分类预测。
+</span>            <span class="c1">#   shape分别为(10,10,512), (5,5,256), (3,3,256), (1,1,256)
+</span>            <span class="c1">#-------------------------------------------------------------#  
+</span>            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">extras</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="n">loc_layers</span>  <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">mbox</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">,</span> <span class="n">kernel_size</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)]</span>
+                <span class="n">conf_layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">mbox</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">kernel_size</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">loc</span>            <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">loc_layers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">conf</span>           <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">conf_layers</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1">#   x是[300,300,3]
+</span>        <span class="n">sources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">loc</span>     <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">conf</span>    <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+        <span class="c1">#   获得conv4_3的内容，shape为38,38,512
+</span>        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">23</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">vgg</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">sources</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1">#   获得conv7的内容，shape为19,19,1024
+</span>        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">23</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">vgg</span><span class="p">)):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">vgg</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">sources</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        
+        <span class="c1">#   在add_extras获得的特征层里
+</span>        <span class="c1">#   第1层、第3层、第5层、第7层可以用来进行回归预测和分类预测。
+</span>        <span class="c1">#   shape分别为(10,10,512), (5,5,256), (3,3,256), (1,1,256)  
+</span>        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">extras</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">v</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">sources</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1">#   为获得的6个有效特征层添加回归预测和分类预测    
+</span>        <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sources</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">loc</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">conf</span><span class="p">):</span>
+            <span class="n">loc</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">contiguous</span><span class="p">())</span>
+            <span class="n">conf</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">contiguous</span><span class="p">())</span>
+
+        <span class="c1">#   进行reshape方便堆叠
+</span>        <span class="n">loc</span>     <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">o</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">o</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">loc</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">conf</span>    <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">o</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">o</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">loc</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">loc</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>                  <span class="c1"># [batch_size, num_anchors, 4]
+</span>            <span class="n">conf</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">conf</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span><span class="p">),</span> <span class="c1"># [batch_size, num_anchors, self.num_classes]
+</span>        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></div>
+
+<h2 id="2-ssd模型的anchor设置">2. SSD模型的anchor设置</h2>
+
+<p><strong>SSD</strong>模型在特征图的每个位置上预先定义一系列具有不同尺寸和长宽比的<strong>anchor</strong>，并预测这些<strong>anchor</strong>边界框位置的偏移量。每个<strong>anchor</strong>对应输入图像的一个固定位置。不同尺度的特征图具有不同大小的感受野尺寸，因此不同尺度特征图上的<strong>anchor</strong>被缩放到特定尺寸，使得每个特征图只负责检测一定尺寸范围的目标。</p>
+
+<p><img src="https://pic.imgdb.cn/item/648acf061ddac507cc80365a.jpg" alt="" /></p>
+
+<p><strong>anchor</strong>的宽度、高度以及中心位置被归一化到$(0,1)$之间。对于第$l$个用于检测目标的特征映射，其尺寸为$m\times n$，指定一个与层级$l$对应的线性尺度和$5$个不同的长宽比，此外还有一个特殊尺度。因此在每个特征位置上共设置$6$个<strong>anchor</strong>。</p>
+
+\[\begin{aligned}
+\text{level index:} &amp; \quad l=1,...,L   \\
+\text{scale of boxes:} &amp; \quad s_l = s_{\min} + \frac{s_{\max}-s_{\min}}{L-1}(l-1)   \\
+\text{aspect ratio:} &amp; \quad r \in \{ 1,2,3,1/2,1/3 \}   \\
+\text{additional scale:} &amp; \quad s_l' = \sqrt{s_ls_{l+1}},r'=1  \\
+\text{width:} &amp; \quad w_l^r = s_l\sqrt{r}  \\
+\text{height:} &amp; \quad h_l^r = s_l/\sqrt{r}  \\
+\text{center location:} &amp; \quad (x_l^i,y_l^j) = \left(\frac{i+0.5}{m},\frac{j+0.5}{n} \right) \\
+\end{aligned}\]
+
+<p>比如当$L=6,s_{\min}=0.2,s_{\max}=0.9$时，$r=1$的<strong>anchor</strong>设置如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/648ad2601ddac507cc8c4f2f.jpg" alt="" /></p>
+
+<p>对于每一个特征位置，模型对$k$个<strong>anchor</strong>分别预测$4$个边界框位置偏移量与$c$个类别概率。则对于$m\times n$的特征图，模型输出特征尺寸为$m\times n\times k(c+4)$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AnchorBox</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">min_size</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">aspect_ratios</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">flip</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">input_shape</span> <span class="o">=</span> <span class="n">input_shape</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">min_size</span> <span class="o">=</span> <span class="n">min_size</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">max_size</span> <span class="o">=</span> <span class="n">max_size</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">aspect_ratios</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ar</span> <span class="ow">in</span> <span class="n">aspect_ratios</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">aspect_ratios</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">aspect_ratios</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">ar</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer_shape</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c1">#   获取输入进来的特征层的宽和高，比如38x38
+</span>        <span class="n">layer_height</span>    <span class="o">=</span> <span class="n">layer_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">layer_width</span>     <span class="o">=</span> <span class="n">layer_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        
+        <span class="c1">#   获取输入进来的图片的宽和高，比如300x300
+</span>        <span class="n">img_height</span>  <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">img_width</span>   <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">box_widths</span>  <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">box_heights</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c1">#   self.aspect_ratios一般有两个值：[1, 1, 2, 1/2] 或 [1, 1, 2, 1/2, 3, 1/3]
+</span>        <span class="k">for</span> <span class="n">ar</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">aspect_ratios</span><span class="p">:</span>
+            <span class="c1"># 首先添加一个较小的正方形
+</span>            <span class="k">if</span> <span class="n">ar</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">box_widths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">box_widths</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">min_size</span><span class="p">)</span>
+                <span class="n">box_heights</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">min_size</span><span class="p">)</span>
+            <span class="c1"># 然后添加一个较大的正方形
+</span>            <span class="k">elif</span> <span class="n">ar</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">box_widths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">box_widths</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">min_size</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">max_size</span><span class="p">))</span>
+                <span class="n">box_heights</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">min_size</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">max_size</span><span class="p">))</span>
+            <span class="c1"># 然后添加长方形
+</span>            <span class="k">elif</span> <span class="n">ar</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">box_widths</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">min_size</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ar</span><span class="p">))</span>
+                <span class="n">box_heights</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">min_size</span> <span class="o">/</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ar</span><span class="p">))</span>
+
+        <span class="c1">#   获得所有先验框的1/2宽高
+</span>        <span class="n">box_widths</span>  <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">box_widths</span><span class="p">)</span>
+        <span class="n">box_heights</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">box_heights</span><span class="p">)</span>
+
+        <span class="c1">#   每一个特征层对应的步长
+</span>        <span class="n">step_x</span> <span class="o">=</span> <span class="n">img_width</span> <span class="o">/</span> <span class="n">layer_width</span>
+        <span class="n">step_y</span> <span class="o">=</span> <span class="n">img_height</span> <span class="o">/</span> <span class="n">layer_height</span>
+
+        <span class="c1">#   生成网格中心
+</span>        <span class="n">linx</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">step_x</span><span class="p">,</span> <span class="n">img_width</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">step_x</span><span class="p">,</span>
+                           <span class="n">layer_width</span><span class="p">)</span>
+        <span class="n">liny</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">step_y</span><span class="p">,</span> <span class="n">img_height</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">step_y</span><span class="p">,</span>
+                           <span class="n">layer_height</span><span class="p">)</span>
+        <span class="n">centers_x</span><span class="p">,</span> <span class="n">centers_y</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">linx</span><span class="p">,</span> <span class="n">liny</span><span class="p">)</span>
+        <span class="n">centers_x</span> <span class="o">=</span> <span class="n">centers_x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">centers_y</span> <span class="o">=</span> <span class="n">centers_y</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># 每一个先验框需要两个(centers_x, centers_y)，前一个用来计算左上角，后一个计算右下角
+</span>        <span class="n">num_anchors_</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">aspect_ratios</span><span class="p">)</span>
+        <span class="n">anchor_boxes</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">centers_x</span><span class="p">,</span> <span class="n">centers_y</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">anchor_boxes</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">tile</span><span class="p">(</span><span class="n">anchor_boxes</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">num_anchors_</span><span class="p">))</span>
+        
+        <span class="c1"># 获得先验框的左上角和右下角
+</span>        <span class="n">anchor_boxes</span><span class="p">[:,</span> <span class="p">::</span><span class="mi">4</span><span class="p">]</span>    <span class="o">-=</span> <span class="n">box_widths</span>
+        <span class="n">anchor_boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span>   <span class="o">-=</span> <span class="n">box_heights</span>
+        <span class="n">anchor_boxes</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span>   <span class="o">+=</span> <span class="n">box_widths</span>
+        <span class="n">anchor_boxes</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">::</span><span class="mi">4</span><span class="p">]</span>   <span class="o">+=</span> <span class="n">box_heights</span>
+
+        <span class="c1">#   将先验框归一化
+</span>        <span class="n">anchor_boxes</span><span class="p">[:,</span> <span class="p">::</span><span class="mi">2</span><span class="p">]</span>    <span class="o">/=</span> <span class="n">img_width</span>
+        <span class="n">anchor_boxes</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>   <span class="o">/=</span> <span class="n">img_height</span>
+        <span class="n">anchor_boxes</span> <span class="o">=</span> <span class="n">anchor_boxes</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+        <span class="n">anchor_boxes</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">anchor_boxes</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">anchor_boxes</span>
+
+<span class="c1">#   用于计算共享特征层的大小
+</span><span class="k">def</span> <span class="nf">get_vgg_output_length</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+    <span class="n">filter_sizes</span>    <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+    <span class="n">padding</span>         <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">stride</span>          <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">feature_heights</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">feature_widths</span>  <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">filter_sizes</span><span class="p">)):</span>
+        <span class="n">height</span>  <span class="o">=</span> <span class="p">(</span><span class="n">height</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">padding</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">filter_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">//</span> <span class="n">stride</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">width</span>   <span class="o">=</span> <span class="p">(</span><span class="n">width</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">padding</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">filter_sizes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">//</span> <span class="n">stride</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">feature_heights</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
+        <span class="n">feature_widths</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">feature_heights</span><span class="p">)[</span><span class="o">-</span><span class="mi">6</span><span class="p">:],</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">feature_widths</span><span class="p">)[</span><span class="o">-</span><span class="mi">6</span><span class="p">:]</span>
+
+<span class="k">def</span> <span class="nf">get_anchors</span><span class="p">(</span><span class="n">input_shape</span> <span class="o">=</span> <span class="p">[</span><span class="mi">300</span><span class="p">,</span><span class="mi">300</span><span class="p">],</span> <span class="n">anchors_size</span> <span class="o">=</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">111</span><span class="p">,</span> <span class="mi">162</span><span class="p">,</span> <span class="mi">213</span><span class="p">,</span> <span class="mi">264</span><span class="p">,</span> <span class="mi">315</span><span class="p">],</span> <span class="n">backbone</span> <span class="o">=</span> <span class="s">'vgg'</span><span class="p">):</span>
+    <span class="n">feature_heights</span><span class="p">,</span> <span class="n">feature_widths</span> <span class="o">=</span> <span class="n">get_vgg_output_length</span><span class="p">(</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">input_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">aspect_ratios</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>
+        
+    <span class="n">anchors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">feature_heights</span><span class="p">)):</span>
+        <span class="n">anchor_boxes</span> <span class="o">=</span> <span class="n">AnchorBox</span><span class="p">(</span><span class="n">input_shape</span><span class="p">,</span> <span class="n">anchors_size</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">max_size</span> <span class="o">=</span> <span class="n">anchors_size</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> 
+                    <span class="n">aspect_ratios</span> <span class="o">=</span> <span class="n">aspect_ratios</span><span class="p">[</span><span class="n">i</span><span class="p">]).</span><span class="n">call</span><span class="p">([</span><span class="n">feature_heights</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">feature_widths</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+        <span class="n">anchors</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">anchor_boxes</span><span class="p">)</span>
+
+    <span class="n">anchors</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">anchors</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">anchors</span>
+</code></pre></div></div>
+
+<h2 id="3-ssd模型的损失函数">3. SSD模型的损失函数</h2>
+
+<p><strong>SSD</strong>的损失函数包括<strong>anchor</strong>位置的定位损失和类别概率的分类损失：</p>
+
+\[\begin{aligned}
+\mathcal{L} &amp; =\frac{1}{N}(\alpha\mathcal{L}_{\mathrm{loc}}+\mathcal{L}_{\mathrm{cls}} )
+\end{aligned}\]
+
+<p>其中$N$是匹配边界框的数量，$\alpha$是平衡损失的加权系数。</p>
+
+<p>给定<strong>anchor</strong>预设的边界框坐标$p=(p_x,p_y,p_w,p_h)$及其标签$g=(g_x,g_y,g_w,g_h)$，分别代表边界框的中心位置及其宽度和高度。边界框回归旨在通过一个函数$d(\cdot)$学习中心位置的尺度不变变换以及宽度和高度的对数尺度变换：</p>
+
+\[\begin{aligned}
+\hat{g}_x &amp;= p_wd_x(p) + p_x \\
+\hat{g}_y &amp;= p_hd_y(p) + p_y \\
+\hat{g}_w &amp;= p_w \exp(d_w(p)) \\
+\hat{g}_h &amp;= p_h \exp(d_h(p))
+\end{aligned}\]
+
+<p><img src="https://pic.imgdb.cn/item/64867ddd1ddac507ccde920e.jpg" alt="" /></p>
+
+<p>通过采用上述变换，回归器的输出\(d_i(p),i\in \{x,y,w,h\}\)取值范围为$(-\infty,+\infty)$。回归器学习的目标为：</p>
+
+\[\begin{aligned}
+t_x &amp;= (g_x-p_x)/p_w \\
+t_y &amp;= (g_y-p_y)/p_h \\
+t_w &amp;= \log (g_w/p_w) \\
+t_h &amp;= \log (g_h/p_h) \\
+\end{aligned}\]
+
+<p>边界框回归损失采用平滑<strong>L1</strong>损失，这是一种鲁棒的损失函数，对离群点不敏感：</p>
+
+\[L_1^{smooth}(x) = \begin{cases}
+0.5x^2, &amp; |x| &lt; 1 \\
+|x| - 0.5, &amp; |x| \geq 1
+\end{cases}\]
+
+<p><img src="https://pic.imgdb.cn/item/6486c27f1ddac507cc756b01.jpg" alt="" /></p>
+
+<p>则边界框回归损失表示为：</p>
+
+\[\begin{aligned}
+\mathcal{L}_{\mathrm{loc}} = \sum_{i,j} \sum_{m\in \{x,y,w,h\}} 1_{ij}^{match} L_1^{smooth}(d_m^i-t_m^j)
+\end{aligned}\]
+
+<p>分类损失采用多类别<strong>softmax</strong>损失：</p>
+
+\[\begin{aligned}
+\mathcal{L}_{\mathrm{cls}} = -\sum_{i\in pos} 1_{ij}^k \log(\text{softmax}(c_i^k)) -\sum_{i\in neg} \log(\text{softmax}(c_i^0))
+\end{aligned}\]
+
+<p>其中$pos$是匹配边界框集合，$neg$是负样本集合。<strong>SSD</strong>使用负难例挖掘选择容易被误分类的负样本：把所有的<strong>anchor</strong>按照目标置信度得分进行排序，选择质量最高的<strong>proposal</strong>进行训练，使得$neg:pos$最多为$3:1$。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MultiboxLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">neg_pos_ratio</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+                 <span class="n">background_label_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">negatives_for_hard</span><span class="o">=</span><span class="mf">100.0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">neg_pos_ratio</span> <span class="o">=</span> <span class="n">neg_pos_ratio</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">background_label_id</span> <span class="o">=</span> <span class="n">background_label_id</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">negatives_for_hard</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">FloatTensor</span><span class="p">([</span><span class="n">negatives_for_hard</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_l1_smooth_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+        <span class="n">abs_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">sq_loss</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">l1_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">where</span><span class="p">(</span><span class="n">abs_loss</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">sq_loss</span><span class="p">,</span> <span class="n">abs_loss</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">l1_loss</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_softmax_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="nb">min</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">)</span>
+        <span class="n">softmax_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">y_true</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">y_pred</span><span class="p">),</span>
+                                      <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">softmax_loss</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+        <span class="c1">#   y_true batch_size, 8732, 4 + self.num_classes + 1
+</span>        <span class="c1">#   y_pred batch_size, 8732, 4 + self.num_classes
+</span>        <span class="n">num_boxes</span>       <span class="o">=</span> <span class="n">y_true</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">y_pred</span>          <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nn</span><span class="p">.</span><span class="n">Softmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)(</span><span class="n">y_pred</span><span class="p">[</span><span class="mi">1</span><span class="p">])],</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1">#   分类的loss：batch_size,8732,self.num_classes -&gt; batch_size,8732
+</span>        <span class="n">conf_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_softmax_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">y_pred</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">4</span><span class="p">:])</span>
+        
+        <span class="c1">#   回归的loss：batch_size,8732,4 -&gt; batch_size,8732
+</span>        <span class="n">loc_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_l1_smooth_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span>
+                                        <span class="n">y_pred</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+
+        <span class="c1">#   获取所有匹配框的loss
+</span>        <span class="n">pos_loc_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">loc_loss</span> <span class="o">*</span> <span class="n">y_true</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                     <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">pos_conf_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">conf_loss</span> <span class="o">*</span> <span class="n">y_true</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                      <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1">#   计算每一张图中正样本和负样本的个数 [batch_size,]
+</span>        <span class="n">num_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">y_true</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">num_neg</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">neg_pos_ratio</span> <span class="o">*</span> <span class="n">num_pos</span><span class="p">,</span> <span class="n">num_boxes</span> <span class="o">-</span> <span class="n">num_pos</span><span class="p">)</span>
+        
+        <span class="c1">#   如果所有的图，负样本的数量均为0
+</span>        <span class="c1">#   那么则默认选取100个先验框作为负样本
+</span>        <span class="n">pos_num_neg_mask</span> <span class="o">=</span> <span class="n">num_neg</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">has_min</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">pos_num_neg_mask</span><span class="p">)</span>
+        <span class="n">num_neg_batch</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">num_neg</span><span class="p">)</span> <span class="k">if</span> <span class="n">has_min</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="bp">self</span><span class="p">.</span><span class="n">negatives_for_hard</span>
+
+        <span class="c1">#   把不是背景类的概率求和作为目标置信度得分
+</span>        <span class="n">confs_start</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">background_label_id</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">confs_end</span>   <span class="o">=</span> <span class="n">confs_start</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">max_confs</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">y_pred</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">confs_start</span><span class="p">:</span><span class="n">confs_end</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1">#   在整个batch里面选取最难分类的num_neg_batch个非匹配框作为负样本计算负分类损失
+</span>        <span class="n">max_confs</span>   <span class="o">=</span> <span class="p">(</span><span class="n">max_confs</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_true</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])).</span><span class="n">view</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">indices</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">topk</span><span class="p">(</span><span class="n">max_confs</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_neg_batch</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">().</span><span class="n">tolist</span><span class="p">()))</span>
+        <span class="n">neg_conf_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">gather</span><span class="p">(</span><span class="n">conf_loss</span><span class="p">.</span><span class="n">view</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">indices</span><span class="p">)</span>
+
+        <span class="c1"># 计算总损失
+</span>        <span class="n">num_pos</span>     <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">where</span><span class="p">(</span><span class="n">num_pos</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">num_pos</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">num_pos</span><span class="p">))</span>
+        <span class="n">total_loss</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">pos_conf_loss</span><span class="p">)</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">neg_conf_loss</span><span class="p">)</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">pos_loc_loss</span><span class="p">)</span>
+        <span class="n">total_loss</span>  <span class="o">=</span> <span class="n">total_loss</span> <span class="o">/</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">num_pos</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_loss</span>
+</code></pre></div></div>
+
+<h2 id="4-ssd模型的数据集准备">4. SSD模型的数据集准备</h2>
+
+<p>在目标检测问题中，通常会提供图像的<strong>ground truth</strong>框标注信息。把图像送入<strong>SSD</strong>模型时，会进行尺寸调整，因此对应的标注框也应进行调整。此外，<strong>SSD</strong>模型的学习目标是预设<strong>anchor</strong>的边界框偏移量与类别概率，因此需要在数据集载入时进行<strong>ground truth</strong>框标注信息到<strong>anchor</strong>框标注信息的转换。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SSDDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotation_lines</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">anchors</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">overlap_threshold</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SSDDataset</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">annotation_lines</span>   <span class="o">=</span> <span class="n">annotation_lines</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">length</span>             <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">annotation_lines</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="p">.</span><span class="n">input_shape</span>        <span class="o">=</span> <span class="n">input_shape</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">anchors</span>            <span class="o">=</span> <span class="n">anchors</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_anchors</span>        <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">anchors</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">batch_size</span>         <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span>        <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">overlap_threshold</span>  <span class="o">=</span> <span class="n">overlap_threshold</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">length</span>
+
+    <span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">%</span> <span class="bp">self</span><span class="p">.</span><span class="n">length</span>
+        <span class="n">image</span><span class="p">,</span> <span class="n">box</span>  <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">get_random_data</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">annotation_lines</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="bp">self</span><span class="p">.</span><span class="n">input_shape</span><span class="p">)</span>
+        <span class="n">image_data</span>  <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">preprocess_input</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">)),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">box</span><span class="p">)</span><span class="o">!=</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">boxes</span>               <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">box</span><span class="p">[:,:</span><span class="mi">4</span><span class="p">]</span> <span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="c1"># 进行归一化，调整到0-1之间
+</span>            <span class="n">boxes</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>    <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">boxes</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span>    <span class="o">=</span> <span class="n">boxes</span><span class="p">[:,[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># 对真实框的种类进行one hot处理
+</span>            <span class="n">one_hot_label</span>   <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">eye</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)[</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">box</span><span class="p">[:,</span><span class="mi">4</span><span class="p">],</span> <span class="n">np</span><span class="p">.</span><span class="n">int32</span><span class="p">)]</span>
+            <span class="n">box</span>             <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">boxes</span><span class="p">,</span> <span class="n">one_hot_label</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># ground truth框标注信息转换为anchor框标注信息
+</span>        <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">assign_boxes</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">image_data</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_random_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">annotation_line</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">annotation_line</span><span class="p">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="c1">#   读取图像并转换成RGB图像
+</span>        <span class="n">image</span>   <span class="o">=</span> <span class="n">Image</span><span class="p">.</span><span class="nb">open</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">image</span>   <span class="o">=</span> <span class="n">cvtColor</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="c1">#   获得图像的高宽与目标高宽
+</span>        <span class="n">iw</span><span class="p">,</span> <span class="n">ih</span>  <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">size</span>
+        <span class="n">h</span><span class="p">,</span> <span class="n">w</span>    <span class="o">=</span> <span class="n">input_shape</span>
+        <span class="c1">#   获得预测框
+</span>        <span class="n">box</span>     <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="n">box</span><span class="p">.</span><span class="n">split</span><span class="p">(</span><span class="s">','</span><span class="p">))))</span> <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+
+        <span class="n">scale</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">w</span><span class="o">/</span><span class="n">iw</span><span class="p">,</span> <span class="n">h</span><span class="o">/</span><span class="n">ih</span><span class="p">)</span>
+        <span class="n">nw</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">iw</span><span class="o">*</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">nh</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ih</span><span class="o">*</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span><span class="o">-</span><span class="n">nw</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span><span class="o">-</span><span class="n">nh</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+
+        <span class="c1">#   将图像多余的部分加上灰条
+</span>        <span class="n">image</span>       <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">resize</span><span class="p">((</span><span class="n">nw</span><span class="p">,</span><span class="n">nh</span><span class="p">),</span> <span class="n">Image</span><span class="p">.</span><span class="n">BICUBIC</span><span class="p">)</span>
+        <span class="n">new_image</span>   <span class="o">=</span> <span class="n">Image</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="s">'RGB'</span><span class="p">,</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">h</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span><span class="mi">128</span><span class="p">,</span><span class="mi">128</span><span class="p">))</span>
+        <span class="n">new_image</span><span class="p">.</span><span class="n">paste</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">))</span>
+        <span class="n">image_data</span>  <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_image</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="c1">#   对真实框进行调整
+</span>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">box</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">np</span><span class="p">.</span><span class="n">random</span><span class="p">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+            <span class="n">box</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span> <span class="o">=</span> <span class="n">box</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]]</span><span class="o">*</span><span class="n">nw</span><span class="o">/</span><span class="n">iw</span> <span class="o">+</span> <span class="n">dx</span>
+            <span class="n">box</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]]</span> <span class="o">=</span> <span class="n">box</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">]]</span><span class="o">*</span><span class="n">nh</span><span class="o">/</span><span class="n">ih</span> <span class="o">+</span> <span class="n">dy</span>
+            <span class="n">box</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">][</span><span class="n">box</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">box</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">][</span><span class="n">box</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">&gt;</span><span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">w</span>
+            <span class="n">box</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">][</span><span class="n">box</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span><span class="o">&gt;</span><span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="n">h</span>
+            <span class="n">box_w</span> <span class="o">=</span> <span class="n">box</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">box_h</span> <span class="o">=</span> <span class="n">box</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">box</span> <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="n">np</span><span class="p">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">box_w</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">,</span> <span class="n">box_h</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)]</span> <span class="c1"># discard invalid box
+</span>
+        <span class="k">return</span> <span class="n">image_data</span><span class="p">,</span> <span class="n">box</span>
+                
+    <span class="k">def</span> <span class="nf">iou</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">box</span><span class="p">):</span>
+        <span class="c1">#   计算出每个真实框与所有的先验框的iou
+</span>        <span class="c1">#   判断真实框与先验框的重合情况
+</span>        <span class="n">inter_upleft</span>    <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">box</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">inter_botright</span>  <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">minimum</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+
+        <span class="n">inter_wh</span>    <span class="o">=</span> <span class="n">inter_botright</span> <span class="o">-</span> <span class="n">inter_upleft</span>
+        <span class="n">inter_wh</span>    <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">inter_wh</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">inter</span>       <span class="o">=</span> <span class="n">inter_wh</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">inter_wh</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        
+        <span class="c1">#   真实框的面积
+</span>        <span class="n">area_true</span> <span class="o">=</span> <span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">box</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1">#   先验框的面积
+</span>        <span class="n">area_gt</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">anchors</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="c1">#   计算iou
+</span>        <span class="n">union</span> <span class="o">=</span> <span class="n">area_true</span> <span class="o">+</span> <span class="n">area_gt</span> <span class="o">-</span> <span class="n">inter</span>
+
+        <span class="n">iou</span> <span class="o">=</span> <span class="n">inter</span> <span class="o">/</span> <span class="n">union</span>
+        <span class="k">return</span> <span class="n">iou</span>
+
+    <span class="k">def</span> <span class="nf">encode_box</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">box</span><span class="p">,</span> <span class="n">return_iou</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">variances</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">]):</span>
+        <span class="c1">#   计算当前真实框和先验框的重合情况
+</span>        <span class="c1">#   iou [self.num_anchors]
+</span>        <span class="c1">#   encoded_box [self.num_anchors, 5]
+</span>        <span class="n">iou</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">iou</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+        <span class="n">encoded_box</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="p">.</span><span class="n">num_anchors</span><span class="p">,</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">return_iou</span><span class="p">))</span>
+        
+        <span class="c1">#   对每一个真实框找到重合程度较高的先验框
+</span>        <span class="c1">#   真实框可以由这个先验框来负责预测
+</span>        <span class="n">assign_mask</span> <span class="o">=</span> <span class="n">iou</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="p">.</span><span class="n">overlap_threshold</span>
+
+        <span class="c1">#   如果没有一个先验框重合度大于self.overlap_threshold
+</span>        <span class="c1">#   则选择重合度最大的为正样本
+</span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">assign_mask</span><span class="p">.</span><span class="nb">any</span><span class="p">():</span>
+            <span class="n">assign_mask</span><span class="p">[</span><span class="n">iou</span><span class="p">.</span><span class="n">argmax</span><span class="p">()]</span> <span class="o">=</span> <span class="bp">True</span>
+        
+        <span class="c1">#   利用iou进行赋值 
+</span>        <span class="k">if</span> <span class="n">return_iou</span><span class="p">:</span>
+            <span class="n">encoded_box</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">assign_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">iou</span><span class="p">[</span><span class="n">assign_mask</span><span class="p">]</span>
+        
+        <span class="c1">#   找到对应的先验框
+</span>        <span class="n">assigned_anchors</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">anchors</span><span class="p">[</span><span class="n">assign_mask</span><span class="p">]</span>
+
+        <span class="c1">#   逆向编码，将真实框转化为ssd预测结果的格式
+</span>        <span class="c1">#   先计算真实框的中心与长宽
+</span>        <span class="n">box_center</span>  <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">box</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="n">box_wh</span>      <span class="o">=</span> <span class="n">box</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">box</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+        <span class="c1">#   再计算重合度较高的先验框的中心与长宽
+</span>        <span class="n">assigned_anchors_center</span> <span class="o">=</span> <span class="p">(</span><span class="n">assigned_anchors</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">assigned_anchors</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">])</span> <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="n">assigned_anchors_wh</span>     <span class="o">=</span> <span class="p">(</span><span class="n">assigned_anchors</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">-</span> <span class="n">assigned_anchors</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="c1">#   先求取中心的预测结果，再求取宽高的预测结果
+</span>        <span class="c1">#   存在改变数量级的参数，默认为[0.1,0.1,0.2,0.2]
+</span>        <span class="n">encoded_box</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">][</span><span class="n">assign_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">box_center</span> <span class="o">-</span> <span class="n">assigned_anchors_center</span>
+        <span class="n">encoded_box</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">][</span><span class="n">assign_mask</span><span class="p">]</span> <span class="o">/=</span> <span class="n">assigned_anchors_wh</span>
+        <span class="n">encoded_box</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">][</span><span class="n">assign_mask</span><span class="p">]</span> <span class="o">/=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">variances</span><span class="p">)[:</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">encoded_box</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">][</span><span class="n">assign_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">box_wh</span> <span class="o">/</span> <span class="n">assigned_anchors_wh</span><span class="p">)</span>
+        <span class="n">encoded_box</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">][</span><span class="n">assign_mask</span><span class="p">]</span> <span class="o">/=</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">variances</span><span class="p">)[</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">encoded_box</span><span class="p">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">assign_boxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boxes</span><span class="p">):</span>
+        <span class="c1">#   assignment分为3个部分
+</span>        <span class="c1">#   :4      的内容为网络应该有的回归预测结果
+</span>        <span class="c1">#   4:-1    的内容为先验框所对应的种类，默认为背景
+</span>        <span class="c1">#   -1      的内容为当前先验框是否包含目标
+</span>        <span class="n">assignment</span>          <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="p">.</span><span class="n">num_anchors</span><span class="p">,</span> <span class="mi">4</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">assignment</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span>    <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">boxes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">assignment</span>
+
+        <span class="c1">#   对每一个真实框都进行iou计算
+</span>        <span class="n">encoded_boxes</span>   <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">encode_box</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">boxes</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="c1">#   在reshape后，获得的encoded_boxes的shape为：
+</span>        <span class="c1">#   [num_true_box, num_anchors, 4 + 1]，4是编码后的结果，1为iou
+</span>        <span class="n">encoded_boxes</span>   <span class="o">=</span> <span class="n">encoded_boxes</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_anchors</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        
+        <span class="c1">#   [num_anchors]求取每一个先验框重合度最大的真实框
+</span>        <span class="n">best_iou</span>        <span class="o">=</span> <span class="n">encoded_boxes</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="nb">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">best_iou_idx</span>    <span class="o">=</span> <span class="n">encoded_boxes</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">argmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">best_iou_mask</span>   <span class="o">=</span> <span class="n">best_iou</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">best_iou_idx</span>    <span class="o">=</span> <span class="n">best_iou_idx</span><span class="p">[</span><span class="n">best_iou_mask</span><span class="p">]</span>
+        
+        <span class="c1">#   计算一共有多少先验框满足需求
+</span>        <span class="n">assign_num</span>      <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">best_iou_idx</span><span class="p">)</span>
+
+        <span class="c1">#   将编码后的真实框取出
+</span>        <span class="n">encoded_boxes</span>   <span class="o">=</span> <span class="n">encoded_boxes</span><span class="p">[:,</span> <span class="n">best_iou_mask</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="c1">#   编码后的真实框的赋值
+</span>        <span class="n">assignment</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">][</span><span class="n">best_iou_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">encoded_boxes</span><span class="p">[</span><span class="n">best_iou_idx</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">assign_num</span><span class="p">),</span> <span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+        <span class="c1">#   4代表为背景的概率，设定为0，因为这些先验框有对应的物体
+</span>        <span class="n">assignment</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">][</span><span class="n">best_iou_mask</span><span class="p">]</span>     <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">assignment</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">best_iou_mask</span><span class="p">]</span>  <span class="o">=</span> <span class="n">boxes</span><span class="p">[</span><span class="n">best_iou_idx</span><span class="p">,</span> <span class="mi">4</span><span class="p">:]</span>
+        <span class="c1">#   -1表示先验框是否有对应的物体
+</span>        <span class="n">assignment</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">best_iou_mask</span><span class="p">]</span>    <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">assignment</span>
+</code></pre></div></div>
+
+<p><strong>SSD</strong>的完整<strong>PyTorch</strong>实现可参考<a href="https://github.com/bubbliiiing/ssd-pytorch">
+ssd-pytorch</a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/03/21/retinanet.html" class="read-next-link"></a>
+        <section>
+          <span>Focal Loss for Dense Object Detection</span>
+          <p>  RetinaNet：密集目标检测的焦点损失.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/648c39681ddac507cc950df9.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/03/19/yolov3.html" class="read-next-link"></a>
+          <section>
+            <span>YOLOv3: An Incremental Improvement</span>
+            <p>  YOLOv3：对YOLOv2模型的增量式改进.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/648bcce21ddac507cc7eb1e7.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

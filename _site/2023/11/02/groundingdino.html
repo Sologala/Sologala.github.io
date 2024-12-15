@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/11/02/groundingdino.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-11-02"><i class="iconfont icon-date"></i>02 Nov 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/65548c7fc458853aef25cb7e.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Grounding DINO：结合DINO与GLIP用于开集目标检测.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2303.05499">Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection</a></li>
+</ul>
+
+<p>开集目标检测是一种实现通用目标检测的方法，能够检测任意指定的目标。实现开集目标检测的关键是引入语言以泛化到未曾见过的目标。目前大多数开集检测器都是通过把语言信息引入闭集检测器来构造的，具体地，通过构造区域特征（<strong>neck</strong>或<strong>head</strong>的输出）与语言特征的对比损失，可以把区域特征嵌入到具有语言感知的语义空间中，从而泛化到新类别中。比如<strong>GLIP</strong>将目标检测重新定义为一个短语定位（<strong>phrase grounding</strong>）任务，并引入了目标区域和语言之间的对比训练。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65557bd8c458853aef7f414c.jpg" alt="" /></p>
+
+<p>为了更紧密地学习图像与语言之间的多模态特征，有必要在网络的每个阶段都引入对比特征学习过程。然而基于卷积神经网络的目标检测模型中，图像特征与语言特征的对齐是比较困难的。而<strong>SOTA</strong>的目标检测模型<strong>DINO</strong>采用<strong>Transformer</strong>结构，与语言模型的结构具有一致性，因此能够自然地实现两个模态的特征交互。本文把<strong>GLIP</strong>训练方式引入中<strong>DINO</strong>，构造了开集目标检测方法<strong>Grounding DINO</strong>。<strong>Grounding DINO</strong>通过在<strong>Transformer</strong>的多个阶段中引入多模态融合手段，在没有任何<strong>COCO</strong>训练数据的情况下达到52.5的<strong>mAP</strong>。</p>
+
+<h1 id="1-grounding-dino">1. Grounding DINO</h1>
+
+<p>给定输入(图像，文本)对，<strong>Grounding DINO</strong>输出多个(目标检测框，短语)对。<strong>Grounding DINO</strong>采用双编码器、单解码器结构，包括用于提取图像特征的图像主干网络、用于提取文本特征的文本主干网络、用于融合图像和文本特征的特征增强模块、用于查询初始化的语言引导的查询选择模块和用于边界框预测的跨模态解码器。</p>
+
+<p>对于输入的每个(图像，文本)对，首先分别使用图像主干网络和文本主干网络提取图像特征和文本特征；两个特征被送入特征增强模块，用于跨模态特征融合；获得跨模态文本和图像特征后，使用语言引导的查询选择模块从图像特征中选择跨模态的目标查询；这些跨模态查询被送到跨模态解码器中，用于预测目标框并提取相应的短语。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6555809dc458853aef89eec8.jpg" alt="" /></p>
+
+<h3 id="1特征提取与增强模块">（1）特征提取与增强模块</h3>
+
+<p>图像主干网络采用<strong>Swin Transformer</strong>，文本主干网络采用<strong>BERT</strong>。特征增强模块是由多个特征增强层堆叠而成的。每个特征增强层的结构如上图<strong>2</strong>处所示，使用可变形自注意力增强图像特征，使用自注意力增强文本特征，并增加图像到文本的交叉注意力以及文本到图像的交叉注意力来进行特征融合。</p>
+
+<h3 id="2语言引导的查询选择模块">（2）语言引导的查询选择模块</h3>
+
+<p>该模块旨在从图像特征中选择与输入文本更相关的特征作为后续解码器的查询向量。该模块输出$num$个查询索引，可以根据选择的索引提取对应的图像特征对查询向量进行初始化。该模块的实现过程如下：</p>
+
+<p><img src="https://pic.imgdb.cn/item/6555b57ac458853aef11bf89.jpg" alt="" /></p>
+
+<p>查询向量的初始化是通过混合查询选择（<strong>mixed query selection</strong>）来实现的。每个查询包括两个部分：内容（<strong>context</strong>）部分与位置（<strong>positional</strong>）部分。其中位置部分由上述编码器的输出初始化；内容部分在训练期间设置为可学习参数。</p>
+
+<h3 id="3跨模态解码器">（3）跨模态解码器</h3>
+
+<p>跨模态解码器用于结合图像与文本特征。每个查询向量依次通过自注意力层、图像交叉注意力层（用于组合图像特征）、文本交叉注意力层（用于组合文本特征）和全连接层，结构如图<strong>3</strong>部分所示。</p>
+
+<h3 id="4子句级的文本特征">（4）子句级的文本特征</h3>
+
+<p>在之前的工作中，文本提示主要有两种形式。</p>
+<ul>
+  <li>第一种是句子级（<strong>sentence level</strong>）表示，即把表示整个句子编码为一个特征，如果句子中包含多个短语，则分别提取这些短语，并丢弃其他单词，用以消除单词之间的影响，但是也丢失了句子中的细粒度信息；</li>
+  <li>第二种是词级（<strong>word level</strong>）表示，即把每个单词编码为一个特征，这种编码在类别之间引入了不必要的依赖关系，而输入文本通常是以任意顺序连接的多个类别，本身并不具备这种关系。</li>
+</ul>
+
+<p>本文采用一种子句级（<strong>sub-sentence level</strong>）表示，引入注意力掩码避免不相关的短语之间的交互，消除不同类别名称之间的影响，同时保留了每个单词的细粒度特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6555b914c458853aef1b9aa5.jpg" alt="" /></p>
+
+<h3 id="5损失函数">（5）损失函数</h3>
+
+<p>边界框回归损失采用<strong>L1</strong>损失<strong>+GIoU</strong>损失，分类损失采用对比损失，即首先计算每个查询特征与文本特征的点积作为预测每个文本的<strong>logit</strong>，然后构造<strong>Focal</strong>损失。</p>
+
+<h1 id="2-实验分析">2. 实验分析</h1>
+
+<p>作者训练了两个变种模型：</p>
+<ul>
+  <li><strong>Grounding DINO-T</strong>：<strong>DINO-T+Swin-T</strong></li>
+  <li><strong>Grounding DINO-L</strong>：<strong>DINO-L+Swin-L</strong></li>
+</ul>
+
+<p>语言模型采用<strong>BERT-base</strong>。作者在三个数据集<strong>COCO, LVIS, ODinW</strong>上检测了模型的开集检测性能。</p>
+
+<h3 id="1零样本迁移">（1）零样本迁移</h3>
+
+<p>作者在大规模数据集上预训练模型，并直接在新数据集上评估模型。在<strong>COCO</strong>数据集上零样本迁移性能达到<strong>52.5 AP</strong>，微调后达到<strong>62.6 AP</strong>。这种强力的零样本表现可能是因为预训练数据集<strong>O365</strong>几乎包含<strong>COCO</strong>的所有类别。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6555bd43c458853aef271366.jpg" alt="" /></p>
+
+<p>在具有$1000$类别的长尾分布数据集<strong>LVIS</strong>上，模型在尾部类别上的表现较差，这可能是因为设置长度$900$的查询向量限制了对长尾目标的检测能力。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6555bff9c458853aef2f4985.jpg" alt="" /></p>
+
+<p>在真实场景中的<strong>ODinW</strong>数据集上，模型依旧具有最好的零样本迁移表现，表明模型具有良好的通用性和可扩展性。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6555c0b2c458853aef31d1e6.jpg" alt="" /></p>
+
+<h3 id="2参考表达式理解任务">（2）参考表达式理解任务</h3>
+
+<p>参考表达式理解任务（<strong>Referring Expression Comprehension，REC</strong>）是指输入描述性文本，模型检测文本对应的具体目标。在<strong>RefCOCO</strong>数据集上，模型在零样本迁移下的性能表现不佳，只有在训练集中涵盖<strong>RefCOCO</strong>后，性能才有显著的改善。这表明模型仍然更需要关注细粒度的检测特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6555c295c458853aef372667.jpg" alt="" /></p>
+
+<h3 id="3消融实验">（3）消融实验</h3>
+<p>消融实验表明编码器融合是最重要的设计，文本提示的词级表示对结果影响最小。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6555c32ec458853aef38f603.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/11/03/glip.html" class="read-next-link"></a>
+        <section>
+          <span>Grounded Language-Image Pre-training</span>
+          <p>  对齐语言-图像预训练.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/655c4ff6c458853aeff430a1.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/11/01/opensetdet.html" class="read-next-link"></a>
+          <section>
+            <span>开放集合目标检测(Open-Set Object Detection)</span>
+            <p>  Open-Set Object Detection.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/658aa19ac458853aef584c92.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

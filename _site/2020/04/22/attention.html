@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>序列到序列模型中的注意力机制(Attention Mechanism) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="序列到序列模型中的注意力机制(Attention Mechanism)">
+    <meta name="keywords"  content="深度学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="序列到序列模型中的注意力机制(Attention Mechanism) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/04/22/attention.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0" class="post-tag">深度学习</a>
+          
+        
+      </div>
+      <h1>序列到序列模型中的注意力机制(Attention Mechanism)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-04-22"><i class="iconfont icon-date"></i>22 Apr 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5e9fbd69c2a9a83be53b80dd.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Attention Mechanism in Seq2Seq Models.</p>
+</blockquote>
+
+<p><strong>注意力机制（Attention Mechanism）</strong>最初用于<a href="https://arxiv.org/abs/1409.0473">神经机器翻译</a>任务中记忆比较长的输入序列。</p>
+
+<p>在<a href="https://0809zheng.github.io/2020/04/21/sequence-2-sequence.html"><strong>Seq2Seq</strong>模型</a>中，将输入文本序列通过编码器转换为一个<strong>上下文向量</strong>$c$，再喂入解码器:</p>
+
+<p><img src="https://pic.downk.cc/item/5e9ed899c2a9a83be5966fe5.jpg" alt="" /></p>
+
+<p>在比较简单的任务中，比如文本分类，只需要编码一些对分类有用的信息，因此用一个上下文向量$c$来表示文本语义是可行的。</p>
+
+<p>但是在复杂的任务中，比如阅读理解，给定的背景文档一般比较长，如果用循环神经网络来将其转换为上下文向量$c$，则该编码向量很难反映出输入文本的所有语义。</p>
+
+<p>注意力机制并不是用编码器的最后一个隐状态$h_T$作为固定的上下文向量$c$；而是在解码器的每一步中，通过输入序列的所有隐状态$h_{1:T}$构造当前步的上下文向量$c$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b5886fbe43e0d30e75c044.jpg" alt="" /></p>
+
+<p>注意力机制的实现过程：</p>
+
+<p><strong>1</strong>. 把解码器上一步的隐状态$s_{t-1}$作为查询向量，在输入序列的所有编码器隐状态$h_{1:T}$上计算注意力分布 $(α_1,…,α_t,…,α_T)$：</p>
+
+\[α_t = \text{softmax}(\text{score}(s_{t-1},h_t)) = \frac{\exp(\text{score}(s_{t-1},h_t))}{\sum_{t=1}^{T} {\exp(\text{score}(s_{t-1},h_t))}}\]
+
+<p><strong>2</strong>. 根据注意力分布对输入序列的编码器隐状态$h_{1:T}$进行加权平均，作为当前步的上下文向量：</p>
+
+\[c = \sum_{t=1}^{T} {α_th_t}\]
+
+<p>其中$\text{score}(s,h)$是<strong>注意力得分函数</strong>，也称为<strong>相似得分函数（alignment score function）</strong>，常用的计算方式包括：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">相似得分函数</th>
+      <th style="text-align: center">表达式</th>
+      <th style="text-align: center">说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"><a href="https://arxiv.org/abs/1409.0473">加性 Additive</a></td>
+      <td style="text-align: center">$v^T \tanh(Ws+Uh)$</td>
+      <td style="text-align: center">$v$、$W$、$U$是可学习参数</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://arxiv.org/abs/1508.04025">点积 Dot-Product</a></td>
+      <td style="text-align: center">$s^Th$</td>
+      <td style="text-align: center">使用矩阵乘法提高计算效率</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf">缩放点积 Scaled Dot-Product</a></td>
+      <td style="text-align: center">$\frac{s^Th}{\sqrt{n}}$</td>
+      <td style="text-align: center">$n$是隐状态维度，通过缩放防止输入过大导致<strong>softmax</strong>函数具有极小的梯度</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://arxiv.org/abs/1508.04025">双线性 General</a></td>
+      <td style="text-align: center">$s^TWh$</td>
+      <td style="text-align: center">$W$是可学习参数，引入了非对称性</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://arxiv.org/abs/1508.04025">基于位置 Location-based</a></td>
+      <td style="text-align: center">$Ws$</td>
+      <td style="text-align: center">简化了<strong>softmax</strong>对准，使其仅取决于目标位置</td>
+    </tr>
+    <tr>
+      <td style="text-align: center"><a href="https://arxiv.org/abs/1410.5401">基于上下文 Context-based</a></td>
+      <td style="text-align: center">$\cos (s,h)$</td>
+      <td style="text-align: center">使用余弦相似度函数</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="-软性全局注意力和硬性局部注意力">⚪ 软性/全局注意力和硬性/局部注意力</h3>
+
+<p>上述这种同时考虑输入序列的所有隐状态的注意力机制被称为<strong>软性注意力机制（Soft Attention Mechanism）</strong>,也叫<strong>全局(global)</strong>注意力。这种注意力的优点是平滑且可微；缺点是当输入序列长度很大时计算成本较高。</p>
+
+<p>与之对应的，考虑输入序列的一部分隐状态的注意力机制被称为<strong>局部(local)</strong>注意力，这种注意力在推断时需要更少的计算量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63b6b536be43e0d30e311774.jpg" alt="" /></p>
+
+<p>特别地，只考虑输入序列的某一个隐状态的注意力机制被称为<strong>硬性注意力（Hard Attention）</strong>：
+\(c = x_{\hat{n}}, \quad \hat{n} = \mathop{\arg\max}_{n}α_n\)</p>
+
+<p>硬性注意力的缺点是最大采样不能使用反向传播，需要用方差缩减(<strong>variance reduction</strong>)或强化学习进行训练。</p>
+
+<h3 id="-注意力机制的正则化">⚪ 注意力机制的正则化</h3>
+
+<p>当同时使用多个输入文本时，每一个文本样本的注意力得分总和应该相近，因此引入正则化：</p>
+
+\[\sum_{i}^{} {(τ-\sum_{t}^{} {\text{score}(s_t,h)})}\]
+
+<p>其中$τ$是给定的常数。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/04/23/memory-network.html" class="read-next-link"></a>
+        <section>
+          <span>记忆增强神经网络(Memory Augmented Neural Network)</span>
+          <p>  Memory Augmented Neural Network.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ea17d6bc2a9a83be50883e2.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/04/21/sequence-2-sequence.html" class="read-next-link"></a>
+          <section>
+            <span>序列到序列模型(Sequence to sequence)</span>
+            <p>  Sequence to sequence.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63b431a6be43e0d30e714f30.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training data-efficient image transformers & distillation through attention - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Training data-efficient image transformers & distillation through attention">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Training data-efficient image transformers & distillation through attention - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/03/deit.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Training data-efficient image transformers & distillation through attention</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-03"><i class="iconfont icon-date"></i>03 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63f6c2b2f144a010078c35a0.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>DeiT：通过注意力蒸馏训练数据高效的视觉Transformer.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2205.01580">Training data-efficient image transformers &amp; distillation through attention</a></li>
+</ul>
+
+<p>本文作者提出了<strong>DeiT</strong>，通过教师-学生网络的蒸馏策略，使得使用卷积网络作为教师时能够高效地训练视觉<strong>Transformer</strong>，只需单节点<strong>4GPU</strong>服务器在三天内就可以在<strong>ImageNet</strong>训练得到和<strong>SOTA</strong>相比具有竞争力的结果。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f6c86ef144a01007963d84.jpg" alt="" /></p>
+
+<p><strong>DeiT</strong>的网络结构与<a href="https://0809zheng.github.io/2020/12/30/vit.html"><font color="Blue">ViT</font></a>基本一致，主要区别在于在输入图像块序列尾部添加了一个蒸馏<strong>token</strong>。蒸馏<strong>token</strong>和其他<strong>token</strong>通过注意力机制进行交互。类别<strong>token</strong>的输出特征以真实值作为目标进行学习，蒸馏<strong>token</strong>的输出特征以教师网络输出作为目标进行学习。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f6c8f2f144a01007973b06.jpg" alt="" /></p>
+
+<p>假设教师网络输出逻辑分数$Z_t$，学生网络输出逻辑分数$Z_s$，真实分类值为$y$，$\Psi$表示<strong>softmax</strong>函数，$y_t$是教师网络的决策结果（<strong>one hot</strong>向量）。在蒸馏过程中可以使用硬蒸馏和软蒸馏两种形式。</p>
+
+<p><strong>硬蒸馏</strong>是指分别以真实值$y$和教师网络决策结果$y_t$为基准，通过交叉熵损失进行学习：</p>
+
+\[\mathcal{L}_{\text {global }}^{\text {hardDistill }}=\frac{1}{2} \mathcal{L}_{\mathrm{CE}}\left(\psi\left(Z_s\right), y\right)+\frac{1}{2} \mathcal{L}_{\mathrm{CE}}\left(\psi\left(Z_s\right), y_{\mathrm{t}}\right)\]
+
+<p>实验时使用<strong>label smoothing</strong>的方法，让真实标签具有$1-\epsilon$概率，其他标签具有$\epsilon / (K-1)$概率，实验中设置$\epsilon=0.1$。</p>
+
+<p><strong>软蒸馏</strong>是指以真实值$y$为基准通过交叉熵损失进行学习；同时以<strong>KL</strong>散度衡量教师网络和学生网络预测结果的差异。</p>
+
+\[\mathcal{L}_{\text {global }}=(1-\lambda) \mathcal{L}_{\mathrm{CE}}\left(\psi\left(Z_{\mathrm{s}}\right), y\right)+\lambda \tau^2 \mathrm{KL}\left(\psi\left(Z_{\mathrm{s}} / \tau\right), \psi\left(Z_{\mathrm{t}} / \tau\right)\right)\]
+
+<p>作者验证了<strong>class Token</strong>和<strong>distillation Token</strong>的余弦相似度，在所有层中，二者的平均余弦相似度约为$0.06$。但是从输入到最终的输出层，二者的余弦相似度不断提高，最终达到$0.93$。 作为对照，两个<strong>class token</strong>的余弦相似度达到$0.999$。这说明<strong>distillation Token</strong>确实发挥了和<strong>class token</strong>不同的作用。</p>
+
+<p><strong>DeiT</strong>在训练过程中使用了大量数据增强方法，并且使用高分辨率图像进行精调。此外在分类时使用了<strong>class Token</strong>和<strong>distillation Token</strong>的逻辑分数层面的融合，将二者的分数相加后送入<strong>softmax</strong>再求概率。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f6c6a1f144a010079363e6.jpg" alt="" /></p>
+
+<p>作者对优化器和数据增强进行了全面的消融实验：</p>
+
+<p><img src="https://pic.imgdb.cn/item/63f6cd49f144a010079e1ff1.jpg" alt="" /></p>
+
+<p>此外<strong>DeiT</strong>提供了一组优秀的超参数，它可以在不改变<strong>ViT</strong>模型结构的前提下实现涨点。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63fad0a9f144a010078ec38a.jpg" alt="" /></p>
+
+<p><strong>DeiT</strong>的完整实现可参考<a href="https://github.com/lucidrains/vit-pytorch/blob/main/vit_pytorch/distill.py">vit-pytorch</a>，其主体结构与<a href="https://0809zheng.github.io/2020/12/30/vit.html"><font color="Blue">ViT</font></a>相同，主要区别是在输入序列后增加了一个<strong>distillation Token</strong>：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DeiT</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">patch_size</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">heads</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="p">,</span> <span class="n">pool</span> <span class="o">=</span> <span class="s">'cls'</span><span class="p">,</span> <span class="n">channels</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">dim_head</span> <span class="o">=</span> <span class="mi">64</span><span class="p">,</span> <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">emb_dropout</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">image_height</span><span class="p">,</span> <span class="n">image_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_size</span><span class="p">,</span> <span class="n">image_size</span><span class="p">)</span>
+        <span class="n">patch_height</span><span class="p">,</span> <span class="n">patch_width</span> <span class="o">=</span> <span class="p">(</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">patch_size</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">image_height</span> <span class="o">%</span> <span class="n">patch_height</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">image_width</span> <span class="o">%</span> <span class="n">patch_width</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s">'Image dimensions must be divisible by the patch size.'</span>
+
+        <span class="n">num_patches</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_height</span> <span class="o">//</span> <span class="n">patch_height</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">image_width</span> <span class="o">//</span> <span class="n">patch_width</span><span class="p">)</span>
+        <span class="n">patch_dim</span> <span class="o">=</span> <span class="n">channels</span> <span class="o">*</span> <span class="n">patch_height</span> <span class="o">*</span> <span class="n">patch_width</span>
+        <span class="k">assert</span> <span class="n">pool</span> <span class="ow">in</span> <span class="p">{</span><span class="s">'cls'</span><span class="p">,</span> <span class="s">'mean'</span><span class="p">},</span> <span class="s">'pool type must be either cls (cls token) or mean (mean pooling)'</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_patch_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">Rearrange</span><span class="p">(</span><span class="s">'b c (h p1) (w p2) -&gt; b (h w) (p1 p2 c)'</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">patch_height</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">patch_width</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">patch_dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">patch_dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">pos_embedding</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_patches</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">cls_token</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">distillation_token</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">emb_dropout</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">Transformer</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">heads</span><span class="p">,</span> <span class="n">dim_head</span><span class="p">,</span> <span class="n">mlp_dim</span><span class="p">,</span> <span class="n">dropout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">pool</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">to_latent</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">mlp_head</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">distill_mlp</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+        <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+
+        <span class="n">cls_tokens</span> <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cls_token</span><span class="p">,</span> <span class="s">'1 1 d -&gt; b 1 d'</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">((</span><span class="n">cls_tokens</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">+=</span> <span class="bp">self</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">[:,</span> <span class="p">:(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+
+        <span class="n">distill_tokens</span> <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="n">distill_token</span><span class="p">,</span> <span class="s">'1 1 d -&gt; b 1 d'</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">distill_tokens</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">distill_tokens</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">x</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">pool</span> <span class="o">==</span> <span class="s">'mean'</span> <span class="k">else</span> <span class="n">x</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_latent</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">mlp_head</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="p">.</span><span class="n">distill_mlp</span><span class="p">(</span><span class="n">distill_tokens</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>分别使用硬蒸馏和软蒸馏方式构造损失函数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">DistillWrapper</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">teacher</span><span class="p">,</span>
+        <span class="n">student</span><span class="p">,</span>
+        <span class="n">temperature</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">hard</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">teacher</span> <span class="o">=</span> <span class="n">teacher</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">student</span> <span class="o">=</span> <span class="n">student</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">hard</span> <span class="o">=</span> <span class="n">hard</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">temperature</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">img</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span> <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="p">.</span><span class="n">alpha</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">temperature</span> <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">temperature</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="p">.</span><span class="n">temperature</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">teacher_logits</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">teacher</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="n">student_logits</span><span class="p">,</span> <span class="n">distill_logits</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">student</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">student_logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="p">.</span><span class="n">hard</span><span class="p">:</span>
+            <span class="n">distill_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">kl_div</span><span class="p">(</span>
+                <span class="n">F</span><span class="p">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">distill_logits</span> <span class="o">/</span> <span class="n">T</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">teacher_logits</span> <span class="o">/</span> <span class="n">T</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">detach</span><span class="p">(),</span>
+            <span class="n">reduction</span> <span class="o">=</span> <span class="s">'batchmean'</span><span class="p">)</span>
+            <span class="n">distill_loss</span> <span class="o">*=</span> <span class="n">T</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">teacher_labels</span> <span class="o">=</span> <span class="n">teacher_logits</span><span class="p">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">distill_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">distill_logits</span><span class="p">,</span> <span class="n">teacher_labels</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">loss</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="n">distill_loss</span> <span class="o">*</span> <span class="n">alpha</span>
+</code></pre></div></div>
+
+<p>实例化一个<strong>DeiT</strong>的例子如下，使用<strong>Resnet50</strong>作为教师网络：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torchvision.models</span> <span class="kn">import</span> <span class="n">resnet50</span>
+<span class="n">teacher</span> <span class="o">=</span> <span class="n">resnet50</span><span class="p">(</span><span class="n">pretrained</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="n">v</span> <span class="o">=</span> <span class="n">DeiT</span><span class="p">(</span>
+    <span class="n">image_size</span> <span class="o">=</span> <span class="mi">256</span><span class="p">,</span>
+    <span class="n">patch_size</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span>
+    <span class="n">depth</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+    <span class="n">heads</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
+    <span class="n">mlp_dim</span> <span class="o">=</span> <span class="mi">2048</span><span class="p">,</span>
+    <span class="n">dropout</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">emb_dropout</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="p">)</span>
+
+<span class="n">distiller</span> <span class="o">=</span> <span class="n">DistillWrapper</span><span class="p">(</span>
+    <span class="n">student</span> <span class="o">=</span> <span class="n">v</span><span class="p">,</span>
+    <span class="n">teacher</span> <span class="o">=</span> <span class="n">teacher</span><span class="p">,</span>
+    <span class="n">temperature</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>           <span class="c1"># temperature of distillation
+</span>    <span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>               <span class="c1"># trade between main loss and distillation loss
+</span>    <span class="n">hard</span> <span class="o">=</span> <span class="bp">False</span>               <span class="c1"># whether to use soft or hard distillation
+</span><span class="p">)</span>
+
+<span class="n">img</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+<span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,))</span>
+
+<span class="n">loss</span> <span class="o">=</span> <span class="n">distiller</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="n">loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
+
+<span class="c1"># after lots of training above ...
+</span><span class="n">pred</span> <span class="o">=</span> <span class="n">v</span><span class="p">(</span><span class="n">img</span><span class="p">)</span> <span class="c1"># (2, 1000)
+</span></code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/04/deepvit.html" class="read-next-link"></a>
+        <section>
+          <span>DeepViT: Towards Deeper Vision Transformer</span>
+          <p>  DeepViT：构建更深的视觉Transformer.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63f8074ff144a0100790bea1.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/02/simplevit.html" class="read-next-link"></a>
+          <section>
+            <span>Better plain ViT baselines for ImageNet-1k</span>
+            <p>  在ImageNet-1k数据集上更好地训练视觉Transformer.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63f5d794f144a0100725133f.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

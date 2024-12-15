@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PointCNN: Convolution On X-Transformed Points - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="PointCNN: Convolution On X-Transformed Points">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="PointCNN: Convolution On X-Transformed Points - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/04/07/pointcnn.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>PointCNN: Convolution On X-Transformed Points</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-04-07"><i class="iconfont icon-date"></i>07 Apr 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/649e1fc91ddac507cc85b553.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>PointCNN：在X变换点云上的卷积.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1801.07791">PointCNN: Convolution On X-Transformed Points</a></li>
+</ul>
+
+<p>卷积神经网络中的卷积算子能够捕捉图像中的空间局部相关性，但是点云是无规则且无序的，因此直接使用卷积核对点特征进行卷积将会导致形状信息的丢失以及点云顺序的变化。假设$C$维输入特征的无序集\(\mathbb{F}=\left\{ {f_a},{f_b},{f_c},{f_d} \right\}\)，并且有大小为$4 \times C$的卷积核\(\mathbf{K}=\left[k_{\alpha}, k_{\beta}, k_{\gamma}, k_{\delta}\right]^T\)。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649e20d31ddac507cc86fba8.jpg" alt="" /></p>
+
+<p>这些点的顺序是任意的。根据上图中的顺序，输入特征集合\(\mathbb{F}\)在$(ii)$和$(iii)$中可以写成\(\left[f_{a}, f_{b}, f_{c}, f_{d}\right]^{T}\)，在$(iv)$中可以写成\(\left[f_{c}, f_{a}, f_{b}, f_{d}\right]^{T}\)。基于此，如果直接使用卷积操作，三种情况的输出特征可以表示为下式。此时在任何情况下\(f_{i i} \equiv f_{i i i}\)都成立，而且在大多数情况下\(f_{i i i} \neq f_{i v}\)成立。这表明直接使用卷积会导致形状信息的缺失\((f_{i i} \equiv f_{i i i})\)和顺序的变化\((f_{i i i} \neq f_{i v})\)。</p>
+
+\[\begin{aligned}
+f_{i i} &amp; =\operatorname{Conv}\left(\mathbf{K}, \left[f_a, f_b, f_c, f_d\right]^T\right) \\
+f_{i i i} &amp; =\operatorname{Conv}\left(\mathbf{K}, \left[f_a, f_b, f_c, f_d\right]^T\right) \\
+f_{i v} &amp; =\operatorname{Conv}\left(\mathbf{K}, \left[f_c, f_a, f_b, f_d\right]^T\right)
+\end{aligned}\]
+
+<p>本文提出了一个简单通用的框架<strong>PointCNN</strong>，用于点云的特征学习。<strong>PointCNN</strong>从输入点中学习\(\mathcal{X}\)-变换，将点的排序映射到一个潜在的顺序。\(\mathcal{X}\)-变换首先通过多层感知机对$K$个输入点云\(\left(p_{1}, p_{2}, \ldots, p_{K}\right)\)的坐标进行变换，相当于学习一个$K\times K$的排序矩阵，随后对变换后的特征进行卷积。上述的步骤可以称为\(\mathcal{X}\)-卷积，是<strong>PointCNN</strong>中的一个基本块。\(\mathcal{X}\)-卷积能够考虑到点的形状，同时具有排序不变性。</p>
+
+<p>可以注意到，因为\(\mathcal{X}_{i i}\)和\(\mathcal{X}_{i i i}\)是从不同形状中学习得到的，所以它们可以有所不同，从而对输入特性施加相应的权重，并且达到\(f_{i i} \neq f_{i i i}\)的效果。对于\(\mathcal{X}_{i i i}\)和\(\mathcal{X}_{i v}X\)，如果它们通过学习后能够满足\(\mathcal{X}_{i i i}=\mathcal{X}_{i v} \times \Pi\)，其中$\Pi$是将$(c, a, b, d)$排序为$(a, b, c, d)$的排序矩阵的话，那么也可以达到\(f_{i i i} \equiv f_{i v}\)的效果。</p>
+
+\[\begin{aligned}
+f_{i i} &amp; =\operatorname{Conv}\left(\mathbf{K}, \mathcal{X}_{i i} \times\left[f_a, f_b, f_c, f_d\right]^T\right) \\
+f_{i i i} &amp; =\operatorname{Conv}\left(\mathbf{K}, \mathcal{X}_{i i i} \times\left[f_a, f_b, f_c, f_d\right]^T\right) \\
+f_{i v} &amp; =\operatorname{Conv}\left(\mathbf{K}, \mathcal{X}_{i v} \times\left[f_c, f_a, f_b, f_d\right]^T\right)
+\end{aligned}\]
+
+<h1 id="1-mathcalx-卷积">1. \(\mathcal{X}\)-卷积</h1>
+
+<p>把\(\mathcal{X}\)-卷积定义为在点云的局部区域中进行的操作，由于输出特性应该与表示点\(\left\{p_{2, i}\right\}\)相关联，因此\(\mathcal{X}\)-卷积将它们在\(\left\{p_{1, i}\right\}\)中的邻域点、相关的特性作为输入以进行卷积。</p>
+
+<p>为了更简单地描述，记$p$为\(\left\{p_{2, i}\right\}\)中的表示点，$p$的特征为$f$，$p$在\(\left\{p_{1, i}\right\}\)的相邻点为\(\mathbb{N}\)。因此对于特定点$p$而言，\(\mathcal{X}\)-卷积的输入为\(\mathbb{S}=\left\{\left(p_{i}, f_{i}\right): p_{i} \in \mathbb{N}\right\}\)。\(\mathbb{S}\)是一组无序的集合。在不失一般性的情况下，\(\mathbb{S}\)可以写成$K \times Dim$的矩阵\(\mathbf{P}=\left(p_1, p_2, \ldots, p_{K}\right)^{T}\)和$K \times C_1$的矩阵\(\mathbf{F}=\left(f_1, f_2, \ldots, f_{K}\right)^{T}\)，\(\mathbf{K}\)表示要训练的卷积核。有了这些输入，就能计算$p$的输出特征：</p>
+
+\[\mathbf{F}_{p}=\mathcal{X}-\operatorname{Conv}(\mathbf{K}, p, \mathbf{P}, \mathbf{F})=\operatorname{Conv}\left(\mathbf{K}, \operatorname{MLP}(\mathbf{P}-p) \times\left[M L P_{\delta}(\mathbf{P}-p), \mathbf{F}\right]\right)\]
+
+<p>其中$MLP_{\delta}(\cdot)$是单独作用在一个点上的多层感知机，在\(\mathcal{X}\)-卷积的所有操作都是可导的，那么\(\mathcal{X}\)-卷积也是可导的，因此可以被用到其他的反向传播神经网络中。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649e26501ddac507cc8e257f.jpg" alt="" /></p>
+
+<p>注意到\(\mathcal{X}\)-卷积首先将邻域点都归一化到点$p$的相对位置上，从而获得局部特征（算法<strong>1-3</strong>行）。在输出特征时，需要邻域点和对应的特征一起确定，但是局部坐标的维度和表示与对应的特征不一样。为了解决这个问题，首先将坐标提升到更高的维度上和更抽象的表示，然后将其与对应的特征进行拼接，用于后面的处理。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649e270b1ddac507cc8f224a.jpg" alt="" /></p>
+
+<p>本文通过\(\mathcal{X}\)-变换对坐标和特征进行赋权和排序，\(\mathcal{X}\)-变换是通过所有的相邻点共同学习得到的。最终的\(\mathcal{X}\)依赖于点的顺序，并根据输入点排列对\(\mathbf{F}_{*}\)进行排序。对于没有任何附加特性的输入点云，即\(\mathbf{F}\)为空，第一个\(\mathcal{X}\)-卷积层只使用\(\mathbf{F}_{\delta}\)。因此<strong>PointCNN</strong>可以以鲁棒通用的方式处理有或没有附加特性的点云。</p>
+
+<p>在<strong>Pytorch</strong>框架下\(\mathcal{X}\)-卷积层的实现如下，其中采样点选择算法使用<a href="https://0809zheng.github.io/2023/04/06/pointnetpp.html#1sampling-layer%E6%9C%80%E8%BF%9C%E7%82%B9%E9%87%87%E6%A0%B7">最远点采样</a>，邻域点选择算法使用<strong>k</strong>近邻。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">index_points</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+    <span class="s">"""
+
+    Input:
+        points: input points data, [B, N, C]
+        idx: sample index data, [B, S]
+    Return:
+        new_points:, indexed points data, [B, S, C]
+    """</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">points</span><span class="p">.</span><span class="n">device</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">points</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">view_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">idx</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">view_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">view_shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">repeat_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">idx</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">repeat_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">batch_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nb">long</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="n">view_shape</span><span class="p">).</span><span class="n">repeat</span><span class="p">(</span><span class="n">repeat_shape</span><span class="p">)</span>
+    <span class="n">new_points</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">batch_indices</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">return</span> <span class="n">new_points</span>
+
+<span class="k">def</span> <span class="nf">square_distance</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+    <span class="s">"""
+    Calculate Euclid distance between each two points.
+    src^T * dst = xn * xm + yn * ym + zn * zm；
+    sum(src^2, dim=-1) = xn*xn + yn*yn + zn*zn;
+    sum(dst^2, dim=-1) = xm*xm + ym*ym + zm*zm;
+    dist = (xn - xm)^2 + (yn - ym)^2 + (zn - zm)^2
+         = sum(src**2,dim=-1)+sum(dst**2,dim=-1)-2*src^T*dst
+
+    Input:
+        src: source points, [B, N, C]
+        dst: target points, [B, M, C]
+    Output:
+        dist: per-point square distance, [B, N, M]
+    """</span>
+    <span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">src</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dst</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">dist</span> <span class="o">+=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">src</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">dist</span> <span class="o">+=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">dst</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dist</span>
+    
+<span class="k">def</span> <span class="nf">farthest_point_sample</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">npoint</span><span class="p">):</span>
+    <span class="s">"""
+    Input:
+        xyz: pointcloud data, [B, N, C]
+        npoint: number of samples
+    Return:
+        centroids: sampled pointcloud index, [B, npoint]
+    """</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">device</span>
+    <span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">centroids</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">npoint</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nb">long</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e10</span>
+    <span class="n">farthest</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nb">long</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">batch_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nb">long</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npoint</span><span class="p">):</span>
+        <span class="n">centroids</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">farthest</span>
+        <span class="n">centroid</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">[</span><span class="n">batch_indices</span><span class="p">,</span> <span class="n">farthest</span><span class="p">,</span> <span class="p">:].</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">((</span><span class="n">xyz</span> <span class="o">-</span> <span class="n">centroid</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">&lt;</span> <span class="n">distance</span>
+        <span class="n">distance</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">farthest</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nb">max</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">centroids</span>
+
+<span class="k">def</span> <span class="nf">knn_point</span><span class="p">(</span><span class="n">nsample</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">new_xyz</span><span class="p">):</span>
+    <span class="s">"""
+    Input:
+        nsample: max sample number in local region
+        xyz: all points, [B, N, C]
+        new_xyz: query points, [B, S, C]
+    Return:
+        group_idx: grouped points index, [B, S, nsample]
+    """</span>
+    <span class="n">sqrdists</span> <span class="o">=</span> <span class="n">square_distance</span><span class="p">(</span><span class="n">new_xyz</span><span class="p">,</span> <span class="n">xyz</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">group_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">topk</span><span class="p">(</span><span class="n">sqrdists</span><span class="p">,</span> <span class="n">nsample</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">largest</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="nb">sorted</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">group_idx</span>
+
+<span class="k">def</span> <span class="nf">sample_and_group</span><span class="p">(</span><span class="n">npoint</span><span class="p">,</span> <span class="n">nsample</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+    <span class="s">"""
+    Input:
+        npoint:  最远点采样数量
+        nsample: 邻域采样点数量
+        xyz: input points position data, [B, N, C]
+        points: input points data, [B, N, D]
+    Return:
+        new_xyz: sampled points position data, [B, 1, C]
+        new_points: sampled points data, [B, 1, N, C+D]
+    """</span>
+    <span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">shape</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">npoint</span>
+    <span class="n">fps_idx</span> <span class="o">=</span> <span class="n">farthest_point_sample</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">npoint</span><span class="p">)</span>  <span class="c1"># [B, npoint, C]
+</span>    <span class="n">new_xyz</span> <span class="o">=</span> <span class="n">index_points</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">fps_idx</span><span class="p">)</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">knn_point</span><span class="p">(</span><span class="n">nsample</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">new_xyz</span><span class="p">)</span>
+    <span class="n">grouped_xyz</span> <span class="o">=</span> <span class="n">index_points</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>  <span class="c1"># [B, npoint, nsample, C]
+</span>    <span class="n">grouped_xyz_norm</span> <span class="o">=</span> <span class="n">grouped_xyz</span> <span class="o">-</span> <span class="n">new_xyz</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">grouped_points</span> <span class="o">=</span> <span class="n">index_points</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+        <span class="n">new_points</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">grouped_xyz_norm</span><span class="p">,</span> <span class="n">grouped_points</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B, npoint, nsample, C+D]
+</span>    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_points</span> <span class="o">=</span> <span class="n">grouped_xyz_norm</span>
+    <span class="k">return</span> <span class="n">new_xyz</span><span class="p">,</span> <span class="n">new_points</span><span class="p">,</span> <span class="n">grouped_xyz_norm</span><span class="p">,</span> <span class="n">idx</span>
+
+<span class="k">def</span> <span class="nf">sample_and_group_all</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+    <span class="s">"""
+    Input:
+        xyz: input points position data, [B, N, C]
+        points: input points data, [B, N, D]
+    Return:
+        new_xyz: sampled points position data, [B, 1, C]
+        new_points: sampled points data, [B, 1, N, C+D]
+    """</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">device</span>
+    <span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">shape</span>
+    <span class="c1"># new_xyz = torch.zeros(B, 1, C).to(device)
+</span>    <span class="n">new_xyz</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">grouped_xyz</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span> <span class="o">-</span> <span class="n">new_xyz</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">new_points</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">grouped_xyz</span><span class="p">,</span> <span class="n">points</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_points</span> <span class="o">=</span> <span class="n">grouped_xyz</span>
+    <span class="k">return</span> <span class="n">new_xyz</span><span class="p">,</span> <span class="n">new_points</span><span class="p">,</span> <span class="n">grouped_xyz</span>
+
+<span class="k">class</span> <span class="nc">WeightNet</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">out_channel</span><span class="p">,</span> <span class="n">hidden_unit</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">]):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">WeightNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mlp_convs</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mlp_bns</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">hidden_unit</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">hidden_unit</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">mlp_convs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">out_channel</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">mlp_bns</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channel</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">mlp_convs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channel</span><span class="p">,</span> <span class="n">hidden_unit</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">mlp_bns</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">hidden_unit</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">hidden_unit</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">mlp_convs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">hidden_unit</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">hidden_unit</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="bp">self</span><span class="p">.</span><span class="n">mlp_bns</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">hidden_unit</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">mlp_convs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">hidden_unit</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">out_channel</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">mlp_bns</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channel</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">localized_xyz</span><span class="p">):</span>
+        <span class="c1"># xyz : BxCxKxN
+</span>        <span class="n">weights</span> <span class="o">=</span> <span class="n">localized_xyz</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">conv</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">mlp_convs</span><span class="p">):</span>
+            <span class="n">bn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">mlp_bns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">bn</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="n">weights</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">weights</span>
+
+<span class="k">class</span> <span class="nc">PointConvDensitySetAbstraction</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">npoint</span><span class="p">,</span> <span class="n">nsample</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">mlp</span><span class="p">,</span> <span class="n">group_all</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PointConvDensitySetAbstraction</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">npoint</span> <span class="o">=</span> <span class="n">npoint</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">nsample</span> <span class="o">=</span> <span class="n">nsample</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mlp_convs</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mlp_bns</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="n">last_channel</span> <span class="o">=</span> <span class="n">in_channel</span>
+        <span class="k">for</span> <span class="n">out_channel</span> <span class="ow">in</span> <span class="n">mlp</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">mlp_convs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">last_channel</span><span class="p">,</span> <span class="n">out_channel</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">mlp_bns</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channel</span><span class="p">))</span>
+            <span class="n">last_channel</span> <span class="o">=</span> <span class="n">out_channel</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">weightnet</span> <span class="o">=</span> <span class="n">WeightNet</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="n">mlp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">mlp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn_linear</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="n">mlp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">group_all</span> <span class="o">=</span> <span class="n">group_all</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">points</span><span class="p">):</span>
+        <span class="s">"""
+        Input:
+            xyz: input points position data, [B, C, N]
+            points: input points data, [B, D, N]
+        Return:
+            new_xyz: sampled points position data, [B, C, S]
+            new_points_concat: sample points feature data, [B, D', S]
+        """</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">xyz</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">group_all</span><span class="p">:</span>
+            <span class="n">new_xyz</span><span class="p">,</span> <span class="n">new_points</span><span class="p">,</span> <span class="n">grouped_xyz_norm</span> <span class="o">=</span> <span class="n">sample_and_group_all</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_xyz</span><span class="p">,</span> <span class="n">new_points</span><span class="p">,</span> <span class="n">grouped_xyz_norm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sample_and_group</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">npoint</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">nsample</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">points</span><span class="p">)</span>
+        <span class="c1"># new_xyz: sampled points position data, [B, npoint, C]
+</span>        <span class="c1"># new_points: sampled points data, [B, npoint, nsample, C+D]
+</span>        <span class="n">new_points</span> <span class="o">=</span> <span class="n">new_points</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># [B, C+D, nsample, npoint]
+</span>        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">conv</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">mlp_convs</span><span class="p">):</span>
+            <span class="n">bn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">mlp_bns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">new_points</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">bn</span><span class="p">(</span><span class="n">conv</span><span class="p">(</span><span class="n">new_points</span><span class="p">)))</span>
+
+        <span class="n">grouped_xyz</span> <span class="o">=</span> <span class="n">grouped_xyz_norm</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">weightnet</span><span class="p">(</span><span class="n">grouped_xyz</span><span class="p">)</span>
+        <span class="n">new_points</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">new_points</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">other</span><span class="o">=</span><span class="n">weights</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)).</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span>
+                                                                                                                <span class="bp">self</span><span class="p">.</span><span class="n">npoint</span><span class="p">,</span>
+                                                                                                                <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">new_points</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">linear</span><span class="p">(</span><span class="n">new_points</span><span class="p">)</span>
+        <span class="n">new_points</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">bn_linear</span><span class="p">(</span><span class="n">new_points</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">new_points</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="n">new_points</span><span class="p">)</span>
+        <span class="n">new_xyz</span> <span class="o">=</span> <span class="n">new_xyz</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_xyz</span><span class="p">,</span> <span class="n">new_points</span>
+</code></pre></div></div>
+
+<h1 id="2-pointcnn">2. PointCNN</h1>
+
+<p><strong>PointCNN</strong>的输入为\(\mathbb{F}_{1}=\left\{\left(p_{1, i}, f_{1, i}\right): i=1,2, \ldots, N_{1}\right\}\)，其中\(\left\{p_{1, i}: p_{1, i} \in\mathbb{R}^{\text {Dim }}\right\}\)是一组点，还有每个点对应的特征\(\left\{f_{1, i}: f_{1, i} \in \mathbb{R}^{C_{1}}\right\}\)。根据基于卷积网络的分层构造，在\(\mathbb{F}_{1}\)上应用\(\mathcal{X}\)-卷积便可得到更高层的表示\(\mathbb{F}_{2}=\left\{\left(p_{2, i}, f_{2, i}\right): f_{2, i} \in \mathbb{R}^{C_{2}}, i=1,2, \ldots, N_{2}\right\}\)，其中\(\left\{p_{2, i}\right\}\)是\(\left\{p_{1, i}\right\}\)的一组表示点，\(\mathbb{F}_{2}\)的空间分辨率比\(\mathbb{F}_{1}\)小，\(\mathbb{F}_{2}\)的通道数比\(\mathbb{F}_{1}\)多，即$N_2&lt;N_2,C_2&gt;C_1$。当上述操作循环进行后，带有输入点的特征会被“投影”或是“聚合”到更少的点，但是每个点的特征信息却是更加丰富。</p>
+
+<p><img src="https://pic.imgdb.cn/item/649e24701ddac507cc8bbd0a.jpg" alt="" /></p>
+
+<p><img src="https://pic.imgdb.cn/item/649e2ced1ddac507cc97c80e.jpg" alt="" /></p>
+
+<p>图<strong>a</strong>描述了带有两个\(\mathcal{X}\)-卷积层的<strong>PointCNN</strong>结构，将输入点(带或不带特征)逐渐变成很少的表示点，但是这些点具有丰富的特征。在第二个\(\mathcal{X}\)-卷积层后，仅剩下一个表示点，这是从前面那些层中所有点的信息聚合在一起的表示点。在<strong>PointCNN</strong>中，可以将每个表示点的感知域定义为一个比例$K/N$，其中$K$是相邻点的数量，$N$是之前那一层中点的数量。这样最后的那个点可以“看到”之前所有层的点，因此其感知域的比例为$1.0$：具有整个形状的全局视野，并且其特征对于形状的语义理解也是信息非常丰富。在最后的\(\mathcal{X}\)-卷积层后面加上全连接层，接着跟一个损失函数便可训练这个网络。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">PointConvDensityClsSsg</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls</span> <span class="o">=</span> <span class="mi">40</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PointConvDensityClsSsg</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">feature_dim</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">sa1</span> <span class="o">=</span> <span class="n">PointConvDensitySetAbstraction</span><span class="p">(</span><span class="n">npoint</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">nsample</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">in_channel</span><span class="o">=</span><span class="n">feature_dim</span><span class="p">,</span> <span class="n">mlp</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span> <span class="n">bandwidth</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">group_all</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">sa2</span> <span class="o">=</span> <span class="n">PointConvDensitySetAbstraction</span><span class="p">(</span><span class="n">npoint</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">nsample</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">in_channel</span><span class="o">=</span><span class="mi">128</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="n">mlp</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">],</span> <span class="n">bandwidth</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">group_all</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">sa3</span> <span class="o">=</span> <span class="n">PointConvDensitySetAbstraction</span><span class="p">(</span><span class="n">npoint</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">nsample</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">in_channel</span><span class="o">=</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="n">mlp</span><span class="o">=</span><span class="p">[</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">],</span> <span class="n">bandwidth</span> <span class="o">=</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">group_all</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">512</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">drop1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">drop2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz</span><span class="p">,</span> <span class="n">feat</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">xyz</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">l1_xyz</span><span class="p">,</span> <span class="n">l1_points</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">sa1</span><span class="p">(</span><span class="n">xyz</span><span class="p">,</span> <span class="n">feat</span><span class="p">)</span>
+        <span class="n">l2_xyz</span><span class="p">,</span> <span class="n">l2_points</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">sa2</span><span class="p">(</span><span class="n">l1_xyz</span><span class="p">,</span> <span class="n">l1_points</span><span class="p">)</span>
+        <span class="n">l3_xyz</span><span class="p">,</span> <span class="n">l3_points</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">sa3</span><span class="p">(</span><span class="n">l2_xyz</span><span class="p">,</span> <span class="n">l2_points</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">l3_points</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">1024</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">drop1</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn1</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">))))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">drop2</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">bn2</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">))))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<p>注意到点的数量在\(\mathcal{X}\)-卷积层中下降的很快，使得简单的网络无法全面地进行训练。为了解决这个问题，进一步提出了带有稠密连接的<strong>PointCNN</strong>模型，在\(\mathcal{X}\)-卷积层中保留了更多的表示点，如图<strong>b</strong>所示。若仍然保持网络的深度不变，同时保持感知域的增长率，<strong>PointCNN</strong>不再以固定的$K$个相邻点作为输入，而是随机的从$K \times D$个相邻点中随机采样出$K$个输入点，其中$D$是扩张率。在这种情况下，在没有增加实际相邻点总数的和核大小的情况下，感知域比例从$K/N$增长到$(K\times D)/N$。图<strong>b</strong>中最后的\(\mathcal{X}\)-卷积层中的$4$个表示点都可以“看到”整个形状，因此都适合用于做预测。在测试阶段，<strong>softmax</strong>之前可以将多个预测结果取平均数，使预测结果更加稳定。</p>
+
+<p>对于分割任务，需要输出原分辨率的点，这可以通过构造<strong>Conv-DeConv</strong>结构实现，其中<strong>DeConv</strong>部分就是将全局信息传播到更高分辨率预测的过程，见图<strong>c</strong>。<strong>PointCNN</strong>分割网络中的<strong>Conv</strong>和<strong>DecConv</strong>都是\(\mathcal{X}\)-卷积操作，唯一不同的便是后者的输出具有更多的点，更少的通道数。</p>
+
+<p>在最后的全连接层前面使用<strong>dropout</strong>减少过拟合现象，还使用了<strong>subvolume supervision</strong>进一步减少过拟合。<strong>subvolume supervision</strong>是指在最后的\(\mathcal{X}\)-卷积层中，感知域比例被设置为小于$1$的数，以便于仅有部分信息被表示点观察到。在训练过程中，该网络被要求更艰难地从部分信息中学习，这样在测试时就会表现得更好。在这种情况下，表示点的全局坐标很重要，因此通过$MLP_{g}(\cdot)$将全局坐标提升到特征空间\(\mathbb{R}^{C_g}\)，并拼接到\(\mathcal{X}\)-卷积中，以便通过后续层进行进一步处理。</p>
+
+<p>为了提高泛化性，对输入点进行随机采样和打乱，这样<strong>batch</strong>与<strong>batch</strong>间相邻点集和顺序就会不一样。为了训练一个数量为$N$的点作为输入，选择\(\mathcal{N}(N,(N/8)^2)\)个点用于训练，其中\(\mathcal{N}\)表示高斯分布，这样做对于<strong>PointCNN</strong>的训练至关重要。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/04/08/dgcnn.html" class="read-next-link"></a>
+        <section>
+          <span>Dynamic Graph CNN for Learning on Point Clouds</span>
+          <p>  点云学习的动态图卷积神经网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/649e39b51ddac507ccb28480.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/04/06/sam.html" class="read-next-link"></a>
+          <section>
+            <span>Segment Anything</span>
+            <p>  SAM：分割任意模型.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/642e6ba6a682492fccbabbb6.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

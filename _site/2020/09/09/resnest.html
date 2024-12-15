@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResNeSt: Split-Attention Networks - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="ResNeSt: Split-Attention Networks">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="ResNeSt: Split-Attention Networks - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/09/09/resnest.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>ResNeSt: Split-Attention Networks</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-09-09"><i class="iconfont icon-date"></i>09 Sep 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.downk.cc/item/5fec3b333ffa7d37b3606820.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>ResNeSt：拆分注意力网络.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2004.08955">ResNeSt: Split-Attention Networks</a></li>
+  <li>code：<a href="https://github.com/zhanghang1989/ResNeSt">github</a></li>
+</ul>
+
+<p>作者指出，目前卷积神经网络的结构设计主要有两种思路。</p>
+<ol>
+  <li>第一种是模块化设计，通过设计模块进行堆叠，组成深度网络，在分类任务上预训练后可以应用于各种计算机视觉任务中。这类方法的主要优点是具有较好的泛化性和可替代性，新的网络只需要替换掉基本模块就可以提高性能；主要缺点是含有较多的超参数，需要人工选择。这类方法的代表作是<strong>GoogLeNet</strong>、<strong>ResNet</strong>、<strong>Inception ResNet</strong>、<strong>ResNeXt</strong>。</li>
+  <li>第二种是神经结构搜索，这类方法预先设定网络的模块结构，通过自动搜索选定合适的超参数。这类方法优点是无需人工选择，缺点是计算量较大，且<strong>tailored to one task</strong>，即在分类任务上训练的模型通常只适合分类，很难迁移到其他任务中。</li>
+</ol>
+
+<p>目前计算机视觉领域的下游工作（如目标检测、图像分割）仍选择结构简单通用的<strong>ResNet</strong>为<strong>backbone</strong>网络。在本文中作者按照第一种思路设计了一个新的卷积网络<strong>backbone</strong>：<strong>ResNeSt</strong>，该网络将<strong>SKNet</strong>中的注意力机制引入<strong>ResNeXt</strong>中，经过预训练后替换掉<strong>ResNet</strong>网络，在各项任务中刷新<strong>SOTA</strong>的结果：</p>
+
+<p><img src="https://pic.downk.cc/item/5fec3def3ffa7d37b365d9e0.jpg" alt="" /></p>
+
+<p><strong>ResNeSt</strong>网络提出的模块结构如下图所示。该网络的两个核心思想是<strong>multi-path</strong>和<strong>channel attention</strong>。前者参考<strong>ResNeXt</strong>，引入超参数<strong>cardinality</strong> $k$控制分组卷积的分支数；后者参考<strong>SKNet</strong>，引入超参数<strong>radix</strong> $r$控制注意力计算的分支数。</p>
+
+<p><img src="https://pic.downk.cc/item/5fec3e5a3ffa7d37b366a46a.jpg" alt="" /></p>
+
+<p>作者提出的<strong>拆分注意力(split attention)</strong>计算过程如下。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6432759c0d2dde577737f9aa.jpg" alt="" /></p>
+
+<p>作者给出了两种实现思路，分别是<strong>cardinality-major</strong>方法（下图左）和<strong>radix-major</strong>方法（下图右），两者可由下图中进行等价变换。通过变换能够并行计算，加速模型训练。</p>
+
+<p><img src="https://pic.downk.cc/item/5fec52fa3ffa7d37b38b8655.jpg" alt="" /></p>
+
+<p>除此之外，作者训练模型时还使用了大量数据增强方法，包括：</p>
+<ul>
+  <li><strong>Large Mini-batch Distributed Training</strong></li>
+  <li><strong>Label Smoothing</strong></li>
+  <li><strong>Auto Augmentation</strong></li>
+  <li><strong>Mixup Training</strong></li>
+  <li><strong>Large Crop Size</strong></li>
+  <li><strong>Regularization</strong></li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/09/10/nas-without-train.html" class="read-next-link"></a>
+        <section>
+          <span>Neural Architecture Search without Training</span>
+          <p>  不需要训练网络的神经结构搜索.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5f5a0b56160a154a67c3e647.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/09/08/lapsrn.html" class="read-next-link"></a>
+          <section>
+            <span>Deep Laplacian Pyramid Networks for Fast and Accurate Super-Resolution</span>
+            <p>  LapSRN：多尺度超分辨率的拉普拉斯金字塔网络.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5f56d210160a154a67833feb.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

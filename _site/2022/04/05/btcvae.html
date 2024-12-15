@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isolating Sources of Disentanglement in Variational Autoencoders - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Isolating Sources of Disentanglement in Variational Autoencoders">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Isolating Sources of Disentanglement in Variational Autoencoders - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/04/05/btcvae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Isolating Sources of Disentanglement in Variational Autoencoders</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-04-05"><i class="iconfont icon-date"></i>05 Apr 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/628358070947543129aeceb7.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>β-TCVAE: 分离VAE解耦源中的全相关项.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1802.04942">Isolating Sources of Disentanglement in Variational Autoencoders</a></li>
+</ul>
+
+<p>本文作者对<strong>VAE</strong>的证据下界<strong>ELBO</strong>进行分解，发现其中存在隐变量的<strong>全相关(Total Correlation)</strong>项。根据这一项作者设计了<strong>β-TCVAE</strong>(<strong>Total Correlation Variational Autoencoder</strong>)，能够学习特征的解耦表示而不需要引入额外的超参数。作者进一步提出一种模型解耦程度的度量方法，称为<strong>互信息间隙</strong>(<strong>Mutual Information Gap, MIG</strong>)。作者通过实验发现全相关项和解耦表示之间存在很强的相关性。</p>
+
+<h1 id="1-分解elbo">1. 分解ELBO</h1>
+
+<p><strong>VAE</strong>优化<strong>对数似然的变分下界</strong>:</p>
+
+\[\begin{aligned} \log p(x)  &amp;= \log \Bbb{E}_{z \text{~} q(z|x)}[\frac{p(x,z)}{q(z|x)}] \geq \Bbb{E}_{z \text{~} q(z|x)}[\log \frac{p(x,z)}{q(z|x)}] \\ \text{ELBO} &amp;= - KL[q(z|x)||p(z)]+\mathbb{E}_{z \text{~} q(z|x)} [\log p(x | z)] \end{aligned}\]
+
+<p>作者对<strong>ELBO</strong>中的<strong>KL</strong>散度进行分解。首先对每个训练样本指定唯一的索引$n$，并且定义一个在$[1,N]$上均匀的随机变量$p(n)$与训练样本相关联，表示每个样本被选择的概率相同。分解过程如下：</p>
+
+\[\begin{aligned} KL[q(z|x)||p(z)] &amp;= \frac{1}{N}\sum_{n=1}^{N}KL[q(z|x_n)||p(z)] = \Bbb{E}_{p(n)} [KL[q(z|n)||p(z)]] \\ &amp;= \Bbb{E}_{p(n)} [\Bbb{E}_{q(z|n)}[\log \frac{q(z|n)}{p(z)}]] = \Bbb{E}_{p(n)} [\Bbb{E}_{q(z|n)}[\log q(z|n)-\log p(z)]] \\ &amp;= \Bbb{E}_{p(n)} [\Bbb{E}_{q(z|n)}[\log q(z|n)-\log p(z) +\log q(z) - \log q(z) +\log \prod_{j}q(z_j)-\log \prod_{j}q(z_j)]] \\ &amp; = \Bbb{E}_{p(n)} [\Bbb{E}_{q(z|n)}[\log\frac{q(z|n)}{q(z)}+\log\frac{q(z)}{\prod_{j}q(z_j)}+\log\frac{\prod_{j}q(z_j)}{p(z)} ]] \\ &amp;= \Bbb{E}_{q(z,n)}[\log\frac{q(z|n)}{q(z)}]+\Bbb{E}_{q(z)}[\log\frac{q(z)}{\prod_{j}q(z_j)}]+\Bbb{E}_{q(z)}[\log\frac{\prod_{j}q(z_j)}{\prod_{j}p(z_j)} ]\\&amp; = \Bbb{E}_{q(z,n)}[\log\frac{q(z|n)p(n)}{q(z)p(n)}]+\Bbb{E}_{q(z)}[\log\frac{q(z)}{\prod_{j}q(z_j)}]+\sum_{j}\Bbb{E}_{q(z)}[\log\frac{q(z_j)}{p(z_j)} ] \\ &amp;= \Bbb{E}_{q(z,n)}[\log\frac{q(z,n)}{q(z)p(n)}]+\Bbb{E}_{q(z)}[\log\frac{q(z)}{\prod_{j}q(z_j)}]+\sum_{j}\Bbb{E}_{q(z_j)}[\log\frac{q(z_j)}{p(z_j)} ] \\&amp; = KL(q(z,n)||q(z)p(n)) + KL(q(z)||\prod_{j}q(z_j)) + \sum_{j}KL(q(z_j)||p(z_j)) \end{aligned}\]
+
+<p>分解式的第一项$KL(q(z,n)||q(z)p(n))$是索引-编码的互信息项(<strong>Index-Code MI</strong>)，衡量索引分布$p(n)$和隐变量分布$q(z)$之间的互信息。通常认为较高的互信息能够获得更好的解耦效果，因此有些研究者去掉对这一项的惩罚。然而也有研究者认为对该项进行惩罚能够获得更紧凑的解耦表示。</p>
+
+<p>分解式的第二项$KL(q(z)||\prod_{j}q(z_j))$是<strong>全相关(Total Correlation)</strong>项，衡量隐变量的不同维度之间的相互依赖程度。这一项惩罚使得模型在数据分布中寻找统计独立的因子，提高模型的解耦能力，是<strong>β-VAE</strong>成功的关键。</p>
+
+<p>分解式的第三项$\sum_{j}KL(q(z_j)||p(z_j))$是每个维度上的<strong>KL</strong>散度，防止隐变量的某个维度偏离其相应的正态先验太远。</p>
+
+<h1 id="2-β-tcvae及其pytorch实现">2. β-TCVAE及其PyTorch实现</h1>
+
+<p>根据<strong>ELBO</strong>的分解项可以构造<strong>β-TCVAE</strong>模型：</p>
+
+\[\begin{aligned} \text{ELBO} = &amp;\mathbb{E}_{z \text{~} q(z|x)} [\log p(x | z)]  - \alpha KL(q(z,n)||q(z)p(n)) \\&amp;-\beta KL(q(z)||\prod_{j}q(z_j)) -\gamma \sum_{j}KL(q(z_j)||p(z_j))  \end{aligned}\]
+
+<p>消融实验表明，仅调节$\beta$也能获得较好的解耦表现，因此通常设置$\alpha=\gamma=1$。</p>
+
+<p><strong>β-TCVAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/betatc_vae.py">PyTorch-VAE</a>，与标准<strong>VAE</strong>的主要区别在于损失函数的实现不同。在计算损失函数中的<strong>KL</strong>散度时，需要计算形如$\log p$的表达式，其中概率$p$通常取正态分布，因此定义计算正态概率密度的对数函数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">log_density_gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">logvar</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">):</span>
+    <span class="s">"""
+    Computes the log pdf of the Gaussian with parameters mu and logvar at x
+    :param x: (Tensor) Point at whichGaussian PDF is to be evaluated
+    :param mu: (Tensor) Mean of the Gaussian distribution
+    :param logvar: (Tensor) Log variance of the Gaussian distribution
+    :return:
+    """</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">math</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="p">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">+</span> <span class="n">logvar</span><span class="p">)</span>
+    <span class="n">log_density</span> <span class="o">=</span> <span class="n">norm</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">logvar</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">log_density</span>
+</code></pre></div></div>
+
+<h3 id="计算mathbbe_z-text-qzx-log-px--z">⚪计算$\mathbb{E}_{z \text{~} q(z|x)} [\log p(x | z)]$</h3>
+
+<p>采用与标准<strong>VAE</strong>相同的均方误差损失：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'sum'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="计算klqznqzpn">⚪计算$KL(q(z,n)||q(z)p(n))$</h3>
+
+<p>注意到：</p>
+
+\[KL(q(z,n)||q(z)p(n))=\Bbb{E}_{p(n)} [\Bbb{E}_{q(z|n)}[\log q(z|n)-\log q(z)]]\]
+
+<p>其中$\log q(z|n)$可以直接计算：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">log_q_zx</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">log_density_gaussian</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>而$q(z)=\Bbb{E}_{p(n)}[q(z|n)]$依赖于整个数据集，因此不能直接计算得到。作者采用重要性采样的思路，随机采样$M$个数据，对$q(z)$的对数项进行批量加权采样：</p>
+
+\[\Bbb{E}_{q(z)} [\log q(z)] ≈ \frac{1}{M} \sum_{i=1}^{M} [\log \frac{1}{NM} \sum_{j=1}^{M} q(z(n_i)|n_j)]\]
+
+<p>其中$z(n_i)$是从$q(z|n_i)$中的采样。尽管上述估计是有偏的，该估计不需要引入额外的超参数。在实现时首先计算重要性权重(的对数)：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dataset_size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">'M_N'</span><span class="p">])</span> <span class="o">*</span> <span class="n">batch_size</span> <span class="c1"># dataset size
+</span><span class="n">strat_weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">dataset_size</span> <span class="o">-</span> <span class="n">batch_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">dataset_size</span> <span class="o">*</span> <span class="p">(</span><span class="n">batch_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">importance_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">).</span><span class="n">fill_</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">batch_size</span> <span class="o">-</span><span class="mi">1</span><span class="p">)).</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">device</span><span class="p">)</span>
+<span class="n">importance_weights</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)[::</span><span class="n">batch_size</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">dataset_size</span>
+<span class="n">importance_weights</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">::</span><span class="n">batch_size</span><span class="p">]</span> <span class="o">=</span> <span class="n">strat_weight</span>
+<span class="n">importance_weights</span><span class="p">[</span><span class="n">batch_size</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">strat_weight</span>
+<span class="n">log_importance_weights</span> <span class="o">=</span> <span class="n">importance_weights</span><span class="p">.</span><span class="n">log</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>将重要性权重应用于采样结果(对应对数形式的相加)，即可得到$\log q(z)$的采样估计：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">batch_size</span><span class="p">,</span> <span class="n">latent_dim</span> <span class="o">=</span> <span class="n">z</span><span class="p">.</span><span class="n">shape</span>
+<span class="n">mat_log_q_z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">log_density_gaussian</span><span class="p">(</span><span class="n">z</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">),</span>
+                                        <span class="n">mu</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">),</span>
+                                        <span class="n">log_var</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">))</span>
+<span class="n">mat_log_q_z</span> <span class="o">+=</span> <span class="n">log_importance_weights</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">log_q_z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">mat_log_q_z</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>则损失函数$KL(q(z,n)||q(z)p(n))$计算为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mi_loss</span>  <span class="o">=</span> <span class="p">(</span><span class="n">log_q_zx</span> <span class="o">-</span> <span class="n">log_q_z</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="计算klqzprod_jqz_j">⚪计算$KL(q(z)||\prod_{j}q(z_j))$</h3>
+
+<p>注意到：</p>
+
+\[KL(q(z)||\prod_{j}q(z_j))=\Bbb{E}_{p(n)} [\Bbb{E}_{q(z|n)}[\log q(z)-\log \prod_{j}q(z_j)]]\]
+
+<p>其中$\log q(z)$已求得，则$\log \prod_{j}q(z_j)$可以用类似的方式计算：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">log_prod_q_z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">mat_log_q_z</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">False</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>则损失函数$KL(q(z)||\prod_{j}q(z_j))$计算为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tc_loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">log_q_z</span> <span class="o">-</span> <span class="n">log_prod_q_z</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="计算sum_jklqz_jpz_j">⚪计算$\sum_{j}KL(q(z_j)||p(z_j))$</h3>
+
+<p>注意到：</p>
+
+\[\sum_{j}KL(q(z_j)||p(z_j))=\Bbb{E}_{p(n)} [\Bbb{E}_{q(z|n)}[\prod_{j}q(z_j)-p(z)]]\]
+
+<p>其中$\log \prod_{j}q(z_j)$已求得，而$\log p(z)$建模为标准正态分布：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">zeros</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+<span class="n">log_p_z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">log_density_gaussian</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">zeros</span><span class="p">,</span> <span class="n">zeros</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>则损失函数$\sum_{j}KL(q(z_j)||p(z_j))$计算为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">kld_loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">log_prod_q_z</span> <span class="o">-</span> <span class="n">log_p_z</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h1 id="3-互信息间隔-mutual-information-gap">3. 互信息间隔 Mutual Information Gap</h1>
+
+<p>作者提出了一种衡量模型解耦程度的度量方法：<strong>互信息间隔(Mutual Information Gap, MIG)</strong>。该方法的出发点是隐变量的某一维度$z_j$和用于描述物体特征的真实因子$v_k$之间的经验互信息可以用联合分布$q(z_j,v_k)=\sum_{n=1}^{N}p(v_k)p(n|v_k)q(z_j|n)$衡量。两者的互信息计算为：</p>
+
+\[I_n(z_j;v_k) = \Bbb{E}_{q(z_j,v_k)}[\log \sum_{n \in \mathcal{X}_{v_k}}q(z_j|n)p(n|v_k)]+H(z_j)\]
+
+<p>有时真实因子$v_k$可能与隐变量的多个维度相关，此时只考虑具有最大互信息的维度，因此在计算时减去第二大的互信息值：</p>
+
+\[\frac{1}{K} \sum_{k=1}^{K} \frac{1}{H(v_k)} (I_n(z_{j^{(k)}};v_k)-\mathop{\max}_{j \ne j^{(k)}}I_n(z_j;v_k))\]
+
+<h1 id="4-实验分析">4. 实验分析</h1>
+
+<p>作者在两个数据集上对模型的解耦表示能力进行测试。<strong>dSprites</strong>是一个二维形状数据集，包含6种尺度因子、40种旋转因子、32种X和Y位置因子。<strong>3D Faces</strong>是一个三维人脸数据集，包含21种方位向因子、11种俯仰向因子和11种光照因子。</p>
+
+<p>下图表明，当逐渐提高$\beta$值时，全相关的惩罚程度变大，模型的解耦能力增强，但也阻碍了数据重构种获取更多有用的信息。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62848c5c094754312924247c.jpg" alt="" /></p>
+
+<p>作者分析了隐变量种不同因子之间分布的相关性和独立性，具体地模拟了两个因子的四种不同分布。结果表明<strong>β-TCVAE</strong>学习到特征的解耦表示。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62848d2c0947543129253428.jpg" alt="" /></p>
+
+<p>最后作者展示了一些生成结果，结果表明<strong>β-TCVAE</strong>能够学习到数据集的更多特征因子。</p>
+
+<p><img src="https://pic.imgdb.cn/item/62848d5d0947543129256c90.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/04/06/ssmp.html" class="read-next-link"></a>
+        <section>
+          <span>Single-Shot Multi-Person 3D Pose Estimation From Monocular RGB</span>
+          <p>  使用遮挡鲁棒姿态图从单目相机中重构三维姿态.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/624d4f6b239250f7c59458ad.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/04/04/wae.html" class="read-next-link"></a>
+          <section>
+            <span>Wasserstein Auto-Encoders</span>
+            <p>  WAE: 使用Wasserstein距离的变分自编码器.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/62822c960947543129fbf28e.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

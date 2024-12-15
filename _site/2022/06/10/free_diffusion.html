@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classifier-Free Diffusion Guidance - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Classifier-Free Diffusion Guidance">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Classifier-Free Diffusion Guidance - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/06/10/free_diffusion.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Classifier-Free Diffusion Guidance</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-06-10"><i class="iconfont icon-date"></i>10 Jun 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/643669bd0d2dde57773345a9.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>基于事前训练的条件生成扩散模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2207.12598">Classifier-Free Diffusion Guidance</a></li>
+</ul>
+
+<p>本文提出了一种实现条件扩散模型的事前训练方法。实现扩散模型的一般思路：</p>
+<ol>
+  <li>定义前向扩散过程：\(q\left(\mathbf{x}_t \mid \mathbf{x}_{t-1}\right)\)</li>
+  <li>解析地推导：\(q\left(\mathbf{x}_t \mid \mathbf{x}_{0}\right)\)</li>
+  <li>解析地推导：\(q\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{x}_{0}\right)\)</li>
+  <li>近似反向扩散过程：\(p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)\)</li>
+</ol>
+
+<p>条件扩散模型是指在采样过程\(p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)\)中引入输入条件\(\mathbf{y}\)，则采样过程变为\(p_{\theta}\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{y}\right)\)。</p>
+
+<p>注意到反向扩散过程的建模：</p>
+
+\[\begin{aligned}
+p_\theta\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t\right)&amp;=\mathcal{N}\left(\mathbf{x}_{t-1} ; \boldsymbol{\mu}_\theta\left(\mathbf{x}_t, t\right), \sigma_t^2 \mathbf{I}\right) \\
+\end{aligned}\]
+
+<p>引入输入条件\(\mathbf{y}\)后，定义反向扩散过程：</p>
+
+\[\begin{aligned}
+p_\theta\left(\mathbf{x}_{t-1} \mid \mathbf{x}_t,\mathbf{y}\right)&amp;=\mathcal{N}\left(\mathbf{x}_{t-1} ; \boldsymbol{\mu}_\theta\left(\mathbf{x}_t,\mathbf{y}, t\right), \sigma_t^2 \mathbf{I}\right) \\
+\end{aligned}\]
+
+<p>一般把\(\boldsymbol{\mu}_\theta\)表示为\(\boldsymbol{\epsilon}_\theta\)的函数：</p>
+
+\[\boldsymbol{\mu}_\theta\left(\mathbf{x}_t,\mathbf{y}, t\right) = \frac{1}{\sqrt{\alpha_t}}\left(\mathbf{x}_t-\frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t,\mathbf{y}, t\right)\right)\]
+
+<p>对应训练的损失函数：</p>
+
+\[\begin{aligned} \mathbb{E}_{t \sim[1, T], \mathbf{x}_0, \mathbf{y},\epsilon_t}\left[\left\|\boldsymbol{\epsilon}_t-\boldsymbol{\epsilon}_\theta\left(\sqrt{\bar{\alpha}_t} \mathbf{x}_0+\sqrt{1-\bar{\alpha}_t} \boldsymbol{\epsilon}_t,\mathbf{y}, t\right)\right\|^2\right]\end{aligned}\]
+
+<p>可以引入$w$参数控制生成结果的相关项与多样性。用：</p>
+
+\[\tilde{\boldsymbol{\epsilon}}_\theta\left(\mathbf{x}_t,\mathbf{y}, t\right) = (1+w) \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t,\mathbf{y}, t\right) - w\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)\]
+
+<p>代替\(\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t,\mathbf{y}, t\right)\)来做生成。则当$w$越大时，生成过程将使用更多的条件信号，结果将会提高生成结果与输入信号$y$的相关性，但是会相应地降低生成结果的多样性；反之，则会降低生成结果与输入信号之间的相关性，但增加了多样性。</p>
+
+<p>\(\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)\)可以通过引入一个特定的输入类别$\phi$实现，它对应的目标图像为全体图像，因此把\(\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right) = \boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, \phi, t\right)\)加入到模型训练中。</p>
+
+<p>噪声预测器\(\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t,\mathbf{y}, t\right)\)通过条件<strong>UNet</strong>模型实现，\(\boldsymbol{\epsilon}_\theta\left(\mathbf{x}_t, t\right)\)则通过丢弃条件输入实现：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">def</span> <span class="nf">forward_with_cond_scale</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+        <span class="n">cond_scale</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="n">logits</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">cond_drop_prob</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">null_logits</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">forward</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">cond_drop_prob</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">scaled_logits</span> <span class="o">=</span> <span class="n">null_logits</span> <span class="o">+</span> <span class="p">(</span><span class="n">logits</span> <span class="o">-</span> <span class="n">null_logits</span><span class="p">)</span> <span class="o">*</span> <span class="n">cond_scale</span>
+
+        <span class="k">return</span> <span class="n">scaled_logits</span>
+</code></pre></div></div>
+
+<p>基于事前训练的条件扩散模型的完整实现可参考<a href="https://github.com/lucidrains/denoising-diffusion-pytorch/blob/main/denoising_diffusion_pytorch/classifier_free_guidance.py">denoising-diffusion-pytorch</a>。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/06/11/ganaug.html" class="read-next-link"></a>
+        <section>
+          <span>Training Generative Adversarial Networks with Limited Data</span>
+          <p>  使用有限数据训练生成对抗网络.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/63a269d9b1fccdcd36ff55eb.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/06/09/sim_diffusion.html" class="read-next-link"></a>
+          <section>
+            <span>More Control for Free! Image Synthesis with Semantic Diffusion Guidance</span>
+            <p>  基于语义扩散引导的图像合成.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6436624f0d2dde5777239cfd.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

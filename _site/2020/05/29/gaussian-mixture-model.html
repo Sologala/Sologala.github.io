@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaussian Mixture Model(GMM)：高斯混合模型 - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Gaussian Mixture Model(GMM)：高斯混合模型">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Gaussian Mixture Model(GMM)：高斯混合模型 - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/05/29/gaussian-mixture-model.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>Gaussian Mixture Model(GMM)：高斯混合模型</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-05-29"><i class="iconfont icon-date"></i>29 May 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://img.imgdb.cn/item/60763e328322e6675c8cb89f.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Gaussian Mixture Model.</p>
+</blockquote>
+
+<p><strong>高斯混合模型(Gaussian Mixture Model,GMM)</strong>是一类概率生成模型，表示为$K$个高斯分布的加权平均。其<strong>隐变量(latent variable)</strong>是服从多项分布的离散型随机变量，表示属于每个高斯分布的概率，记作$z$，表示如下：</p>
+
+\[P(z=k) = p^k, \quad k=1,2,...,K. \quad \sum_{k=1}^{K}p^k = 1\]
+
+<p>记<strong>观测变量(observable variable)</strong>为$x$，则高斯混合模型可表示为：</p>
+
+\[P(x) = \sum_{z}^{} P(x,z) = \sum_{z}^{} P(z) P(x|z) \\ = \sum_{k=1}^{K} P(z=k) P(x|z=k) \\ = \sum_{k=1}^{K} p^k \mathcal{N}(x; \mu^k,\sigma^k)\]
+
+<p>假设观测数据为\(\{x_1,x_2,...,x_n\}\)，高斯混合模型的模型参数为\(\theta = \{ p^1,p^2,...,p^K, \mu^1,\mu^2,...,\mu^K,\sigma^1,\sigma^2,...,\sigma^K\}\)。</p>
+
+<p>尝试直接用极大似然估计方法求解该问题。求解如下：</p>
+
+\[\hat{\theta} = \mathop{\arg \max}_{\theta} logp(x;\theta) = \mathop{\arg \max}_{\theta} log \prod_{i=1}^{n} P(x_i;\theta) = \mathop{\arg \max}_{\theta} \sum_{i=1}^{n} log P(x_i;\theta) \\ \mathop{\arg \max}_{\theta} \sum_{i=1}^{n} log \sum_{k=1}^{K} P^k \mathcal{N}(x_i; \mu^k,\sigma^k)\]
+
+<p>上式在对数函数中存在求和项，直接求解是<strong>intractable</strong>的。采用<a href="https://0809zheng.github.io/2020/03/26/expectation-maximization.html">期望最大算法</a>求解该问题。</p>
+
+<h2 id="e-step">E-step</h2>
+<p><strong>EM</strong>算法的<strong>E-step</strong>计算如下：</p>
+
+\[\text{E-step：} P(z|x ; \theta^{(t)}) → \Bbb{E}_{P(z|x ; \theta^{(t)})}[logP(x,z ; \theta)]\]
+
+<p>期望计算如下：</p>
+
+\[\Bbb{E}_{P(z|x ; \theta^{(t)})}[logP(x,z ; \theta)] = \int_{z}^{} P(z|x ; \theta^{(t)}) logP(x,z ; \theta) dz \\ = \sum_{z_1}^{}...\sum_{z_n}^{} P(z|x ; \theta^{(t)}) logP(x,z ; \theta) \\ = \sum_{z_1}^{}...\sum_{z_n}^{} \prod_{i=1}^{n} P(z_i|x_i ; \theta^{(t)}) log \prod_{j=1}^{n} P(x_j,z_j ; \theta) \\ = \sum_{z_1}^{}...\sum_{z_n}^{} \prod_{i=1}^{n} P(z_i|x_i ; \theta^{(t)}) \sum_{j=1}^{n} log P(x_j,z_j ; \theta) \\ = \sum_{z_1}^{}...\sum_{z_n}^{} \prod_{i=1}^{n} P(z_i|x_i ; \theta^{(t)}) log P(x_1,z_1 ; \theta) + ... \\ + \sum_{z_1}^{}...\sum_{z_n}^{} \prod_{i=1}^{n} P(z_i|x_i ; \theta^{(t)}) log P(x_n,z_n ; \theta) \\ = \sum_{z_1}^{} P(z_1|x_1 ; \theta^{(t)}) log P(x_1,z_1 ; \theta) \prod_{j=2}^{n} \sum_{z_j}^{} P(z_j|x_j ; \theta^{(t)}) + ... \\ + \sum_{z_n}^{} P(z_n|x_n ; \theta^{(t)}) log P(x_n,z_n ; \theta) \prod_{j=1}^{n-1} \sum_{z_j}^{} P(z_j|x_j ; \theta^{(t)}) \\ (\text{由于}\sum_{z_j}^{} P(z_j|x_j ; \theta^{(t)})=1) \\ = \sum_{i=1}^{n} \sum_{z_i}^{} P(z_i|x_i ; \theta^{(t)}) log P(x_i,z_i ; \theta) \\ = \sum_{i=1}^{n} \sum_{k=1}^{K} P(z_i=k|x_i ; \theta^{(t)}) log P(x_i,z_i=k ; \theta)\]
+
+<p>联合概率$P(x,z)$计算如下：</p>
+
+\[P(x,z) = P(z)P(x|z) = P(z)\mathcal{N}(x; \mu_z,\sigma_z)\]
+
+<p>条件概率$P(z|x)$计算如下：</p>
+
+\[P(z|x) = \frac{P(x,z)}{P(x)} = \frac{P(z)\mathcal{N}(x; \mu_z,\sigma_z)}{\sum_{k=1}^{K} p^k\mathcal{N}(x; \mu^k,\sigma^k)}\]
+
+<p>记在当前模型参数$\theta^{(t)}$下第$i$个观测数据来自第$k$个分高斯模型的概率为$\gamma_{ik}$，称为分模型$k$对观测数据$x_i$的<strong>响应度</strong>。即：</p>
+
+\[\gamma_{ik} = P(z_i=k|x_i ; \theta^{(t)}) = \frac{p^k\mathcal{N}(x_i; \mu^k,\sigma^k)}{\sum_{k=1}^{K} p^k\mathcal{N}(x_i; \mu^k,\sigma^k)}\]
+
+<p>则原期望计算公式可以表示为：</p>
+
+\[\sum_{i=1}^{n} \sum_{k=1}^{K} P(z_i=k|x_i ; \theta^{(t)}) log P(x_i,z_i=k ; \theta) \\ = \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} log P(z_i=k)P(x_i|z_i=k) = \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} log p^k\mathcal{N}(x_i; \mu^k,\sigma^k) \\ = \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} [log p^k+log\mathcal{N}(x_i; \mu^k,\sigma^k)]\]
+
+<h2 id="m-step">M-step</h2>
+<p><strong>EM</strong>算法的<strong>M-step</strong>计算如下：</p>
+
+\[\text{M-step：} \theta^{(t+1)} = \mathop{\arg \max}_{\theta} \Bbb{E}_{P(z|x ; \theta^{(t)})}[logP(x,z ; \theta)]\]
+
+<h3 id="计算pkt1">计算${p^k}^{(t+1)}$</h3>
+
+\[{p^k}^{(t+1)} = \mathop{\arg \max}_{p^k} \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} [log p^k+log\mathcal{N}(x_i; \mu^k,\sigma^k)] \\ \text{s.t. } \sum_{k=1}^{K} p^k=1\]
+
+<p>采用拉格朗日乘子法解决上述约束最优化问题。建立拉格朗日函数：</p>
+
+\[\mathop{L}(p^k,\lambda) = \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} [log p^k+log\mathcal{N}(x_i; \mu^k,\sigma^k)] + \lambda (\sum_{k=1}^{K} p^k-1)\]
+
+<p>令拉格朗日函数关于参数$p^k$的导数为零：</p>
+
+\[\frac{\partial \mathop{L}(p^k,\lambda)}{\partial p^k} = \sum_{i=1}^{n} \gamma_{ik} \cdot \frac{1}{p^k} + \lambda = 0\]
+
+<p>解得$p^k = -\frac{\sum_{i=1}^{n} \gamma_{ik}}{\lambda}$。又由$\sum_{k=1}^{K} p^k=1$，可得$\lambda = \sum_{i=1}^{n}\sum_{k=1}^{K} \gamma_{ik} = n $，因此参数$p^k$的估计值为：</p>
+
+\[{p^k}^{(t+1)} = \frac{\sum_{i=1}^{n} \gamma_{ik}}{n}\]
+
+<h3 id="计算mukt1">计算${\mu^k}^{(t+1)}$</h3>
+
+\[{\mu^k}^{(t+1)} = \mathop{\arg \max}_{\mu^k} \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} [log p^k+log\mathcal{N}(x_i; \mu^k,\sigma^k)] \\  = \mathop{\arg \max}_{\mu^k} \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} log\mathcal{N}(x_i; \mu^k,\sigma^k) \\ = \mathop{\arg \max}_{\mu^k} \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} log \frac{1}{\sqrt{2\pi}\sigma^k} exp \{ -\frac{(x_i-\mu^k)^2}{ 2(\sigma^k)^2} \} \\ = \mathop{\arg \max}_{\mu^k} \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} [ log\frac{1}{\sqrt{2\pi}} - log\sigma^k -\frac{(x_i-\mu^k)^2}{ 2(\sigma^k)^2} ]\]
+
+<p>令上述表达式关于参数$\mu^k$的导数为零：</p>
+
+\[\frac{\partial}{\partial \mu^k} \sum_{i=1}^{n} \sum_{k=1}^{K} - \gamma_{ik} \frac{(x_i-\mu^k)^2}{ 2(\sigma^k)^2} = \sum_{i=1}^{n} \gamma_{ik} \frac{2(x_i-\mu^k)}{ 2(\sigma^k)^2} = 0\]
+
+<p>解得：</p>
+
+\[{\mu^k}^{(t+1)} = \frac{\sum_{i=1}^{n} \gamma_{ik} x_i}{\sum_{i=1}^{n} \gamma_{ik}}\]
+
+<h3 id="计算sigmakt1">计算${\sigma^k}^{(t+1)}$</h3>
+
+\[{\sigma^k}^{(t+1)} = \mathop{\arg \max}_{\sigma^k} \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} [ log\frac{1}{\sqrt{2\pi}} - log\sigma^k -\frac{(x_i-\mu^k)^2}{ 2(\sigma^k)^2} ]\]
+
+<p>令上述表达式关于参数$\sigma^k$的导数为零：</p>
+
+\[\frac{\partial}{\partial \sigma^k} \sum_{i=1}^{n} \sum_{k=1}^{K} \gamma_{ik} [ - log\sigma^k -\frac{(x_i-\mu^k)^2}{ 2(\sigma^k)^2} ] = \sum_{i=1}^{n} \gamma_{ik} [-\frac{1}{\sigma^k} + \cdot \frac{(x_i-\mu^k)^2}{ (\sigma^k)^3}] = 0\]
+
+<p>解得：</p>
+
+\[({\sigma^k}^{(t+1)})^2 = \frac{\sum_{i=1}^{n} \gamma_{ik}(x_i-{\mu^k}^{(t+1)})^2}{\sum_{i=1}^{n} \gamma_{ik}}\]
+
+<h2 id="算法总结">算法总结</h2>
+<p>数据样本集为\(\{x_1,x_2,...,x_n\}\)，建立高斯混合模型：</p>
+
+\[P(x) = \sum_{k=1}^{K} p^k \mathcal{N}(x; \mu^k,\sigma^k)\]
+
+<p>待求模型参数为\(\theta = \{ p^1,p^2,...,p^K, \mu^1,\mu^2,...,\mu^K,\sigma^1,\sigma^2,...,\sigma^K\}\)，随机取参数的初始值开始迭代。</p>
+
+<p>根据当前模型参数，计算分模型$k$对观测数据$x_i$的响应度：</p>
+
+\[\gamma_{ik} = P(z_i=k|x_i ; \theta^{(t)}) = \frac{p^k\mathcal{N}(x_i; \mu^k,\sigma^k)}{\sum_{k=1}^{K} p^k\mathcal{N}(x_i; \mu^k,\sigma^k)}\]
+
+<p>计算新一轮迭代的模型参数：</p>
+
+\[{p^k}^{(t+1)} = \frac{\sum_{i=1}^{n} \gamma_{ik}}{n}\]
+
+\[{\mu^k}^{(t+1)} = \frac{\sum_{i=1}^{n} \gamma_{ik} x_i}{\sum_{i=1}^{n} \gamma_{ik}}\]
+
+\[({\sigma^k}^{(t+1)})^2 = \frac{\sum_{i=1}^{n} \gamma_{ik}(x_i-{\mu^k}^{(t+1)})^2}{\sum_{i=1}^{n} \gamma_{ik}}\]
+
+<p>重复迭代直至收敛。</p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/05/31/pose-estimation.html" class="read-next-link"></a>
+        <section>
+          <span>人体姿态估计(Human Pose Estimation)</span>
+          <p>  Person Pose Estimation.人体姿态估计 (Human Pose Estimation, H...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.downk.cc/item/5ebab802101ccd402bd8d03b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/05/23/image_translation.html" class="read-next-link"></a>
+          <section>
+            <span>图像到图像翻译(Image-to-Image Translation)</span>
+            <p>  Image-to-Image Translation.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63970e69b1fccdcd367c01dd.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

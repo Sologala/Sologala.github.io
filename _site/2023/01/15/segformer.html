@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2023/01/15/segformer.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="23-01-15"><i class="iconfont icon-date"></i>15 Jan 2023</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/641417d4a682492fcc36c846.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>SegFormer：为语义分割设计的简单高效的Transformer模型.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2105.15203">SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers</a></li>
+</ul>
+
+<p><strong>SegFormer</strong>是一种为语义分割任务设计的<strong>Transformer</strong>模型，主要有以下几个特点：</p>
+<ul>
+  <li><strong>ViT</strong>做<strong>patch embedding</strong>时，每个<strong>patch</strong>都是独立的，而<strong>SegFormer</strong>对<strong>patch</strong>设计成有重叠的，保证局部连续性。</li>
+  <li>使用了多尺度特征融合。<strong>Encoder</strong>输出多尺度的特征，<strong>Decoder</strong>将多尺度的特征融合在一起。模型能够同时捕捉高分辨率的粗略特征和低分辨率的细小特征，优化分割结果。</li>
+  <li>舍弃了<strong>ViT</strong>中的<strong>position embedding</strong>位置编码，取而代之的是<strong>Mix FFN</strong>。在测试图片大小与训练集图片大小不一致时，不需要再对位置向量做双线性插值。</li>
+  <li>轻量级的<strong>Decoder</strong>：使得<strong>Decoder</strong>的计算量和参数量非常小，从而使得整个模型可以高效运行，简单直接。并且通过聚合不同层的信息，结合了局部和全局注意力。</li>
+</ul>
+
+<p><img src="https://pic.imgdb.cn/item/6414188aa682492fcc38e8ce.jpg" alt="" /></p>
+
+<p><strong>SegFormer</strong>可以分为两个部分：用于生成多尺度特征的分层<strong>Encoder</strong>和轻量级的<strong>All-MLP Decoder</strong>，融合多层特征并上采样，最终解决分割任务。输入一张大小$H \times W \times 3$的图片，首先将其划分为大小$4 \times 4$的<strong>patches</strong>。对比<strong>ViT</strong>中使用的大小$16 \times 16$的<strong>patches</strong>，使用更小的<strong>patches</strong>有利于进行分割任务。使用这些<strong>patches</strong>作为<strong>Encoder</strong>的输入，获取大小为$\frac{H}{4} \times \frac{W}{4} \times C_1$、$\frac{H}{8} \times \frac{W}{8} \times C_2$、$\frac{H}{16} \times \frac{W}{16} \times C_3$、$\frac{H}{32} \times \frac{W}{32} \times C_4$的多尺度的特征图。将这些多尺度特征输入到解码器中，经过一系列<strong>MLP</strong>和上采样操作，最终输出大小$\frac{H}{4} \times \frac{W}{4} \times N_{cls}$的特征图，其中$N_{cls}$是类别个数。</p>
+
+<h2 id="1-编码器">（1） 编码器</h2>
+
+<p><strong>Encoder</strong>是由<strong>Transformer Block</strong>堆叠起来的，其中包含<strong>Efficient Self-Attention</strong>、<strong>Mix-FFN</strong>和<strong>Overlap Patch Embedding</strong>三个模块。</p>
+
+<h3 id="-overlapped-patch-merging">⚪ Overlapped Patch Merging</h3>
+
+<p>为了产生类似于<strong>CNN backbone</strong>的多尺度特征图，<strong>SegFormer</strong>使用了<strong>patch merging</strong>的方法，通过$H \times W \times 3$的输入图像，得到大小$\frac{H}{2^{i+1}} \times \frac{W}{2^{i+1}} \times C_i$的多尺度特征图，其中\(i \in \{1,2,3,4\}\)，并且$C_{i+1}&gt;C_i$。</p>
+
+<p><strong>ViT</strong>中的<strong>patch merging</strong>可以将$2 \times 2 \times C_i$的特征图合并成为$1 \times 1 \times C_{i+1}$的向量来达到降低特征图分辨率的目的。<strong>SegFormer</strong>同样使用这种方法，将分层特征从$F_1 (\frac{H}{4} \times \frac{W}{4} \times C_1)$缩小到$F_2 (\frac{H}{8} \times \frac{W}{8} \times C_2)$，同样的方法可以得到$F_3,F_4$。但是由于<strong>ViT</strong>中的<strong>patch</strong>是不重叠的，会丢失<strong>patch</strong>边界的连续性，因此<strong>SegFormer</strong>在切割<strong>patch</strong>时采用了重叠的<strong>patch</strong>。切割方法类似于卷积核在<strong>feature map</strong>上的移动卷积，源代码中也是采用卷积来实现，设置卷积核大小$K$、步距$S$、填充大小$P$。</p>
+
+<p>第一个<strong>Transformer Block</strong>的<strong>Patch Merging</strong>设置为$K=7,S=4,P=3$，这样输出特征图大小变成输入特征图大小的$\frac{1}{4}$。之后三个<strong>Transformer Block</strong>的<strong>Patch Merging</strong>设置为$K=3,S=2,P=1$，输出特征图大小变为输入特征图大小的$\frac{1}{2}$。这样最终就得到了分辨率分别是$\frac{H}{4} \times \frac{W}{4} \times C_1$、$\frac{H}{8} \times \frac{W}{8} \times C_2$、$\frac{H}{16} \times \frac{W}{16} \times C_3$、$\frac{H}{32} \times \frac{W}{32} \times C_4$的多尺度的特征图。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">OverlapPatchEmbed</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="mi">224</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">in_chans</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">768</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_chans</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">patch_size</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="n">patch_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">patch_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">embed_dim</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> 
+</code></pre></div></div>
+
+<h3 id="-efficient-self-attention">⚪ Efficient Self-Attention</h3>
+
+<p><strong>Transformer</strong>的计算量之所以大，主要是因为其<strong>Self-Attention</strong>的计算。对应<strong>multi-head self-attention</strong>来说，每一个<strong>head</strong>的<strong>Q、K、V</strong>都是相同维度$N \times C$，其中$N=H \times W$是序列的长度。这个过程的计算复杂度是$O(N^2)$，对于高分辨率的图像来说这是无法计算的。</p>
+
+<p>为了减少计算量，作者采用了<strong>spatial reduction</strong>操作。输入维度$N \times C$的<strong>K</strong>和<strong>V</strong>矩阵通过<strong>Reshape</strong>变成$\frac{N}{R} \times (C \cdot R)$的大小。然后通过线性变换，将$(C \cdot R)$的维度变为$C$。这样输出的大小就变成了$\frac{N}{R} \times C$。计算复杂度就变成了$O(\frac{N^2}{R})$。论文中四个<strong>Transformer Block</strong>分别将$R$设置成了$[64,16,4,1]$。源代码中使用卷积实现。</p>
+
+\[\begin{aligned}
+\hat{K} &amp; =\operatorname{Reshape}\left(\frac{N}{R}, C \cdot R\right)(K) \\
+K &amp; =\operatorname{Linear}(C \cdot R, C)(\hat{K})
+\end{aligned}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Attention</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">num_heads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qk_scale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">attn_drop</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">proj_drop</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">sr_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">dim</span> <span class="o">%</span> <span class="n">num_heads</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="sa">f</span><span class="s">"dim </span><span class="si">{</span><span class="n">dim</span><span class="si">}</span><span class="s"> should be divided by num_heads </span><span class="si">{</span><span class="n">num_heads</span><span class="si">}</span><span class="s">."</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span> <span class="o">=</span> <span class="n">num_heads</span>
+        <span class="n">head_dim</span> <span class="o">=</span> <span class="n">dim</span> <span class="o">//</span> <span class="n">num_heads</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">qk_scale</span> <span class="ow">or</span> <span class="n">head_dim</span> <span class="o">**</span> <span class="o">-</span><span class="mf">0.5</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">q</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">kv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">attn_drop</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">attn_drop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">proj_drop</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">proj_drop</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">sr_ratio</span> <span class="o">=</span> <span class="n">sr_ratio</span>
+        <span class="k">if</span> <span class="n">sr_ratio</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">sr</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="n">sr_ratio</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="n">sr_ratio</span><span class="p">)</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">q</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">C</span> <span class="o">//</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">sr_ratio</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x_</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+            <span class="n">x_</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">sr</span><span class="p">(</span><span class="n">x_</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">x_</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x_</span><span class="p">)</span>
+            <span class="n">kv</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">kv</span><span class="p">(</span><span class="n">x_</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">C</span> <span class="o">//</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kv</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">kv</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">C</span> <span class="o">//</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_heads</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">kv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">attn</span> <span class="o">=</span> <span class="p">(</span><span class="n">q</span> <span class="o">@</span> <span class="n">k</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">scale</span>
+        <span class="n">attn</span> <span class="o">=</span> <span class="n">attn</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">attn_drop</span><span class="p">(</span><span class="n">attn</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">attn</span> <span class="o">@</span> <span class="n">v</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj_drop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<h3 id="-mix-ffn">⚪ Mix-FFN</h3>
+
+<p>作者认为在语义分割任务中实际上并不需要<strong>position encoding</strong>，采用<strong>Mix-FFN</strong>替代。<strong>Mix-FFN</strong>假设<strong>0 padding</strong>操作可以汇入位置信息，直接用<strong>0 padding</strong>的$3 \times 3$卷积来达到这一目的：</p>
+
+\[\mathbf{x}_{\text {out }}=\operatorname{MLP}\left(\operatorname{GELU}\left(\operatorname{Conv}_{3 \times 3}\left(\operatorname{MLP}\left(\mathbf{x}_{i n}\right)\right)\right)\right)+\mathbf{x}_{i n}\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mlp</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_features</span><span class="p">,</span> <span class="n">hidden_features</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">GELU</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="n">out_features</span> <span class="o">=</span> <span class="n">out_features</span> <span class="ow">or</span> <span class="n">in_features</span>
+        <span class="n">hidden_features</span> <span class="o">=</span> <span class="n">hidden_features</span> <span class="ow">or</span> <span class="n">in_features</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="p">,</span> <span class="n">hidden_features</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dwconv</span> <span class="o">=</span> <span class="n">DWConv</span><span class="p">(</span><span class="n">hidden_features</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">act</span> <span class="o">=</span> <span class="n">act_layer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">fc2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_features</span><span class="p">,</span> <span class="n">out_features</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">drop</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">drop</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dwconv</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">act</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">drop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">fc2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">drop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="k">class</span> <span class="nc">DWConv</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">768</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DWConv</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">dwconv</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dwconv</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+<h3 id="-encoder">⚪ Encoder</h3>
+
+<p>完整的编码器实现如下：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Block</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">num_heads</span><span class="p">,</span> <span class="n">mlp_ratio</span><span class="o">=</span><span class="mf">4.</span><span class="p">,</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qk_scale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">attn_drop</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                 <span class="n">drop_path</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">GELU</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">,</span> <span class="n">sr_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm1</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">attn</span> <span class="o">=</span> <span class="n">Attention</span><span class="p">(</span>
+            <span class="n">dim</span><span class="p">,</span>
+            <span class="n">num_heads</span><span class="o">=</span><span class="n">num_heads</span><span class="p">,</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">,</span> <span class="n">qk_scale</span><span class="o">=</span><span class="n">qk_scale</span><span class="p">,</span>
+            <span class="n">attn_drop</span><span class="o">=</span><span class="n">attn_drop</span><span class="p">,</span> <span class="n">proj_drop</span><span class="o">=</span><span class="n">drop</span><span class="p">,</span> <span class="n">sr_ratio</span><span class="o">=</span><span class="n">sr_ratio</span><span class="p">)</span>
+        <span class="c1"># NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">drop_path</span> <span class="o">=</span> <span class="n">DropPath</span><span class="p">(</span><span class="n">drop_path</span><span class="p">)</span> <span class="k">if</span> <span class="n">drop_path</span> <span class="o">&gt;</span> <span class="mf">0.</span> <span class="k">else</span> <span class="n">nn</span><span class="p">.</span><span class="n">Identity</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm2</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+        <span class="n">mlp_hidden_dim</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">dim</span> <span class="o">*</span> <span class="n">mlp_ratio</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">mlp</span> <span class="o">=</span> <span class="n">Mlp</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">hidden_features</span><span class="o">=</span><span class="n">mlp_hidden_dim</span><span class="p">,</span> <span class="n">act_layer</span><span class="o">=</span><span class="n">act_layer</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="n">drop</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">drop_path</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">attn</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">drop_path</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">mlp</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">norm2</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="k">class</span> <span class="nc">MixVisionTransformer</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_size</span><span class="o">=</span><span class="mi">224</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">in_chans</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">embed_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">],</span>
+                 <span class="n">num_heads</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="n">mlp_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">qk_scale</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">drop_rate</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                 <span class="n">attn_drop_rate</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">drop_path_rate</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="n">LayerNorm</span><span class="p">,</span>
+                 <span class="n">depths</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">sr_ratios</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">depths</span> <span class="o">=</span> <span class="n">depths</span>
+
+        <span class="c1"># patch_embed
+</span>        <span class="bp">self</span><span class="p">.</span><span class="n">patch_embed1</span> <span class="o">=</span> <span class="n">OverlapPatchEmbed</span><span class="p">(</span><span class="n">img_size</span><span class="o">=</span><span class="n">img_size</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">in_chans</span><span class="o">=</span><span class="n">in_chans</span><span class="p">,</span>
+                                              <span class="n">embed_dim</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">patch_embed2</span> <span class="o">=</span> <span class="n">OverlapPatchEmbed</span><span class="p">(</span><span class="n">img_size</span><span class="o">=</span><span class="n">img_size</span> <span class="o">//</span> <span class="mi">4</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">in_chans</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                              <span class="n">embed_dim</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">patch_embed3</span> <span class="o">=</span> <span class="n">OverlapPatchEmbed</span><span class="p">(</span><span class="n">img_size</span><span class="o">=</span><span class="n">img_size</span> <span class="o">//</span> <span class="mi">8</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">in_chans</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                              <span class="n">embed_dim</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">patch_embed4</span> <span class="o">=</span> <span class="n">OverlapPatchEmbed</span><span class="p">(</span><span class="n">img_size</span><span class="o">=</span><span class="n">img_size</span> <span class="o">//</span> <span class="mi">16</span><span class="p">,</span> <span class="n">patch_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">in_chans</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                                              <span class="n">embed_dim</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+        <span class="c1"># transformer encoder
+</span>        <span class="n">dpr</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">.</span><span class="n">item</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">torch</span><span class="p">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">drop_path_rate</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">depths</span><span class="p">))]</span>  <span class="c1"># stochastic depth decay rule
+</span>        <span class="n">cur</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">block1</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span><span class="n">Block</span><span class="p">(</span>
+            <span class="n">dim</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_heads</span><span class="o">=</span><span class="n">num_heads</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">mlp_ratio</span><span class="o">=</span><span class="n">mlp_ratios</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">,</span> <span class="n">qk_scale</span><span class="o">=</span><span class="n">qk_scale</span><span class="p">,</span>
+            <span class="n">drop</span><span class="o">=</span><span class="n">drop_rate</span><span class="p">,</span> <span class="n">attn_drop</span><span class="o">=</span><span class="n">attn_drop_rate</span><span class="p">,</span> <span class="n">drop_path</span><span class="o">=</span><span class="n">dpr</span><span class="p">[</span><span class="n">cur</span> <span class="o">+</span> <span class="n">i</span><span class="p">],</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span>
+            <span class="n">sr_ratio</span><span class="o">=</span><span class="n">sr_ratios</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depths</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm1</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">cur</span> <span class="o">+=</span> <span class="n">depths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">block2</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span><span class="n">Block</span><span class="p">(</span>
+            <span class="n">dim</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num_heads</span><span class="o">=</span><span class="n">num_heads</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">mlp_ratio</span><span class="o">=</span><span class="n">mlp_ratios</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">,</span> <span class="n">qk_scale</span><span class="o">=</span><span class="n">qk_scale</span><span class="p">,</span>
+            <span class="n">drop</span><span class="o">=</span><span class="n">drop_rate</span><span class="p">,</span> <span class="n">attn_drop</span><span class="o">=</span><span class="n">attn_drop_rate</span><span class="p">,</span> <span class="n">drop_path</span><span class="o">=</span><span class="n">dpr</span><span class="p">[</span><span class="n">cur</span> <span class="o">+</span> <span class="n">i</span><span class="p">],</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span>
+            <span class="n">sr_ratio</span><span class="o">=</span><span class="n">sr_ratios</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depths</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm2</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">cur</span> <span class="o">+=</span> <span class="n">depths</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">block3</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span><span class="n">Block</span><span class="p">(</span>
+            <span class="n">dim</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">num_heads</span><span class="o">=</span><span class="n">num_heads</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">mlp_ratio</span><span class="o">=</span><span class="n">mlp_ratios</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">,</span> <span class="n">qk_scale</span><span class="o">=</span><span class="n">qk_scale</span><span class="p">,</span>
+            <span class="n">drop</span><span class="o">=</span><span class="n">drop_rate</span><span class="p">,</span> <span class="n">attn_drop</span><span class="o">=</span><span class="n">attn_drop_rate</span><span class="p">,</span> <span class="n">drop_path</span><span class="o">=</span><span class="n">dpr</span><span class="p">[</span><span class="n">cur</span> <span class="o">+</span> <span class="n">i</span><span class="p">],</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span>
+            <span class="n">sr_ratio</span><span class="o">=</span><span class="n">sr_ratios</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depths</span><span class="p">[</span><span class="mi">2</span><span class="p">])])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm3</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="n">cur</span> <span class="o">+=</span> <span class="n">depths</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">block4</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">ModuleList</span><span class="p">([</span><span class="n">Block</span><span class="p">(</span>
+            <span class="n">dim</span><span class="o">=</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">num_heads</span><span class="o">=</span><span class="n">num_heads</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">mlp_ratio</span><span class="o">=</span><span class="n">mlp_ratios</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">qkv_bias</span><span class="o">=</span><span class="n">qkv_bias</span><span class="p">,</span> <span class="n">qk_scale</span><span class="o">=</span><span class="n">qk_scale</span><span class="p">,</span>
+            <span class="n">drop</span><span class="o">=</span><span class="n">drop_rate</span><span class="p">,</span> <span class="n">attn_drop</span><span class="o">=</span><span class="n">attn_drop_rate</span><span class="p">,</span> <span class="n">drop_path</span><span class="o">=</span><span class="n">dpr</span><span class="p">[</span><span class="n">cur</span> <span class="o">+</span> <span class="n">i</span><span class="p">],</span> <span class="n">norm_layer</span><span class="o">=</span><span class="n">norm_layer</span><span class="p">,</span>
+            <span class="n">sr_ratio</span><span class="o">=</span><span class="n">sr_ratios</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depths</span><span class="p">[</span><span class="mi">3</span><span class="p">])])</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">norm4</span> <span class="o">=</span> <span class="n">norm_layer</span><span class="p">(</span><span class="n">embed_dims</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">B</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">outs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># stage 1
+</span>        <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">patch_embed1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">blk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">block1</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">norm1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">contiguous</span><span class="p">()</span>
+        <span class="n">outs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># stage 2
+</span>        <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">patch_embed2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">blk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">block2</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">norm2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">contiguous</span><span class="p">()</span>
+        <span class="n">outs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># stage 3
+</span>        <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">patch_embed3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">blk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">block3</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">norm3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">contiguous</span><span class="p">()</span>
+        <span class="n">outs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># stage 4
+</span>        <span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">patch_embed4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">blk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">block4</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">norm4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">).</span><span class="n">contiguous</span><span class="p">()</span>
+        <span class="n">outs</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">outs</span>
+</code></pre></div></div>
+
+<h2 id="2-解码器">（2） 解码器</h2>
+
+<p><strong>SegFormer</strong>的<strong>Decoder</strong>是一个仅由<strong>MLP</strong>层组成的轻量级<strong>Decoder</strong>，之所以能够使用这种简单结构，关键在于分层<strong>Transformer</strong>编码器具有比传统<strong>CNN</strong>编码器更大的有效感受野。</p>
+
+<p><strong>All-MLP Decoder</strong>包含四个主要步骤：</p>
+
+<p>① 来自<strong>Encoder</strong>的四个不同分辨率的特征图$F_i$分别经过<strong>MLP</strong>层使得通道维度相同;</p>
+
+\[\hat{\mathrm{F}}_{\mathrm{i}}=\operatorname{Linear}\left(\mathrm{C}_{\mathrm{i}}, \mathrm{C}\right)\left(\mathrm{F}_{\mathrm{i}}\right), \forall \mathrm{i}\]
+
+<p>② 将特征图分别进行双线性插值上采样到原图的$\frac{1}{4}$，并拼接在一起;</p>
+
+\[\hat{\mathrm{F}}_{\mathrm{i}}=\mathrm{U} \text { psample }\left(\frac{\mathrm{W}}{4} \times \frac{\mathrm{W}}{4}\right)\left(\hat{\mathrm{F}}_{\mathrm{i}}\right), \forall \mathrm{i}\]
+
+<p>③ 使用<strong>MLP</strong>层来融合级联特征；</p>
+
+\[\mathrm{F}=\operatorname{Linear}(4 \mathrm{C}, \mathrm{C})\left(\operatorname{Concat}\left(\hat{\mathrm{F}}_{\mathrm{i}}\right)\right), \forall \mathrm{i}\]
+
+<p>④ 使用另外一个<strong>MLP</strong>层采用融合特征图输出最终$\frac{H}{4} \times \frac{W}{4} \times N_{cls}$的预测特征图。</p>
+
+\[\mathrm{M}=\operatorname{Linear}\left(\mathrm{C}, \mathrm{N}_{\mathrm{cls}}\right)(\mathrm{F})\]
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MLP</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="s">"""
+    Linear Embedding
+    """</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="mi">768</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="k">class</span> <span class="nc">SegFormerHead</span><span class="p">(</span><span class="n">BaseDecodeHead</span><span class="p">):</span>
+    <span class="s">"""
+    SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers
+    """</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_strides</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SegFormerHead</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">(</span><span class="n">input_transform</span><span class="o">=</span><span class="s">'multiple_select'</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">feature_strides</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">min</span><span class="p">(</span><span class="n">feature_strides</span><span class="p">)</span> <span class="o">==</span> <span class="n">feature_strides</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">feature_strides</span> <span class="o">=</span> <span class="n">feature_strides</span>
+
+        <span class="n">c1_in_channels</span><span class="p">,</span> <span class="n">c2_in_channels</span><span class="p">,</span> <span class="n">c3_in_channels</span><span class="p">,</span> <span class="n">c4_in_channels</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">in_channels</span>
+
+        <span class="n">decoder_params</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">'decoder_params'</span><span class="p">]</span>
+        <span class="n">embedding_dim</span> <span class="o">=</span> <span class="n">decoder_params</span><span class="p">[</span><span class="s">'embed_dim'</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">linear_c4</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="n">c4_in_channels</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="n">embedding_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">linear_c3</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="n">c3_in_channels</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="n">embedding_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">linear_c2</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="n">c2_in_channels</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="n">embedding_dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">linear_c1</span> <span class="o">=</span> <span class="n">MLP</span><span class="p">(</span><span class="n">input_dim</span><span class="o">=</span><span class="n">c1_in_channels</span><span class="p">,</span> <span class="n">embed_dim</span><span class="o">=</span><span class="n">embedding_dim</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">linear_fuse</span> <span class="o">=</span> <span class="n">ConvModule</span><span class="p">(</span>
+            <span class="n">in_channels</span><span class="o">=</span><span class="n">embedding_dim</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">out_channels</span><span class="o">=</span><span class="n">embedding_dim</span><span class="p">,</span>
+            <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">norm_cfg</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s">'SyncBN'</span><span class="p">,</span> <span class="n">requires_grad</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="p">.</span><span class="n">linear_pred</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">embedding_dim</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">_transform_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>  <span class="c1"># len=4, 1/4,1/8,1/16,1/32
+</span>        <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">c3</span><span class="p">,</span> <span class="n">c4</span> <span class="o">=</span> <span class="n">x</span>
+
+        <span class="c1">############## MLP decoder on C1-C4 ###########
+</span>        <span class="n">n</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">c4</span><span class="p">.</span><span class="n">shape</span>
+
+        <span class="n">_c4</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">linear_c4</span><span class="p">(</span><span class="n">c4</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">c4</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">c4</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">_c4</span> <span class="o">=</span> <span class="n">resize</span><span class="p">(</span><span class="n">_c4</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">c1</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:],</span><span class="n">mode</span><span class="o">=</span><span class="s">'bilinear'</span><span class="p">,</span><span class="n">align_corners</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">_c3</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">linear_c3</span><span class="p">(</span><span class="n">c3</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">c3</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">c3</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">_c3</span> <span class="o">=</span> <span class="n">resize</span><span class="p">(</span><span class="n">_c3</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">c1</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:],</span><span class="n">mode</span><span class="o">=</span><span class="s">'bilinear'</span><span class="p">,</span><span class="n">align_corners</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">_c2</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">linear_c2</span><span class="p">(</span><span class="n">c2</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">c2</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">c2</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">_c2</span> <span class="o">=</span> <span class="n">resize</span><span class="p">(</span><span class="n">_c2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">c1</span><span class="p">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">:],</span><span class="n">mode</span><span class="o">=</span><span class="s">'bilinear'</span><span class="p">,</span><span class="n">align_corners</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">_c1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">linear_c1</span><span class="p">(</span><span class="n">c1</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">).</span><span class="n">reshape</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">c1</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">c1</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+        <span class="n">_c</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">linear_fuse</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">cat</span><span class="p">([</span><span class="n">_c4</span><span class="p">,</span> <span class="n">_c3</span><span class="p">,</span> <span class="n">_c2</span><span class="p">,</span> <span class="n">_c1</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">_c</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">linear_pred</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2023/01/16/pit.html" class="read-next-link"></a>
+        <section>
+          <span>Rethinking Spatial Dimensions of Vision Transformers</span>
+          <p>  PiT：重新思考视觉Transformer的空间维度.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64157558a682492fcc4d17a6.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2023/01/14/transunet.html" class="read-next-link"></a>
+          <section>
+            <span>TransUNet: Transformers Make Strong Encoders for Medical Image Segmentation</span>
+            <p>  TransUNet：用Transformer为医学图像分割构造强力编码器.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/64140f98a682492fcc1ff6a2.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lookahead Optimizer: k steps forward, 1 step back - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Lookahead Optimizer: k steps forward, 1 step back">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Lookahead Optimizer: k steps forward, 1 step back - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2020/12/14/lookahead.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Lookahead Optimizer: k steps forward, 1 step back</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="20-12-14"><i class="iconfont icon-date"></i>14 Dec 2020</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/620a1a5c2ab3f51d91a95333.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Lookahead：快权重更新k次，慢权重更新1次.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1907.08610">Lookahead Optimizer: k steps forward, 1 step back</a></li>
+</ul>
+
+<p>对梯度下降算法进行的改进可分为两种，自适应学习率(如<strong>AdaGrad</strong>)和动量(如<strong>momentum</strong>)。作者提出了一种新的优化算法<strong>lookahead</strong>，与上述优化算法是正交的，可以提高任意优化算法的性能。<strong>lookahead</strong>迭代地更新两组权重，能够提高学习稳定性，降低优化器的方差，而额外的计算成本可以忽略不计。</p>
+
+<h2 id="1-lookahead">1. Lookahead</h2>
+
+<p><strong>lookahead</strong>算法维护两组权重，即<strong>慢权重(slow weight)</strong> $\phi$ 和<strong>快权重(fast weight)</strong> $\theta$。</p>
+
+<p><strong>快权重</strong> $\theta$是通过任意一种标准优化算法$A$进行更新的。在第$t$轮更新中，快权重首先被初始化为上一轮慢权重$\theta_{t,0}=\phi_{t-1}$，之后进行$k$次更新。若记批量数据为$d$，损失函数为$L$，则第$t$轮中快权重的第$i$次更新为：</p>
+
+\[\theta_{t,i} = \theta_{t,i-1} +A(L,\theta_{t,i-1},d)\]
+
+<p><strong>慢权重</strong> $\phi$是通过在参数空间$\theta-\phi$中进行线性插值得到的。快权重每经过$k$次更新后，慢权重更新$1$次：</p>
+
+\[\phi_{t} = \phi_{t-1} +\alpha(\theta_{t,k}-\phi_{t-1})\]
+
+<p>慢权重也可以看作每$k$次更新的快权重的指数滑动平均：</p>
+
+\[\phi_{t} = \phi_{t-1}+\alpha(\theta_{t,k}-\phi_{t-1}) = (1-\alpha) \phi_{t-1} + \alpha \theta_{t,k} \\ = (1-\alpha) [(1-\alpha) \phi_{t-2} + \alpha \theta_{t-1,k}] + \alpha \theta_{t,k} \\ = (1-\alpha)^t \phi_0 + \sum_{i=1}^{t}\alpha (1-\alpha)^{t-i}\theta_{i,k}\]
+
+<p>直观上，<strong>lookahead</strong>算法使用任何标准优化器更新“快权重”$k$次，然后沿最终快权重的方向更新一次“慢权重”；相比于直接使用优化器更新$k$次，运算操作数变为$O(\frac{k+1}{k})$倍。</p>
+
+<p>当快权重沿低曲率方向进行更新时，慢权重通过参数插值平滑振荡，实现快速收敛。下图显示了在<strong>CIFAR-100</strong>上优化<strong>ResNet-32</strong>模型时快权重和慢权重的更新轨迹。当快权重在极小值附近探索时，慢权重更新将推向一个测试精度更高的区域。</p>
+
+<p><img src="https://pic.imgdb.cn/item/620b0d972ab3f51d91650004.jpg" alt="" /></p>
+
+<h2 id="2-实验分析">2. 实验分析</h2>
+
+<p><strong>lookahead</strong>算法需要设置两个超参数，快权重每轮更新次数$k$和慢权重的步长$\alpha$。通过对超参数不同取值的实验表明，模型对这两个超参数具有一定的鲁棒性，在实践中可以不对它们进行调整，默认$k=5,\alpha=0.5$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/620b11cd2ab3f51d9168a8d1.jpg" alt="" /></p>
+
+<p>作者绘制了在不同阶段的快权重和慢权重更新导致的损失曲线。在每个阶段中，快权重更新可能导致任务性能的大幅下降，结果具有较高的方差。慢权重通过插值降低了方差，稳定模型性能。</p>
+
+<p><img src="https://pic.imgdb.cn/item/620b12772ab3f51d91694d3e.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2020/12/15/lars.html" class="read-next-link"></a>
+        <section>
+          <span>Large Batch Training of Convolutional Networks</span>
+          <p>  LARS：层级自适应学习率缩放.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/620c9bb72ab3f51d91dfa8fa.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2020/12/13/radam.html" class="read-next-link"></a>
+          <section>
+            <span>On the Variance of the Adaptive Learning Rate and Beyond</span>
+            <p>  Radam：修正Adam算法中自适应学习率的早期方差.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6203463d2ab3f51d91e1c16d.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

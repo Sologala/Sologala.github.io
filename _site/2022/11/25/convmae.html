@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConvMAE: Masked Convolution Meets Masked Autoencoders - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="ConvMAE: Masked Convolution Meets Masked Autoencoders">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="ConvMAE: Masked Convolution Meets Masked Autoencoders - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/11/25/convmae.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>ConvMAE: Masked Convolution Meets Masked Autoencoders</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-11-25"><i class="iconfont icon-date"></i>25 Nov 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6558591ec458853aefb5d830.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>ConvMAE：结合掩码卷积与掩码自编码器.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2205.03892">ConvMAE: Masked Convolution Meets Masked Autoencoders</a></li>
+</ul>
+
+<p><strong>ConvMAE</strong> 是多尺度的金字塔式架构 + 局部的归纳偏置的模型，使用 <strong>MAE</strong> 的 <strong>Self-supervised Learning</strong> 的训练方式。与 <strong>MAE-Base</strong> 相比，<strong>ConvMAE-Base</strong> 将 <strong>ImageNet-1k</strong> 的微调精度提高到 <strong>85.0% (+1.4%)</strong>，将 <strong>Mask-RCNN COCO</strong> 检测任务的 <strong>AP box</strong> 提高到 <strong>53.2% (+2.9%)</strong>，将 <strong>UperNet</strong> 的 <strong>ADE20k</strong> 分割任务的 <strong>mIoU</strong> 提高到 <strong>51.7% (+3.6%)</strong>。</p>
+
+<p><strong>ConvMAE</strong> 框架有一个 <strong>Encoder</strong> 和 <strong>Decoder</strong>。<strong>Encoder</strong> 是 <strong>convolution-transformer</strong> 混合架构，<strong>Decoder</strong> 是纯 <strong>transformer</strong> 架构。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65585a60c458853aefbaaa0b.jpg" alt="" /></p>
+
+<p><strong>Encoder</strong> 部分包括了<strong>3</strong>个 <strong>stage</strong>，设输入图片的尺寸$(H,W)$，每个 <strong>stage</strong> 输出的特征分别是$(H/4,W/4),(H/8,W/8),(H/16,W/16)$。前两个 <strong>stage</strong> 是卷积模块，使用 <strong>Masked Convolutional Block</strong> 对特征进行操作，其中的 <strong>Depthwise Convolution</strong> 使用<strong>5×5</strong>大小卷积核。在每个阶段之间，进行一次 <strong>stride</strong> 为<strong>2</strong>的卷积以进行下采样操作。最后一个 <strong>stage</strong> 是 <strong>Transformer</strong> 模块，拉大感受野，并融合所有 <strong>patch</strong> 的特征。另外作者发现绝对位置编码性能是最优的。</p>
+
+<p><strong>ConvMAE</strong> <strong>mask</strong> 掉 <strong>stage3</strong> 中一部分输出 (比如$75\%$) 之后，把这些 <strong>mask</strong> 分别上采样<strong>2</strong>倍和<strong>4</strong>倍得到前两个阶段的 <strong>mask</strong>。这些被 <strong>mask</strong> 掉的 <strong>token</strong> 在编码阶段被丢弃，并且希望经过 <strong>Decoder</strong> 之后能够重建出来。通过这种方式，<strong>ConvMAE</strong> 只需要保留至少 $25\%$ 的 <strong>token</strong> 用于训练。前两个阶段使用 <strong>5×5</strong> 的 <strong>Depthwise Convolution</strong> 的感受野可能大于一个 <strong>masked patch</strong> 的大小，因此为了确保预训练的质量，在前两个阶段采用了 <strong>masked convolution</strong>，确保被 <strong>mask</strong> 掉的部分不会参与到编码的过程。</p>
+
+<p><strong>Decoder</strong> 以 <strong>Encoder</strong> 的输出以及 <strong>masked token</strong> 为输入，通过一系列的 <strong>Transformer Block</strong> 得到最终的重建结果。<strong>ConvMAE</strong> 的编码器获得了多尺度特征$E_1,E_2,E_3$，分别捕捉到了细粒度和粗粒度的图像信息。为了更好地进行预训练，作者将$E_1$和$E_2$分别进行 <strong>stride=2</strong> 和 <strong>stride=4</strong> 的下采样之后与$E_3$相加，进行多尺度特征的融合。融合得到的结果再通过 <strong>Linear Transformation</strong> 得到最终要输入给 <strong>Decoder</strong> 的 <strong>token</strong>。</p>
+
+<p>训练使用的目标函数是 <strong>mask</strong> 的部分的重建结果与原图的 <strong>L1 Loss</strong>。<strong>ConvMAE</strong> 经过预训练之后，<strong>Encoder</strong> 能够输出多尺度的特征$(H/4,W/4),(H/8,W/8),(H/16,W/16)$，它们可以被用于后续的检测分割任务里面。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65585d06c458853aefc500e5.jpg" alt="" /></p>
+
+<p>为了验证本文所提出方法的有效性，作者进行了几组消融实验。</p>
+
+<h3 id="-预训练-epoch-数的影响">⚪ 预训练 Epoch 数的影响</h3>
+
+<p>作者对 <strong>ConvMAE-Base</strong> 进行预训练了<strong>200</strong>、<strong>400</strong>、<strong>800</strong>和<strong>1600</strong>个 <strong>Epoch</strong> ，以测试对 <strong>ConvMAE</strong> 的影响。结果如下图所示，可以看到随着预训练 <strong>Epoch</strong> 数的增加，分类任务的 <strong>Accuracy</strong> 在不断上升，同时 <strong>COCO</strong> 检测任务和 <strong>ADE20K</strong> 分割任务性能也在不断提升，证明了预训练 <strong>Epoch</strong> 数对于模型的性能有积极影响。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65585d6bc458853aefc6d72d.jpg" alt="" /></p>
+
+<h3 id="-mask-方式以及卷积核大小的影响">⚪ Mask 方式以及卷积核大小的影响</h3>
+
+<p>如下图所示，作者把 <strong>block-wise</strong> 的 <strong>mask</strong> 策略换回到 <strong>random mask</strong> 策略，发现 <strong>ImageNet</strong> 性能下降；把卷积核大小从<strong>5×5</strong>增加到<strong>7×7</strong>或者<strong>9×9</strong>几乎不会影响精度。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65585db9c458853aefc82180.jpg" alt="" /></p>
+
+<h3 id="-多尺度-decoder-特征融合的影响">⚪ 多尺度 Decoder 特征融合的影响</h3>
+
+<p>如下图所示，作者在训练 <strong>200 Epoch</strong> 和 <strong>1600 Epoch</strong> 这两种情况下测试了多尺度 <strong>Decoder</strong> 对于 <strong>Conv MAE</strong> 性能的影响，结果表明融合多尺度特征更容易得到好的图像表征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/65585e14c458853aefc9abe9.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/11/26/datascaling.html" class="read-next-link"></a>
+        <section>
+          <span>On Data Scaling in Masked Image Modeling</span>
+          <p>  探究掩码图像建模中的数据可扩展性.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6559666cc458853aef36f69b.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/11/24/simmim.html" class="read-next-link"></a>
+          <section>
+            <span>SimMIM: A Simple Framework for Masked Image Modeling</span>
+            <p>  SimMIM：一种掩码图像建模的简单框架.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/65585098c458853aef944868.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

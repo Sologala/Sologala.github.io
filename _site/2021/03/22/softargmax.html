@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argmax与SoftArgmax - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Argmax与SoftArgmax">
+    <meta name="keywords"  content="Python">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Argmax与SoftArgmax - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/03/22/softargmax.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#Python" class="post-tag">Python</a>
+          
+        
+      </div>
+      <h1>Argmax与SoftArgmax</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-03-22"><i class="iconfont icon-date"></i>22 Mar 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Implement SoftArgmax with Pytorch.</p>
+</blockquote>
+
+<p>在编程时，有时候需要返回一个张量最大值所在的维度序号（如分类任务中返回概率最大的类别编号、定位任务中返回概率最大的空间坐标编号），此时需要用到<strong>argmax</strong>操作。</p>
+
+<p><strong>Pytorch</strong>中的<strong>argmax</strong>函数定义为<code class="language-plaintext highlighter-rouge">torch.argmax(input, dim=None, keepdim=False)</code>，其中的<code class="language-plaintext highlighter-rouge">dim</code>参数指定寻找最大值的维度，<code class="language-plaintext highlighter-rouge">keepdim</code>参数指定是否保持原张量的维度。</p>
+
+<p>如一个尺寸为$(3,4,5)$的三维张量，若设置<code class="language-plaintext highlighter-rouge">dim=1,keepdim=False</code>则输出张量的尺寸是$(3,5)$；若设置<code class="language-plaintext highlighter-rouge">dim=1,keepdim=True</code>则输出张量的尺寸是$(3,1,5)$。</p>
+
+<p>由于<strong>argmax</strong>函数是不可导的，在构建网络时无法反向传播梯度。在实际构建网络时通常使用<strong>SoftArgmax</strong>函数作为替代。对于张量中的每一个位置$i$，做如下近似：</p>
+
+\[y=argmax(x) ≈ \sum_{i}^{} i \cdot softmax(x)_i\]
+
+<p>如对一个尺寸为$(batchNumber \times Channel \times Height \times Width \times Depth)$的三维空间张量寻找其最大值对应的坐标，返回尺寸为$(batchNumber \times Channel \times 3)$的张量，其<strong>Pytorch</strong>实现如下：</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class SoftArgmax(nn.Module):
+    def __init__(self, height, width, depth, channel):
+        super(SoftArgmax, self).__init__()
+        self.height = height
+        self.width = width
+        self.depth = depth
+        self.channel = channel
+        
+        pos_x, pos_y, pos_z = np.meshgrid(
+                np.linspace(-1., 1., self.height),
+                np.linspace(-1., 1., self.width),
+                np.linspace(-1., 1., self.depth)
+                )
+        pos_x = torch.from_numpy(pos_x.reshape(self.height*self.width*self.depth)).float()
+        pos_y = torch.from_numpy(pos_y.reshape(self.height*self.width*self.depth)).float()
+        pos_z = torch.from_numpy(pos_z.reshape(self.height*self.width*self.depth)).float()
+        self.register_buffer('pos_x', pos_x)
+        self.register_buffer('pos_y', pos_y)
+        self.register_buffer('pos_z', pos_z)
+        
+        
+    def forward(self, input):
+        # input:  (N, C, H, W, D)
+        # output: (N, C, 3)
+        input = input.view(-1, self.height*self.width*self.depth)
+        softmax_attention = F.softmax(input, dim=1)
+        
+        self.pos_x = self.pos_x.to(input.device)
+        self.pos_y = self.pos_y.to(input.device)
+        self.pos_z = self.pos_z.to(input.device)
+        softmax_attention = softmax_attention.to(input.device)
+        
+        expected_x = torch.sum(self.pos_x*softmax_attention, dim=1, keepdim=True)
+        expected_y = torch.sum(self.pos_y*softmax_attention, dim=1, keepdim=True)
+        expected_z = torch.sum(self.pos_z*softmax_attention, dim=1, keepdim=True)
+        expected_xyz = torch.cat([expected_x, expected_y, expected_z], 1)
+        coordinates = expected_xyz.view(-1, self.channel, 3)
+        return coordinates
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/03/23/centernet.html" class="read-next-link"></a>
+        <section>
+          <span>Objects as Points</span>
+          <p>  CenterNet：把目标检测视为中心点检测.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/64c0da231ddac507ccf05109.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/03/21/retinanet.html" class="read-next-link"></a>
+          <section>
+            <span>Focal Loss for Dense Object Detection</span>
+            <p>  RetinaNet：密集目标检测的焦点损失.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/648c39681ddac507cc950df9.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

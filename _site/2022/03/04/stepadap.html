@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Step-size Adaptation Using Exponentiated Gradient Updates - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Step-size Adaptation Using Exponentiated Gradient Updates">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Step-size Adaptation Using Exponentiated Gradient Updates - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/03/04/stepadap.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Step-size Adaptation Using Exponentiated Gradient Updates</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-03-04"><i class="iconfont icon-date"></i>04 Mar 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6221b8865baa1a80ab65264a.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>基于指数梯度更新的步长自适应学习率.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/2202.00145">Step-size Adaptation Using Exponentiated Gradient Updates</a></li>
+</ul>
+
+<p>在训练过程中调整学习率能够提高模型表现。作者提出了一种基于指数梯度更新的自适应参数更新方法；基于该方法作者设计了一种带动量的漏斗型随机梯度下降算法，在更新时维护一个全局步长和一个梯度坐标的增益因子，这两个参数通过指数梯度更新来更新。</p>
+
+<h1 id="1-指数梯度更新">1. 指数梯度更新</h1>
+
+<p>在最小化无约束函数$\mathcal{L}(\theta)$时，常使用梯度更新算法：</p>
+
+\[\theta_{t+1} = \theta_t-\eta \nabla_{\theta}\mathcal{L}(\theta_t)\]
+
+<p>有时优化函数带有约束。对于非负约束(即要求参数非负)，可以使用<strong>指数梯度更新</strong>(<strong>exponentiated gradient update, EGU</strong>)：</p>
+
+\[\theta_{t+1} = \theta_t \odot \exp(-\eta \nabla_{\theta}\mathcal{L}(\theta_t))\]
+
+<h3 id="-指数梯度更新等价于指数变换的梯度更新">⚪ 指数梯度更新等价于指数变换的梯度更新</h3>
+
+<p>对于非负约束优化中的非负参数$\theta$，设$\theta = e^{\phi}$，则问题转换为任意参数$\phi$的无约束优化问题，从而应用梯度更新：</p>
+
+\[\phi_{t+1} = \phi_t-\eta \nabla_{\phi}\mathcal{L(e^{\phi_t})} \\ =  \phi_t-\eta [\nabla_{e^{\phi}}\mathcal{L(e^{\phi_t})}\nabla_{\phi}e^{\phi_t}] \\ =  \phi_t-\eta e^{\phi_t}  \nabla_{e^{\phi}}\mathcal{L(e^{\phi_t})} \\ =  \phi_t-\eta' \nabla_{e^{\phi}}\mathcal{L(e^{\phi_t})}\]
+
+<p>上式两端取对数得：</p>
+
+\[e^{\phi_{t+1}} = e^{\phi_t-\eta' \nabla_{e^{\phi}}\mathcal{L(e^{\phi_t})}} \\ = e^{\phi_t}e^{-\eta' \nabla_{e^{\phi}}\mathcal{L(e^{\phi_t})}}\]
+
+<p>注意到$e^{\phi_t}=\theta_t$，因此上式即为指数梯度更新表达式：</p>
+
+\[\theta_{t+1} = \theta_t \odot \exp(-\eta' \nabla_{\theta}\mathcal{L}(\theta_t))\]
+
+<h1 id="2-基于指数梯度更新的参数自适应">2. 基于指数梯度更新的参数自适应</h1>
+
+<p>标准的梯度更新公式如下：</p>
+
+\[\theta_{t+1} = \theta_t-\eta \nabla_{\theta_t}\mathcal{L} = \theta_t-\eta g_t\]
+
+<p>如果希望自适应地调整更新步长大小，可以引入一个和梯度$g_t$尺寸相同的非负变量$\nu$，逐点作用于非负梯度(<strong>Hadamard</strong>积)：</p>
+
+\[\theta_{t+1} =  \theta_t-\eta \nu_{t+1} \odot g_t\]
+
+<p>由于自适应参数$\nu$是非负的，因此采用指数梯度更新：</p>
+
+\[\nu_{t+1} = \nu_t \odot \exp(-\gamma \nabla_{\nu_t}\mathcal{L})\]
+
+<p>根据链式法则：</p>
+
+\[\nabla_{\nu_t}\mathcal{L} = \nabla_{\theta_t}\mathcal{L} \odot \nabla_{\nu_t}\theta_t \\ = -\eta g_{t-1} \odot \nabla_{\theta_t}\mathcal{L} = -\eta g_{t-1} \odot g_t\]
+
+<p>因此参数$\nu$的更新公式为：</p>
+
+\[\nu_{t+1} = \nu_t \odot \exp(\gamma \eta g_{t-1} \odot g_t)\]
+
+<p>将上式中的$\gamma \eta$合成为一个参数$\gamma$，则整个模型的更新公式如下：</p>
+
+\[\nu_{t+1} = \nu_t \odot \exp(\gamma g_{t-1} \odot g_t)  \\ \theta_{t+1} =  \theta_t-\eta \nu_{t+1} \odot g_t\]
+
+<p>如果初始化$\nu_1=1$，则参数$\nu$的计算：</p>
+
+\[\nu_{t+1} = \nu_t \odot \exp(\gamma  g_{t-1} \odot g_t) \\ = \nu_{t-1} \odot \exp(\gamma  g_{t-2} \odot g_{t-1}) \odot \exp(\gamma  g_{t-1} \odot g_t) \\ =  \nu_{t-1} \odot \exp(\gamma  g_{t-2} \odot g_{t-1}+\gamma  g_{t-1} \odot g_t) \\ = \exp(\gamma \sum_{k=1}^{t}g_{k-1}\odot g_k)\]
+
+<p>注意到如果某梯度分量的相邻两步更新经常同号，则累加项为正，学习率的调节因子$\nu$大于$1$，即在梯度更新中如果梯度符号一直没改变，则可以适当扩大学习率。反之如果梯度符号经常改变，则累加项为负，调节因子$\nu$小于$1$，即适当缩小学习率。这种步长更新方式类似于<a href="https://0809zheng.github.io/2020/12/07/rprop.html"><font color="Blue">RProp</font></a>。</p>
+
+<h1 id="3-带动量的漏斗型随机梯度下降">3. 带动量的漏斗型随机梯度下降</h1>
+
+<p>作者对带动量的梯度更新算法进行了改进，动量更新的原型如下：</p>
+
+\[m_{t} = \beta m_{t-1}+(1-\beta)g_t  \\ \theta_{t+1} =  \theta_t-\eta m_{t}\]
+
+<p>作者引入了两个步长自适应参数，其中坐标增益(<strong>per-coordinate gain</strong>)向量$p$用于预先调节梯度向量，而步长尺度(<strong>step-size scale</strong>)超参数$s$用于对更新步长进行全局缩放。</p>
+
+<p>基于上述自适应超参数的漏斗型(<strong>funnel</strong>)梯度更新算法为：</p>
+
+\[\nu_{t+1} = \mu \nu_{t}+\eta(p_{t+1}\odot g_t) \\ \theta_{t+1} =  \theta_t-s_{t+1} \nu_{t+1}\]
+
+<p>坐标增益向量$p$和步长尺度$s$都是非负参数，使用指数梯度更新：</p>
+
+\[p_{t+1} = p_t \odot \exp(\gamma_p m_{t-1} \odot g_t)\]
+
+\[s_{t+1} = s_t \cdot \exp(\gamma_s \nu_t \cdot g_t)\]
+
+<p><img src="https://pic.imgdb.cn/item/6221dbcd5baa1a80ab811734.jpg" alt="" /></p>
+
+<h1 id="4-实验分析">4. 实验分析</h1>
+
+<p>作者构造了一个<strong>MNIST</strong>的旋转数据集，随着训练时间的推移，数据集中的分布会发生变化(旋转角度改变)。该数据集用于模仿实际应用中由于用户偏好改变造成的新的数据流(如推荐系统)。在这种环境下，优化算法应该能够适应不断变化的数据分布。</p>
+
+<p>实验结果表明，当训练集的分布发生变化时，使用<strong>funnel</strong>算法能够更快地适应分布变化，并更快地恢复较高的准确率。作者还展示了更新过程中的全局学习率以及不同坐标的增益因子的变化情况。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6221d00a5baa1a80ab770f98.jpg" alt="" /></p>
+
+<p>作者进一步展示了对网络不同层的参数所维护的步长因子和坐标因子的变化情况。<strong>funnel</strong>算法对于不同层学习到自适应的学习率衰减策略。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6221d2435baa1a80ab7966dc.jpg" alt="" /></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/03/05/flash.html" class="read-next-link"></a>
+        <section>
+          <span>Transformer Quality in Linear Time</span>
+          <p>  FLASH: 基于门控注意力单元的线性Transformer.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/621847992ab3f51d91f6c450.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/03/03/acgan.html" class="read-next-link"></a>
+          <section>
+            <span>Conditional Image Synthesis With Auxiliary Classifier GANs</span>
+            <p>  ACGAN：基于辅助分类器GAN的条件图像合成.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic1.imgdb.cn/item/6350abc716f2c2beb1714b7d.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

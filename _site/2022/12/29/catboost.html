@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>类别型特征提升(Categorical Boosting, CatBoost) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="类别型特征提升(Categorical Boosting, CatBoost)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="类别型特征提升(Categorical Boosting, CatBoost) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/12/29/catboost.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>类别型特征提升(Categorical Boosting, CatBoost)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-12-29"><i class="iconfont icon-date"></i>29 Dec 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/63acf00808b6830163ef7949.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>CatBoost: unbiased boosting with categorical features.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1706.09516">CatBoost: unbiased boosting with categorical features</a></li>
+</ul>
+
+<p><strong>CatBoost (Categorical Boosting)</strong>是一种把<strong>对称决策树 (oblivious tree)</strong>作为基学习器的<a href="https://0809zheng.github.io/2020/03/21/GBDT.html">梯度提升决策树GBDT</a>方法，通过顺序生成基学习器构造强学习器。<strong>CatBoost</strong>能够有效地处理类别型特征，并解决了<strong>梯度偏差 (Gradient Bias)</strong>导致的<strong>预测偏移 (Prediction shift)</strong>的问题，减少过拟合的发生。<strong>CatBoost</strong>的主要优点是：</p>
+<ul>
+  <li>自动将类别型特征处理为数值型特征；</li>
+  <li>能够组合类别型特征，丰富了特征维度；</li>
+  <li>采用排序提升方法避免梯度估计的偏差，解决预测偏移问题。</li>
+</ul>
+
+<p><strong>CatBoost</strong>的主要缺点是对于类别型特征的处理需要大量的内存和时间。</p>
+
+<p><strong>XGBoost</strong>, <strong>LightGBM</strong>和<strong>CatBoost</strong>对类别特征的接受程度对比如下：</p>
+<ul>
+  <li><strong>XGBoost</strong>：无法处理类别型特征，数据预处理时必须把类别型特征转换为序号编码、独热编码或二进制编码。</li>
+  <li><strong>LightGBM</strong>：可以处理类别型特征，但需要将类别型特征变量转化为整型变量，不允许传递字符串数据。</li>
+  <li><strong>CatBoost</strong>：能够自动将类别型特征处理为数值型特征，也可以通过传入类别型特征的列标识来使用<strong>One-hot</strong>编码。</li>
+</ul>
+
+<h2 id="1-类别型特征-categorical-features">1. 类别型特征 Categorical features</h2>
+
+<p>类别型特征是指特征的取值是离散的集合，比如省份名（山东、山西、河北等），城市名（北京、上海、深圳等）。在梯度提升算法中，通常把这些类别型特征转为<strong>数值型</strong>来处理。</p>
+
+<p>对于特征基数比较<strong>低 (low-cardinality)</strong>的类别特征，即该特征的所有取值去重后构成的集合元素个数比较少，一般利用<strong>One-hot</strong>编码方法将特征转为数值型。<strong>One-hot</strong>编码可以在数据预处理时完成，也可以在模型训练时完成；从训练时间的角度，后一种方法的实现更为高效，<strong>CatBoost</strong>对于基数较低的类别型特征采用后一种实现。</p>
+
+<p>对于<strong>高基数(high-cardinality)</strong>类别型特征，比如用户<strong>ID</strong>，<strong>One-hot</strong>编码方式会产生大量新的特征，造成维度灾难。<strong>CatBoost</strong>把这种类别特征转换成<strong>目标变量统计量(Target Statistics)</strong>，目标变量统计量用于估算每个类别的目标变量的期望值，并作为一个新的数值型变量来代替原来的类别型变量。</p>
+
+<p>最简单的目标变量统计量的形式是对应标签的平均值：</p>
+
+\[\hat{x}_k^i = \frac{\sum_{j=1}^N[x_{j,k} = x_{i,k}] \cdot Y_i}{\sum_{j=1}^N[x_{j,k} = x_{i,k}]}\]
+
+<p>把标签平均值将作为节点分裂标准的方法被称为<strong>Greedy Target-based Statistics</strong>。这种方法的缺陷是，由于通常特征比标签包含更多的信息，如果强行用标签的平均值来表示特征的话，当训练数据集和测试数据集数据结构和分布不一样的时候会出条件偏移问题。</p>
+
+<p>对标签平均值添加先验分布项，可以减少噪声和低频率类别型数据对于数据分布的影响：</p>
+
+\[\hat{x}_k^i = \frac{\sum_{j=1}^N[x_{j,k} = x_{i,k}] \cdot Y_i + a \cdot p}{\sum_{j=1}^N[x_{j,k} = x_{i,k}]+a}\]
+
+<p>其中$p$是添加的先验项。对于回归问题，先验项可取数据集标签的均值；对于二分类问题，先验项可取正样本的先验概率。</p>
+
+<p><strong>CatBoost</strong>每次随机选取一部分数据计算统计量，这一策略要求同一标签数据不能排列在一起（即先全是$0$之后全是$1$这种方式），训练之前需要打乱数据集。<strong>CatBoost</strong>构造数据集的$4$个不同排列，在每一轮建立树时随机选择一种排列计算目标变量统计量。</p>
+
+<p><img src="https://pic.imgdb.cn/item/63acfda208b683016301fd64.jpg" alt="" /></p>
+
+<p>多个类别型特征的任意组合都可视为新的特征，并且可以得到一个新的强大的特征。然而组合的数量会随着数据集中类别型特征的数量成指数增长，因此不能在算法中考虑所有组合。为当前树构造新的分割点时，<strong>CatBoost</strong>采用贪婪的策略考虑组合：在选择第一个节点时，只考虑选择一个特征，例如<strong>A</strong>；在生成第二个节点时，考虑<strong>A</strong>和其余任意一个类别特征的组合，并选择其中最好的。<strong>CatBoost</strong>还可以生成数值型特征和类别型特征的组合：把树中选定的所有分割点视为具有两个值的类别型特征，并像类别型特征一样进行组合。</p>
+
+<p><strong>CatBoost</strong>处理类别型特征的总结：</p>
+<ul>
+  <li>通过添加先验分布项的目标变量统计量把类别型特征转换为数值型特征；</li>
+  <li>采用贪婪的策略考虑类别特征的组合。</li>
+</ul>
+
+<h1 id="2-排序提升-ordered-boosting">2. 排序提升 Ordered boosting</h1>
+
+<p><strong>CatBoost</strong>通过构建新的树来拟合当前模型损失函数的负梯度，这是一种有偏的点态梯度估计，容易引起过拟合问题。这是因为在每轮迭代中使用的梯度都是通过固定的训练数据集来估计的，这导致估计的梯度分布与数据域中梯度的真实分布相比具有梯度偏差(<strong>Gradient Bias</strong>)，并导致预测偏移(<strong>Prediction shift</strong>)，即当测试集的数据分布发生偏移时，预测结果也不可靠。</p>
+
+<p>为了克服预测偏移问题，<strong>CatBoost</strong>提出了一种<strong>排序提升(Ordered boosting)</strong>算法，即在选择最佳的树结构时采用梯度步长的无偏估计。为了计算无偏估计，对每个样本$(X_i,Y_i)$训练一个单独的树模型$M_i$，模型$M_i$由使用不包含样本$(X_i,Y_i)$的训练集训练得到。然后使用模型$M_i$来得到样本$(X_i,Y_i)$的梯度估计，并使用该梯度来训练基学习器并得到最终的模型。</p>
+
+<p>排序提升算法在大部分实际任务中都不具备使用价值，因为需要训练$N$个不同的模型，大大增加了内存消耗和时间复杂度。构建一棵树分为两个阶段：选择树结构和在树结构固定后计算叶结点的值。<strong>CatBoost</strong>主要在第一阶段进行优化。</p>
+
+<h1 id="3-快速训练">3. 快速训练</h1>
+<ul>
+  <li><strong>对称树 (oblivious tree)</strong>：<strong>CatBoost</strong>使用对称树作为基学习器。在对称树中，相同的分割准则可以同时在树的某一层上使用。具体地，每个叶结点的索引可以被编码为长度等于树深度的二进制向量，然后将所有特征进行二值化，来计算模型预测值。</li>
+  <li>密集的数值特征：对于密集的数值特征数据集，<strong>CatBoost</strong>将特征离散化到固定数量的箱子中以减少内存使用，并利用了一种不依赖于原子操作的直方图计算方法。</li>
+  <li>类别型特征：<strong>CatBoost</strong>使用完美哈希来存储类别型特征的值，以减少内存使用。由于<strong>GPU</strong>内存的限制，在<strong>CPU RAM</strong>中存储按位压缩的完美哈希，以及要求的数据流、重叠计算和内存等操作。通过哈希来观察分组，在每个组中需要计算一些统计量的前缀和，该统计量的计算使用分段扫描<strong>GPU</strong>图元实现。</li>
+  <li>多<strong>GPU</strong>支持：<strong>CatBoost</strong>可支持多个<strong>GPU</strong>，分布式树学习可以通过数据或特征进行并行化。</li>
+</ul>
+
+<h1 id="4-catboost的代码实现">4. CatBoost的代码实现</h1>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pip</span> <span class="n">install</span> <span class="n">catboost</span>
+</code></pre></div></div>
+
+<p><strong>catboost</strong>库中定义的<strong>CatBoost</strong>模型的主要参数可以查阅<a href="https://catboost.ai/en/docs/references/training-parameters/">catboost文档</a>。</p>
+
+<p>本节以<strong>kaggle</strong>竞赛中的<a href="https://www.kaggle.com/usdot/flight-delays#flights.csv">2015年航班延误数据集</a>为例，介绍使用<strong>CatBoost</strong>进行回归的方法。</p>
+
+<p>该数据集一共有约$500$万条记录，此处使用了$1\%$的数据：$5$万行记录，其中同时包含类别型变量和数值变量。以下是建模使用的特征：</p>
+<ul>
+  <li>月、日、星期： 整型数据</li>
+  <li>航线或航班号： 整型数据</li>
+  <li>出发、到达机场： 数值数据</li>
+  <li>出发时间： 浮点数据</li>
+  <li>距离和飞行时间： 浮点数据</li>
+  <li>到达延误情况： 这个特征作为预测目标，并通过航班是否延误超过$10$分钟转为二值变量</li>
+</ul>
+
+<p>数据集的预处理过程为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span><span class="p">,</span> <span class="n">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="c1"># 一共有约500万条记录，从中随机抽取1%的记录
+</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"flight-delays/flights.csv"</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">data</span><span class="p">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">"flight-delays/min_flights.csv"</span><span class="p">)</span>
+
+<span class="c1"># 读取数据
+</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"flight-delays/min_flights.csv"</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>  <span class="c1"># (58191, 31)
+</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[[</span><span class="s">"MONTH"</span><span class="p">,</span> <span class="s">"DAY"</span><span class="p">,</span> <span class="s">"DAY_OF_WEEK"</span><span class="p">,</span> <span class="s">"AIRLINE"</span><span class="p">,</span> <span class="s">"FLIGHT_NUMBER"</span><span class="p">,</span> <span class="s">"DESTINATION_AIRPORT"</span><span class="p">,</span>
+             <span class="s">"ORIGIN_AIRPORT"</span><span class="p">,</span> <span class="s">"AIR_TIME"</span><span class="p">,</span> <span class="s">"DEPARTURE_TIME"</span><span class="p">,</span> <span class="s">"DISTANCE"</span><span class="p">,</span> <span class="s">"ARRIVAL_DELAY"</span><span class="p">]]</span>
+<span class="n">data</span><span class="p">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># 延误情况设置为预测变量并二值化
+</span><span class="n">data</span><span class="p">[</span><span class="s">"ARRIVAL_DELAY"</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">"ARRIVAL_DELAY"</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span>
+
+<span class="c1"># 把航线、航班号、出发、到达机场设置为类别型数据
+</span><span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s">"AIRLINE"</span><span class="p">,</span> <span class="s">"FLIGHT_NUMBER"</span><span class="p">,</span> <span class="s">"DESTINATION_AIRPORT"</span><span class="p">,</span> <span class="s">"ORIGIN_AIRPORT"</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">item</span><span class="p">].</span><span class="n">astype</span><span class="p">(</span><span class="s">"category"</span><span class="p">).</span><span class="n">cat</span><span class="p">.</span><span class="n">codes</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="c1"># 划分训练集和测试集
+</span><span class="n">train</span><span class="p">,</span> <span class="n">test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">.</span><span class="n">drop</span><span class="p">([</span><span class="s">"ARRIVAL_DELAY"</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">data</span><span class="p">[</span><span class="s">"ARRIVAL_DELAY"</span><span class="p">],</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+
+<span class="c1"># 记录类别型数据的索引号
+</span><span class="n">cat_features_index</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>在<strong>CatBoost</strong>中，必须对变量进行声明，才可以让算法将其作为类别型变量处理。如果未在<code class="language-plaintext highlighter-rouge">cat_features</code>参数中传递任何内容，<strong>CatBoost</strong>会将所有列视为数值变量，此时如果某一列数据中包含字符串值，算法就会抛出错误。另外带有默认值的整型变量也会被当成数值数据处理。</p>
+
+<p>在对<strong>CatBoost</strong>调参时，很难对类别型特征赋予评估指标。因此调参过程应该对模型不传递类别型特征，此时可以通过<strong>sklearn</strong>库用网格搜索调出最优超参数：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+<span class="kn">import</span> <span class="nn">catboost</span> <span class="k">as</span> <span class="n">cb</span>
+
+<span class="c1"># 调参，用网格搜索调出最优参数
+</span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">'depth'</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span>
+          <span class="s">'learning_rate'</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">],</span>
+          <span class="s">'l2_leaf_reg'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span>
+          <span class="s">'iterations'</span><span class="p">:</span> <span class="p">[</span><span class="mi">300</span><span class="p">,</span> <span class="mi">500</span><span class="p">]}</span>
+<span class="n">cb</span> <span class="o">=</span> <span class="n">cb</span><span class="p">.</span><span class="n">CatBoostClassifier</span><span class="p">()</span>
+<span class="n">cb_model</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s">"roc_auc"</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">cb_model</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="c1"># 查看最佳分数
+</span><span class="k">print</span><span class="p">(</span><span class="n">cb_model</span><span class="p">.</span><span class="n">best_score_</span><span class="p">)</span>  <span class="c1"># 0.7088001891107445
+# 查看最佳参数
+</span><span class="k">print</span><span class="p">(</span><span class="n">cb_model</span><span class="p">.</span><span class="n">best_params_</span><span class="p">)</span>  <span class="c1"># {'depth': 4, 'iterations': 500, 'l2_leaf_reg': 9, 'learning_rate': 0.15}
+</span></code></pre></div></div>
+
+<p>根据最优参数，可以向<strong>CatBoost</strong>模型中直接传入类别型特征的列标识，模型会自动将其使用<strong>One-hot</strong>编码，还可通过设置 <code class="language-plaintext highlighter-rouge">one_hot_max_size</code>参数来限制<strong>One-hot</strong>特征向量的长度。</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">metrics</span>
+
+<span class="c1"># With Categorical features
+</span><span class="n">clf</span> <span class="o">=</span> <span class="n">cb</span><span class="p">.</span><span class="n">CatBoostClassifier</span><span class="p">(</span>
+    <span class="n">eval_metric</span><span class="o">=</span><span class="s">"AUC"</span><span class="p">,</span> <span class="n">one_hot_max_size</span><span class="o">=</span><span class="mi">31</span><span class="p">,</span>
+    <span class="n">depth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">l2_leaf_reg</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.15</span><span class="p">)</span>
+<span class="n">clf</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">cat_features</span><span class="o">=</span><span class="n">cat_features_index</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">metrics</span><span class="p">.</span><span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">m</span><span class="p">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">train</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># 0.7817912095285117
+</span><span class="k">print</span><span class="p">(</span><span class="n">metrics</span><span class="p">.</span><span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">m</span><span class="p">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># 0.7152541135019913
+</span></code></pre></div></div>
+
+<p>类似地，使用<strong>CatBoost</strong>模型进行回归的过程为：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">catboost</span> <span class="kn">import</span> <span class="n">CatBoostRegressor</span>
+
+<span class="c1"># Initialize CatBoostRegressor
+</span><span class="n">model</span> <span class="o">=</span> <span class="n">CatBoostRegressor</span><span class="p">(</span><span class="n">iterations</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                          <span class="n">learning_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                          <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># Fit model
+</span><span class="n">model</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">train_labels</span><span class="p">)</span>
+<span class="c1"># Get predictions
+</span><span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">eval_data</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/12/30/mp3.html" class="read-next-link"></a>
+        <section>
+          <span>Position Prediction as an Effective Pretraining Strategy</span>
+          <p>  位置预测作为高效的预训练策略.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/668b4d9ad9c307b7e93066e7.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/12/28/lightgbm.html" class="read-next-link"></a>
+          <section>
+            <span>轻量级梯度提升机(Light Gradient Boosting Machine, LightGBM)</span>
+            <p>  LightGBM: A Highly Efficient Gradient Boosting Decision...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/63ab972308b6830163d494de.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

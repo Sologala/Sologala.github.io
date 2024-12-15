@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridging Nonlinearities and Stochastic Regularizers with Gaussian Error Linear Units - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Bridging Nonlinearities and Stochastic Regularizers with Gaussian Error Linear Units">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Bridging Nonlinearities and Stochastic Regularizers with Gaussian Error Linear Units - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/08/24/gelu.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Bridging Nonlinearities and Stochastic Regularizers with Gaussian Error Linear Units</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-08-24"><i class="iconfont icon-date"></i>24 Aug 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6124b4ac44eaada7393ea828.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>GELU：随机正则化的高斯误差线性单元.</p>
+</blockquote>
+
+<ul>
+  <li>paper：Bridging Nonlinearities and Stochastic Regularizers with Gaussian Error Linear Units</li>
+  <li>arXiv：<a href="https://arxiv.org/abs/1606.08415v1">link</a></li>
+</ul>
+
+<p>在深度学习模型中，通过引入激活函数增强模型的非线性；同时使用正则化提高模型的泛化能力。作者提出了<strong>高斯误差线性单元</strong>(<strong>Gaussian Error Linear Unit,GELU</strong>)，为激活函数引入了随机正则化效果。<strong>GELU</strong>把神经元的输入建模为标准正态分布，表达式如下：</p>
+
+\[\text{GELU}(x)=xP(X≤x)=x\Phi(x)\]
+
+<p>其中$\Phi(x)$是标准正态分布的累积分布函数(<strong>COF</strong>)，即：</p>
+
+\[\Phi(x) = \int_{-∞}^{x} \frac{e^{-\frac{t^2}{2}}}{\sqrt{2\pi}}dt\]
+
+<p>引入误差函数$\text{erf}(x)=\frac{2}{\sqrt{\pi}}\int_{0}^{x} e^{-t^2}dt$，则<strong>GELU</strong>也表示为：</p>
+
+\[\text{GELU}(x)=x\Phi(x)=x\int_{-∞}^{x} \frac{e^{-\frac{t^2}{2}}}{\sqrt{2\pi}}dt \\ = x\frac{1}{\sqrt{2\pi}}(\int_{-∞}^{x}e^{-\frac{t^2}{2}}dt) = x\frac{1}{\sqrt{2\pi}}(\int_{-∞}^{0}e^{-\frac{t^2}{2}}dt+\int_{0}^{x}e^{-\frac{t^2}{2}}dt) \\ = x\frac{1}{\sqrt{2\pi}}(\sqrt{\frac{\pi}{2}}+\sqrt{2}\int_{0}^{\frac{x}{\sqrt{2}}}e^{-(\frac{t}{\sqrt{2}})^2}d\frac{t}{\sqrt{2}}) \\ = x(\frac{1}{2}+\frac{1}{\sqrt{\pi}}\int_{0}^{\frac{x}{\sqrt{2}}}e^{-t^2}dt)= x(\frac{1}{2}+\frac{1}{2}\frac{2}{\sqrt{\pi}}\int_{0}^{\frac{x}{\sqrt{2}}}e^{-t^2}dt) \\ = x\cdot \frac{1}{2}(1+\text{erf}(\frac{x}{\sqrt{2}}))\]
+
+<p><img src="https://pic.imgdb.cn/item/6124b4c844eaada7393f062e.jpg" alt="" /></p>
+
+<p><strong>GELU</strong>的表达式是非初等函数形式，在实际使用时，常使用其初等函数的近似。用<strong>Tanh</strong>函数或<strong>Sigmoid</strong>函数近似：</p>
+
+\[\text{GELU}(x)≈\frac{1}{2}x(1+\text{tanh}(\sqrt{\frac{2}{\pi}}(x+0.044715x^3)))\]
+
+\[\text{GELU}(x)≈xσ(1.702x)\]
+
+<p>下面简单介绍这两个近似公式的由来。</p>
+
+<h3 id="-使用tanh近似">⚪ 使用tanh近似</h3>
+
+\[\text{GELU}(x)≈\frac{1}{2}x(1+\text{tanh}(\sqrt{\frac{2}{\pi}}(x+0.044715x^3)))\]
+
+<p>对<strong>GELU</strong>近似，即对其中的非初等函数$\text{erf}(\frac{x}{\sqrt{2}})$近似。若考虑近似形式$\text{tanh}(ax+bx^3)$，对两式在$x=0$处进行<a href="https://0809zheng.github.io/2021/08/20/taylor.html">泰勒展开</a>:</p>
+
+\[\text{erf}(\frac{x}{\sqrt{2}})=\sqrt{\frac{2}{\pi}}x-\frac{1}{3\sqrt{2\pi}}x^3+o(x^5)\]
+
+\[\text{tanh}(ax+bx^3)=ax-\frac{(a^3-3b)x^3}{3}+o(x^5)\]
+
+<p>联立上述两式得：</p>
+
+\[a=\sqrt{\frac{2}{\pi}}\\b=\frac{2\sqrt{2}}{3\pi^{3/2}}-\frac{1}{3\sqrt{2\pi}}= \sqrt{\frac{2}{\pi}}(\frac{2}{3\pi}-\frac{1}{6})≈\sqrt{\frac{2}{\pi}}\cdot 0.0455399\]
+
+<p>则$\text{erf}(\frac{x}{\sqrt{2}})$可以近似写作：</p>
+
+\[\text{erf}(\frac{x}{\sqrt{2}})≈\text{tanh}(\sqrt{\frac{2}{\pi}}(x+0.0455399x^3))\]
+
+<p>注意到上式系数$0.0455399$与近似式的系数$0.044715$略有差异。这是因为泰勒展开是一种局部拟合的方法，在局部展开点$x=0$附近拟合精度比较高，但远离展开点时误差会逐渐增大；因此还需要考虑全局的拟合误差。注意到上述近似中$a=\sqrt{\frac{2}{\pi}}$是一阶局部近似，保留该局部近似；通过调整$b$减小全局误差。</p>
+
+<p>将问题建模成<strong>min-max</strong>形式，即希望原函数$\text{erf}(\frac{x}{\sqrt{2}})$与近似函数$\text{tanh}(\sqrt{\frac{2}{\pi}}x+bx^3)$在全局的最大差异尽可能小，表示为下述问题：</p>
+
+\[\mathop{\min}_{b} \mathop{\max}_{x} \quad |\text{erf}(\frac{x}{\sqrt{2}})-\text{tanh}(\sqrt{\frac{2}{\pi}}x+bx^3)|\]
+
+<p>上式可以通过<a href="https://0809zheng.github.io/2021/08/23/minimize.html">非线性规划</a>求解：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">erf</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">erf</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">np</span><span class="p">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="p">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">b</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">g</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="nb">max</span><span class="p">([</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)])</span>
+
+<span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s">'xtol'</span><span class="p">:</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="s">'ftol'</span><span class="p">:</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="s">'maxiter'</span><span class="p">:</span> <span class="mi">100000</span><span class="p">}</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">'Powell'</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="c1"># [0.03567734]
+</span></code></pre></div></div>
+
+<p>解得$b≈0.03567734$，则$\text{erf}(\frac{x}{\sqrt{2}})$可以近似写作：</p>
+
+\[\text{erf}(\frac{x}{\sqrt{2}})≈\text{tanh}(\sqrt{\frac{2}{\pi}}x+0.03567734x^3) \\ = \text{tanh}(\sqrt{\frac{2}{\pi}}(x+0.0447149x^3))\]
+
+<p>因此<strong>GELU</strong>可以近似表示为：</p>
+
+\[\text{GELU}(x)= x\cdot \frac{1}{2}(1+\text{erf}(\frac{x}{\sqrt{2}})) \\ ≈\frac{1}{2}x(1+\text{tanh}(\sqrt{\frac{2}{\pi}}(x+0.0447149x^3)))\]
+
+<h3 id="-使用sigmoid近似">⚪ 使用sigmoid近似</h3>
+
+\[\text{GELU}(x)≈xσ(1.702x)\]
+
+<p>按照之前的思路，采用全局近似使得原函数$\Phi(x)$与近似函数$\sigma(cx)$在全局的最大差异尽可能小，表示为下述<strong>min-max</strong>问题：</p>
+
+\[\mathop{\min}_{b} \mathop{\max}_{x} \quad |\Phi(x)-\sigma(cx)|\]
+
+<p>上式可以通过<a href="https://0809zheng.github.io/2021/08/23/minimize.html">非线性规划</a>求解：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">expit</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">c</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">norm</span><span class="p">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span><span class="n">expit</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="n">x</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">g</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="p">.</span><span class="nb">max</span><span class="p">([</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)])</span>
+
+<span class="n">options</span> <span class="o">=</span> <span class="p">{</span><span class="s">'xtol'</span><span class="p">:</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="s">'ftol'</span><span class="p">:</span> <span class="mf">1e-10</span><span class="p">,</span> <span class="s">'maxiter'</span><span class="p">:</span> <span class="mi">100000</span><span class="p">}</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">'Powell'</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="c1"># [1.70174493]
+</span></code></pre></div></div>
+
+<p>解得$c≈1.70174493$，则原函数$\Phi(x)$可以近似写作：</p>
+
+\[\Phi(x)≈\sigma(cx)=\sigma(1.70174493x)\]
+
+<p>因此<strong>GELU</strong>可以近似表示为：</p>
+
+\[\text{GELU}(x)= x\Phi(x) ≈x\sigma(1.70174493x)\]
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/08/25/elu.html" class="read-next-link"></a>
+        <section>
+          <span>Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)</span>
+          <p>  ELU：消除偏差偏置的指数线性单元.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/6125f25944eaada739aa5d0f.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/08/23/minimize.html" class="read-next-link"></a>
+          <section>
+            <span>使用scipy.optimize.minimize求解非线性规划</span>
+            <p>  scipy.optimize.minimize.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

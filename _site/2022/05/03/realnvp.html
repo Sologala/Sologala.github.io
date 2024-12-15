@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Density estimation using Real NVP - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="Density estimation using Real NVP">
+    <meta name="keywords"  content="论文阅读">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Density estimation using Real NVP - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2022/05/03/realnvp.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="post-tag">论文阅读</a>
+          
+        
+      </div>
+      <h1>Density estimation using Real NVP</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="22-05-03"><i class="iconfont icon-date"></i>03 May 2022</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/6299bee90947543129946a77.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Real NVP：使用实值非体积保持进行密度估计.</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1605.08803">Density estimation using Real NVP</a></li>
+</ul>
+
+<h1 id="1-流模型">1. 流模型</h1>
+
+<p><strong>流(flow-based)</strong>模型学习真实数据分布$\hat{p}_X$与隐变量$p_Z$之间可逆、稳定的映射关系。在推断时从数据分布中采样样本$x$，通过函数$f(x)$将其映射为隐空间中的近似样本$z$，隐空间的分布可以人为指定为已知的简单分布形式。在生成时从隐空间分布中采样样本$z$，通过反函数$f^{-1}(x)$将其映射为数据分布中的近似样本$x$。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6299d4a90947543129b23ed8.jpg" alt="" /></p>
+
+<p>给定可逆函数$z=f(x)$，根据<a href="https://0809zheng.github.io/2022/04/30/variable.html">概率密度的变量替换公式</a>，若隐变量的概率分布指定为$p_Z(z)$，则数据分布的概率密度函数$p_X(x)$表示为：</p>
+
+\[p_X(x) = p_Z(z)\cdot |\det[\frac{\partial f(x)}{\partial x}]|\]
+
+<p>其中$\det [\frac{\partial f(x)}{\partial x}]$是函数$f$在$x$上的<strong>Jacobian</strong>行列式。通过设计合适的$f$使得<strong>Jacobian</strong>行列式容易计算。</p>
+
+<h1 id="2-仿射耦合层">2. 仿射耦合层</h1>
+
+<p>为了使得<strong>Jacobian</strong>行列式$\det [\frac{\partial f(x)}{\partial x}]$容易计算，并且变换$z=f(x)$的逆变换容易实现，作者设计了一种<strong>仿射耦合层(Affine Coupling Layer)</strong>。</p>
+
+<p>把$D$维输入变量$x$拆分成两部分$x_1$和$x_2$，对于输出变量$h$取如下变化：</p>
+
+\[\begin{aligned} h_1&amp;= x_1 \\ h_2&amp;=s(x_1)\otimes x_2+t(x_1) \end{aligned}\]
+
+<p>其中$s,t$是任意函数，可以用神经网络实现。该变换的第二个式子相当于对$x_2$的一个仿射变换，故称为仿射耦合层。$x_1$和$x_2$是$x$的某种划分，不失一般性地假设$x_1=x_{1:d}$，$x_2=x_{d+1:D}$，则该变换的<strong>Jacobian</strong>矩阵是下三角阵：</p>
+
+\[[\frac{\partial h}{\partial x}] = \begin{pmatrix} I_d &amp; 0 \\ \frac{\partial s}{\partial x_1}\otimes x_2+\frac{\partial t}{\partial x_1} &amp; \text{diag}(s) \end{pmatrix}\]
+
+<p>上述<strong>Jacobian</strong>矩阵的行列式为$s$各元素的乘积，同时该变换是可逆的：</p>
+
+\[\begin{aligned} x_1&amp;= h_1 \\ x_2&amp;=(h_2-t(h_1))/s(h_1) \end{aligned}\]
+
+<p>为了保证可逆性，通常约束$s$各元素均大于$0$。在实现时用神经网络建模输出$\log s$，然后取指数形式$e^{\log s}$。</p>
+
+<h1 id="3-real-nvp">3. Real NVP</h1>
+
+<p><strong>Real NVP</strong>全称是实值非体积保持(<strong>real-valued non-volume preserving</strong>)，这是因为其设计的变换(仿射耦合层)对应的<strong>Jacobian</strong>行列式不恒等于$1$，而行列式的几何意义为体积变化率，仿射耦合层的行列式不等于$1$就意味着体积有所变化。</p>
+
+<h3 id="-随机打乱">⚪ 随机打乱</h3>
+
+<p>为了增强模型的表示能力，可以在每个仿射耦合层后随机将向量打乱，使得信息充分混合。随机打乱是指将每一步输出的两个向量$h_1,h_2$拼接成向量$h$，然后将这个向量重新随机排序。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6299dd8e0947543129bcb4f4.jpg" alt="" /></p>
+
+<h3 id="-mask与squeeze操作">⚪ mask与squeeze操作</h3>
+
+<p>为了使得模型适用于处理图像数据，作者在函数$t,m$中引入了卷积层。由于卷积擅长捕捉具有局部相关性的特征，因此在使用仿射耦合层处理数据时也应该设法保留数据的局部相关性。</p>
+
+<p>仿射耦合层将输入数据$x$拆分成两部分$x_1$和$x_2$，经过一系列操作后将输出向量$h$随机打乱。在拆分和打乱的过程中，为了保留输入数据沿空间维度的局部相关性，作者设计了两种分割方法，在实现时是用$0/1$标注原始输入元素，因此也称为<strong>mask</strong>操作。第一种<strong>mask</strong>方法是只沿着通道维度进行分割和打乱；第二种<strong>mask</strong>方法是在空间轴上使用棋盘式的交错分割。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6299e2310947543129c2267a.jpg" alt="" /></p>
+
+<p>有时输入数据的空间维度远大于通道维度，作者引入<strong>squeeze</strong>操作构造更多通道维度，同时仍然保留局部相关性。假设输入数据的尺寸为$h×w×c$，沿着空间维度分为一个个$k×k×c$的特征块，然后将每个块调整为$1×1×k^2c$，从而构造$h/k×w/k×k^2c$的特征。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6299e34f0947543129c387d4.jpg" alt="" /></p>
+
+<h3 id="-多尺度结构">⚪ 多尺度结构</h3>
+
+<p>为了进一步提升模型表现，作者引入了多尺度结构。原始输入经过一次<strong>flow</strong>运算（多个仿射耦合层的复合）后，输出跟输入的大小一样的特征$z$，将其沿着通道维度平均分为$z_1,z_2$，其中$z_1$直接输出，而$z_2$继续进行下一次<strong>flow</strong>运算，依此类推。最终的输出由多次中间结果$z_1,z_3,z_5$组成，总大小跟输入一样。</p>
+
+<p><img src="https://pic.imgdb.cn/item/6299e6000947543129c6c749.jpg" alt="" /></p>
+
+<p>多尺度结构能够将每一次<strong>flow</strong>运算的输入尺寸减半，从而降低计算量，并缓解流模型中隐变量必须与输入尺寸相同造成的维度浪费问题。此时隐变量$z=[z_1,z_3,z_5]$是层次化的，直接取标准正态分布并不合适。注意到$z_1$与$z_2$相关，$z_3$与$z_4$相关，因此有条件分布：</p>
+
+\[p(z_1,z_3,z_5) = p(z_1|z_2)p(z_3|z_4)p(z_5)\]
+
+<p>作者假设$p(z_1|z_2)$,$p(z_3|z_4)$,$p(z_5)$为正态分布，其中$p(z_1|z_2)$的均值和方差通过$z_2$计算(用卷积层回归)，$p(z_3|z_4)$的均值和方差通过$z_4$计算，而$p(z_5)$的均值和方差直接学习得到。</p>
+
+<p>如果仍然构造一个符合标准正态分布的隐变量$\hat{z}=[\hat{z}_1,\hat{z}_3,\hat{z}_5]$，相当于对输出再进行一次变换：</p>
+
+\[\hat{z}_1 = \frac{z_1-\mu(z_2)}{\sigma(z_2)},\hat{z}_3 = \frac{z_3-\mu(z_4)}{\sigma(z_4)},\hat{z}_5 = \frac{z_5-\mu(z_5)}{\sigma(z_5)}\]
+
+<h3 id="-优化目标">⚪ 优化目标</h3>
+
+<p>优化目标为最大化对数似然：</p>
+
+\[\log p_X(x) = \log p_Z(\hat{z}) + \log |\det[\frac{\partial f(x)}{\partial x}]|\]
+
+<p>其中<strong>Real NVP</strong>模型表示为$\hat{z}=f(x)$。隐变量$\hat{z}$的先验分布$p_Z(\hat{z})$预设为各分量独立的标准正态分布：</p>
+
+\[p_Z(\hat{z}) = \frac{1}{(\sqrt{2\pi})^D}e^{-\frac{1}{2}||\hat{z}||^2}\]
+
+<p>则优化目标表示为：</p>
+
+\[\log p_X(x) ~ -\frac{1}{2}||f(x)||^2 + \log |\det[\frac{\partial f(x)}{\partial x}]|\]
+
+<p>在<strong>Jacobian</strong>行列式$\det[\frac{\partial f(x)}{\partial x}]$中，既包含仿射耦合层贡献的变换$s$输出各元素的乘积，也包含强制隐变量标准化导致的变换行列式$-\sum \log \sigma$。</p>
+
+<p>值得一提的是，<strong>Real NVP</strong>模型中使用了<strong>BatchNorm</strong>层，也会带来变换行列式$-\sum \log \tilde{\sigma}$。</p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2022/05/04/glow.html" class="read-next-link"></a>
+        <section>
+          <span>Glow: Generative Flow with Invertible 1x1 Convolutions</span>
+          <p>  Glow：使用1x1可逆卷积构造生成流.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62d51148f54cd3f937ee124e.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2022/05/02/nice.html" class="read-next-link"></a>
+          <section>
+            <span>NICE: Non-linear Independent Components Estimation</span>
+            <p>  NICE：非线性独立成分估计.</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.imgdb.cn/item/6298552b0947543129ee1849.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

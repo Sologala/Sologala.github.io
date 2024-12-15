@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一致流形近似与投影(Uniform Manifold Approximation and Projection, UMAP) - DawsonWen的个人网站</title>
+    <meta name="author"  content="DawsonWen">
+    <meta name="description" content="一致流形近似与投影(Uniform Manifold Approximation and Projection, UMAP)">
+    <meta name="keywords"  content="机器学习">
+    <!-- Open Graph -->
+    <meta property="og:title" content="一致流形近似与投影(Uniform Manifold Approximation and Projection, UMAP) - DawsonWen的个人网站">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/2021/09/24/umap.html">
+    <meta property="og:description" content="为天地立心, 为生民立命, 为往圣继绝学, 为万世开太平">
+    <meta property="og:site_name" content="DawsonWen的个人网站">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+	<!--
+Author: Ray-Eldath
+refer to:
+ - http://docs.mathjax.org/en/latest/options/index.html
+-->
+
+	<script type="text/javascript" async src="https://cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+	
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+		jax: ["input/TeX", "output/HTML-CSS"],
+		tex2jax: {
+			inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+			displayMath: [ ["$$", "$$"], ["\\[","\\]"] ],
+			skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+		},
+		"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+      });
+    </script>
+
+
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+	
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?671e6ffb306c963dfa227c8335045b4f";
+            var s = document.getElementsByTagName("script")[0]; 
+            s.parentNode.insertBefore(hm, s);
+		
+        })();
+    </script>
+
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="true"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header
+    class="g-banner post-header post-pattern-circuitBoard bgcolor-default "
+    data-theme="default"
+  >
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="/tags.html#%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="post-tag">机器学习</a>
+          
+        
+      </div>
+      <h1>一致流形近似与投影(Uniform Manifold Approximation and Projection, UMAP)</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i>郑之杰</span>
+        <time class="post-meta-item" datetime="21-09-24"><i class="iconfont icon-date"></i>24 Sep 2021</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('https://pic.imgdb.cn/item/61e226c12ab3f51d91f55bed.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>Uniform Manifold Approximation and Projection。</p>
+</blockquote>
+
+<ul>
+  <li>paper：<a href="https://arxiv.org/abs/1802.03426v1">UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction</a></li>
+</ul>
+
+<p><strong>一致流形近似与投影</strong>(<strong>Uniform Manifold Approximation and Projection, UMAP</strong>)是一种基于流形的非线性降维算法。<strong>UMAP</strong>的原理与<a href="https://0809zheng.github.io/2021/09/23/tsne.html"><strong>t-SNE</strong></a>类似，即在高维样本空间中为每个样本点构建一个<strong>概率分布</strong>，用于拟合样本点之间的相对位置关系(联合概率)；在降维后的低维空间中也为其对应的样本构建一个<strong>概率分布</strong>，用于拟合降维样本点之间的位置关系。构造损失函数，通过学习降维后的样本点，使得高维样本点之间的位置关系和低维样本点之间的位置关系尽可能相似。</p>
+
+<p>与<strong>t-SNE</strong>不同，<strong>UMAP</strong>的建模不是严格意义上的归一化概率分布，而是一种相似度函数。对于每一个样本点，计算它和其余样本点的相似度，并构造相似度矩阵。把降维后的低维空间中的样本点看作可学习参数，通过梯度方法使得低维空间中的样本点也具有相似的相似度矩阵。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61e226c12ab3f51d91f55bed.jpg" alt="" /></p>
+
+<p>相较于<strong>t-SNE</strong>，<strong>UMAP</strong>的主要优势如下：</p>
+<ul>
+  <li>可以调节每一簇样本的聚拢程度，能够更好地表达局部结构；</li>
+  <li>具有更好的优化过程，提高了在较大样本集上的运算效率和运算速度。</li>
+</ul>
+
+<h1 id="1-umap算法">1. UMAP算法</h1>
+<p>记高维空间中的样本点$X \in \Bbb{R}^{n \times d}$，待求的降维样本点$Y \in \Bbb{R}^{n \times d’}$。</p>
+
+<p>对于高维空间中的任意样本点$x_i$，计算它和其他样本点$x_j$之间的相似度(条件概率):</p>
+
+\[p_{i|j} = e^{-\frac{d(x_i, x_j)-\rho_i}{\sigma_i}}\]
+
+<p>为了保证相似度的对称性，进一步计算联合概率：</p>
+
+\[p_{ij} = p_{i|j}+p_{j|i}-p_{i|j}p_{j|i}\]
+
+<p>其中距离计算可以采用任意度量。$\rho_i$表示距离样本点$x_i$最近的样本点对应的距离；$\sigma_i$是可调节参数，若指定只关注样本点附近的$k$个样本，则通过$k=2^{\sum_{i}^{j}p_{ij}}$求解$\sigma_i$。</p>
+
+<p>对于低维空间中的样本点$y_i$，同样计算它和其他样本点$y_j$之间的相似度:</p>
+
+\[q_{ij} = (1+a(y_i-y_j)^{2b})^{-1}\]
+
+<p>优化目标是最小化$p_{ij}$和$q_{ij}$之间的差异，采用交叉熵损失：</p>
+
+\[CE = \sum_{i}^{} \sum_{j}^{} [p_{ij}\log(\frac{p_{ij}}{q_{ij}})+(1-p_{ij})\log(\frac{1-p_{ij}}{1-q_{ij}})]\]
+
+<h1 id="2-umap-vs-t-sne">2. UMAP v.s. t-SNE</h1>
+
+<p><strong>t-SNE</strong>和<strong>UMAP</strong>的主要不同如下：</p>
+
+<h3 id="-高维空间中的样本关系">① 高维空间中的样本关系</h3>
+
+<p><strong>t-SNE</strong>用高斯分布衡量高维空间中两个样本点之间的距离，其距离采用欧氏距离进行衡量：</p>
+
+\[p_{j|i} = \frac{\exp( -|| x_i -x_j ||^2 /2σ_i^2 )}{\sum_{k≠i}^{} {\exp( -|| x_k -x_i ||^2 /2σ_i^2 )}}\]
+
+<p><strong>UMAP</strong>使用任意度量作为距离函数，并计算未归一化的概率分布：</p>
+
+\[p_{i|j} = e^{-\frac{d(x_i, x_j)-\rho_i}{\sigma_i}}\]
+
+<p>相较于<strong>t-SNE</strong>，<strong>UMAP</strong>引入了$\rho_i$参数。$\rho_i$表示距离样本点$x_i$最近的样本点对应的距离。</p>
+<ul>
+  <li>对于<strong>t-SNE</strong>，如果样本点$x_i$距离其他样本点$x_j$都很远，则计算得到的$p_{j|i}$都比较小，造成最终的相似性图不具有连通性。</li>
+  <li>对于<strong>UMAP</strong>，引入$\rho_i$参数使得至少存在一个$x_j$满足$p_{i|j}=1$，保证图的连通性。</li>
+</ul>
+
+<p>此外，对计算的概率分布不进行归一化，能够减少计算量。</p>
+
+<h3 id="-低维空间中的样本关系">② 低维空间中的样本关系</h3>
+
+<p><strong>t-SNE</strong>用<strong>t</strong>分布衡量低维空间中的两个样本点之间的相似度：</p>
+
+\[q_{ij} = \frac{ (1 + || y_i-y_j ||_2^2)^{-1} }{\sum_{k≠l}^{} {(1 + || y_k-y_l ||_2^2 )^{-1} }}\]
+
+<p><strong>UMAP</strong>去掉了归一化项：</p>
+
+\[q_{ij} = (1+a||y_i-y_j||_2^{2b})^{-1}\]
+
+<p><strong>UMAP</strong>引入了两个超参数$a$和$b$，其目的是用$q_{ij}$拟合以下分段函数：</p>
+
+\[\Psi(x,y) = \begin{cases} 1, &amp; ||x-y||_2\leq dist \\e^{-||x-y||_2-dist} , &amp; \text{otherwise} \end{cases}\]
+
+<p><img src="https://pic.imgdb.cn/item/61e239b72ab3f51d9103a670.jpg" alt="" /></p>
+
+<p>观察该分段函数(上图蓝色曲线)，超参数$dist$设置了一个距离的阈值。当样本点之间的距离小于该阈值时，则可认为两个样本相似度较高($q_{ij}≈1$)。
+通过调整参数$dist$，可以控制投影点的聚拢程度。$dist$越大，则投影后相似的点越分散；$dist$越小，则投影后相似的点越聚拢。</p>
+
+<p><img src="https://pic.imgdb.cn/item/61e238322ab3f51d910234a7.jpg" alt="" /></p>
+
+<h3 id="-损失函数">③ 损失函数</h3>
+
+<p><strong>t-SNE</strong>用<strong>KL</strong>散度衡量$p_{ij}$和$q_{ij}$的距离：</p>
+
+\[KL(p_{ij} || q_{ij}) = \sum_{i}^{} \sum_{j}^{} p_{ij} \log (\frac{p_{ij}}{q_{ij}})\]
+
+<p><strong>UMAP</strong>则用交叉熵损失：</p>
+
+\[CE = \sum_{i}^{} \sum_{j}^{} [p_{ij}\log(\frac{p_{ij}}{q_{ij}})+(1-p_{ij})\log(\frac{1-p_{ij}}{1-q_{ij}})]\]
+
+<p>用$X$表示高维点之间的距离，用$Y$表示低维点之间的距离。绘制两个损失平面：</p>
+
+<p><img src="https://pic.imgdb.cn/item/61e23c112ab3f51d91059705.jpg" alt="" /></p>
+
+<p>观察<strong>t-SNE</strong>的损失曲面，当$X$较小时(高维点距离较近)$Y$也应该取较小值，此时对于较大的$Y$(低维点距离较远)会产生比较大的梯度，此时有利于梯度更新。但是当$X$较大时(高维点距离较远)，对于较小的$Y$(低维点距离较近)具有比较小的梯度，此时不利于梯度更新。综上所述，<strong>t-SNE</strong>擅长把高维空间中距离较近的点投影到邻近的低维空间中；但是对于高维空间中距离较远的点，无法准确地保持投影后的距离关系。</p>
+
+<p><strong>UMAP</strong>通过调整损失函数解决了梯度消失的问题。当$X$较小时(高维点距离较近)，对于较大的$Y$(低维点距离较远)会产生比较大的梯度；当$X$较大时(高维点距离较远)，对于较小的$Y$(低维点距离较近)也会产生比较大的梯度；这两种情况下都有利于梯度更新。</p>
+
+<h1 id="3-umap的流程">3. UMAP的流程</h1>
+
+<p>由上述介绍，<strong>UMAP</strong>的一般步骤如下：</p>
+<ol>
+  <li>给定高维空间中的样本点$X \in \Bbb{R}^{n \times d}$，降维维度$d’$，近邻点超参数$k$和分段超参数$dist$;</li>
+  <li>通过超参数$dist$寻找拟合曲线的参数$a$和$b$：\((1+a\|x-y\|_2^{2b})^{-1}≈\begin{cases} 1, &amp; \|x-y\|_2\leq dist \\e^{-\|x-y\|_2-dist} , &amp; \text{otherwise} \end{cases}\)</li>
+  <li>对于每个样本点$x_i$，计算距离样本点$x_i$最近的样本点对应的距离$\rho_i$，通过$k=2^{\sum_{i}^{j}p_{ij}}$寻找$\sigma_i$；</li>
+  <li>计算其余样本点的条件概率$p_{i|j} = e^{-\frac{d(x_i, x_j)-\rho_i}{\sigma_i}}$；</li>
+  <li>进一步计算联合概率$p_{ij} = p_{i|j}+p_{j|i}-p_{i|j}p_{j|i}$；</li>
+  <li>使用所有样本的$p_{ij}$构造相似性图，通过谱聚类初始化低维数据$Y \in \Bbb{R}^{n \times d’}$；</li>
+  <li>计算损失函数$CE = \sum_{i}^{} \sum_{j}^{} [p_{ij}\log(\frac{p_{ij}}{q_{ij}})+(1-p_{ij})\log(\frac{1-p_{ij}}{1-q_{ij}})]$；</li>
+  <li>采用随机梯度下降更新参数。</li>
+</ol>
+
+<h3 id="实例使用pca和umap对手写数字数据集降维可视化">实例：使用PCA和UMAP对手写数字数据集降维可视化</h3>
+
+<p>①导入相关的库：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># pip install umap-learn
+</span><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_digits</span>
+<span class="kn">from</span> <span class="nn">sklearn.decomposition</span> <span class="kn">import</span> <span class="n">PCA</span>
+<span class="kn">import</span> <span class="nn">umap</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+</code></pre></div></div>
+
+<p>②使用PCA和t-SNE降维：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">digits</span> <span class="o">=</span> <span class="n">load_digits</span><span class="p">()</span>
+<span class="n">X_pca</span> <span class="o">=</span> <span class="n">PCA</span><span class="p">(</span><span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">).</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">digits</span><span class="p">.</span><span class="n">data</span><span class="p">)</span>
+<span class="n">X_umap</span> <span class="o">=</span> <span class="n">umap</span><span class="p">.</span><span class="n">UMAP</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">min_dist</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                   <span class="n">n_components</span><span class="o">=</span><span class="mi">2</span><span class="p">,).</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">digits</span><span class="p">.</span><span class="n">data</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>③可视化：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plt</span><span class="p">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_umap</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_umap</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">digits</span><span class="p">.</span><span class="n">target</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">"UMAP"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_pca</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_pca</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">digits</span><span class="p">.</span><span class="n">target</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">"PCA"</span><span class="p">)</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div></div>
+<p><img src="https://pic.imgdb.cn/item/61e288302ab3f51d914332f8.jpg" alt="" /></p>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/46283762?v=4&size=64" alt="">
+      </div>
+      <div class="author-name" rel="author">DawsonWen</div>
+      <div class="bio">
+        <p></p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="//github.com/Sologala" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/2021/09/25/pareto.html" class="read-next-link"></a>
+        <section>
+          <span>多目标优化的帕累托最优(Pareto Optimality)</span>
+          <p>  寻找多目标优化问题的帕累托最优解.</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="https://pic.imgdb.cn/item/62dcab3df54cd3f93721c092.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/2021/09/23/tsne.html" class="read-next-link"></a>
+          <section>
+            <span>t分布随机近邻嵌入(t-distributed Stochastic Neighbor Embedding, t-SNE)</span>
+            <p>  t-distributed stochastic neighbor embedding。</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="https://pic.downk.cc/item/5e901801504f4bcb0465ca1d.jpg" alt="">
+          
+      </div>
+      
+    </section>
+    
+    <section class="post-footer-item comment">
+      <div id="disqus_thread"></div>
+      <div id="gitalk_container"></div>
+    </section>
+  </section>
+
+  <!-- <footer class="g-footer">
+  <script type='text/javascript' id='clustrmaps' src='//cdn.clustrmaps.com/map_v2.js?cl=ffffff&w=800&t=m&d=WWuzUTmOt8V9vdtIQd5uqrEcKsRg4IiPuy9gg21CQO8'></script>
+  <section>DawsonWen的个人网站 ©
+  
+  
+    2020
+    -
+  
+  2024
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a></section>
+</footer>
+ -->
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'douban'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+	
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>
