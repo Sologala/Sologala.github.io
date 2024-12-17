@@ -1,7 +1,7 @@
 ---
 
 layout: post
-title: 'Efficient Visual Tracking with Exemplar Transformers'
+title: 'FEAR: Fast Efficient Accurate and Robust Visual Tracker'
 date: 2024-12-15
 author: DawsonWen
 cover: 'https://raw.githubusercontent.com/Sologala/imgdb/master/post/image-20241216221511256.png'

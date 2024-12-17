@@ -166,76 +166,76 @@ Author: Ray-Eldath
 <p>其中通道注意力模块对输入特征沿着通道维度计算一阶统计量(全局平均池化)，然后通过带有瓶颈层的全连接层学习通道之间的相关性。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ChannelGate</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">reduction_ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ChannelGate</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">avgpool</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">gate_c</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span>
-            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">channel</span><span class="o">//</span><span class="n">reduction_ratio</span><span class="p">),</span>
-            <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="n">channel</span><span class="o">//</span><span class="n">reduction_ratio</span><span class="p">),</span>
-            <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
-            <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">channel</span><span class="o">//</span><span class="n">reduction_ratio</span><span class="p">,</span><span class="n">channel</span><span class="p">),</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">reduction_ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">num_layers</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nf">super</span><span class="p">(</span><span class="n">ChannelGate</span><span class="p">,</span> <span class="n">self</span><span class="p">).</span><span class="nf">__init__</span><span class="p">()</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">avgpool</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">AdaptiveAvgPool2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">gate_c</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Sequential</span><span class="p">(</span>
+            <span class="n">nn</span><span class="p">.</span><span class="nc">Linear</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">channel</span><span class="o">//</span><span class="n">reduction_ratio</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="nc">BatchNorm1d</span><span class="p">(</span><span class="n">channel</span><span class="o">//</span><span class="n">reduction_ratio</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="nc">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="n">nn</span><span class="p">.</span><span class="nc">Linear</span><span class="p">(</span><span class="n">channel</span><span class="o">//</span><span class="n">reduction_ratio</span><span class="p">,</span><span class="n">channel</span><span class="p">),</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">avg_pool</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">avgpool</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># [b, c]
-</span>        <span class="n">channel_attn</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">gate_c</span><span class="p">(</span><span class="n">avg_pool</span><span class="p">)</span> <span class="c1"># [b, c]
-</span>        <span class="k">return</span> <span class="n">channel_attn</span><span class="p">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># [b, c, h, w]
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">avg_pool</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">avgpool</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="nf">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nf">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># [b, c]
+</span>        <span class="n">channel_attn</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">gate_c</span><span class="p">(</span><span class="n">avg_pool</span><span class="p">)</span> <span class="c1"># [b, c]
+</span>        <span class="k">return</span> <span class="n">channel_attn</span><span class="p">.</span><span class="nf">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nf">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nf">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># [b, c, h, w]
 </span></code></pre></div></div>
 
 <p>空间注意力模块首先应用$1 \times 1$卷积压缩通道维度，然后使用两个空洞率为$4$的$3 \times 3$空洞卷积提取多感受野特征，并最终应用$1 \times 1$卷积把通道数压缩为$1$。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SpatialGate</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span>
                  <span class="n">channel</span><span class="p">,</span>
                  <span class="n">reduction_ratio</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
                  <span class="n">dilation_conv_num</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                  <span class="n">dilation_val</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">SpatialGate</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="nf">super</span><span class="p">(</span><span class="n">SpatialGate</span><span class="p">,</span> <span class="n">self</span><span class="p">).</span><span class="nf">__init__</span><span class="p">()</span>
         <span class="n">reduced_c</span> <span class="o">=</span> <span class="n">channel</span> <span class="o">//</span> <span class="n">reduction_ratio</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">()</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">gate_s</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Sequential</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span>
-            <span class="s">'gate_s_conv_reduce0'</span><span class="p">,</span>
-            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">reduced_c</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span><span class="s">'gate_s_bn_reduce0'</span><span class="p">,</span>
-                               <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">))</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span><span class="s">'gate_s_relu_reduce0'</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">())</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="nf">add_module</span><span class="p">(</span>
+            <span class="sh">'</span><span class="s">gate_s_conv_reduce0</span><span class="sh">'</span><span class="p">,</span>
+            <span class="n">nn</span><span class="p">.</span><span class="nc">Conv2d</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">reduced_c</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="nf">add_module</span><span class="p">(</span><span class="sh">'</span><span class="s">gate_s_bn_reduce0</span><span class="sh">'</span><span class="p">,</span>
+                               <span class="n">nn</span><span class="p">.</span><span class="nc">BatchNorm2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">))</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="nf">add_module</span><span class="p">(</span><span class="sh">'</span><span class="s">gate_s_relu_reduce0</span><span class="sh">'</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="nc">ReLU</span><span class="p">())</span>
 
         <span class="c1"># 进行多个空洞卷积，丰富感受野
-</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dilation_conv_num</span><span class="p">):</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span>
-                <span class="s">'gate_s_conv_di_%d'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span>
-                <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">,</span> <span class="n">reduced_c</span><span class="p">,</span>
+</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">dilation_conv_num</span><span class="p">):</span>
+            <span class="n">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="nf">add_module</span><span class="p">(</span>
+                <span class="sh">'</span><span class="s">gate_s_conv_di_%d</span><span class="sh">'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span>
+                <span class="n">nn</span><span class="p">.</span><span class="nc">Conv2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">,</span> <span class="n">reduced_c</span><span class="p">,</span>
                           <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
                           <span class="n">padding</span><span class="o">=</span><span class="n">dilation_val</span><span class="p">,</span>
                           <span class="n">dilation</span><span class="o">=</span><span class="n">dilation_val</span><span class="p">))</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span>
-                <span class="s">'gate_s_bn_di_%d'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span>
-                <span class="n">nn</span><span class="p">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">))</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span><span class="s">'gate_s_relu_di_%d'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">ReLU</span><span class="p">())</span>
+            <span class="n">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="nf">add_module</span><span class="p">(</span>
+                <span class="sh">'</span><span class="s">gate_s_bn_di_%d</span><span class="sh">'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span>
+                <span class="n">nn</span><span class="p">.</span><span class="nc">BatchNorm2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">))</span>
+            <span class="n">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="nf">add_module</span><span class="p">(</span><span class="sh">'</span><span class="s">gate_s_relu_di_%d</span><span class="sh">'</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="nc">ReLU</span><span class="p">())</span>
 
-        <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span>
-            <span class="s">'gate_s_conv_final'</span><span class="p">,</span>
-            <span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">.</span><span class="nf">add_module</span><span class="p">(</span>
+            <span class="sh">'</span><span class="s">gate_s_conv_final</span><span class="sh">'</span><span class="p">,</span>
+            <span class="n">nn</span><span class="p">.</span><span class="nc">Conv2d</span><span class="p">(</span><span class="n">reduced_c</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">gate_s</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="nf">gate_s</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="nf">expand_as</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p><strong>BAM</strong>模块并联空间注意力和通道注意力生成的注意力图，使用<strong>Sigmoid</strong>进行归一化后与输入特征相乘，并通过残差连接构造输出特征。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="n">nn</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="n">F</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">torch</span>
+<span class="kn">import</span> <span class="n">torch.nn</span> <span class="k">as</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="n">torch.nn.functional</span> <span class="k">as</span> <span class="n">F</span>
 
 <span class="k">class</span> <span class="nc">BAM</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">BAM</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">channel_att</span> <span class="o">=</span> <span class="n">ChannelGate</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">spatial_att</span> <span class="o">=</span> <span class="n">SpatialGate</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+        <span class="nf">super</span><span class="p">(</span><span class="n">BAM</span><span class="p">,</span> <span class="n">self</span><span class="p">).</span><span class="nf">__init__</span><span class="p">()</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">channel_att</span> <span class="o">=</span> <span class="nc">ChannelGate</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">spatial_att</span> <span class="o">=</span> <span class="nc">SpatialGate</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="n">att</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">channel_att</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">spatial_att</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">att</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">sigmoid</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="nf">channel_att</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">self</span><span class="p">.</span><span class="nf">spatial_att</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">att</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">x</span>
 </code></pre></div></div>
 

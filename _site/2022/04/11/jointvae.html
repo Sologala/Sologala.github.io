@@ -169,7 +169,7 @@ Author: Ray-Eldath
 
 <p>重构损失$\mathbb{E}_{z,c \text{~} q(z,c|x)} [-\log p(x|z,c)]$选用均方误差损失：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'mean'</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="sh">'</span><span class="s">mean</span><span class="sh">'</span><span class="p">)</span>
 </code></pre></div></div>
 
 <h3 id="-连续隐变量的正则化项">⚪ 连续隐变量的正则化项</h3>
@@ -180,21 +180,21 @@ Author: Ray-Eldath
 
 <p>为了防止KL散度过小使得重构效果变差，控制KL散度的数值在$C_z$左右，且$C_z$随着训练轮数逐渐增大，一方面可以提高重构效果，另一方面保留模型的解耦能力。则正则化项$\gamma_z \cdot |KL[q(z|x)||p(z)]-C_z|$表示为：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">self</span><span class="p">.</span><span class="n">cont_gamma</span> <span class="o">=</span> <span class="n">latent_gamma</span> <span class="c1"># float = 30.
-</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_min</span> <span class="o">=</span> <span class="n">latent_min_capacity</span> <span class="c1"># float = 0.
-</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_max</span> <span class="o">=</span> <span class="n">latent_max_capacity</span> <span class="c1"># float = 25.
-</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_iter</span> <span class="o">=</span> <span class="n">latent_num_iter</span> <span class="c1"># int = 25000
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">self</span><span class="p">.</span><span class="n">cont_gamma</span> <span class="o">=</span> <span class="n">latent_gamma</span> <span class="c1"># float = 30.
+</span><span class="n">self</span><span class="p">.</span><span class="n">cont_min</span> <span class="o">=</span> <span class="n">latent_min_capacity</span> <span class="c1"># float = 0.
+</span><span class="n">self</span><span class="p">.</span><span class="n">cont_max</span> <span class="o">=</span> <span class="n">latent_max_capacity</span> <span class="c1"># float = 25.
+</span><span class="n">self</span><span class="p">.</span><span class="n">cont_iter</span> <span class="o">=</span> <span class="n">latent_num_iter</span> <span class="c1"># int = 25000
 </span>
 <span class="c1"># Compute Continuous loss
 # Adaptively increase the continuous capacity
-</span><span class="n">cont_curr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_max</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">cont_min</span><span class="p">)</span> <span class="o">*</span> \
-            <span class="bp">self</span><span class="p">.</span><span class="n">num_iter</span><span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">cont_iter</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">cont_min</span>
-<span class="n">cont_curr</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">cont_curr</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">cont_max</span><span class="p">)</span>
+</span><span class="n">cont_curr</span> <span class="o">=</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">cont_max</span> <span class="o">-</span> <span class="n">self</span><span class="p">.</span><span class="n">cont_min</span><span class="p">)</span> <span class="o">*</span> \
+            <span class="n">self</span><span class="p">.</span><span class="n">num_iter</span><span class="o">/</span> <span class="nf">float</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">cont_iter</span><span class="p">)</span> <span class="o">+</span> <span class="n">self</span><span class="p">.</span><span class="n">cont_min</span>
+<span class="n">cont_curr</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">cont_curr</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">cont_max</span><span class="p">)</span>
 
-<span class="n">kld_cont_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="n">exp</span><span class="p">(),</span>
+<span class="n">kld_cont_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="nf">exp</span><span class="p">(),</span>
                                             <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
                            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">cont_capacity_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">cont_gamma</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">cont_curr</span> <span class="o">-</span> <span class="n">kld_cont_loss</span><span class="p">)</span>
+<span class="n">cont_capacity_loss</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">cont_gamma</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nf">abs</span><span class="p">(</span><span class="n">cont_curr</span> <span class="o">-</span> <span class="n">kld_cont_loss</span><span class="p">)</span>
 </code></pre></div></div>
 
 <h3 id="-离散隐变量的正则化项">⚪ 离散隐变量的正则化项</h3>
@@ -203,27 +203,27 @@ Author: Ray-Eldath
 
 \[KL[q(c|x)||p(c)] = \sum_{c}^{} q(c|x) \log q(c|x)-q(c|x) \log p(c)\]
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">self</span><span class="p">.</span><span class="n">disc_gamma</span> <span class="o">=</span> <span class="n">categorical_gamma</span> <span class="c1"># float = 30.
-</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_min</span> <span class="o">=</span> <span class="n">categorical_min_capacity</span> <span class="c1"># float = 0.
-</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_max</span> <span class="o">=</span> <span class="n">categorical_max_capacity</span> <span class="c1"># float = 25.
-</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_iter</span> <span class="o">=</span> <span class="n">categorical_num_iter</span> <span class="c1"># int = 25000
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">self</span><span class="p">.</span><span class="n">disc_gamma</span> <span class="o">=</span> <span class="n">categorical_gamma</span> <span class="c1"># float = 30.
+</span><span class="n">self</span><span class="p">.</span><span class="n">disc_min</span> <span class="o">=</span> <span class="n">categorical_min_capacity</span> <span class="c1"># float = 0.
+</span><span class="n">self</span><span class="p">.</span><span class="n">disc_max</span> <span class="o">=</span> <span class="n">categorical_max_capacity</span> <span class="c1"># float = 25.
+</span><span class="n">self</span><span class="p">.</span><span class="n">disc_iter</span> <span class="o">=</span> <span class="n">categorical_num_iter</span> <span class="c1"># int = 25000
 </span>
 <span class="c1"># Adaptively increase the discrinimator capacity
-</span><span class="n">disc_curr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_max</span> <span class="o">-</span> <span class="bp">self</span><span class="p">.</span><span class="n">disc_min</span><span class="p">)</span> <span class="o">*</span> \
-            <span class="bp">self</span><span class="p">.</span><span class="n">num_iter</span><span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">disc_iter</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">disc_min</span>
-<span class="n">disc_curr</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">disc_curr</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">categorical_dim</span><span class="p">))</span>
+</span><span class="n">disc_curr</span> <span class="o">=</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">disc_max</span> <span class="o">-</span> <span class="n">self</span><span class="p">.</span><span class="n">disc_min</span><span class="p">)</span> <span class="o">*</span> \
+            <span class="n">self</span><span class="p">.</span><span class="n">num_iter</span><span class="o">/</span> <span class="nf">float</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">disc_iter</span><span class="p">)</span> <span class="o">+</span> <span class="n">self</span><span class="p">.</span><span class="n">disc_min</span>
+<span class="n">disc_curr</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="n">disc_curr</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">categorical_dim</span><span class="p">))</span>
 
-<span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">q_p</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Convert the categorical codes into probabilities
+<span class="n">q</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">q_p</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">softmax</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># Convert the categorical codes into probabilities
 </span><span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-7</span>
 
 <span class="c1"># Entropy of the logits
-</span><span class="n">h1</span> <span class="o">=</span> <span class="n">q_p</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">q_p</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+</span><span class="n">h1</span> <span class="o">=</span> <span class="n">q_p</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="n">q_p</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
 <span class="c1"># Cross entropy with the categorical distribution
-</span><span class="n">h2</span> <span class="o">=</span> <span class="n">q_p</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">categorical_dim</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
-<span class="n">kld_disc_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">h1</span> <span class="o">-</span> <span class="n">h2</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span class="n">h2</span> <span class="o">=</span> <span class="n">q_p</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">self</span><span class="p">.</span><span class="n">categorical_dim</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+<span class="n">kld_disc_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="n">h1</span> <span class="o">-</span> <span class="n">h2</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-<span class="n">disc_capacity_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">disc_gamma</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">disc_curr</span> <span class="o">-</span> <span class="n">kld_disc_loss</span><span class="p">)</span>
+<span class="n">disc_capacity_loss</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">disc_gamma</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nf">abs</span><span class="p">(</span><span class="n">disc_curr</span> <span class="o">-</span> <span class="n">kld_disc_loss</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p><strong>Joint VAE</strong>的完整<strong>pytorch</strong>实现可参考<a href="https://github.com/AntixK/PyTorch-VAE/blob/master/models/joint_vae.py">PyTorch-VAE</a>。</p>
@@ -241,8 +241,8 @@ Author: Ray-Eldath
 <p><strong>Pytorch</strong>实现如下：</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">reparameterize</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span><span class="p">):</span>
-    <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_var</span><span class="p">)</span>
-    <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_var</span><span class="p">)</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">randn_like</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">std</span>
 </code></pre></div></div>
 
@@ -256,19 +256,19 @@ Author: Ray-Eldath
 
 <p><strong>Pytorch</strong>实现如下：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">reparameterize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span><span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="s">"""
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">reparameterize</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span><span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-7</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="sh">"""</span><span class="s">
     Gumbel-softmax trick to sample from Categorical Distribution
     :param c: (Tensor) Latent Codes [B x D x K]
     :return: (Tensor) [B x D]
-    """</span>
+    </span><span class="sh">"""</span>
     <span class="c1"># Sample from Gumbel
-</span>    <span class="n">u</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">rand_like</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-    <span class="n">g</span> <span class="o">=</span> <span class="o">-</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="o">-</span> <span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">u</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+</span>    <span class="n">u</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">rand_like</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="o">-</span> <span class="n">torch</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="o">-</span> <span class="n">torch</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="n">u</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
 
     <span class="c1"># Gumbel-Softmax sample
-</span>    <span class="n">s</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">((</span><span class="n">c</span> <span class="o">+</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="p">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">latent_dim</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">categorical_dim</span><span class="p">)</span>
+</span>    <span class="n">s</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">softmax</span><span class="p">((</span><span class="n">c</span> <span class="o">+</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="n">self</span><span class="p">.</span><span class="n">temp</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="nf">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">latent_dim</span> <span class="o">*</span> <span class="n">self</span><span class="p">.</span><span class="n">categorical_dim</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">s</span>
 </code></pre></div></div>
 

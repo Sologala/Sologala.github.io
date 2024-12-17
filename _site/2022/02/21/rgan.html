@@ -193,25 +193,25 @@ Author: Ray-Eldath
 
 <p>下面给出由<strong>pytorch</strong>实现的<strong>RGAN</strong>的损失函数计算和参数更新过程：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">n_epochs</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">real_imgs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">opt</span><span class="p">.</span><span class="n">n_epochs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">real_imgs</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
 
-        <span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">opt</span><span class="p">.</span><span class="n">latent_dim</span><span class="p">)</span> 
-        <span class="n">gen_imgs</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">randn</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">opt</span><span class="p">.</span><span class="n">latent_dim</span><span class="p">)</span> 
+        <span class="n">gen_imgs</span> <span class="o">=</span> <span class="nf">generator</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 
         <span class="c1"># 训练判别器
-</span>        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="n">d_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span>
-            <span class="n">discriminator</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">)</span><span class="o">-</span><span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">.</span><span class="n">detach</span><span class="p">()))))</span>
-        <span class="n">d_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
-        <span class="n">optimizer_D</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+</span>        <span class="n">optimizer_D</span><span class="p">.</span><span class="nf">zero_grad</span><span class="p">()</span>
+        <span class="n">d_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="nf">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nf">sigmoid</span><span class="p">(</span>
+            <span class="nf">discriminator</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">)</span><span class="o">-</span><span class="nf">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">.</span><span class="nf">detach</span><span class="p">()))))</span>
+        <span class="n">d_loss</span><span class="p">.</span><span class="nf">backward</span><span class="p">()</span>
+        <span class="n">optimizer_D</span><span class="p">.</span><span class="nf">step</span><span class="p">()</span>
             
         <span class="c1"># 训练生成器
-</span>        <span class="n">optimizer_G</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="n">g_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">(</span>
-            <span class="n">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">)</span><span class="o">-</span><span class="n">discriminator</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">))))</span>
-        <span class="n">g_loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
-        <span class="n">optimizer_G</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+</span>        <span class="n">optimizer_G</span><span class="p">.</span><span class="nf">zero_grad</span><span class="p">()</span>
+        <span class="n">g_loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="p">.</span><span class="nf">mean</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nf">sigmoid</span><span class="p">(</span>
+            <span class="nf">discriminator</span><span class="p">(</span><span class="n">gen_imgs</span><span class="p">)</span><span class="o">-</span><span class="nf">discriminator</span><span class="p">(</span><span class="n">real_imgs</span><span class="p">))))</span>
+        <span class="n">g_loss</span><span class="p">.</span><span class="nf">backward</span><span class="p">()</span>
+        <span class="n">optimizer_G</span><span class="p">.</span><span class="nf">step</span><span class="p">()</span>
 </code></pre></div></div>
 
 <p>实验表明<strong>RGAN</strong>能够加快生成器的训练速度：</p>

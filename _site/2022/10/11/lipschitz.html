@@ -217,8 +217,8 @@ Author: Ray-Eldath
 
 \[\begin{aligned}  W &amp;\leftarrow\text{clip}(W,-c,c)  \end{aligned}\]
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="p">.</span><span class="n">parameters</span><span class="p">():</span>
-    <span class="n">p</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">clamp_</span><span class="p">(</span><span class="o">-</span><span class="n">clip_value</span><span class="p">,</span> <span class="n">clip_value</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="p">.</span><span class="nf">parameters</span><span class="p">():</span>
+    <span class="n">p</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="nf">clamp_</span><span class="p">(</span><span class="o">-</span><span class="n">clip_value</span><span class="p">,</span> <span class="n">clip_value</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>然而该做法也有一些问题。若$c$值取得太大，则模型训练容易不稳定，收敛速度慢；若$c$值取得太小，则容易造成梯度消失。</p>
@@ -246,19 +246,19 @@ Author: Ray-Eldath
 \[\begin{aligned}  W \leftarrow \mathop{\arg \min}_{W}&amp; \mathcal{L}(x;W)+ \lambda (||\frac{\partial f_W(x)}{\partial x}||-1)^2 \end{aligned}\]
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">compute_gradient_penalty</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-    <span class="s">"""Calculates the gradient penalty loss"""</span>
-    <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="sh">"""</span><span class="s">Calculates the gradient penalty loss</span><span class="sh">"""</span>
+    <span class="n">preds</span> <span class="o">=</span> <span class="nf">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     <span class="c1"># Get gradient w.r.t. interpolates
-</span>    <span class="n">gradients</span> <span class="o">=</span> <span class="n">autograd</span><span class="p">.</span><span class="n">grad</span><span class="p">(</span>
+</span>    <span class="n">gradients</span> <span class="o">=</span> <span class="n">autograd</span><span class="p">.</span><span class="nf">grad</span><span class="p">(</span>
         <span class="n">outputs</span><span class="o">=</span><span class="n">preds</span><span class="p">,</span>
         <span class="n">inputs</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
-        <span class="n">grad_outputs</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">preds</span><span class="p">).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span>
+        <span class="n">grad_outputs</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nf">ones_like</span><span class="p">(</span><span class="n">preds</span><span class="p">).</span><span class="nf">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span>
         <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
         <span class="n">retain_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
         <span class="n">only_inputs</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">gradients</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">gradients</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">gradient_penalty</span> <span class="o">=</span> <span class="p">((</span><span class="n">gradients</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">).</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">gradients</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">.</span><span class="nf">view</span><span class="p">(</span><span class="n">gradients</span><span class="p">.</span><span class="nf">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">gradient_penalty</span> <span class="o">=</span> <span class="p">((</span><span class="n">gradients</span><span class="p">.</span><span class="nf">norm</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">).</span><span class="nf">mean</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">gradient_penalty</span>
 </code></pre></div></div>
 
@@ -288,17 +288,17 @@ Author: Ray-Eldath
 
 <p>根据前述分析，如果激活函数的导数是有界的，应用谱归一化约束参数后，可以精确地使网络满足<strong>Lipschiitz</strong>连续性。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="p">()</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">model</span> <span class="o">=</span> <span class="nf">model</span><span class="p">()</span>
 
 <span class="k">def</span> <span class="nf">add_sn</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m</span><span class="p">.</span><span class="n">named_children</span><span class="p">():</span>
-             <span class="n">m</span><span class="p">.</span><span class="n">add_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">add_sn</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">)):</span>
-             <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">utils</span><span class="p">.</span><span class="n">spectral_norm</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">m</span><span class="p">.</span><span class="nf">named_children</span><span class="p">():</span>
+             <span class="n">m</span><span class="p">.</span><span class="nf">add_module</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nf">add_sn</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Conv2d</span><span class="p">,</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">)):</span>
+             <span class="k">return</span> <span class="n">nn</span><span class="p">.</span><span class="n">utils</span><span class="p">.</span><span class="nf">spectral_norm</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
              <span class="k">return</span> <span class="n">m</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">add_sn</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="nf">add_sn</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </code></pre></div></div>
 
 <h2 id="4梯度归一化">（4）梯度归一化</h2>
@@ -324,17 +324,17 @@ Author: Ray-Eldath
 \[\hat{f}(x) = \frac{f(x)}{||\nabla_x f(x)||+|f(x)|} \in [-1,1]\]
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">grad_normalize</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-    <span class="s">"""Calculates the gradient normalization"""</span>
-    <span class="n">x</span><span class="p">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="n">grad_out</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">out</span><span class="p">).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span>
+    <span class="sh">"""</span><span class="s">Calculates the gradient normalization</span><span class="sh">"""</span>
+    <span class="n">x</span><span class="p">.</span><span class="nf">requires_grad_</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">grad_out</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nf">ones_like</span><span class="p">(</span><span class="n">out</span><span class="p">).</span><span class="nf">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span>
     <span class="c1"># Get gradient w.r.t. x
-</span>    <span class="n">gradients</span> <span class="o">=</span> <span class="n">autograd</span><span class="p">.</span><span class="n">grad</span><span class="p">(</span>
+</span>    <span class="n">gradients</span> <span class="o">=</span> <span class="n">autograd</span><span class="p">.</span><span class="nf">grad</span><span class="p">(</span>
         <span class="n">outputs</span><span class="o">=</span><span class="n">out</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">grad_outputs</span><span class="o">=</span><span class="n">grad_out</span><span class="p">,</span>
         <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">retain_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">only_inputs</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">grad_norm</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">gradients</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">out</span> <span class="o">/</span> <span class="p">(</span><span class="n">grad_norm</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="nb">abs</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+    <span class="n">grad_norm</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">.</span><span class="nf">view</span><span class="p">(</span><span class="n">gradients</span><span class="p">.</span><span class="nf">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nf">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nf">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span> <span class="o">/</span> <span class="p">(</span><span class="n">grad_norm</span> <span class="o">+</span> <span class="n">torch</span><span class="p">.</span><span class="nf">abs</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
 </code></pre></div></div>
 
 <p>而<a href="https://0809zheng.github.io/2022/02/11/grangan.html"><font color="Blue">GraN-GAN</font></a>设计了如下变换：</p>
@@ -342,17 +342,17 @@ Author: Ray-Eldath
 \[\hat{f}(x) = \frac{f(x) \cdot ||\nabla_x f(x)||}{||\nabla_x f(x)||^2+\epsilon}\]
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">grad_normalize</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-    <span class="s">"""Calculates the gradient normalization"""</span>
-    <span class="n">x</span><span class="p">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="n">grad_out</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">out</span><span class="p">).</span><span class="n">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span>
+    <span class="sh">"""</span><span class="s">Calculates the gradient normalization</span><span class="sh">"""</span>
+    <span class="n">x</span><span class="p">.</span><span class="nf">requires_grad_</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">grad_out</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nf">ones_like</span><span class="p">(</span><span class="n">out</span><span class="p">).</span><span class="nf">requires_grad_</span><span class="p">(</span><span class="bp">False</span><span class="p">),</span>
     <span class="c1"># Get gradient w.r.t. x
-</span>    <span class="n">gradients</span> <span class="o">=</span> <span class="n">autograd</span><span class="p">.</span><span class="n">grad</span><span class="p">(</span>
+</span>    <span class="n">gradients</span> <span class="o">=</span> <span class="n">autograd</span><span class="p">.</span><span class="nf">grad</span><span class="p">(</span>
         <span class="n">outputs</span><span class="o">=</span><span class="n">out</span><span class="p">,</span> <span class="n">inputs</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">grad_outputs</span><span class="o">=</span><span class="n">grad_out</span><span class="p">,</span>
         <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">retain_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">only_inputs</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
     <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">grad_norm</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">gradients</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">out</span> <span class="o">*</span> <span class="n">grad_norm</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">grad_norm</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+    <span class="n">grad_norm</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">.</span><span class="nf">view</span><span class="p">(</span><span class="n">gradients</span><span class="p">.</span><span class="nf">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="nf">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nf">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="nf">return </span><span class="p">(</span><span class="n">out</span> <span class="o">*</span> <span class="n">grad_norm</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">grad_norm</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
 </code></pre></div></div>
 
     </article>

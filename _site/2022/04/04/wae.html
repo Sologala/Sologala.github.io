@@ -215,15 +215,15 @@ Author: Ray-Eldath
 
 <p><strong>WAE</strong>的前向推理过程如下，编码器直接编码隐变量$z$(而不是概率分布的参数)，然后使用隐变量直接重构数据。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
-    <span class="k">return</span>  <span class="p">[</span><span class="bp">self</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="n">z</span><span class="p">),</span> <span class="nb">input</span><span class="p">,</span> <span class="n">z</span><span class="p">]</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+    <span class="k">return</span>  <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="n">z</span><span class="p">),</span> <span class="nb">input</span><span class="p">,</span> <span class="n">z</span><span class="p">]</span>
 </code></pre></div></div>
 
 <p>损失函数如下，重构损失仍然选用均方误差，而<strong>MMD</strong>也有解析表达形式。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span><span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
-<span class="n">mmd_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">compute_mmd</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">reg_weight</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span><span class="n">F</span><span class="p">.</span><span class="nf">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+<span class="n">mmd_loss</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">compute_mmd</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">reg_weight</span><span class="p">)</span>
 <span class="n">loss</span> <span class="o">=</span> <span class="n">recons_loss</span> <span class="o">+</span> <span class="n">mmd_loss</span>
 </code></pre></div></div>
 
@@ -231,19 +231,19 @@ Author: Ray-Eldath
 
 \[\frac{\lambda}{n(n-1)}\sum_{l \ne j}k(z_l,z_j)+\frac{\lambda}{n(n-1)}\sum_{l \ne j}k(\tilde{z}_l,\tilde{z}_j)-\frac{2\lambda}{n^2} \sum_{l , j}k(z_l,\tilde{z}_j)\]
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">compute_mmd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="n">bias_corr</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">batch_size</span> <span class="o">*</span>  <span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">batch_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">reg_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">reg_weight</span> <span class="o">/</span> <span class="n">bias_corr</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">compute_mmd</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="n">bias_corr</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">batch_size</span> <span class="o">*</span>  <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">batch_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">reg_weight</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">reg_weight</span> <span class="o">/</span> <span class="n">bias_corr</span>
     <span class="c1"># Sample from prior (Gaussian) distribution
-</span>    <span class="n">prior_z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+</span>    <span class="n">prior_z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">randn_like</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 
-    <span class="n">prior_z__kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">compute_kernel</span><span class="p">(</span><span class="n">prior_z</span><span class="p">,</span> <span class="n">prior_z</span><span class="p">)</span>
-    <span class="n">z__kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">compute_kernel</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
-    <span class="n">priorz_z__kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">compute_kernel</span><span class="p">(</span><span class="n">prior_z</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+    <span class="n">prior_z__kernel</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">compute_kernel</span><span class="p">(</span><span class="n">prior_z</span><span class="p">,</span> <span class="n">prior_z</span><span class="p">)</span>
+    <span class="n">z__kernel</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">compute_kernel</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+    <span class="n">priorz_z__kernel</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">compute_kernel</span><span class="p">(</span><span class="n">prior_z</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
 
-    <span class="n">mmd</span> <span class="o">=</span> <span class="n">reg_weight</span> <span class="o">*</span> <span class="n">prior_z__kernel</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">+</span> \
-          <span class="n">reg_weight</span> <span class="o">*</span> <span class="n">z__kernel</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> \
-          <span class="mi">2</span> <span class="o">*</span> <span class="n">reg_weight</span> <span class="o">*</span> <span class="n">priorz_z__kernel</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">mmd</span> <span class="o">=</span> <span class="n">reg_weight</span> <span class="o">*</span> <span class="n">prior_z__kernel</span><span class="p">.</span><span class="nf">mean</span><span class="p">()</span> <span class="o">+</span> \
+          <span class="n">reg_weight</span> <span class="o">*</span> <span class="n">z__kernel</span><span class="p">.</span><span class="nf">mean</span><span class="p">()</span> <span class="o">-</span> \
+          <span class="mi">2</span> <span class="o">*</span> <span class="n">reg_weight</span> <span class="o">*</span> <span class="n">priorz_z__kernel</span><span class="p">.</span><span class="nf">mean</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">mmd</span>
 </code></pre></div></div>
 

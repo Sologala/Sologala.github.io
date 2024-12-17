@@ -241,65 +241,65 @@ Author: Ray-Eldath
 
 <p>以分类任务为例，完整的<strong>VAT</strong>过程实现如下：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">contextlib</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="n">nn</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="n">F</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">contextlib</span>
+<span class="kn">import</span> <span class="n">torch</span>
+<span class="kn">import</span> <span class="n">torch.nn</span> <span class="k">as</span> <span class="n">nn</span>
+<span class="kn">import</span> <span class="n">torch.nn.functional</span> <span class="k">as</span> <span class="n">F</span>
 
-<span class="o">@</span><span class="n">contextlib</span><span class="p">.</span><span class="n">contextmanager</span>
+<span class="nd">@contextlib.contextmanager</span>
 <span class="k">def</span> <span class="nf">_disable_tracking_bn_stats</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
 
     <span class="k">def</span> <span class="nf">switch_attr</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s">'track_running_stats'</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nf">hasattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="sh">'</span><span class="s">track_running_stats</span><span class="sh">'</span><span class="p">):</span>
             <span class="n">m</span><span class="p">.</span><span class="n">track_running_stats</span> <span class="o">^=</span> <span class="bp">True</span>
             
-    <span class="n">model</span><span class="p">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">switch_attr</span><span class="p">)</span>
+    <span class="n">model</span><span class="p">.</span><span class="nf">apply</span><span class="p">(</span><span class="n">switch_attr</span><span class="p">)</span>
     <span class="k">yield</span>
-    <span class="n">model</span><span class="p">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">switch_attr</span><span class="p">)</span>
+    <span class="n">model</span><span class="p">.</span><span class="nf">apply</span><span class="p">(</span><span class="n">switch_attr</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">_l2_normalize</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-    <span class="n">d_reshaped</span> <span class="o">=</span> <span class="n">d</span><span class="p">.</span><span class="n">view</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>
-    <span class="n">d</span> <span class="o">/=</span> <span class="n">torch</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">d_reshaped</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-8</span>
+    <span class="n">d_reshaped</span> <span class="o">=</span> <span class="n">d</span><span class="p">.</span><span class="nf">view</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="nf">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="n">d</span> <span class="o">/=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">norm</span><span class="p">(</span><span class="n">d_reshaped</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-8</span>
     <span class="k">return</span> <span class="n">d</span>
 
 
 <span class="k">class</span> <span class="nc">VATLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="s">"""VAT loss
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">xi</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sh">"""</span><span class="s">VAT loss
         :param xi: hyperparameter of VAT (default: 10.0)
         :param eps: hyperparameter of VAT (default: 1.0)
         :param ip: iteration times of computing adv noise (default: 1)
-        """</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">VATLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">xi</span> <span class="o">=</span> <span class="n">xi</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">ip</span>
+        </span><span class="sh">"""</span>
+        <span class="nf">super</span><span class="p">(</span><span class="n">VATLoss</span><span class="p">,</span> <span class="n">self</span><span class="p">).</span><span class="nf">__init__</span><span class="p">()</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">xi</span> <span class="o">=</span> <span class="n">xi</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">ip</span> <span class="o">=</span> <span class="n">ip</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">():</span>
-            <span class="n">pred</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="nf">no_grad</span><span class="p">():</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">softmax</span><span class="p">(</span><span class="nf">model</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># prepare random unit tensor
-</span>        <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">).</span><span class="n">sub</span><span class="p">(</span><span class="mf">0.5</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">_l2_normalize</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</span>        <span class="n">d</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">shape</span><span class="p">).</span><span class="nf">sub</span><span class="p">(</span><span class="mf">0.5</span><span class="p">).</span><span class="nf">to</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nf">_l2_normalize</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
 
-        <span class="k">with</span> <span class="n">_disable_tracking_bn_stats</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nf">_disable_tracking_bn_stats</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
             <span class="c1"># calc adversarial direction
-</span>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">ip</span><span class="p">):</span>
-                <span class="n">d</span><span class="p">.</span><span class="n">requires_grad_</span><span class="p">()</span>
-                <span class="n">pred_hat</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="p">.</span><span class="n">xi</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
-                <span class="n">logp_hat</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">pred_hat</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-                <span class="n">adv_distance</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">logp_hat</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'batchmean'</span><span class="p">)</span>
-                <span class="n">adv_distance</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
-                <span class="n">d</span> <span class="o">=</span> <span class="n">_l2_normalize</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">grad</span><span class="p">)</span>
-                <span class="n">model</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
+</span>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">ip</span><span class="p">):</span>
+                <span class="n">d</span><span class="p">.</span><span class="nf">requires_grad_</span><span class="p">()</span>
+                <span class="n">pred_hat</span> <span class="o">=</span> <span class="nf">model</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">self</span><span class="p">.</span><span class="n">xi</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
+                <span class="n">logp_hat</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">log_softmax</span><span class="p">(</span><span class="n">pred_hat</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">adv_distance</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">kl_div</span><span class="p">(</span><span class="n">logp_hat</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="sh">'</span><span class="s">batchmean</span><span class="sh">'</span><span class="p">)</span>
+                <span class="n">adv_distance</span><span class="p">.</span><span class="nf">backward</span><span class="p">()</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="nf">_l2_normalize</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">grad</span><span class="p">)</span>
+                <span class="n">model</span><span class="p">.</span><span class="nf">zero_grad</span><span class="p">()</span>
     
             <span class="c1"># calc LDS
-</span>            <span class="n">r_adv</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="bp">self</span><span class="p">.</span><span class="n">eps</span>
-            <span class="n">pred_hat</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">r_adv</span><span class="p">)</span>
-            <span class="n">logp_hat</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">pred_hat</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">lds</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">kl_div</span><span class="p">(</span><span class="n">logp_hat</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'batchmean'</span><span class="p">)</span>
+</span>            <span class="n">r_adv</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="n">self</span><span class="p">.</span><span class="n">eps</span>
+            <span class="n">pred_hat</span> <span class="o">=</span> <span class="nf">model</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">r_adv</span><span class="p">)</span>
+            <span class="n">logp_hat</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">log_softmax</span><span class="p">(</span><span class="n">pred_hat</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">lds</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">kl_div</span><span class="p">(</span><span class="n">logp_hat</span><span class="p">,</span> <span class="n">pred</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="sh">'</span><span class="s">batchmean</span><span class="sh">'</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">lds</span>
 </code></pre></div></div>

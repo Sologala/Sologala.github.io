@@ -214,7 +214,7 @@ Author: Ray-Eldath
 
 <p>在实际实现时拟合$\log \sigma^2$而不是$\sigma^2$，因为$\sigma^2$总是非负的，需要增加激活函数进行限制；而$\log \sigma^2$的取值是任意的。<strong>KL</strong>损失的<strong>Pytorch</strong>实现如下：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">kld_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="n">exp</span><span class="p">(),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">kld_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">mean</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">torch</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">log_var</span> <span class="o">-</span> <span class="n">mu</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">log_var</span><span class="p">.</span><span class="nf">exp</span><span class="p">(),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dim</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
 </code></pre></div></div>
 
 <h2 id="2-生成模型pxz的重构损失">(2) 生成模型$p(x|z)$的重构损失</h2>
@@ -244,7 +244,7 @@ Author: Ray-Eldath
 
 <p>上式表示<strong>均方误差(MSE)</strong>，<strong>Pytorch</strong>实现如下：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">reduction</span> <span class="o">=</span> <span class="s">'sum'</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">reduction</span> <span class="o">=</span> <span class="sh">'</span><span class="s">sum</span><span class="sh">'</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>注意<code class="language-plaintext highlighter-rouge">reduction</code>参数可选<code class="language-plaintext highlighter-rouge">'sum'</code>和<code class="language-plaintext highlighter-rouge">'mean'</code>，应该使用<code class="language-plaintext highlighter-rouge">'sum'</code>，这使得损失函数计算与原式保持一致。笔者在实现时曾选用<code class="language-plaintext highlighter-rouge">'mean'</code>，导致即使训练损失有下降，也只能生成噪声图片，推测是因为取平均使重构损失误差占比过小，无法正常训练。</p>
@@ -271,8 +271,8 @@ Author: Ray-Eldath
 <p>重参数化技巧的<strong>Pytorch</strong>实现如下：</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">reparameterize</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">log_var</span><span class="p">):</span>
-    <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_var</span><span class="p">)</span>
-    <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">exp</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">log_var</span><span class="p">)</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">randn_like</span><span class="p">(</span><span class="n">std</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mu</span> <span class="o">+</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">std</span>
 </code></pre></div></div>
 

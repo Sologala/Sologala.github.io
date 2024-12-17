@@ -192,11 +192,11 @@ Author: Ray-Eldath
 <p>其中<strong>4</strong>维含义表示<strong>roi</strong>框，表示方式有很多种，作者采用了图片尺度的归一化$c_xc_ywh$值，范围是$0-1$。具体实现上通过<strong>Embedding</strong>层实现：</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#self.num_proposals为超参，默认是300，内部权重是(300,4)
-</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Embedding</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_proposals</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-<span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">constant_</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span><span class="p">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">)</span>
-<span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="n">constant_</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span><span class="p">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:],</span> <span class="mf">1.0</span><span class="p">)</span>
+</span><span class="n">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Embedding</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">num_proposals</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="nf">constant_</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span><span class="p">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">nn</span><span class="p">.</span><span class="n">init</span><span class="p">.</span><span class="nf">constant_</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span><span class="p">.</span><span class="n">weight</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:],</span> <span class="mf">1.0</span><span class="p">)</span>
 <span class="c1"># 为啥用nn.Embedding，在本文中其实和以下语句是同一个意思
-</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_proposals</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</span><span class="n">self</span><span class="p">.</span><span class="n">init_proposal_boxes</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nc">Tensor</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">num_proposals</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
 </code></pre></div></div>
 
 <p>注意<code class="language-plaintext highlighter-rouge">self.init_proposal_boxes</code>不包括<strong>batch</strong>信息，也就是说这个$(N,4)$矩阵存储的不是当前一张图片信息，而是整个数据集相关的统计<strong>roi</strong>信息(非常类似注意力机制中的<strong>Keys</strong>作用)，然后通过后续可学习层能够提取出本图片中真正的$N$个<strong>roi</strong>区域。</p>
@@ -218,7 +218,7 @@ Author: Ray-Eldath
 <p>可学习<strong>Proposal Features</strong>维度是$(N,256)$，$N$是每张图片中最多的物体总数，$256$是超参表示每个<strong>roi</strong>实例独有的嵌入信息，其实现和<strong>Proposal Boxes</strong>一致。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#(300,256)
-</span><span class="bp">self</span><span class="p">.</span><span class="n">init_proposal_features</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Embedding</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">num_proposals</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+</span><span class="n">self</span><span class="p">.</span><span class="n">init_proposal_features</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Embedding</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">num_proposals</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>仅仅靠<strong>4d</strong>的<strong>proposal boxes</strong>提供的<strong>roi</strong>太过粗糙，无法表征例如物体姿态和形状，为了提高精度很有必要额外输入一个高维度的<strong>proposal feature</strong>，其目的是希望通过可学习维度嵌入提供$N$个实例的独特统计信息。</p>
@@ -233,65 +233,65 @@ Author: Ray-Eldath
 
 <p>暂时不考虑<strong>batch</strong>，假设<strong>RoI Align</strong>输出<strong>shape</strong>是$(300,7,7,256)$，$300$是<strong>proposal</strong>个数，$7\times 7$是切割后统一输出特征图大小，$256$是表示每个特征空间位置的表征向量，而<strong>proposal feature</strong>的<strong>shape</strong>是$(300,256)$。采用空间注意力机制，把$(300,7,7,256)$的<strong>roi</strong>特征和$(300,256,1)$的<strong>proposal feature</strong>进行矩阵乘法，输出是$(300,7\times 7,1)$，其表示将$256$维度的<strong>proposal feature</strong>向量和空间$7\times 7$的每个<strong>roi</strong>特征$256$维度向量计算相似性，得到相似性权重，该权重可以表征空间$7\times 7$个位置中哪些位置才是应该关心的，并该权重作用到原始的$(300,7,7,256)$上。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pro_features</span><span class="p">,</span> <span class="n">roi_features</span><span class="p">):</span>
-    <span class="s">'''
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">pro_features</span><span class="p">,</span> <span class="n">roi_features</span><span class="p">):</span>
+    <span class="sh">'''</span><span class="s">
     pro_features: (1,  N * nr_boxes, self.d_model)
     roi_features: (49, N * nr_boxes, self.d_model)
-    '''</span>
-    <span class="n">features</span> <span class="o">=</span> <span class="n">roi_features</span><span class="p">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># (bxN,49,256)
+    </span><span class="sh">'''</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">roi_features</span><span class="p">.</span><span class="nf">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># (bxN,49,256)
 </span>    <span class="c1"># self.dynamic_layer就是fc层
 </span>    <span class="c1"># (1, b * N, 256)--&gt;(1, bxN, 2x64x256)--&gt;(bxN,1,2x64x512)
-</span>    <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">dynamic_layer</span><span class="p">(</span><span class="n">pro_features</span><span class="p">).</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</span>    <span class="n">parameters</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">dynamic_layer</span><span class="p">(</span><span class="n">pro_features</span><span class="p">).</span><span class="nf">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
     <span class="c1"># 切分数据
 </span>    <span class="c1"># (bxN,1,2x64x512)--&gt;(bxN,1,64x512)--&gt;(bxN,256,64)
-</span>    <span class="n">param1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="bp">self</span><span class="p">.</span><span class="n">num_params</span><span class="p">].</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">dim_dynamic</span><span class="p">)</span>
+</span>    <span class="n">param1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">self</span><span class="p">.</span><span class="n">num_params</span><span class="p">].</span><span class="nf">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">dim_dynamic</span><span class="p">)</span>
     <span class="c1"># (bxN,1,2x64x512)--&gt;(bxN,1,64x512)--&gt;(bxN,64,256)
-</span>    <span class="n">param2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="bp">self</span><span class="p">.</span><span class="n">num_params</span><span class="p">:].</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">dim_dynamic</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+</span>    <span class="n">param2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">self</span><span class="p">.</span><span class="n">num_params</span><span class="p">:].</span><span class="nf">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">dim_dynamic</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">hidden_dim</span><span class="p">)</span>
     <span class="c1"># 实例级别(bxN)交叉注意力计算，计算roi特征和Proposal Features的空间注意力
 </span>    <span class="c1"># (bxN,49,256) x (bxN,256,64)--&gt;(bxN,49,64)  # 每个位置输出都是64维度
-</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">param1</span><span class="p">)</span>
-    <span class="p">...</span>
+</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">bmm</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">param1</span><span class="p">)</span>
+    <span class="bp">...</span>
     <span class="c1"># 实例级别交互，再算一遍，从而保存维度不变
 </span>    <span class="c1"># (bxN,49,64) x (bxN,64,256)--&gt;(bxN,49,256)
 </span>    <span class="c1"># 得到49个格子上不同的空间权重
-</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">bmm</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">param2</span><span class="p">)</span>
-    <span class="p">...</span>
+</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">bmm</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">param2</span><span class="p">)</span>
+    <span class="bp">...</span>
     <span class="c1"># (bxN,49x256)
-</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">features</span><span class="p">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">features</span><span class="p">.</span><span class="nf">flatten</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="c1"># fc层变成(bxN,256)输出
-</span>    <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">out_layer</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
-    <span class="p">...</span>
+</span>    <span class="n">features</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">out_layer</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+    <span class="bp">...</span>
 </code></pre></div></div>
 
 <h2 id="4-级联refine">4. 级联refine</h2>
 
 <p>为了进一步提高性能，作者还提出了<strong>cascade rcnn</strong>类似的<strong>refine</strong>回归思想，就是迭代运行<strong>n</strong>个<strong>stage</strong>，每个<strong>stage</strong>都是一个<strong>rcnn</strong>模块，参数是不共享的，下一个<strong>stage</strong>接受的是上一个<strong>stage</strong>输出的<strong>refine</strong>后的<strong>roi</strong>：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">init_bboxes</span><span class="p">,</span> <span class="n">init_features</span><span class="p">):</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">init_bboxes</span><span class="p">,</span> <span class="n">init_features</span><span class="p">):</span>
     <span class="n">inter_class_logits</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">inter_pred_bboxes</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># 多尺度输出特征图
-</span>    <span class="n">bs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span>    <span class="n">bs</span> <span class="o">=</span> <span class="nf">len</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="c1"># 可学习roi (b,N,4) 其中所有batch维度初始化时候都是相同的
 </span>    <span class="n">bboxes</span> <span class="o">=</span> <span class="n">init_bboxes</span> <span class="c1"># 可学习的proposal boxes
 </span>    <span class="c1"># 可学习特征(N,256)--&gt;(N,b,256)
-</span>    <span class="n">init_features</span> <span class="o">=</span> <span class="n">init_features</span><span class="p">[</span><span class="bp">None</span><span class="p">].</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">bs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">proposal_features</span> <span class="o">=</span> <span class="n">init_features</span><span class="p">.</span><span class="n">clone</span><span class="p">()</span>
+</span>    <span class="n">init_features</span> <span class="o">=</span> <span class="n">init_features</span><span class="p">[</span><span class="bp">None</span><span class="p">].</span><span class="nf">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">bs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">proposal_features</span> <span class="o">=</span> <span class="n">init_features</span><span class="p">.</span><span class="nf">clone</span><span class="p">()</span>
     <span class="c1"># 迭代n次rcnn head
-</span>    <span class="k">for</span> <span class="n">rcnn_head</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">.</span><span class="n">head_series</span><span class="p">:</span>
+</span>    <span class="k">for</span> <span class="n">rcnn_head</span> <span class="ow">in</span> <span class="n">self</span><span class="p">.</span><span class="n">head_series</span><span class="p">:</span>
         <span class="c1"># features是FPN输出特征，bboxes初始化时候是可学习的bbox，后面是预测的bbox
 </span>        <span class="c1"># proposal_features每次都会同一个输入，self.box_pooler是roialign层
-</span>        <span class="n">class_logits</span><span class="p">,</span> <span class="n">pred_bboxes</span><span class="p">,</span> <span class="n">proposal_features</span> <span class="o">=</span> <span class="n">rcnn_head</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span>  
-                                    <span class="n">proposal_features</span><span class="p">,</span><span class="bp">self</span><span class="p">.</span><span class="n">box_pooler</span><span class="p">)</span>
+</span>        <span class="n">class_logits</span><span class="p">,</span> <span class="n">pred_bboxes</span><span class="p">,</span> <span class="n">proposal_features</span> <span class="o">=</span> <span class="nf">rcnn_head</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">bboxes</span><span class="p">,</span>  
+                                    <span class="n">proposal_features</span><span class="p">,</span><span class="n">self</span><span class="p">.</span><span class="n">box_pooler</span><span class="p">)</span>
         <span class="c1"># 中继监督
-</span>        <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">return_intermediate</span><span class="p">:</span>
-            <span class="n">inter_class_logits</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">class_logits</span><span class="p">)</span>
-            <span class="n">inter_pred_bboxes</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_bboxes</span><span class="p">)</span>
+</span>        <span class="k">if</span> <span class="n">self</span><span class="p">.</span><span class="n">return_intermediate</span><span class="p">:</span>
+            <span class="n">inter_class_logits</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">class_logits</span><span class="p">)</span>
+            <span class="n">inter_pred_bboxes</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">pred_bboxes</span><span class="p">)</span>
         <span class="c1"># 不断更新roi,类似cascade rcnn思想
 </span>        <span class="c1"># 需要截断，和cascade rcnn一样
-</span>        <span class="n">bboxes</span> <span class="o">=</span> <span class="n">pred_bboxes</span><span class="p">.</span><span class="n">detach</span><span class="p">()</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">return_intermediate</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">inter_class_logits</span><span class="p">),</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">(</span><span class="n">inter_pred_bboxes</span><span class="p">)</span>
+</span>        <span class="n">bboxes</span> <span class="o">=</span> <span class="n">pred_bboxes</span><span class="p">.</span><span class="nf">detach</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">self</span><span class="p">.</span><span class="n">return_intermediate</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="p">.</span><span class="nf">stack</span><span class="p">(</span><span class="n">inter_class_logits</span><span class="p">),</span> <span class="n">torch</span><span class="p">.</span><span class="nf">stack</span><span class="p">(</span><span class="n">inter_pred_bboxes</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p><img src="https://pic.imgdb.cn/item/6534c43ec458853aef6bca08.jpg" alt="" /></p>

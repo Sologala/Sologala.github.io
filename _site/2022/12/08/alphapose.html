@@ -186,36 +186,36 @@ Author: Ray-Eldath
 <p>其中 $A_{grad}$ 是一个人为设置的梯度幅度值。作者对修改前后梯度的 <strong>Lipschitz</strong> 常数进行分析，结果表明当$A_{grad}$取热图尺度的$1/8$时，修改后梯度的 <strong>Lipschitz</strong> 常数是前者的四分之一，这说明它的梯度空间更加平滑容易优化。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">IngetralCoordinate</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">autograd</span><span class="p">.</span><span class="n">Function</span><span class="p">):</span>
-    <span class="s">''' Symmetry integral regression function.
-    '''</span>
+    <span class="sh">'''</span><span class="s"> Symmetry integral regression function.
+    </span><span class="sh">'''</span>
     <span class="n">AMPLITUDE</span> <span class="o">=</span> <span class="mi">2</span>
 
-    <span class="o">@</span><span class="nb">staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
-            <span class="nb">input</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="s">'IngetralCoordinate only takes input as torch.Tensor'</span>
-        <span class="n">input_size</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
-        <span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span>
+        <span class="k">assert</span> <span class="nf">isinstance</span><span class="p">(</span>
+            <span class="nb">input</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="sh">'</span><span class="s">IngetralCoordinate only takes input as torch.Tensor</span><span class="sh">'</span>
+        <span class="n">input_size</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="nf">size</span><span class="p">()</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">arange</span><span class="p">(</span>
             <span class="n">input_size</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">input</span><span class="p">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="nb">input</span><span class="p">.</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="nb">input</span><span class="p">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">ctx</span><span class="p">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="n">input_size</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="n">mul</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
-        <span class="n">ctx</span><span class="p">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="nb">input</span><span class="p">.</span><span class="nf">mul</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="p">.</span><span class="nf">save_for_backward</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">output</span>
 
-    <span class="o">@</span><span class="nb">staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
         <span class="n">weight</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">.</span><span class="n">saved_tensors</span>
-        <span class="n">output_coord</span> <span class="o">=</span> <span class="n">output</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-        <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">:].</span><span class="n">repeat</span><span class="p">(</span>
+        <span class="n">output_coord</span> <span class="o">=</span> <span class="n">output</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="p">:].</span><span class="nf">repeat</span><span class="p">(</span>
             <span class="n">output_coord</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">output_coord</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">weight_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">ones</span><span class="p">(</span><span class="n">weight</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">grad_output</span><span class="p">.</span><span class="n">dtype</span><span class="p">,</span>
+        <span class="n">weight_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">ones</span><span class="p">(</span><span class="n">weight</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">grad_output</span><span class="p">.</span><span class="n">dtype</span><span class="p">,</span>
                                  <span class="n">layout</span><span class="o">=</span><span class="n">grad_output</span><span class="p">.</span><span class="n">layout</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">grad_output</span><span class="p">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">weight_mask</span><span class="p">[</span><span class="n">weight</span> <span class="o">&lt;</span> <span class="n">output_coord</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-        <span class="n">weight_mask</span><span class="p">[</span><span class="n">output_coord</span><span class="p">.</span><span class="n">repeat</span><span class="p">(</span>
+        <span class="n">weight_mask</span><span class="p">[</span><span class="n">output_coord</span><span class="p">.</span><span class="nf">repeat</span><span class="p">(</span>
             <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">weight</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">ctx</span><span class="p">.</span><span class="n">input_size</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">weight_mask</span> <span class="o">*=</span> <span class="n">IngetralCoordinate</span><span class="p">.</span><span class="n">AMPLITUDE</span>
-        <span class="k">return</span> <span class="n">grad_output</span><span class="p">.</span><span class="n">mul</span><span class="p">(</span><span class="n">weight_mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">grad_output</span><span class="p">.</span><span class="nf">mul</span><span class="p">(</span><span class="n">weight_mask</span><span class="p">)</span>
 </code></pre></div></div>
 
 <h2 id="2-归一化方法">2. 归一化方法</h2>

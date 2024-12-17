@@ -218,7 +218,7 @@ p, &amp; y=1 \\
 <p>其中$y$为$0$~$1$的质量标签，$\sigma$为预测。注意<strong>QFL</strong>的全局最小解即是$\sigma = y$，这样交叉熵部分变为完整的交叉熵。调节因子为距离绝对值的幂次函数，实验中发现一般取$\beta = 2$为最优。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">quality_focal_loss</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">2.0</span><span class="p">):</span>
-    <span class="s">"""
+    <span class="sh">"""</span><span class="s">
     Args:
         pred (torch.Tensor): Predicted joint representation of classification
             and quality (IoU) estimation with shape (N, C), C is the number of
@@ -229,33 +229,33 @@ p, &amp; y=1 \\
             Defaults to 2.0.
     Returns:
         torch.Tensor: Loss tensor with shape (N,).
-    """</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s">"""target for QFL must be a tuple of two elements,
-        including category label and quality label, respectively"""</span>
+    </span><span class="sh">"""</span>
+    <span class="k">assert</span> <span class="nf">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="sh">"""</span><span class="s">target for QFL must be a tuple of two elements,
+        including category label and quality label, respectively</span><span class="sh">"""</span>
     <span class="c1"># label denotes the category id, score denotes the quality score
 </span>    <span class="n">label</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">target</span>  <span class="c1"># label(N) 类别,score(N),预测bbox和gt bbox的iou
 </span>
     <span class="c1"># negatives are supervised by 0 quality score
-</span>    <span class="n">pred_sigmoid</span> <span class="o">=</span> <span class="n">pred</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">()</span>  <span class="c1"># (N,class_num)
+</span>    <span class="n">pred_sigmoid</span> <span class="o">=</span> <span class="n">pred</span><span class="p">.</span><span class="nf">sigmoid</span><span class="p">()</span>  <span class="c1"># (N,class_num)
 </span>    <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">pred_sigmoid</span>
-    <span class="n">zerolabel</span> <span class="o">=</span> <span class="n">scale_factor</span><span class="p">.</span><span class="n">new_zeros</span><span class="p">(</span><span class="n">pred</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">zerolabel</span> <span class="o">=</span> <span class="n">scale_factor</span><span class="p">.</span><span class="nf">new_zeros</span><span class="p">(</span><span class="n">pred</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="c1"># 先假设所有label都是负样本，计算bce loss，乘上sigmoid^beta次方，达到focal效应
-</span>    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span>
-        <span class="n">pred</span><span class="p">,</span> <span class="n">zerolabel</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'none'</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+</span>    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">binary_cross_entropy_with_logits</span><span class="p">(</span>
+        <span class="n">pred</span><span class="p">,</span> <span class="n">zerolabel</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="sh">'</span><span class="s">none</span><span class="sh">'</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">.</span><span class="nf">pow</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
 
     <span class="c1"># FG cat_id: [0, num_classes -1], BG cat_id: num_classes
-</span>    <span class="n">bg_class_ind</span> <span class="o">=</span> <span class="n">pred</span><span class="p">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span>    <span class="n">bg_class_ind</span> <span class="o">=</span> <span class="n">pred</span><span class="p">.</span><span class="nf">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="c1"># 找出正样本索引
-</span>    <span class="n">pos</span> <span class="o">=</span> <span class="p">((</span><span class="n">label</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">label</span> <span class="o">&lt;</span> <span class="n">bg_class_ind</span><span class="p">)).</span><span class="n">nonzero</span><span class="p">().</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">pos_label</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="n">pos</span><span class="p">].</span><span class="nb">long</span><span class="p">()</span>
+</span>    <span class="n">pos</span> <span class="o">=</span> <span class="p">((</span><span class="n">label</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">label</span> <span class="o">&lt;</span> <span class="n">bg_class_ind</span><span class="p">)).</span><span class="nf">nonzero</span><span class="p">().</span><span class="nf">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pos_label</span> <span class="o">=</span> <span class="n">label</span><span class="p">[</span><span class="n">pos</span><span class="p">].</span><span class="nf">long</span><span class="p">()</span>
     <span class="c1"># positives are supervised by bbox quality (IoU) score
 </span>    <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">score</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">-</span> <span class="n">pred_sigmoid</span><span class="p">[</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos_label</span><span class="p">]</span>  <span class="c1"># 正样本focal值
 </span>    <span class="c1"># 计算正样本处的bce loss，注意label=score，而不是1
-</span>    <span class="n">loss</span><span class="p">[</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos_label</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span>
+</span>    <span class="n">loss</span><span class="p">[</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos_label</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">binary_cross_entropy_with_logits</span><span class="p">(</span>
         <span class="n">pred</span><span class="p">[</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos_label</span><span class="p">],</span> <span class="n">score</span><span class="p">[</span><span class="n">pos</span><span class="p">],</span>
-        <span class="n">reduction</span><span class="o">=</span><span class="s">'none'</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">.</span><span class="nb">abs</span><span class="p">().</span><span class="nb">pow</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+        <span class="n">reduction</span><span class="o">=</span><span class="sh">'</span><span class="s">none</span><span class="sh">'</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale_factor</span><span class="p">.</span><span class="nf">abs</span><span class="p">().</span><span class="nf">pow</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
 
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="p">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>  <span class="c1"># (N,class_num)在1维度直接求和，变成(N,)
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>  <span class="c1"># (N,class_num)在1维度直接求和，变成(N,)
 </span>    <span class="k">return</span> <span class="n">loss</span>
 </code></pre></div></div>
 
@@ -282,7 +282,7 @@ p, &amp; y=1 \\
 <p>学出来的分布理论上是在真实浮点坐标的附近，并且以线性插值的模式得到距离左右整数坐标的权重。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">distribution_focal_loss</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-    <span class="s">"""
+    <span class="sh">"""</span><span class="s">
     Args:
         pred (torch.Tensor): Predicted general distribution of bounding boxes
             (before softmax) with shape (N, n+1), n is the max value of the
@@ -291,15 +291,15 @@ p, &amp; y=1 \\
             shape (N,).
     Returns:
         torch.Tensor: Loss tensor with shape (N,).
-    """</span>
-    <span class="n">dis_left</span> <span class="o">=</span> <span class="n">label</span><span class="p">.</span><span class="nb">long</span><span class="p">()</span>  <span class="c1"># 坐标整数值
+    </span><span class="sh">"""</span>
+    <span class="n">dis_left</span> <span class="o">=</span> <span class="n">label</span><span class="p">.</span><span class="nf">long</span><span class="p">()</span>  <span class="c1"># 坐标整数值
 </span>    <span class="n">dis_right</span> <span class="o">=</span> <span class="n">dis_left</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># 右边整数值
 </span>    <span class="c1"># 线性权重
-</span>    <span class="n">weight_left</span> <span class="o">=</span> <span class="n">dis_right</span><span class="p">.</span><span class="nb">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">label</span>
-    <span class="n">weight_right</span> <span class="o">=</span> <span class="n">label</span> <span class="o">-</span> <span class="n">dis_left</span><span class="p">.</span><span class="nb">float</span><span class="p">()</span>
+</span>    <span class="n">weight_left</span> <span class="o">=</span> <span class="n">dis_right</span><span class="p">.</span><span class="nf">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">label</span>
+    <span class="n">weight_right</span> <span class="o">=</span> <span class="n">label</span> <span class="o">-</span> <span class="n">dis_left</span><span class="p">.</span><span class="nf">float</span><span class="p">()</span>
     <span class="c1"># 两个bce loss，并且加权，促使学到的分布是双峰分布，提高优化效率
-</span>    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">dis_left</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'none'</span><span class="p">)</span> <span class="o">*</span> <span class="n">weight_left</span> \
-           <span class="o">+</span> <span class="n">F</span><span class="p">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">dis_right</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'none'</span><span class="p">)</span> <span class="o">*</span> <span class="n">weight_right</span>
+</span>    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">cross_entropy</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">dis_left</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="sh">'</span><span class="s">none</span><span class="sh">'</span><span class="p">)</span> <span class="o">*</span> <span class="n">weight_left</span> \
+           <span class="o">+</span> <span class="n">F</span><span class="p">.</span><span class="nf">cross_entropy</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">dis_right</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="sh">'</span><span class="s">none</span><span class="sh">'</span><span class="p">)</span> <span class="o">*</span> <span class="n">weight_right</span>
     <span class="k">return</span> <span class="n">loss</span>
 </code></pre></div></div>
 

@@ -189,8 +189,8 @@ Author: Ray-Eldath
 
 <p>在实际实现时，重构损失选用均方误差和绝对值误差的和：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss_l2</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
-<span class="n">recons_loss_l1</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">l1_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">recons_loss_l2</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">mse_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+<span class="n">recons_loss_l1</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">l1_loss</span><span class="p">(</span><span class="n">recons</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
 <span class="n">recons_loss</span> <span class="o">=</span> <span class="n">recons_loss_l2</span> <span class="o">+</span> <span class="n">recons_loss_l1</span>
 </code></pre></div></div>
 
@@ -212,59 +212,59 @@ Author: Ray-Eldath
 
 <p>在实践中，计算<strong>Sliced-Wasserstein</strong>距离包括两个步骤：计算编码$Q_Z$和先验$P_Z$的随机映射和计算两个映射之间的<strong>Wasserstein</strong>距离。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="c1"># [N  x D]
-</span><span class="k">def</span> <span class="nf">compute_swd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">z</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span> <span class="c1"># [N  x D]
+</span><span class="k">def</span> <span class="nf">compute_swd</span><span class="p">(</span><span class="n">self</span><span class="p">,</span>
                 <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
                 <span class="n">p</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mf">2.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="s">"""
+    <span class="sh">"""</span><span class="s">
     Computes the Sliced Wasserstein Distance (SWD) - which consists of
     randomly projecting the encoded and prior vectors and computing
     their Wasserstein distance along those projections.
     :param z: Latent samples # [N  x D]
     :param p: Value for the p^th Wasserstein distance
     :return:
-    """</span>
-    <span class="n">prior_z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn_like</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="c1"># [N x D]
+    </span><span class="sh">"""</span>
+    <span class="n">prior_z</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">randn_like</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="c1"># [N x D]
 </span>    <span class="n">device</span> <span class="o">=</span> <span class="n">z</span><span class="p">.</span><span class="n">device</span>
 
-    <span class="bp">self</span><span class="p">.</span><span class="n">latent_dim</span> <span class="o">=</span> <span class="n">latent_dim</span> <span class="c1"># int=D
-</span>    <span class="bp">self</span><span class="p">.</span><span class="n">num_projections</span> <span class="o">=</span> <span class="n">num_projections</span> <span class="c1"># int=50
-</span>    <span class="n">proj_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">get_random_projections</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">latent_dim</span><span class="p">,</span>
-                                              <span class="n">num_samples</span><span class="o">=</span><span class="bp">self</span><span class="p">.</span><span class="n">num_projections</span><span class="p">).</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">).</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">self</span><span class="p">.</span><span class="n">latent_dim</span> <span class="o">=</span> <span class="n">latent_dim</span> <span class="c1"># int=D
+</span>    <span class="n">self</span><span class="p">.</span><span class="n">num_projections</span> <span class="o">=</span> <span class="n">num_projections</span> <span class="c1"># int=50
+</span>    <span class="n">proj_matrix</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">get_random_projections</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">latent_dim</span><span class="p">,</span>
+                                              <span class="n">num_samples</span><span class="o">=</span><span class="n">self</span><span class="p">.</span><span class="n">num_projections</span><span class="p">).</span><span class="nf">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">).</span><span class="nf">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-    <span class="n">latent_projections</span> <span class="o">=</span> <span class="n">z</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">proj_matrix</span><span class="p">)</span> <span class="c1"># [N x S]
-</span>    <span class="n">prior_projections</span> <span class="o">=</span> <span class="n">prior_z</span><span class="p">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">proj_matrix</span><span class="p">)</span> <span class="c1"># [N x S]
+    <span class="n">latent_projections</span> <span class="o">=</span> <span class="n">z</span><span class="p">.</span><span class="nf">matmul</span><span class="p">(</span><span class="n">proj_matrix</span><span class="p">)</span> <span class="c1"># [N x S]
+</span>    <span class="n">prior_projections</span> <span class="o">=</span> <span class="n">prior_z</span><span class="p">.</span><span class="nf">matmul</span><span class="p">(</span><span class="n">proj_matrix</span><span class="p">)</span> <span class="c1"># [N x S]
 </span>
     <span class="c1"># The Wasserstein distance is computed by sorting the two projections
 </span>    <span class="c1"># across the batches and computing their element-wise l2 distance
-</span>    <span class="n">w_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="n">latent_projections</span><span class="p">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> \
-             <span class="n">torch</span><span class="p">.</span><span class="n">sort</span><span class="p">(</span><span class="n">prior_projections</span><span class="p">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">w_dist</span> <span class="o">=</span> <span class="n">w_dist</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">w_dist</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+</span>    <span class="n">w_dist</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">sort</span><span class="p">(</span><span class="n">latent_projections</span><span class="p">.</span><span class="nf">t</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> \
+             <span class="n">torch</span><span class="p">.</span><span class="nf">sort</span><span class="p">(</span><span class="n">prior_projections</span><span class="p">.</span><span class="nf">t</span><span class="p">(),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">w_dist</span> <span class="o">=</span> <span class="n">w_dist</span><span class="p">.</span><span class="nf">pow</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">w_dist</span><span class="p">.</span><span class="nf">mean</span><span class="p">()</span>
 </code></pre></div></div>
 
 <p>其中低维空间的<strong>Wasserstein</strong>距离是通过对两个投影随机变量各个特征维度之间最大值差异的<strong>L2</strong>距离实现的。而随机投影过程从正态分布或<strong>Cauchy</strong>分布中采样构造：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">distributions</span> <span class="k">as</span> <span class="n">dist</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">torch</span> <span class="kn">import</span> <span class="n">distributions</span> <span class="k">as</span> <span class="n">dist</span>
 
-<span class="k">def</span> <span class="nf">get_random_projections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="s">"""
-    Returns random samples from latent distribution's (Gaussian)
+<span class="k">def</span> <span class="nf">get_random_projections</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="sh">"""</span><span class="s">
+    Returns random samples from latent distribution</span><span class="sh">'</span><span class="s">s (Gaussian)
     unit sphere for projecting the encoded samples and the
     distribution samples.
     :param latent_dim: (Int) Dimensionality of the latent space (D)
     :param num_samples: (Int) Number of samples required (S)
     :return: Random projections from the latent unit sphere
-    """</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj_dist</span> <span class="o">==</span> <span class="s">'normal'</span><span class="p">:</span>
-        <span class="n">rand_samples</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="bp">self</span><span class="p">.</span><span class="n">proj_dist</span> <span class="o">==</span> <span class="s">'cauchy'</span><span class="p">:</span>
-        <span class="n">rand_samples</span> <span class="o">=</span> <span class="n">dist</span><span class="p">.</span><span class="n">Cauchy</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]),</span>
-                                   <span class="n">torch</span><span class="p">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.0</span><span class="p">])).</span><span class="n">sample</span><span class="p">((</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)).</span><span class="n">squeeze</span><span class="p">()</span>
+    </span><span class="sh">"""</span>
+    <span class="k">if</span> <span class="n">self</span><span class="p">.</span><span class="n">proj_dist</span> <span class="o">==</span> <span class="sh">'</span><span class="s">normal</span><span class="sh">'</span><span class="p">:</span>
+        <span class="n">rand_samples</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">randn</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">self</span><span class="p">.</span><span class="n">proj_dist</span> <span class="o">==</span> <span class="sh">'</span><span class="s">cauchy</span><span class="sh">'</span><span class="p">:</span>
+        <span class="n">rand_samples</span> <span class="o">=</span> <span class="n">dist</span><span class="p">.</span><span class="nc">Cauchy</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nf">tensor</span><span class="p">([</span><span class="mf">0.0</span><span class="p">]),</span>
+                                   <span class="n">torch</span><span class="p">.</span><span class="nf">tensor</span><span class="p">([</span><span class="mf">1.0</span><span class="p">])).</span><span class="nf">sample</span><span class="p">((</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">latent_dim</span><span class="p">)).</span><span class="nf">squeeze</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="s">'Unknown projection distribution.'</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="nc">ValueError</span><span class="p">(</span><span class="sh">'</span><span class="s">Unknown projection distribution.</span><span class="sh">'</span><span class="p">)</span>
 
-    <span class="n">rand_proj</span> <span class="o">=</span> <span class="n">rand_samples</span> <span class="o">/</span> <span class="n">rand_samples</span><span class="p">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">).</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">rand_proj</span> <span class="o">=</span> <span class="n">rand_samples</span> <span class="o">/</span> <span class="n">rand_samples</span><span class="p">.</span><span class="nf">norm</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">).</span><span class="nf">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">rand_proj</span> <span class="c1"># [S x D]
 </span></code></pre></div></div>
 

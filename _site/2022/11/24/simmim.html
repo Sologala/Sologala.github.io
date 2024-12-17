@@ -176,71 +176,71 @@ Author: Ray-Eldath
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SimMIM</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">encoder</span><span class="p">,</span> <span class="c1"># 传入ViT
 </span>        <span class="n">masking_ratio</span> <span class="o">=</span> <span class="mf">0.5</span>
     <span class="p">):</span>
-        <span class="nb">super</span><span class="p">().</span><span class="n">__init__</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="n">masking_ratio</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">masking_ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s">'masking ratio must be kept between 0 and 1'</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">masking_ratio</span> <span class="o">=</span> <span class="n">masking_ratio</span>
+        <span class="nf">super</span><span class="p">().</span><span class="nf">__init__</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">masking_ratio</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">masking_ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">,</span> <span class="sh">'</span><span class="s">masking ratio must be kept between 0 and 1</span><span class="sh">'</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">masking_ratio</span> <span class="o">=</span> <span class="n">masking_ratio</span>
 
         <span class="c1"># extract some hyperparameters and functions from encoder (vision transformer to be trained)
-</span>        <span class="bp">self</span><span class="p">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">encoder</span>
+</span>        <span class="n">self</span><span class="p">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">encoder</span>
         <span class="n">num_patches</span><span class="p">,</span> <span class="n">encoder_dim</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
 
-        <span class="bp">self</span><span class="p">.</span><span class="n">to_patch</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">patch_to_emb</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">encoder</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">to_patch</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">patch_to_emb</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">encoder</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 
         <span class="n">pixel_values_per_patch</span> <span class="o">=</span> <span class="n">encoder</span><span class="p">.</span><span class="n">to_patch_embedding</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">weight</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="c1"># simple linear head
-</span>        <span class="bp">self</span><span class="p">.</span><span class="n">mask_token</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">(</span><span class="n">encoder_dim</span><span class="p">))</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">to_pixels</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">encoder_dim</span><span class="p">,</span> <span class="n">pixel_values_per_patch</span><span class="p">)</span>
+</span>        <span class="n">self</span><span class="p">.</span><span class="n">mask_token</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nf">randn</span><span class="p">(</span><span class="n">encoder_dim</span><span class="p">))</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">to_pixels</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Linear</span><span class="p">(</span><span class="n">encoder_dim</span><span class="p">,</span> <span class="n">pixel_values_per_patch</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">img</span><span class="p">):</span>
         <span class="n">device</span> <span class="o">=</span> <span class="n">img</span><span class="p">.</span><span class="n">device</span>
 
         <span class="c1"># get patches
-</span>        <span class="n">patches</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_patch</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+</span>        <span class="n">patches</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">to_patch</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
         <span class="n">batch</span><span class="p">,</span> <span class="n">num_patches</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">patches</span><span class="p">.</span><span class="n">shape</span>
 
         <span class="c1"># for indexing purposes
-</span>        <span class="n">batch_range</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">)[:,</span> <span class="bp">None</span><span class="p">]</span>
+</span>        <span class="n">batch_range</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">arange</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">)[:,</span> <span class="bp">None</span><span class="p">]</span>
 
         <span class="c1"># get positions
-</span>        <span class="n">pos_emb</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encoder</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:(</span><span class="n">num_patches</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+</span>        <span class="n">pos_emb</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">encoder</span><span class="p">.</span><span class="n">pos_embedding</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:(</span><span class="n">num_patches</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
 
         <span class="c1"># patch to encoder tokens and add positions
-</span>        <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">patch_to_emb</span><span class="p">(</span><span class="n">patches</span><span class="p">)</span>
+</span>        <span class="n">tokens</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">patch_to_emb</span><span class="p">(</span><span class="n">patches</span><span class="p">)</span>
         <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokens</span> <span class="o">+</span> <span class="n">pos_emb</span>
 
         <span class="c1"># prepare mask tokens
-</span>        <span class="n">mask_tokens</span> <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">mask_token</span><span class="p">,</span> <span class="s">'d -&gt; b n d'</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">batch</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">num_patches</span><span class="p">)</span>
+</span>        <span class="n">mask_tokens</span> <span class="o">=</span> <span class="nf">repeat</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">mask_token</span><span class="p">,</span> <span class="sh">'</span><span class="s">d -&gt; b n d</span><span class="sh">'</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">batch</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">num_patches</span><span class="p">)</span>
         <span class="n">mask_tokens</span> <span class="o">=</span> <span class="n">mask_tokens</span> <span class="o">+</span> <span class="n">pos_emb</span>
 
         <span class="c1"># calculate of patches needed to be masked, and get positions (indices) to be masked
-</span>        <span class="n">num_masked</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">masking_ratio</span> <span class="o">*</span> <span class="n">num_patches</span><span class="p">)</span>
-        <span class="n">masked_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">num_patches</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">).</span><span class="n">topk</span><span class="p">(</span><span class="n">k</span> <span class="o">=</span> <span class="n">num_masked</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">indices</span>
-        <span class="n">masked_bool_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batch</span><span class="p">,</span> <span class="n">num_patches</span><span class="p">),</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">).</span><span class="n">scatter_</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">masked_indices</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="nb">bool</span><span class="p">()</span>
+</span>        <span class="n">num_masked</span> <span class="o">=</span> <span class="nf">int</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">masking_ratio</span> <span class="o">*</span> <span class="n">num_patches</span><span class="p">)</span>
+        <span class="n">masked_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">num_patches</span><span class="p">,</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">).</span><span class="nf">topk</span><span class="p">(</span><span class="n">k</span> <span class="o">=</span> <span class="n">num_masked</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">).</span><span class="n">indices</span>
+        <span class="n">masked_bool_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">zeros</span><span class="p">((</span><span class="n">batch</span><span class="p">,</span> <span class="n">num_patches</span><span class="p">),</span> <span class="n">device</span> <span class="o">=</span> <span class="n">device</span><span class="p">).</span><span class="nf">scatter_</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">masked_indices</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="nf">bool</span><span class="p">()</span>
 
         <span class="c1"># mask tokens
-</span>        <span class="n">tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">where</span><span class="p">(</span><span class="n">masked_bool_mask</span><span class="p">[...,</span> <span class="bp">None</span><span class="p">],</span> <span class="n">mask_tokens</span><span class="p">,</span> <span class="n">tokens</span><span class="p">)</span>
+</span>        <span class="n">tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="n">masked_bool_mask</span><span class="p">[...,</span> <span class="bp">None</span><span class="p">],</span> <span class="n">mask_tokens</span><span class="p">,</span> <span class="n">tokens</span><span class="p">)</span>
 
         <span class="c1"># attend with vision transformer
-</span>        <span class="n">encoded</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">encoder</span><span class="p">.</span><span class="n">transformer</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+</span>        <span class="n">encoded</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">encoder</span><span class="p">.</span><span class="nf">transformer</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
 
         <span class="c1"># get the masked tokens
 </span>        <span class="n">encoded_mask_tokens</span> <span class="o">=</span> <span class="n">encoded</span><span class="p">[</span><span class="n">batch_range</span><span class="p">,</span> <span class="n">masked_indices</span><span class="p">]</span>
 
         <span class="c1"># small linear projection for predicted pixel values
-</span>        <span class="n">pred_pixel_values</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">to_pixels</span><span class="p">(</span><span class="n">encoded_mask_tokens</span><span class="p">)</span>
+</span>        <span class="n">pred_pixel_values</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">to_pixels</span><span class="p">(</span><span class="n">encoded_mask_tokens</span><span class="p">)</span>
 
         <span class="c1"># get the masked patches for the final reconstruction loss
 </span>        <span class="n">masked_patches</span> <span class="o">=</span> <span class="n">patches</span><span class="p">[</span><span class="n">batch_range</span><span class="p">,</span> <span class="n">masked_indices</span><span class="p">]</span>
 
         <span class="c1"># calculate reconstruction loss
-</span>        <span class="n">recon_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">l1_loss</span><span class="p">(</span><span class="n">pred_pixel_values</span><span class="p">,</span> <span class="n">masked_patches</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_masked</span>
+</span>        <span class="n">recon_loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">l1_loss</span><span class="p">(</span><span class="n">pred_pixel_values</span><span class="p">,</span> <span class="n">masked_patches</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_masked</span>
         <span class="k">return</span> <span class="n">recon_loss</span>
 </code></pre></div></div>
 

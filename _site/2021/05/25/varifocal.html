@@ -204,29 +204,29 @@ Author: Ray-Eldath
 <p>正样本时没有采用<strong>focal loss</strong>，而是普通的<strong>bce loss</strong>，只不过多了一个自适应<strong>iou</strong>加权，用于突出主样本。而为负样本时是标准的<strong>focal loss</strong>。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">varifocal_loss</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">iou_weighted</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
-    <span class="s">"""
+    <span class="sh">"""</span><span class="s">
         pred (torch.Tensor): 预测的分类分数，形状为 (B,N,C) , N 表示 anchor 数量， C 表示类别数
         target (torch.Tensor): 经过对齐度归一化后的 IoU 分数，形状为 (B,N,C)，数值范围为 0~1
         alpha (float, optional): 调节正负样本之间的平衡因子，默认 0.75.
         gamma (float, optional): 负样本 focal 权重因子， 默认 2.0.
         iou_weighted (bool, optional): 正样本是否用 IoU 加权
-    """</span>
-    <span class="n">pred_sigmoid</span> <span class="o">=</span> <span class="n">pred</span><span class="p">.</span><span class="n">sigmoid</span><span class="p">()</span>
-    <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="p">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
+    </span><span class="sh">"""</span>
+    <span class="n">pred_sigmoid</span> <span class="o">=</span> <span class="n">pred</span><span class="p">.</span><span class="nf">sigmoid</span><span class="p">()</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="p">.</span><span class="nf">type_as</span><span class="p">(</span><span class="n">pred</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">iou_weighted</span><span class="p">:</span>
         <span class="c1"># 计算权重，正样本(target &gt; 0)中权重为 target,
 </span>        <span class="c1"># 负样本权重为 alpha*pred_simogid^2
-</span>        <span class="n">focal_weight</span> <span class="o">=</span> <span class="n">target</span> <span class="o">*</span> <span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span> <span class="o">+</span> \
-            <span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">pred_sigmoid</span> <span class="o">-</span> <span class="n">target</span><span class="p">).</span><span class="nb">abs</span><span class="p">().</span><span class="nb">pow</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> \
-            <span class="p">(</span><span class="n">target</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span>
+</span>        <span class="n">focal_weight</span> <span class="o">=</span> <span class="n">target</span> <span class="o">*</span> <span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">).</span><span class="nf">float</span><span class="p">()</span> <span class="o">+</span> \
+            <span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">pred_sigmoid</span> <span class="o">-</span> <span class="n">target</span><span class="p">).</span><span class="nf">abs</span><span class="p">().</span><span class="nf">pow</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> \
+            <span class="p">(</span><span class="n">target</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">).</span><span class="nf">float</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">focal_weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span> <span class="o">+</span> \
-            <span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">pred_sigmoid</span> <span class="o">-</span> <span class="n">target</span><span class="p">).</span><span class="nb">abs</span><span class="p">().</span><span class="nb">pow</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> \
-            <span class="p">(</span><span class="n">target</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">).</span><span class="nb">float</span><span class="p">()</span>
+        <span class="n">focal_weight</span> <span class="o">=</span> <span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">).</span><span class="nf">float</span><span class="p">()</span> <span class="o">+</span> \
+            <span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">pred_sigmoid</span> <span class="o">-</span> <span class="n">target</span><span class="p">).</span><span class="nf">abs</span><span class="p">().</span><span class="nf">pow</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> \
+            <span class="p">(</span><span class="n">target</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">).</span><span class="nf">float</span><span class="p">()</span>
     <span class="c1"># 计算二值交叉熵后乘以权重
-</span>    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span>
-        <span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s">'none'</span><span class="p">)</span> <span class="o">*</span> <span class="n">focal_weight</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">weight_reduce_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">reduction</span><span class="p">,</span> <span class="n">avg_factor</span><span class="p">)</span>
+</span>    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="p">.</span><span class="nf">binary_cross_entropy_with_logits</span><span class="p">(</span>
+        <span class="n">pred</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="sh">'</span><span class="s">none</span><span class="sh">'</span><span class="p">)</span> <span class="o">*</span> <span class="n">focal_weight</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="nf">weight_reduce_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">reduction</span><span class="p">,</span> <span class="n">avg_factor</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">loss</span>
 </code></pre></div></div>
 

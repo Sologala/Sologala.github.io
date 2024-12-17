@@ -214,54 +214,54 @@ Author: Ray-Eldath
 
 <h1 id="2-boundary-loss的实现">2. Boundary loss的实现</h1>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
-<span class="kn">from</span> <span class="nn">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
-<span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">torch</span>
+<span class="kn">import</span> <span class="n">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="n">einops</span> <span class="kn">import</span> <span class="n">rearrange</span><span class="p">,</span> <span class="n">einsum</span>
+<span class="kn">from</span> <span class="n">scipy.ndimage</span> <span class="kn">import</span> <span class="n">distance_transform_edt</span>
 
 
 <span class="k">class</span> <span class="nc">BDLoss</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="s">"""
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="sh">"""</span><span class="s">
         compute boudary loss
         only compute the loss of foreground
-        """</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">BDLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">()</span>
+        </span><span class="sh">"""</span>
+        <span class="nf">super</span><span class="p">(</span><span class="n">BDLoss</span><span class="p">,</span> <span class="n">self</span><span class="p">).</span><span class="nf">__init__</span><span class="p">()</span>
 
-    <span class="o">@</span><span class="n">torch</span><span class="p">.</span><span class="n">no_grad</span><span class="p">()</span>
-    <span class="k">def</span> <span class="nf">one_hot2dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">):</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+    <span class="nd">@torch.no_grad</span><span class="p">()</span>
+    <span class="k">def</span> <span class="nf">one_hot2dist</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">seg</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="nf">zeros_like</span><span class="p">(</span><span class="n">seg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">seg</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
             <span class="n">posmask</span> <span class="o">=</span> <span class="n">seg</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span>
-            <span class="k">if</span> <span class="n">posmask</span><span class="p">.</span><span class="nb">any</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">posmask</span><span class="p">.</span><span class="nf">any</span><span class="p">():</span>
                 <span class="n">negmask</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">-</span><span class="n">posmask</span>
-                <span class="n">neg_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">negmask</span><span class="p">)</span>
-                <span class="n">pos_map</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">posmask</span><span class="p">)</span>
+                <span class="n">neg_map</span> <span class="o">=</span> <span class="nf">distance_transform_edt</span><span class="p">(</span><span class="n">negmask</span><span class="p">)</span>
+                <span class="n">pos_map</span> <span class="o">=</span> <span class="nf">distance_transform_edt</span><span class="p">(</span><span class="n">posmask</span><span class="p">)</span>
                 <span class="n">res</span><span class="p">[:,</span><span class="n">c</span><span class="p">,...]</span> <span class="o">=</span> <span class="n">neg_map</span> <span class="o">*</span> <span class="n">negmask</span> <span class="o">-</span> <span class="p">(</span><span class="n">pos_map</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">posmask</span>
         <span class="k">return</span> <span class="n">res</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
-        <span class="s">"""
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">):</span>
+        <span class="sh">"""</span><span class="s">
         result: (batch_size, class, h, w)
         gt: (batch_size, h, w)
-        """</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">gt</span> <span class="o">=</span> <span class="n">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="s">'b h w -&gt; b 1 h w'</span><span class="p">)</span>
+        </span><span class="sh">"""</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">softmax</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt</span> <span class="o">=</span> <span class="nf">rearrange</span><span class="p">(</span><span class="n">gt</span><span class="p">,</span> <span class="sh">'</span><span class="s">b h w -&gt; b 1 h w</span><span class="sh">'</span><span class="p">)</span>
 
-        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="n">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">zeros_like</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">y_onehot</span> <span class="o">=</span> <span class="n">y_onehot</span><span class="p">.</span><span class="nf">scatter_</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">gt</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">bound</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">one_hot2dist</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">.</span><span class="n">cpu</span><span class="p">().</span><span class="n">numpy</span><span class="p">())).</span><span class="nb">float</span><span class="p">()</span>
+        <span class="n">bound</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">from_numpy</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="nf">one_hot2dist</span><span class="p">(</span><span class="n">y_onehot</span><span class="p">.</span><span class="nf">cpu</span><span class="p">().</span><span class="nf">numpy</span><span class="p">())).</span><span class="nf">float</span><span class="p">()</span>
         <span class="n">pc</span> <span class="o">=</span> <span class="n">result</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">...]</span>
         <span class="n">dc</span> <span class="o">=</span> <span class="n">bound</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="p">...]</span>
         <span class="n">multipled</span> <span class="o">=</span> <span class="n">pc</span> <span class="o">*</span> <span class="n">dc</span>
-        <span class="k">return</span> <span class="n">multipled</span><span class="p">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">multipled</span><span class="p">.</span><span class="nf">mean</span><span class="p">()</span>
     
-<span class="n">seg_loss</span> <span class="o">=</span> <span class="n">BDLoss</span><span class="p">()</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
-<span class="n">gt</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
-<span class="n">loss</span> <span class="o">=</span> <span class="n">seg_loss</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+<span class="n">seg_loss</span> <span class="o">=</span> <span class="nc">BDLoss</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">randn</span><span class="p">((</span><span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="n">gt</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">))</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="nf">seg_loss</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">gt</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
 </code></pre></div></div>
 
     </article>

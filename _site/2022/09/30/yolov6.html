@@ -220,12 +220,12 @@ Author: Ray-Eldath
 <p><strong>YOLOv6</strong> 采用与 <strong>YOLOX</strong> 一样的 <strong>Anchor-free</strong> 无锚范式，省略了聚类和繁琐的 <strong>Anchor</strong> 超参设定，泛化能力强，解码逻辑简单。在训练的过程中会根据 <strong>feature size</strong> 去自动生成先验框。网络 <strong>bbox</strong> 预测的值为 <strong>(top, bottom, left, right)</strong>，解码器将 <strong>anchor point</strong> 通过四个距离解码到坐标 $(x_1,y_1,x_2,y_2)$。</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">pred_bboxes</span><span class="p">:</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">stride</span><span class="p">:</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="s">"""
+    <span class="sh">"""</span><span class="s">
         将预测值解码转化 bbox 的 xyxy
         points (Tensor): 生成的 anchor point [x, y]，Shape (B, N, 2) or (N, 2).
         pred_bboxes (Tensor): 预测距离四边的距离。(left, top, right, bottom). Shape (B, N, 4) or (N, 4)
         stride (Tensor): 特征图下采样倍率.
-    """</span>
+    </span><span class="sh">"""</span>
     <span class="c1"># 首先将预测值转化为原图尺度
 </span>    <span class="n">distance</span> <span class="o">=</span> <span class="n">pred_bboxes</span> <span class="o">*</span> <span class="n">stride</span><span class="p">[</span><span class="bp">None</span><span class="p">,</span> <span class="p">:,</span> <span class="bp">None</span><span class="p">]</span>
     <span class="c1"># 根据点以及到四条边距离转为 bbox 的 x1y1x2y2
@@ -233,7 +233,7 @@ Author: Ray-Eldath
     <span class="n">y1</span> <span class="o">=</span> <span class="n">points</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">distance</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span>
     <span class="n">x2</span> <span class="o">=</span> <span class="n">points</span><span class="p">[...,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">distance</span><span class="p">[...,</span> <span class="mi">2</span><span class="p">]</span>
     <span class="n">y2</span> <span class="o">=</span> <span class="n">points</span><span class="p">[...,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">distance</span><span class="p">[...,</span> <span class="mi">3</span><span class="p">]</span>
-    <span class="n">bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">stack</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">bboxes</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">stack</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">bboxes</span>
 </code></pre></div></div>
 
@@ -251,26 +251,26 @@ Author: Ray-Eldath
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 1. 首先将anchor points 转化为 anchors
 # priors为(point_x,point_y,stride_w,stride_h), shape 为(N,4)
 </span><span class="n">cell_half_size</span> <span class="o">=</span> <span class="n">priors</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">*</span> <span class="mf">2.5</span>
-<span class="n">priors_gen</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">priors</span><span class="p">)</span>
+<span class="n">priors_gen</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">zeros_like</span><span class="p">(</span><span class="n">priors</span><span class="p">)</span>
 <span class="n">priors_gen</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">priors</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">cell_half_size</span>
 <span class="n">priors_gen</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:]</span> <span class="o">=</span> <span class="n">priors</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">cell_half_size</span>
 <span class="n">priors</span> <span class="o">=</span> <span class="n">priors_gen</span>
 <span class="c1"># 2. 计算 anchors 与 GT 的 IoU
-</span><span class="n">overlaps</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">iou_calculator</span><span class="p">(</span><span class="n">gt_bboxes</span><span class="p">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span> <span class="n">priors</span><span class="p">)</span>
+</span><span class="n">overlaps</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">iou_calculator</span><span class="p">(</span><span class="n">gt_bboxes</span><span class="p">.</span><span class="nf">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span> <span class="n">priors</span><span class="p">)</span>
 <span class="c1"># 3. 计算 anchor 与 GT 的中心距离
-</span><span class="n">distances</span><span class="p">,</span> <span class="n">priors_points</span> <span class="o">=</span> <span class="n">bbox_center_distance</span><span class="p">(</span>
-        <span class="n">gt_bboxes</span><span class="p">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span> <span class="n">priors</span><span class="p">)</span>
+</span><span class="n">distances</span><span class="p">,</span> <span class="n">priors_points</span> <span class="o">=</span> <span class="nf">bbox_center_distance</span><span class="p">(</span>
+        <span class="n">gt_bboxes</span><span class="p">.</span><span class="nf">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">]),</span> <span class="n">priors</span><span class="p">)</span>
 <span class="c1"># 4. 根据中心点距离，在 FPN 的每一层选取 TopK 临近的样本作为初筛样本
-</span><span class="n">is_in_candidate</span><span class="p">,</span> <span class="n">candidate_idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">select_topk_candidates</span><span class="p">(</span>
+</span><span class="n">is_in_candidate</span><span class="p">,</span> <span class="n">candidate_idxs</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">select_topk_candidates</span><span class="p">(</span>
         <span class="n">distances</span><span class="p">,</span> <span class="n">num_level_priors</span><span class="p">,</span> <span class="n">pad_bbox_flag</span><span class="p">)</span>
 <span class="c1"># 5. 对于每一个 GT 计算其对应初筛样本的均值与标准差的和, 作为该GT的样本阈值
-</span><span class="n">overlaps_thr_per_gt</span><span class="p">,</span> <span class="n">iou_candidates</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">threshold_calculator</span><span class="p">(</span>
+</span><span class="n">overlaps_thr_per_gt</span><span class="p">,</span> <span class="n">iou_candidates</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">threshold_calculator</span><span class="p">(</span>
         <span class="n">is_in_candidate</span><span class="p">,</span> <span class="n">candidate_idxs</span><span class="p">,</span> <span class="n">overlaps</span><span class="p">,</span> <span class="n">num_priors</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span>
         <span class="n">num_gt</span><span class="p">)</span>
 <span class="c1"># 6. 筛选大于阈值的样本作为正样本
-</span><span class="n">is_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">where</span><span class="p">(</span>
-        <span class="n">iou_candidates</span> <span class="o">&gt;</span> <span class="n">overlaps_thr_per_gt</span><span class="p">.</span><span class="n">repeat</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_priors</span><span class="p">]),</span>
-        <span class="n">is_in_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">is_in_candidate</span><span class="p">))</span>
+</span><span class="n">is_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span>
+        <span class="n">iou_candidates</span> <span class="o">&gt;</span> <span class="n">overlaps_thr_per_gt</span><span class="p">.</span><span class="nf">repeat</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_priors</span><span class="p">]),</span>
+        <span class="n">is_in_candidate</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="nf">zeros_like</span><span class="p">(</span><span class="n">is_in_candidate</span><span class="p">))</span>
 <span class="c1"># 6. 保证样本中心点在 GT 内部且不超图像边界
 </span><span class="n">pos_mask</span> <span class="o">=</span> <span class="n">is_pos</span> <span class="o">*</span> <span class="n">is_in_gts</span> <span class="o">*</span> <span class="n">pad_bbox_flag</span>
 </code></pre></div></div>
@@ -288,14 +288,14 @@ Author: Ray-Eldath
 </ul>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 1. 基于分类分数与回归的 IoU 计算对齐分数 alignment_metrics
-</span><span class="n">alignment_metrics</span> <span class="o">=</span> <span class="n">bbox_scores</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">overlaps</span><span class="p">.</span><span class="nb">pow</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">.</span><span class="n">beta</span><span class="p">)</span>
+</span><span class="n">alignment_metrics</span> <span class="o">=</span> <span class="n">bbox_scores</span><span class="p">.</span><span class="nf">pow</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">overlaps</span><span class="p">.</span><span class="nf">pow</span><span class="p">(</span>
+            <span class="n">self</span><span class="p">.</span><span class="n">beta</span><span class="p">)</span>
 <span class="c1"># 2. 保证中心点在 GT 内部的 mask
-</span><span class="n">is_in_gts</span> <span class="o">=</span> <span class="n">select_candidates_in_gts</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">)</span>
+</span><span class="n">is_in_gts</span> <span class="o">=</span> <span class="nf">select_candidates_in_gts</span><span class="p">(</span><span class="n">priors</span><span class="p">,</span> <span class="n">gt_bboxes</span><span class="p">)</span>
 <span class="c1"># 3. 选取 TopK 大的对齐分数的样本
-</span><span class="n">topk_metric</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">select_topk_candidates</span><span class="p">(</span>
+</span><span class="n">topk_metric</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">select_topk_candidates</span><span class="p">(</span>
             <span class="n">alignment_metrics</span> <span class="o">*</span> <span class="n">is_in_gts</span><span class="p">,</span>
-            <span class="n">topk_mask</span><span class="o">=</span><span class="n">pad_bbox_flag</span><span class="p">.</span><span class="n">repeat</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="p">.</span><span class="n">topk</span><span class="p">]).</span><span class="nb">bool</span><span class="p">())</span>
+            <span class="n">topk_mask</span><span class="o">=</span><span class="n">pad_bbox_flag</span><span class="p">.</span><span class="nf">repeat</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">topk</span><span class="p">]).</span><span class="nf">bool</span><span class="p">())</span>
 </code></pre></div></div>
 
 <p>因为在网络初期参数随机， 分类分数 和 预测框与 <strong>GT</strong> 的 <strong>IoU</strong> 都不准确，所以需要经过前 <strong>4</strong> 个 <strong>epoch</strong> 的 <strong>ATSS</strong> 的 <strong>warm-up</strong>。经过预热之后的 <strong>TOOD</strong> 标签匹配策略就不使用中心距离的先验, 而是直接对每一个<strong>GT</strong> 选取 <strong>alignment_metrics</strong> 中 <strong>topK</strong> 大的样本作为正样本。</p>

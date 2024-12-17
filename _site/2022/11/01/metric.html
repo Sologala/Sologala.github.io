@@ -383,37 +383,37 @@ Author: Ray-Eldath
 
 <p>首先初始化一个度量损失函数，以计算训练集中样本对的度量损失：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pytorch_metric_learning</span> <span class="kn">import</span> <span class="n">losses</span>
-<span class="n">loss_func</span> <span class="o">=</span> <span class="n">losses</span><span class="p">.</span><span class="n">TripletMarginLoss</span><span class="p">()</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">pytorch_metric_learning</span> <span class="kn">import</span> <span class="n">losses</span>
+<span class="n">loss_func</span> <span class="o">=</span> <span class="n">losses</span><span class="p">.</span><span class="nc">TripletMarginLoss</span><span class="p">()</span>
 </code></pre></div></div>
 
 <p>通常正样本对由共享相同标签的特征嵌入构成，负样本对由具有不同标签的特征嵌入构成；可以通过设置采样策略构造样本对的难例挖掘：</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pytorch_metric_learning</span> <span class="kn">import</span> <span class="n">miners</span>
-<span class="n">miner</span> <span class="o">=</span> <span class="n">miners</span><span class="p">.</span><span class="n">MultiSimilarityMiner</span><span class="p">()</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">pytorch_metric_learning</span> <span class="kn">import</span> <span class="n">miners</span>
+<span class="n">miner</span> <span class="o">=</span> <span class="n">miners</span><span class="p">.</span><span class="nc">MultiSimilarityMiner</span><span class="p">()</span>
 </code></pre></div></div>
 
 <p>在训练过程中传入模型构造的特征嵌入（尺寸为<code class="language-plaintext highlighter-rouge">(batch_size, embedding_size)</code>）以及相应的标签（尺寸为<code class="language-plaintext highlighter-rouge">(batch_size)</code>）：</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># your training loop
-</span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
-    <span class="n">optimizer</span><span class="p">.</span><span class="n">zero_grad</span><span class="p">()</span>
-    <span class="n">embeddings</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">hard_pairs</span> <span class="o">=</span> <span class="n">miner</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_func</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">hard_pairs</span><span class="p">)</span>
-    <span class="n">loss</span><span class="p">.</span><span class="n">backward</span><span class="p">()</span>
-    <span class="n">optimizer</span><span class="p">.</span><span class="n">step</span><span class="p">()</span>
+</span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">dataloader</span><span class="p">):</span>
+    <span class="n">optimizer</span><span class="p">.</span><span class="nf">zero_grad</span><span class="p">()</span>
+    <span class="n">embeddings</span> <span class="o">=</span> <span class="nf">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">hard_pairs</span> <span class="o">=</span> <span class="nf">miner</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="nf">loss_func</span><span class="p">(</span><span class="n">embeddings</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">hard_pairs</span><span class="p">)</span>
+    <span class="n">loss</span><span class="p">.</span><span class="nf">backward</span><span class="p">()</span>
+    <span class="n">optimizer</span><span class="p">.</span><span class="nf">step</span><span class="p">()</span>
 </code></pre></div></div>
 
 <p>损失函数可通过<code class="language-plaintext highlighter-rouge">distances, reducers, regularizers</code>定义。通过难例挖掘可以找到不同的样本对索引，然后通过定义的距离函数计算样本对之间的距离，并进一步计算损失函数；正则化器则为每个样本计算正则化损失；然后通过衰减器仅保留数值较高的损失项。</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pytorch_metric_learning.distances</span> <span class="kn">import</span> <span class="n">CosineSimilarity</span>
-<span class="kn">from</span> <span class="nn">pytorch_metric_learning.reducers</span> <span class="kn">import</span> <span class="n">ThresholdReducer</span>
-<span class="kn">from</span> <span class="nn">pytorch_metric_learning.regularizers</span> <span class="kn">import</span> <span class="n">LpRegularizer</span>
-<span class="kn">from</span> <span class="nn">pytorch_metric_learning</span> <span class="kn">import</span> <span class="n">losses</span>
-<span class="n">loss_func</span> <span class="o">=</span> <span class="n">losses</span><span class="p">.</span><span class="n">TripletMarginLoss</span><span class="p">(</span><span class="n">distance</span> <span class="o">=</span> <span class="n">CosineSimilarity</span><span class="p">(),</span> 
-                                    <span class="n">reducer</span> <span class="o">=</span> <span class="n">ThresholdReducer</span><span class="p">(</span><span class="n">high</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span> 
-                                    <span class="n">embedding_regularizer</span> <span class="o">=</span> <span class="n">LpRegularizer</span><span class="p">())</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">pytorch_metric_learning.distances</span> <span class="kn">import</span> <span class="n">CosineSimilarity</span>
+<span class="kn">from</span> <span class="n">pytorch_metric_learning.reducers</span> <span class="kn">import</span> <span class="n">ThresholdReducer</span>
+<span class="kn">from</span> <span class="n">pytorch_metric_learning.regularizers</span> <span class="kn">import</span> <span class="n">LpRegularizer</span>
+<span class="kn">from</span> <span class="n">pytorch_metric_learning</span> <span class="kn">import</span> <span class="n">losses</span>
+<span class="n">loss_func</span> <span class="o">=</span> <span class="n">losses</span><span class="p">.</span><span class="nc">TripletMarginLoss</span><span class="p">(</span><span class="n">distance</span> <span class="o">=</span> <span class="nc">CosineSimilarity</span><span class="p">(),</span> 
+                                    <span class="n">reducer</span> <span class="o">=</span> <span class="nc">ThresholdReducer</span><span class="p">(</span><span class="n">high</span><span class="o">=</span><span class="mf">0.3</span><span class="p">),</span> 
+                                    <span class="n">embedding_regularizer</span> <span class="o">=</span> <span class="nc">LpRegularizer</span><span class="p">())</span>
 </code></pre></div></div>
 
 <p><img src="https://pic.imgdb.cn/item/63c37193be43e0d30ee5aa75.jpg" alt="" /></p>
